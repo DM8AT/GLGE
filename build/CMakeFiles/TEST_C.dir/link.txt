@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/TEST_C.dir/link.d CMakeFiles/TEST_C.dir/src/main.c.o -o TEST_C  libGLGE.a -lSDL2 -lSDL2_image -lSDL2 -lSDL2_image -lvulkan -lGL

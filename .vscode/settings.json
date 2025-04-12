@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.tpp": "cpp",
+        "format": "cpp",
+        "vector": "c",
+        "glgeuintvec.h": "c"
+    }
+}
