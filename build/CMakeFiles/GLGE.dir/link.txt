@@ -1,2 +1,0 @@
-/usr/bin/ar qc libGLGE.a CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o
-/usr/bin/ranlib libGLGE.a
