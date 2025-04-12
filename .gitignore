@@ -2,8 +2,8 @@
 *.log
 
 # ignore build
-build
+build/*
 # ignore vscode
-.vscode
+.vscode/*
 # ignore compiled shaders
 shaders/*.spv
