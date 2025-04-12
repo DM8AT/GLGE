@@ -9,3 +9,4 @@ build/*
 
 # ignore compiled shaders
 *.spv
+shader/glslc.sh
