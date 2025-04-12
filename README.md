@@ -10,12 +10,12 @@ Some aspects of GLGE are not fixed in the code. Some things can be customized by
 
 | Define Name | Safty Degree | Usage | Default |
 |-------------|--------------|-------|---------|
-| GLGE_VERSION | :cross: | This defines the version of GLGE. DO NOT CHANGE UNLESS YOU KNOW WHAT YOUR DOING | Current newest: 0.1.0 |
+| GLGE_VERSION | :x: | This defines the version of GLGE. DO NOT CHANGE UNLESS YOU KNOW WHAT YOUR DOING | Current newest: 0.1.0 |
 | GLGE_CREATE_NAMESPACE | :check: | This dictates if GLGE should be contained in a namespace (the namespace will only be created if C++ is used) | 0 / False |
-| GLGE_NAMESPACE | :check: | This defines the name of the namespace that should be used if a namespace is going to be created | GLGE |
-| GLGE_PREFIX_C_FUNCTIONS | :check: | This says if functions should be prefixed if C is used | 0 / False |
-| GLGE_PREFIX_ALWAYS | :check: | This can be used to enable prefixing also in C++ | 0 / False |
-| GLGE_PREFIX | :check: | This is the prefix that will be set in fron all GLGE functions if prefixing is enabled | glge_ | 
+| GLGE_NAMESPACE | :white_check_mark: | This defines the name of the namespace that should be used if a namespace is going to be created | GLGE |
+| GLGE_PREFIX_C_FUNCTIONS | :white_check_mark: | This says if functions should be prefixed if C is used | 0 / False |
+| GLGE_PREFIX_ALWAYS | :white_check_mark: | This can be used to enable prefixing also in C++ | 0 / False |
+| GLGE_PREFIX | :white_check_mark: | This is the prefix that will be set in fron all GLGE functions if prefixing is enabled | glge_ | 
 | GLGE_COMPILER_ERRORS | :exclamation: | This defines if custom compile time errors will be printed | 1 / True |
 | GLGE_COMPILER_WARNINGS | :exclamation: | This defines if custom compile time warnings will be printed | 1 / True |
 | GLGE_INCLUDE_MATH | :warning: | This defines if the math module of GLGE should be included | 1 / True |
