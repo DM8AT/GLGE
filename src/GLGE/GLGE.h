@@ -14,7 +14,7 @@
 #define _GLGE_
 
 //include the settings
-#include "GLGESettings.h"
+#include "GLGECore/GLGESettings.h"
 
 //check if a namespace should be used and if this is C++
 #if GLGE_CREATE_NAMESPACE && GLGE_CPP
@@ -22,13 +22,14 @@
 namespace GLGE_NAMESPACE {
 #endif
 
-//check if the mathematic library should be included
-#if GLGE_INCLUDE_MATH
+//include the library core
+#include "GLGECore/GLGECore.h"
 
-//include the vectors
-#include "../GLGEMath/Vectors/GLGEVectors.h"
+//include the math module
+#include "GLGEMath/GLGEMath.h"
 
-#endif //math inclusion section
+//include the graphic module
+#include "GLGEGraphic/GLGEGraphic.h"
 
 //check if a namespace should be used and if this is C++
 #if GLGE_CREATE_NAMESPACE && GLGE_CPP

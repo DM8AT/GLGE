@@ -67,7 +67,7 @@ inline std::ostream& operator<<(std::ostream& os, const ivec2& vec) noexcept {re
  * @param b the second vector
  * @return int32_t the dot product of the two vectors
  */
-inline int32_t dot(const ivec2& a, const ivec2& b) noexcept {return GLGE_C_FUNC(ivec2_dot)(a, b);}
+inline int32_t GLGE_C_FUNC(dot)(const ivec2& a, const ivec2& b) noexcept {return GLGE_C_FUNC(ivec2_dot)(a, b);}
 
 /**
  * @brief print the vector into the default output
@@ -85,7 +85,7 @@ inline std::ostream& operator<<(std::ostream& os, const ivec3& vec) noexcept {re
  * @param b the second vector
  * @return int32_t the dot product of the two vectors
  */
-inline int32_t dot(const ivec3& a, const ivec3& b) noexcept {return GLGE_C_FUNC(ivec3_dot)(a, b);}
+inline int32_t GLGE_C_FUNC(dot)(const ivec3& a, const ivec3& b) noexcept {return GLGE_C_FUNC(ivec3_dot)(a, b);}
 
 /**
  * @brief compute the cross product of two vectors
@@ -94,7 +94,7 @@ inline int32_t dot(const ivec3& a, const ivec3& b) noexcept {return GLGE_C_FUNC(
  * @param b the second vector
  * @return the 3D cross product of the two vectors
  */
-inline ivec3 cross(const ivec3& a, const ivec3& b) noexcept {return GLGE_C_FUNC(ivec3_cross)(a, b);}
+inline ivec3 GLGE_C_FUNC(cross)(const ivec3& a, const ivec3& b) noexcept {return GLGE_C_FUNC(ivec3_cross)(a, b);}
 
 /**
  * @brief print the vector into the default output
@@ -112,7 +112,7 @@ inline std::ostream& operator<<(std::ostream& os, const ivec4& vec) noexcept {re
  * @param b the second vector
  * @return int32_t the dot product of the two vectors
  */
-inline int32_t dot(const ivec4& a, const ivec4& b) noexcept {return GLGE_C_FUNC(ivec4_dot)(a, b);}
+inline int32_t GLGE_C_FUNC(dot)(const ivec4& a, const ivec4& b) noexcept {return GLGE_C_FUNC(ivec4_dot)(a, b);}
 
 #endif //C++ section
 

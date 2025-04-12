@@ -1,4 +1,4 @@
-#include "GLGE/GLGECore/GLGE.h"
+#include "GLGE/GLGE.h"
 
 int main()
 {

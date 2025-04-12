@@ -150,6 +150,9 @@ $$$$$$$$\ $$ |  $$ |$$ |  $$ | $$$$$$  |$$ |  $$ |      \$$$$$$  |$$$$$$$$\    $
 
 */
 
+//enable compile time errors (1 means compiler errors will appear, 0 means no compiler errors will appear)
+#define GLGE_COMPILER_ERRORS 1
+
 /*
 
 $$\      $$\  $$$$$$\  $$$$$$$\  $$\   $$\ $$$$$$\ $$\   $$\  $$$$$$\         $$$$$$\  $$$$$$$$\ $$$$$$$$\ $$$$$$$$\ $$$$$$\ $$\   $$\  $$$$$$\   $$$$$$\  
@@ -194,5 +197,8 @@ $$$$$$\ $$ | \$$ |\$$$$$$  |$$$$$$$$\\$$$$$$  |$$$$$$$  |$$$$$$\ $$ | \$$ |\$$$$
 
 //specify if the math library should be included (1: the library will be included, 0: the library will not be included)
 #define GLGE_INCLUDE_MATH 1
+
+//specify if the graphic library should be included (1: the library will be included, 0: the library will not be included)
+#define GLGE_INCLUDE_GRAPHICS 1
 
 #endif

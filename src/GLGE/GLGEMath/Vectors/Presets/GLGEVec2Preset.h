@@ -18,18 +18,27 @@
 //check if all defines are set correctly
 //check if the type of the vector is set
 #ifndef GLGE_VEC_TYPE
+//check if compiler errors are enabled
+#if GLGE_COMPILER_ERRORS
 //print an error
 #error [ERROR] Failed to create vector: the type of the vector that should be created was not set
+#endif //error
 #else
 //check if the name of the vector is set
 #ifndef GLGE_VEC_NAME
+//check if compiler errors are enabled
+#if GLGE_COMPILER_ERRORS
 //print an error
 #error [ERROR] Failed to create vector: the name of the vector that should be created was not set
+#endif //error
 #else
 //check if the name of the struct of the vector is set
 #ifndef GLGE_VEC_STRUCT_NAME
+//check if compiler errors are enabled
+#if GLGE_COMPILER_ERRORS
 //print an error
 #error [ERROR] Failed to create vector: the name of the struct of the vector that should be created was not set
+#endif //error
 #else
 
 //also available in C
