@@ -2,10 +2,30 @@
 
 int main()
 {
-    dvec2 a(3, 6);
-    dvec2 b = 2;
-    b = -b;
+    //store all APIs that might work
+    std::vector<APIs> apiList {
+        API_VULKAN_1_2_INDIRECT,
+        API_VULKAN_1_2_DEFAULT,
+        API_OPENGL_4_6,
+        API_OPENGL_3_3,
+        API_SOFTWARE
+    };
+    //get the best API
+    APIs best = getBestGraphicAPI(apiList.data(), apiList.size());
+    //check if an API was found
+    if (best == API_FALLBACK_ERROR)
+    {
+        //print an error
+        std::cerr << "[ERROR] No good graphic API was found\n";
+        //return an error
+        return EXIT_FAILURE;
+    }
 
-    dvec2 sum = a + b;
-    std::cout << "The sum is: " << sum << ". Dot product of sum and a is: " << dot(sum, a) << "\n";
+    //print the selected API
+    std::cout << "Selected Graphics API: " << best << "\n";
+    //create an instance with the best API
+    Instance instance("Main Instance", best);
+
+    //print the instance
+    std::cout << instance << "\n";
 }

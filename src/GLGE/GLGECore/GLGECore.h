@@ -16,6 +16,9 @@
 //include the settings
 #include "GLGESettings.h"
 
+//include graphic APIs
+#include "GraphicAPIs/GLGEApi.h"
+
 //include instances
 #include "GLGEInstance.h"
 

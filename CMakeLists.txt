@@ -19,11 +19,15 @@ project(GLGE
     LANGUAGES CXX)
 # list of all source files in GLGE
 set(SOURCE_FILES_CPP
+    # Core files
     ${GLGE_PATH}/GLGECore/GLGEInstance.cpp
+    ${GLGE_PATH}/GLGECore/GraphicAPIs/GLGEApi.cpp
+
+    # Graphic files
 )
 # add the executables to the library
 add_library(GLGE STATIC ${SOURCE_FILES_CPP})
-# secify compiler settings for default
+# specify compiler settings for default
 target_compile_definitions(GLGE PRIVATE USE_NEW_AUDIO_ENGINE)
 target_compile_options(GLGE PRIVATE -Wall -Wextra -Wpedantic -Wno-unused-function -ggdb)
 # add SDL2

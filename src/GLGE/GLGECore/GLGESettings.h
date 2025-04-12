@@ -48,6 +48,29 @@ $$$$$$$  |$$$$$$$$\ $$ |      $$ |  $$ |\$$$$$$  |$$$$$$$$\ $$ |         $$$$$$$
 #include <string>
 //include the string view class for constant strings
 #include <string_view>
+//include vectors
+#include <vector>
+
+/**
+ * @brief print an std::vector into an output stream
+ * 
+ * @param os a reference to the out stream to print into
+ * @param v the vector to print
+ * @return std::ostream& a reference to the output stream with the content
+ */
+template <typename T> std::ostream& operator<<(std::ostream& os, std::vector<T> v) noexcept
+{
+    //add a header
+    os << "vector[" << v.size() << "]{";
+    //iterate over all elements of the vector
+    for (size_t i = 0; i < v.size(); ++i)
+    {
+        //print the element
+        os << v[i];
+    }
+    //add a suffix and return
+    return os << "}";
+}
 
 #endif //end of C++ section
 
