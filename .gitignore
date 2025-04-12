@@ -1,0 +1,9 @@
+# ignore ALL .log files
+*.log
+
+# ignore build
+build
+# ignore vscode
+.vscode
+# ignore compiled shaders
+shaders/*.spv

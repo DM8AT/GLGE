@@ -6,5 +6,5 @@ C_DEFINES = -DUSE_NEW_AUDIO_ENGINE
 
 C_INCLUDES = -I/usr/include/SDL2 -I/usr/include/libpng16 -I/usr/include/webp
 
-C_FLAGS = -std=gnu2x -Wall -Wextra -Wpedantic -ggdb
+C_FLAGS = -std=gnu99 -Wall -Wextra -Wpedantic -ggdb
 

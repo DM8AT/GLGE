@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/main.c" "CMakeFiles/TEST_C.dir/src/main.c.o" "gcc" "CMakeFiles/TEST_C.dir/src/main.c.o.d"
+  "/home/mattis/src/C-C++/Workspace/GLGE/src/main.c" "CMakeFiles/TEST_C.dir/src/main.c.o" "gcc" "CMakeFiles/TEST_C.dir/src/main.c.o.d"
   "" "TEST_C" "gcc" "CMakeFiles/TEST_C.dir/link.d"
   )
 

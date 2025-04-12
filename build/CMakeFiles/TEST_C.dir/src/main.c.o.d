@@ -1,8 +1,8 @@
 CMakeFiles/TEST_C.dir/src/main.c.o: \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/main.c \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/main.c \
  /usr/include/stdc-predef.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGE.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGESettings.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGE.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGESettings.h \
  /usr/include/stdlib.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -60,16 +60,16 @@ CMakeFiles/TEST_C.dir/src/main.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/strings.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEVectors.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEFloatVec.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/../../GLGECore/GLGESettings.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/../../GLGECore/GLGEUtil.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/../../GLGECore/GLGESettings.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/GLGEVec2Preset.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/../../../GLGECore/GLGEUtil.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/../../../GLGECore/GLGESettings.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/GLGEVec3Preset.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/GLGEVec4Preset.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEDoubleVec.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEIntVec.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEUIntVec.h
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEVectors.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEFloatVec.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/../../GLGECore/GLGESettings.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/../../GLGECore/GLGEUtil.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/../../GLGECore/GLGESettings.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/GLGEVec2Preset.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/../../../GLGECore/GLGEUtil.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/../../../GLGECore/GLGESettings.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/GLGEVec3Preset.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/Presets/GLGEVec4Preset.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEDoubleVec.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEIntVec.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/../GLGEMath/Vectors/GLGEUIntVec.h

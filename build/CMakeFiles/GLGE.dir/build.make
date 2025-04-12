@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/mattis/src/C-C++/Workspace/GLGEVulkan2
+CMAKE_SOURCE_DIR = /home/mattis/src/C-C++/Workspace/GLGE
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/mattis/src/C-C++/Workspace/GLGEVulkan2/build
+CMAKE_BINARY_DIR = /home/mattis/src/C-C++/Workspace/GLGE/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/GLGE.dir/depend.make
@@ -73,18 +73,18 @@ CMakeFiles/GLGE.dir/codegen:
 .PHONY : CMakeFiles/GLGE.dir/codegen
 
 CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o: CMakeFiles/GLGE.dir/flags.make
-CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o: /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGEInstance.cpp
+CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o: /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGEInstance.cpp
 CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o: CMakeFiles/GLGE.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/mattis/src/C-C++/Workspace/GLGEVulkan2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o -MF CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o.d -o CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o -c /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGEInstance.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/mattis/src/C-C++/Workspace/GLGE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o -MF CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o.d -o CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o -c /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGEInstance.cpp
 
 CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGEInstance.cpp > CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGEInstance.cpp > CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.i
 
 CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGEInstance.cpp -o CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGEInstance.cpp -o CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.s
 
 # Object files for target GLGE
 GLGE_OBJECTS = \
@@ -96,7 +96,7 @@ GLGE_EXTERNAL_OBJECTS =
 libGLGE.a: CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o
 libGLGE.a: CMakeFiles/GLGE.dir/build.make
 libGLGE.a: CMakeFiles/GLGE.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/mattis/src/C-C++/Workspace/GLGEVulkan2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libGLGE.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/mattis/src/C-C++/Workspace/GLGE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libGLGE.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/GLGE.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/GLGE.dir/link.txt --verbose=$(VERBOSE)
 
@@ -109,6 +109,6 @@ CMakeFiles/GLGE.dir/clean:
 .PHONY : CMakeFiles/GLGE.dir/clean
 
 CMakeFiles/GLGE.dir/depend:
-	cd /home/mattis/src/C-C++/Workspace/GLGEVulkan2/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/mattis/src/C-C++/Workspace/GLGEVulkan2 /home/mattis/src/C-C++/Workspace/GLGEVulkan2 /home/mattis/src/C-C++/Workspace/GLGEVulkan2/build /home/mattis/src/C-C++/Workspace/GLGEVulkan2/build /home/mattis/src/C-C++/Workspace/GLGEVulkan2/build/CMakeFiles/GLGE.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/mattis/src/C-C++/Workspace/GLGE/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/mattis/src/C-C++/Workspace/GLGE /home/mattis/src/C-C++/Workspace/GLGE /home/mattis/src/C-C++/Workspace/GLGE/build /home/mattis/src/C-C++/Workspace/GLGE/build /home/mattis/src/C-C++/Workspace/GLGE/build/CMakeFiles/GLGE.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/GLGE.dir/depend
 

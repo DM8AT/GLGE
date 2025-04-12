@@ -48,7 +48,7 @@ target_link_options(GLGE PRIVATE -pthread)
     target_compile_definitions(TEST_C PRIVATE USE_NEW_AUDIO_ENGINE)
     target_compile_options(TEST_C PRIVATE -Wall -Wextra -Wpedantic -ggdb)
     # set the C version
-    set_property(TARGET TEST_C PROPERTY C_STANDARD 23)
+    set_property(TARGET TEST_C PROPERTY C_STANDARD 99)
     # add GLGE
     target_link_libraries(TEST_C GLGE)
 

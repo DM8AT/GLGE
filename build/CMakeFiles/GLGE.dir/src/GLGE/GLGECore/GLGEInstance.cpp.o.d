@@ -1,8 +1,8 @@
 CMakeFiles/GLGE.dir/src/GLGE/GLGECore/GLGEInstance.cpp.o: \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGEInstance.cpp \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGEInstance.cpp \
  /usr/include/stdc-predef.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGEInstance.h \
- /home/mattis/src/C-C++/Workspace/GLGEVulkan2/src/GLGE/GLGECore/GLGESettings.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGEInstance.h \
+ /home/mattis/src/C-C++/Workspace/GLGE/src/GLGE/GLGECore/GLGESettings.h \
  /usr/include/c++/14/stdlib.h /usr/include/c++/14/cstdlib \
  /usr/include/x86_64-linux-gnu/c++/14/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/14/bits/os_defines.h \
