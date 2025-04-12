@@ -11,7 +11,7 @@ Some aspects of GLGE are not fixed in the code. Some things can be customized by
 | Define Name | Safty Degree | Usage | Default |
 |-------------|--------------|-------|---------|
 | GLGE_VERSION | :x: | This defines the version of GLGE. DO NOT CHANGE UNLESS YOU KNOW WHAT YOUR DOING | Current newest: 0.1.0 |
-| GLGE_CREATE_NAMESPACE | :check: | This dictates if GLGE should be contained in a namespace (the namespace will only be created if C++ is used) | 0 / False |
+| GLGE_CREATE_NAMESPACE | :white_check_mark: | This dictates if GLGE should be contained in a namespace (the namespace will only be created if C++ is used) | 0 / False |
 | GLGE_NAMESPACE | :white_check_mark: | This defines the name of the namespace that should be used if a namespace is going to be created | GLGE |
 | GLGE_PREFIX_C_FUNCTIONS | :white_check_mark: | This says if functions should be prefixed if C is used | 0 / False |
 | GLGE_PREFIX_ALWAYS | :white_check_mark: | This can be used to enable prefixing also in C++ | 0 / False |
