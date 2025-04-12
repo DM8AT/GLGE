@@ -8,4 +8,4 @@ build/*
 .vscode/*
 
 # ignore compiled shaders
-shaders/*.spv
+*.spv
