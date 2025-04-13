@@ -17,6 +17,10 @@
 #include "GLGESettings.h"
 //include the APIs
 #include "GraphicAPIs/GLGEApi.h"
+//include a logger
+#include "Logging/GLGELogger.h"
+//include the time
+#include "Time/GLGETime.h"
 
 //check if this is C++
 #if GLGE_CPP
@@ -44,7 +48,26 @@ public:
      * @param name the name for the instance
      * @param api the API to use
      */
-    Instance(std::string_view name, APIs api) : m_name(name), m_api(api) {}
+    Instance(std::string_view name, APIs api);
+
+    /**
+     * @brief Destroy the Instance
+     */
+    ~Instance() noexcept;
+
+    /**
+     * @brief Set the logger for the instance
+     * 
+     * @param logger a pointer to a logger or a class that publicly inherits from the logger base class
+     */
+    inline void setLogger(Logger* logger) noexcept {m_logger = logger;}
+
+    /**
+     * @brief Get the logger used by the instance
+     * 
+     * @return Logger* a pointer to the logger
+     */
+    inline Logger* getLogger() noexcept {return m_logger;}
 
     /**
      * @brief Get the name of the instance
@@ -61,6 +84,20 @@ public:
     inline APIs getAPI() const noexcept {return m_api;}
 
     /**
+     * @brief log a message if a logger exists
+     * 
+     * @param args the arguments for the message creation
+     */
+    template<typename... Args> inline void log(Args&&... args) noexcept {if (m_logger) {m_logger->log((args)...);}}
+
+    /**
+     * @brief log a message if a logger exists and debug mode is enabled
+     * 
+     * @param args the arguments for the message creation
+     */
+    template<typename... Args> inline void logDebug(Args&&... args) noexcept {if (m_logger) {if (m_logger->isDebug()) {m_logger->log((args)...);}}}
+
+    /**
      * @brief print the instance into the default output
      * 
      * @param os a refernece to the output stream to print into
@@ -68,6 +105,43 @@ public:
      * @return std::ostream& a reference to the filled output stream
      */
     inline friend std::ostream& operator<<(std::ostream& os, const Instance& i) {return os << "instance{name: \"" << i.m_name << "\", api: " << i.m_api << ", current elements: " << i.m_elements << "}";}
+
+    /**
+     * @brief add a new object to the class
+     * 
+     * @param element a pointer to the instance to add
+     */
+    void addElement(InstAttachableClass* element) noexcept;
+
+    /**
+     * @brief remove a class instance from the instance
+     * 
+     * @param element a pointer to the instance to remove
+     */
+    void removeElement(InstAttachableClass* element) noexcept;
+
+    /**
+     * @brief check if the instance is active
+     * 
+     * @return true : the instance is active
+     * @return false : the instance is not active
+     */
+    inline bool isActive() const noexcept {return m_active;}
+
+    /**
+     * @brief Get all elements that are attatched to the instance
+     * @warning DO ONLY USE IF YOU KNOW WHAT YOU ARE DOING
+     * 
+     * @return std::vector<InstAttachableClass*>& a reference to the vector containing all the elements
+     */
+    inline std::vector<InstAttachableClass*>& getAttatchedElements() {return m_elements;}
+
+    /**
+     * @brief get a reference to the update limiter
+     * 
+     * @return Limiter& a reference to the limiter for the update thread
+     */
+    inline Limiter& updateLimiter() noexcept {return m_updateLimiter;}
 
 private:
 
@@ -79,6 +153,26 @@ private:
      * @brief store the API the instance uses
      */
     APIs m_api = API_FALLBACK_ERROR;
+
+    /**
+     * @brief store if the instance is active
+     */
+    bool m_active = true;
+
+    /**
+     * @brief store the own update thread
+     */
+    std::thread m_updateThread;
+
+    /**
+     * @brief store the own logger, 0 = no logging
+     */
+    Logger* m_logger = 0;
+
+    /**
+     * @brief store the limiter for the update thread
+     */
+    Limiter m_updateLimiter;
 
     /**
      * @brief store all elements that are attatched to the class
@@ -102,13 +196,14 @@ public:
      * @brief Construct a new instance
      * 
      * @param instance a pointer to the GLGE instance the new instance will belong to
+     * @param name the name of the instance attatchable
      */
-    InstAttachableClass(Instance* instance) : m_instance(instance) {}
+    inline InstAttachableClass(Instance* instance, const std::string_view& name) : m_instance(instance), m_name(name) {m_instance->addElement(this);}
 
     /**
      * @brief Destroy the instance
      */
-    virtual ~InstAttachableClass() {}
+    inline virtual ~InstAttachableClass() {if (!m_instance) {return;} m_instance->removeElement(this);m_instance = 0;}
 
     /**
      * @brief print an instance of this class into an output stream
@@ -117,7 +212,15 @@ public:
      * @param iac the instance to print
      * @return std::ostream& a reference to the output stream with the new content
      */
-    inline friend std::ostream& operator<<(std::ostream& os, const InstAttachableClass& iac) noexcept {return os << "InstAttachableClass{this: " << &iac << ", instance: " << iac.m_instance << ", instance name: \"" << iac.m_instance->getName() << "\"}";}
+    inline friend std::ostream& operator<<(std::ostream& os, const InstAttachableClass& iac) noexcept {return os << "InstAttachableClass{this: " << &iac << ", name: \"" << iac.m_name << "\", instance: " << iac.m_instance << ", instance name: \"" << iac.m_instance->getName() << "\"}";}
+
+    /**
+     * @brief update the attatched object
+     * 
+     * @return true : the element still exists
+     * @return false : the element no longer exists
+     */
+    virtual bool onUpdate() {return true;}
 
 protected:
 
@@ -135,6 +238,10 @@ protected:
      * @brief store the instance the class belongs to
      */
     Instance* m_instance = 0;
+    /**
+     * @brief store the name of the instance attatchable
+     */
+    std::string_view m_name = "";
 
 };
 

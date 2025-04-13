@@ -38,6 +38,8 @@ $$$$$$$  |$$$$$$$$\ $$ |      $$ |  $$ |\$$$$$$  |$$$$$$$$\ $$ |         $$$$$$$
 #include <stdbool.h>
 //include modules to work with strings
 #include <string.h>
+//include the time
+#include <time.h>
 
 //check for C++
 #ifdef __cplusplus
@@ -50,6 +52,22 @@ $$$$$$$  |$$$$$$$$\ $$ |      $$ |  $$ |\$$$$$$  |$$$$$$$$\ $$ |         $$$$$$$
 #include <string_view>
 //include vectors
 #include <vector>
+//include dictionaris alias unorderd maps
+#include <unordered_map>
+//include threads
+#include <thread>
+//include the time
+#include <ctime>
+//include output streams
+#include <ostream>
+//include files
+#include <fstream>
+//include the file system
+#include <filesystem>
+//include string streams
+#include <sstream>
+//include algorithms
+#include <algorithm>
 
 /**
  * @brief print an std::vector into an output stream
@@ -155,8 +173,6 @@ $$ |  $$\  $$  /    $$ |  $$\ $$ |      $$ |         $$\   $$ |$$ |         $$ |
 
 //define if GLGE should prefix C functions (1: C functions will be prefixed, 0: C functions will not be prefixed)
 #define GLGE_PREFIX_C_FUNCTIONS 0
-//say if the functions should also be prefixed in C++ (1: The C functions will also be prefixed when compiling with C++, 0: the functions will only be prefixed when compiling with C)
-#define GLGE_PREFIX_ALWAYS 0
 //define the name of the prefix to use
 #define GLGE_PREFIX glge_
 
@@ -204,6 +220,9 @@ $$$$$$$  |$$$$$$$$\ $$$$$$$  |\$$$$$$  |\$$$$$$  |      \$$$$$$  |$$$$$$$$\    $
 \_______/ \________|\_______/  \______/  \______/        \______/ \________|   \__|      \__|   \______|\__|  \__| \______/  \______/ 
 
 */
+
+//enable or disable all debug prints (1 means that debug stuff will be included, 0 means that no debug stuff will be included)
+#define GLGE_ENABLE_DEBUGGING 1
 
 /*
 

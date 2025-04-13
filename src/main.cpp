@@ -1,5 +1,40 @@
 #include "GLGE/GLGE.h"
 
+class FileLogger : public Logger
+{
+public:
+    /**
+     * @brief Construct a new File Logger
+     * 
+     * @param path the path to the log file
+     * @param debug say if debugging is enabled
+     */
+    FileLogger(std::string_view path, bool debug) : Logger(debug), m_file(path, true) {m_file.content() = "";}
+
+    /**
+     * @brief print one message into the file
+     */
+    virtual void print() override
+    {
+        //format the line and print it to the file
+        std::stringstream stream;
+        //get the string for the message type
+        std::string_view typestr;
+        getMessageTypeString(typestr, m_messages[0].getMessageType());
+        //output the time, then the type string and finaly the message
+        stream << "At " << m_messages[0].getTime() << " : " << typestr << " " << m_messages[0].getMessage() << "\n";
+
+        //print the data to the file
+        m_file.content() += stream.str();
+        //save the file
+        m_file.save();
+    }
+
+protected:
+    //store the file to log to
+    File m_file;
+};
+
 int main()
 {
     //store all APIs that might work
@@ -25,7 +60,26 @@ int main()
     std::cout << "Selected Graphics API: " << best << "\n";
     //create an instance with the best API
     Instance instance("Main Instance", best);
+    //create a logger
+    instance.setLogger(new FileLogger("TEST_CPP.log", true));
 
-    //print the instance
-    std::cout << instance << "\n";
+    //create a new window
+    Window window("Hello World!", uvec2(600), uvec2(0), WINDOW_SETTINGS_DEFAULT, instance);
+    //create custom window settings
+    WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
+    //make the window borderless
+    settings.borderless = true;
+    //create another window
+    Window other("Second window", 300, 0, settings, instance);
+
+    //create a framerate limiter
+    Limiter lim = 60;
+
+    while (Window::openWindowCount() > 0)
+    {
+        //start the tick
+        lim.startTick();
+        //end the tick
+        lim.endTick();
+    }
 }

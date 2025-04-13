@@ -22,8 +22,20 @@ set(SOURCE_FILES_CPP
     # Core files
     ${GLGE_PATH}/GLGECore/GLGEInstance.cpp
     ${GLGE_PATH}/GLGECore/GraphicAPIs/GLGEApi.cpp
+    ${GLGE_PATH}/GLGECore/Logging/GLGEMessage.cpp
+    ${GLGE_PATH}/GLGECore/Time/GLGEClock.cpp
+    ${GLGE_PATH}/GLGECore/Time/GLGELimiter.cpp
+    ${GLGE_PATH}/GLGECore/Files/GLGEFile.cpp
 
     # Graphic files
+    ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
+
+    # Math files
+    ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp
+    ${GLGE_PATH}/GLGEMath/Vectors/GLGEFloatVec.cpp
+    ${GLGE_PATH}/GLGEMath/Vectors/GLGEIntVec.cpp
+    ${GLGE_PATH}/GLGEMath/Vectors/GLGEUIntVec.cpp
 )
 # add the executables to the library
 add_library(GLGE STATIC ${SOURCE_FILES_CPP})

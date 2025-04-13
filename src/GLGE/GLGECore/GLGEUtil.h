@@ -102,15 +102,8 @@
 
 //check if a prefix should be used for functions
 #if GLGE_PREFIX_C_FUNCTIONS
-//check if this is C++ and prefixing should only happen in C
-#if GLGE_CPP && !GLGE_PREFIX_ALWAYS
-//define the prefix as empty
-#define GLGE_FUNC_PREFIX
-//else, use the prefix
-#else
 //define the actual function prefix as the specified prefix
 #define GLGE_FUNC_PREFIX GLGE_PREFIX
-#endif //C / C++ check
 //else, no prefixing should occour
 #else
 //set the prefix to empty
@@ -119,5 +112,14 @@
 
 //this macro helps to prefix a C function
 #define GLGE_C_FUNC(func) GLGE_DEFINE_CONCATINATE(GLGE_FUNC_PREFIX, func)
+
+//check if debugging is enabled
+#if GLGE_ENABLE_DEBUGGING
+//say that debugging is enabled
+#define GLGE_DEBUG_WRAPPER(debug) debug
+#else
+//say that debugging is disabled
+#define GLGE_DEBUG_WRAPPER(debug)
+#endif //debug check
 
 #endif

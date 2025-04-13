@@ -10,3 +10,6 @@ build/*
 # ignore compiled shaders
 *.spv
 shader/glslc.sh
+
+# Ignore raw text
+*.txt
