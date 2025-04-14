@@ -49,8 +49,10 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     //check if SDL2 is initalized
     if (!__glge_sdl_2_thread)
     {
-        //if not, create a new thread. Bind it to the logger of the instance
+        //create a new thread. Bind it to the logger of the instance
         __glge_sdl_2_thread = new std::thread(SDL_Main_Thread, m_instance->getLogger());
+        //create the counter to count how many windows are open
+        __glge_all_window_count = new uint32_t(0);
     }
 
     //store the window parameters
@@ -87,6 +89,8 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
 
     //store the window mapping
     __glge_all_windows_sdl[SDL_GetWindowID((SDL_Window*)m_window)] = this;
+    //increment the amount of existing windows
+    ++(*__glge_all_window_count);
 }
 
 void Window::close() noexcept
@@ -104,18 +108,21 @@ void Window::close() noexcept
     __glge_all_windows_sdl.erase(winId);
 
     //check if this is the last window
-    if (__glge_all_windows_sdl.size() == 0)
+    if ((__glge_all_windows_sdl.size() == 0) && (__glge_sdl_2_thread))
     {
         //check if the thread is joinable
         if (__glge_sdl_2_thread->joinable())
         {
-            //join the SDL2 thread
+            //join the thread
             __glge_sdl_2_thread->join();
         }
         //destroy the thread
         delete __glge_sdl_2_thread;
         //set the thread to 0
         __glge_sdl_2_thread = 0;
+        //delete the window counter
+        delete __glge_all_window_count;
+        __glge_all_window_count = 0;
     }
 
     //reset all window parameters
@@ -123,6 +130,12 @@ void Window::close() noexcept
     m_pos = 0;
     m_settings = WINDOW_SETTINGS_DEFAULT;
     m_window = 0;
+    //check if the counter exists
+    if (__glge_all_window_count)
+    {
+        //decrement the window counter
+        --(*__glge_all_window_count);
+    }
 }
 
 bool Window::onUpdate() noexcept
@@ -148,5 +161,5 @@ bool Window::onUpdate() noexcept
 uint64_t Window::openWindowCount() noexcept
 {
     //return the amount of open windows
-    return __glge_all_windows_sdl.size();
+    return ((__glge_all_window_count) ? *__glge_all_window_count : 0);
 }

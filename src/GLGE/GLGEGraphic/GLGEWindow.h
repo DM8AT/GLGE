@@ -94,6 +94,9 @@ public:
     inline Window(std::string_view name, const uvec2& size, const uvec2& pos, const WindowSettings& settings, Instance& instance) noexcept : InstAttachableClass()
     {open(name, size, pos, settings, instance);}
 
+    /**
+     * @brief Destroy the Window
+     */
     inline ~Window() noexcept { if (m_window) {close(); }}
 
     /**

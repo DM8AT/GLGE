@@ -49,12 +49,12 @@ void SDL_Main_Thread(Logger* logger)
     //create a limiter to limit to 240 iterations per second
     Limiter sdlLimiter = 240;
 
+    //start the limiter
+    sdlLimiter.start();
+
     //loop while there are windows available
     while (__glge_all_windows_sdl.size() > 0)
     {
-        //start the tick
-        sdlLimiter.startTick();
-
         //store the current event
         SDL_Event event;
         //get all events

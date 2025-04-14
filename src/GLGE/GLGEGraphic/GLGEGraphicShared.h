@@ -19,10 +19,18 @@
 //include windows
 #include "GLGEWindow.h"
 
+//check for C++
+#ifdef GLGE_CPP
+
 //store all the windows
 extern std::unordered_map<uint32_t, Window*> __glge_all_windows_sdl;
 
 //store the SDL2 thread
 extern std::thread* __glge_sdl_2_thread;
+
+//store the amount of open windows
+extern uint32_t* __glge_all_window_count;
+
+#endif
 
 #endif

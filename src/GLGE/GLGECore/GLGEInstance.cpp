@@ -19,11 +19,11 @@
  */
 void instance_update_thread(Instance* instance)
 {
+    //start the limiter
+    instance->updateLimiter().start();
     //loop while the instance is active
     while (instance->isActive())
     {
-        //start the limiter
-        instance->updateLimiter().startTick();
         //iterate over all elements attatched to the instance
         for (size_t i = 0; i < instance->getAttatchedElements().size();)
         {

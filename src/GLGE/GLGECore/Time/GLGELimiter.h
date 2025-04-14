@@ -16,6 +16,11 @@
 //include the settings and utilities
 #include "../GLGEUtil.h"
 
+/**
+ * @brief define the value that a turns off iteration limitation for a limiter
+ */
+#define GLGE_LIMITER_UNLIMITED 0
+
 //check if this is C++
 #if GLGE_CPP
 
@@ -39,9 +44,9 @@ public:
     inline Limiter(uint64_t iterationRate) noexcept : m_iterationRate(iterationRate) {}
 
     /**
-     * @brief start a tick
+     * @brief start the limiter
      */
-    void startTick() noexcept;
+    void start() noexcept;
 
     /**
      * @brief end a tick and limit to the iteration rate
@@ -62,6 +67,20 @@ public:
      */
     inline uint64_t getIterationRate() const noexcept {return m_iterationRate;}
 
+    /**
+     * @brief get the smoothed iteration rate
+     * 
+     * @return double the smoothed iteration rate
+     */
+    inline float getIPS() const noexcept {return m_smoothed;}
+
+    /**
+     * @brief Get the Raw iteration rate
+     * 
+     * @return double the raw iteration rate
+     */
+    inline float getRawIPS() const noexcept {return m_samples[0];}
+
 protected:
 
     /**
@@ -69,9 +88,25 @@ protected:
      */
     uint64_t m_iterationRate = 60;
     /**
+     * @brief store the samples used for FPS smoothing
+     */
+    float m_samples[GLGE_LIMITER_IPS_SAMPLES] = { 0 };
+    /**
+     * @brief store the smoothed FPS
+     */
+    float m_smoothed = 0;
+    /**
+     * @brief store the amount of samples in the smoothing buffer
+     */
+    uint32_t m_smoothCount = 0;
+    /**
      * @brief store the time of the last start
      */
     std::chrono::system_clock::time_point m_last;
+    /**
+     * @brief the last tick time including the sleeping
+     */
+    std::chrono::system_clock::time_point m_sleepLast;
 };
 
 #endif

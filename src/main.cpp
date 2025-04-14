@@ -68,7 +68,7 @@ int main()
     //create custom window settings
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
     //make the window borderless
-    settings.borderless = true;
+    settings.maximized = true;
     //create another window
     Window other("Second window", 300, 0, settings, instance);
 
@@ -78,7 +78,7 @@ int main()
     while (Window::openWindowCount() > 0)
     {
         //start the tick
-        lim.startTick();
+        lim.start();
         //end the tick
         lim.endTick();
     }
