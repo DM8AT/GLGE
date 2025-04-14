@@ -30,6 +30,7 @@ set(SOURCE_FILES_CPP
     # Graphic files
     ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
+    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Instance.cpp
 
     # Math files
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp

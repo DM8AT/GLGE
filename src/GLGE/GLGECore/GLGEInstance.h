@@ -225,16 +225,6 @@ public:
 protected:
 
     /**
-     * @brief destroy the object
-     */
-    virtual void onDestroy() {}
-
-    /**
-     * @brief attach the object to an instance
-     */
-    virtual void onAttach() {}
-
-    /**
      * @brief store the instance the class belongs to
      */
     Instance* m_instance = 0;

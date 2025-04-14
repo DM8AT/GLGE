@@ -51,6 +51,14 @@ Instance::~Instance() noexcept
     m_active = false;
     //join the update thread
     m_updateThread.join();
+    //iterate over all attatched elements
+    while (m_elements.size() > 0)
+    {
+        //destroy the element
+        delete m_elements[0];
+        //erase the element
+        m_elements.erase(m_elements.begin());
+    }
     //check if a logger exists
     if (m_logger)
     {
