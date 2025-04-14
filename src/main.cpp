@@ -68,7 +68,7 @@ int main()
     //create custom window settings
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
     //make the window borderless
-    settings.maximized = true;
+    settings.maximized = false;
     //create another window
     Window other("Second window", 300, 0, settings, instance);
 
