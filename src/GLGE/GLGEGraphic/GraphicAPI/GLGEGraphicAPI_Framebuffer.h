@@ -66,6 +66,28 @@ public:
      */
     virtual void onAttatch() {}
 
+    /**
+     * @brief Get a specific texture from the framebuffer
+     * 
+     * @param idx the index of the texture
+     * @return GraphicTexture* a pointer to the specific texture
+     */
+    inline GraphicTexture* getTexture(uint64_t idx) noexcept {return m_textures[idx];}
+
+    /**
+     * @brief Get the amount of color targets
+     * 
+     * @return uint64_t the amount of color targets
+     */
+    inline uint64_t getTextureCount() const noexcept {return m_textures.size();}
+
+    /**
+     * @brief Get the Depth Buffer
+     * 
+     * @return GraphicTexture* a pointer to the depth buffer
+     */
+    inline GraphicTexture* getDepthBuffer() noexcept {return m_depthBuffer;}
+
 protected:
 
     /**
