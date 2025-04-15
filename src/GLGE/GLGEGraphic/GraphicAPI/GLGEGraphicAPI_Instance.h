@@ -27,7 +27,7 @@ class GraphicInstAttatchable;
 /**
  * @brief manage the lifetime of all graphic dependend objects
  */
-class GraphicInstance : InstAttachableClass
+class GraphicInstance : public InstAttachableClass
 {
 public:
 
@@ -77,6 +77,13 @@ public:
      * @return false : the object no longer exists
      */
     virtual bool onUpdate() noexcept override;
+
+    /**
+     * @brief Get the Instance the graphic instance belongs to
+     * 
+     * @return Instance* a pointer to the owning instance
+     */
+    inline Instance* getInstance() noexcept {return m_instance;}
 
 protected:
 

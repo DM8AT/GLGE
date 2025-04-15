@@ -61,3 +61,15 @@ bool GraphicInstance::onUpdate() noexcept
     //always return true
     return true;
 }
+
+GraphicInstance::~GraphicInstance()
+{
+    //iterate over all attatched elements
+    while (m_elements.size() > 0)
+    {
+        //destroy the element
+        delete m_elements[0];
+        //erase the element
+        m_elements.erase(m_elements.begin());
+    }
+}

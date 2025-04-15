@@ -17,6 +17,8 @@
 #include "../GLGECore/GLGECore.h"
 //include mathematics
 #include "../GLGEMath/GLGEMath.h"
+//include the graphic API
+#include "GraphicAPI/GLGEGraphicAPI.h"
 
 /**
  * @brief specify some settings for a window

@@ -91,6 +91,12 @@ public:
      */
     Message(std::string_view message, MessageType type) : m_message(message), m_type(type), m_now(GLGE_C_FUNC(getLocalTime)()) {}
 
+    /**
+     * @brief Construct a new Message
+     * 
+     * @param stream the stream for the message
+     * @param type the type of the message
+     */
     Message(std::stringstream& stream, MessageType type) : m_message(stream.str()), m_type(type), m_now(GLGE_C_FUNC(getLocalTime)()) {}
 
     /**

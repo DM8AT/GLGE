@@ -25,6 +25,12 @@
 //check if this is C++
 #if GLGE_CPP
 
+//check if graphics should be included
+#if GLGE_INCLUDE_GRAPHICS
+//say that graphic instances will be defined later
+class GraphicInstance;
+#endif //Graphic API include
+
 /**
  * @brief attatchable classes will be defined later
  */
@@ -143,6 +149,26 @@ public:
      */
     inline Limiter& updateLimiter() noexcept {return m_updateLimiter;}
 
+    //check if graphics should be included
+    #if GLGE_INCLUDE_GRAPHICS
+
+    /**
+     * @brief Set the Graphic Instance
+     * @warning ONLY USE IF YOU KNOW WHAT YOU ARE DOING
+     * 
+     * @param gInstance a pointer to the new graphic instance
+     */
+    void setGraphicInstance(GraphicInstance* gInstance) noexcept {m_gInstance = gInstance;}
+
+    /**
+     * @brief Get the Graphic Instance
+     * 
+     * @return GraphicInstance* a pointer to the graphic instance
+     */
+    GraphicInstance* getGraphicInstance() noexcept {return m_gInstance;}
+
+    #endif //Graphic only section
+
 private:
 
     /**
@@ -178,6 +204,14 @@ private:
      * @brief store all elements that are attatched to the class
      */
     std::vector<InstAttachableClass*> m_elements;
+
+    //check if graphics should be included
+    #if GLGE_INCLUDE_GRAPHICS
+    /**
+     * @brief store a pointer to the graphic instance
+     */
+    GraphicInstance* m_gInstance = 0;
+    #endif //Graphic only section
 };
 
 /**
