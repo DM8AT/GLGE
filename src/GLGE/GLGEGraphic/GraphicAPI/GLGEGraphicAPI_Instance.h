@@ -10,8 +10,8 @@
  */
 
 //header guard
-#ifndef _GLGE_GRAPHIC_ABSTRACT_API_
-#define _GLGE_GRAPHIC_ABSTRACT_API_
+#ifndef _GLGE_GRAPHIC_API_INSTANCE_
+#define _GLGE_GRAPHIC_API_INSTANCE_
 
 //include instances
 //Also includes:

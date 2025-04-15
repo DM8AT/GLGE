@@ -10,12 +10,14 @@
  */
 
 //header guard
-#ifndef _GLGE_GRAPHIC_GRAPHIC_API_
-#define _GLGE_GRAPHIC_GRAPHIC_API_
+#ifndef _GLGE_GRAPHIC_ABSTRACT_API_
+#define _GLGE_GRAPHIC_ABSTRACT_API_
 
 //include the graphic instance
 #include "GLGEGraphicAPI_Instance.h"
 //include textures
 #include "GLGEGraphicAPI_Texture.h"
+//include framebuffers
+#include "GLGEGraphicAPI_Framebuffer.h"
 
 #endif

@@ -24,7 +24,7 @@
 //check for C++
 #if GLGE_CPP
 
-class GraphicTexture : GraphicInstAttatchable
+class GraphicTexture : public GraphicInstAttatchable
 {
 public:
 
