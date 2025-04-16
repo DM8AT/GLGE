@@ -1,19 +1,18 @@
 /**
- * @file GLGEGraphicAPI_Framebuffer.cpp
+ * @file GLGEGraphicAPI_CommandBuffer.cpp
  * @author DM8AT
- * @brief implement the default graphic framebuffer
+ * @brief 
  * @version 0.1
- * @date 2025-04-15
+ * @date 2025-04-16
  * 
  * @copyright Copyright (c) 2025
- * 
  */
 
-//include the framebuffer
-#include "GLGEGraphicAPI_Framebuffer.h"
+//include the command buffer
+#include "GLGEGraphicAPI_CommandBuffer.h"
 
 
-void GraphicFramebuffer::create(GraphicTexture* textures, uint64_t textureCount, GraphicTexture* depthBuffer, GraphicInstance* instance)
+void GraphicCommandBuffer::create(GraphicInstance* instance)
 {
     //check if the framebuffer exists
     if (m_graphicInstance)
@@ -23,23 +22,19 @@ void GraphicFramebuffer::create(GraphicTexture* textures, uint64_t textureCount,
         return;
     }
 
-    //allocate the textures
-    m_textures.resize(textureCount);
-    //store the textures
-    memcpy(m_textures.data(), textures, sizeof(*textures)*textureCount);
-    //store the depth buffer
-    m_depthBuffer = depthBuffer;
-
     //store the instance
     m_graphicInstance = instance;
     //add this to the instance
     m_graphicInstance->addElement(this);
 
+    //clear all the commands
+    m_commands.clear();
+
     //call the attatch hook
     onCreate();
 }
 
-void GraphicFramebuffer::destroy()
+void GraphicCommandBuffer::destroy()
 {
     //check if the framebuffer is set up
     if (!m_graphicInstance) {return;}
@@ -50,8 +45,16 @@ void GraphicFramebuffer::destroy()
     //remove from the instance
     m_graphicInstance->removeElement(this);
     m_graphicInstance = 0;
-    //free the textures
-    m_textures.clear();
-    //free the depth buffer
-    m_depthBuffer = 0;
+    //clear the commands
+    m_commands.clear();
+}
+
+void GraphicCommandBuffer::play()
+{
+    //say that the command buffer is in use
+    m_inUse.lock();
+    //play back the buffer
+    onPlay();
+    //unlock the mutex again
+    m_inUse.unlock();
 }

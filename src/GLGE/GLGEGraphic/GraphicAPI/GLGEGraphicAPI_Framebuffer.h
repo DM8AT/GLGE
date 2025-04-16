@@ -62,11 +62,6 @@ public:
     void destroy();
 
     /**
-     * @brief make this the current active framebuffer
-     */
-    virtual void onAttatch() {}
-
-    /**
      * @brief Get a specific texture from the framebuffer
      * 
      * @param idx the index of the texture
