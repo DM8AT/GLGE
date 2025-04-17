@@ -34,7 +34,12 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Instance.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Texture.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Framebuffer.cpp
+    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Window.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_CommandBuffer.cpp
+        # Graphic API: OpenGL 3.3
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Instance.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Window.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_CommandBuffer.cpp
 
     # Math files
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp
@@ -53,6 +58,8 @@ TARGET_LINK_LIBRARIES(GLGE ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
 TARGET_LINK_LIBRARIES(GLGE vulkan)
 # add OpenGL
 TARGET_LINK_LIBRARIES(GLGE GL)
+# add GLEW
+TARGET_LINK_LIBRARIES(GLGE GLEW)
 # enable threading
 target_compile_options(GLGE PRIVATE -pthread)
 target_link_options(GLGE PRIVATE -pthread)

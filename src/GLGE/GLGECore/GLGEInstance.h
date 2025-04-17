@@ -29,6 +29,8 @@
 #if GLGE_INCLUDE_GRAPHICS
 //say that graphic instances will be defined later
 class GraphicInstance;
+//say that windows will be defined later
+class Window;
 #endif //Graphic API include
 
 /**
@@ -166,6 +168,17 @@ public:
      * @return GraphicInstance* a pointer to the graphic instance
      */
     GraphicInstance* getGraphicInstance() noexcept {return m_gInstance;}
+
+    /**
+     * @brief initalize the graphic API
+     * 
+     * @param window a pointer to the window to create from
+     */
+    void initGraphicAPI(Window* window);
+    /**
+     * @brief close the graphic API
+     */
+    void closeGraphiAPI();
 
     #endif //Graphic only section
 

@@ -56,12 +56,12 @@ public:
      * @param size specify the size of the texture in pixels
      * @param instance store a pointer to the graphic instance the texture belongs to
      */
-    void create(void* data, bool isHDR, const uvec2& size, GraphicInstance* instance);
+    virtual void create(void* data, bool isHDR, const uvec2& size, GraphicInstance* instance);
 
     /**
      * @brief destroy the texture
      */
-    void destroy();
+    virtual void destroy();
 
     /**
      * @brief get if the texture is in HDR or LDR format

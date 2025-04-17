@@ -9,7 +9,11 @@ public:
      * @param path the path to the log file
      * @param debug say if debugging is enabled
      */
-    FileLogger(std::string_view path, bool debug) : Logger(debug), m_file(path, true) {m_file.content() = "";}
+    FileLogger(std::string_view path, bool debug) : Logger(debug), m_file(path, true)
+    {
+        //clear the file contents
+        m_file.content() = "";
+    }
 
     /**
      * @brief print one message into the file

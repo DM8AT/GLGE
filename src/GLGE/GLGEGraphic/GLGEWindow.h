@@ -163,6 +163,27 @@ public:
      */
     static uint64_t openWindowCount() noexcept;
 
+    /**
+     * @brief Get the Size of the window
+     * 
+     * @return const uvec2& the size of the window in pixels
+     */
+    inline const uvec2& getSize() const noexcept {return m_size;}
+
+    /**
+     * @brief Get the position of the window
+     * 
+     * @return const uvec2& the position of the window
+     */
+    inline const uvec2& getPos() const noexcept {return m_pos;}
+
+    /**
+     * @brief get the SDL2 window
+     * 
+     * @return void* a pointer to the SDL2 window
+     */
+    inline void* getSDL2Window() noexcept {return m_window;}
+
 protected:
 
     /**
@@ -192,6 +213,10 @@ protected:
      * @brief store the actual SDL2 window
      */
     void* m_window = 0;
+    /**
+     * @brief store the graphic window
+     */
+    GraphicWindow* m_gWindow;
 
 };
 

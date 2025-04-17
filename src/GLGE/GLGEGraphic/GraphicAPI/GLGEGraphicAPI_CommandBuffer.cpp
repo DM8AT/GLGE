@@ -47,6 +47,9 @@ void GraphicCommandBuffer::destroy()
     m_graphicInstance = 0;
     //clear the commands
     m_commands.clear();
+    //say that no command is queued
+    m_filled = false;
+    m_inUse.unlock();
 }
 
 void GraphicCommandBuffer::play()

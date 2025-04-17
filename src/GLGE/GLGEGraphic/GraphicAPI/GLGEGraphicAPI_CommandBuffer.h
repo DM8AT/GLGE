@@ -35,9 +35,28 @@ public:
     struct Command
     {
         /**
+         * @brief Construct a new Command
+         */
+        Command() = default;
+
+        /**
+         * @brief Construct a new Command
+         * 
+         * @param cI the identifyer of the command
+         * @param cP a pointer to a potential function or 0
+         * @param cD the data for the command
+         * @param cDS the size of the data in bytes for the command
+         */
+        Command(uint64_t cI, void* cP, void* cD, uint64_t cDS) : commandIdentifyer(cI), commandPtr(cP), commandData(cD), commandDataSize(cDS) {}
+
+        /**
          * @brief store the identifyer for the command
          */
         uint64_t commandIdentifyer = 0;
+        /**
+         * @brief store a pointer to a custom function that executes the commands
+         */
+        void* commandPtr = 0;
         /**
          * @brief store the data for the command execution
          */
@@ -63,24 +82,52 @@ public:
     /**
      * @brief Destroy the Graphic Command Buffer
      */
-    ~GraphicCommandBuffer() {destroy();}
+    virtual ~GraphicCommandBuffer() {destroy();}
 
     /**
      * @brief create a new command buffer
      * 
      * @param instance a pointer to the instance the command buffer belongs to
      */
-    void create(GraphicInstance* instance);
+    virtual void create(GraphicInstance* instance);
 
     /**
      * @brief destroy the command buffer
      */
-    void destroy();
+    virtual void destroy();
 
     /**
      * @brief play back the command buffer and execute all stored commands
      */
-    void play();
+    virtual void play();
+
+    /**
+     * @brief record a command
+     * 
+     * @param command the index of the command to record
+     * @param func a pointer to a function that could be executed
+     * @param data the data for the command
+     * @param dataSize the size of the data in bytes
+     */
+    inline void add(uint64_t command, void* func, void* data, uint64_t dataSize) {m_commands.emplace_back(command, func, data, dataSize);}
+
+    /**
+     * @brief begin the usage of the command buffer
+     */
+    inline void begin() {m_inUse.lock();}
+
+    /**
+     * @brief end the usage of the command buffer
+     */
+    inline void end() {m_inUse.unlock();m_filled = true;}
+
+    /**
+     * @brief get if the command buffer is filled
+     * 
+     * @return true : the command buffer is filled
+     * @return false : the command buffer is not filled
+     */
+    inline bool isFilled() const noexcept {return m_filled;}
 
 protected:
 
@@ -105,6 +152,10 @@ protected:
      * @brief store if the command buffer is currently used
      */
     std::mutex m_inUse;
+    /**
+     * @brief store if the command buffer is filled
+     */
+    bool m_filled = false;
 };
 
 #endif //C++ section

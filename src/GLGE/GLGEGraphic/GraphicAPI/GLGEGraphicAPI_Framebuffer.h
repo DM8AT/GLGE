@@ -54,12 +54,12 @@ public:
      * @param depthBuffer a pointer to a depth buffer or 0
      * @param instance a pointer to the instance the framebuffer will belong to
      */
-    void create(GraphicTexture* textures, uint64_t textureCount, GraphicTexture* depthBuffer, GraphicInstance* instance);
+    virtual void create(GraphicTexture* textures, uint64_t textureCount, GraphicTexture* depthBuffer, GraphicInstance* instance);
 
     /**
      * @brief destroy a framebuffer
      */
-    void destroy();
+    virtual void destroy();
 
     /**
      * @brief Get a specific texture from the framebuffer

@@ -20,3 +20,6 @@ std::thread* __glge_sdl_2_thread = 0;
 
 //store the amount of open windows
 uint32_t* __glge_all_window_count = 0;
+
+//store all instances
+std::vector<Instance*>* __glge_all_instances = 0;

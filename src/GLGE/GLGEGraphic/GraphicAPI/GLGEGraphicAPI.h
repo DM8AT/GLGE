@@ -19,5 +19,7 @@
 #include "GLGEGraphicAPI_Texture.h"
 //include framebuffers
 #include "GLGEGraphicAPI_Framebuffer.h"
+//include windows
+#include "GLGEGraphicAPI_Window.h"
 
 #endif

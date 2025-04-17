@@ -26,6 +26,8 @@
 
 //check if this is C++
 #if GLGE_CPP
+//windows will be defined later
+class Window;
 
 /**
  * @brief abstract interface for a window
@@ -42,28 +44,28 @@ public:
     /**
      * @brief Construct a new Graphic Window
      * 
-     * @param size the size of the window in pixels
+     * @param window a pointer to the parent window
      * @param instance a pointer to the graphic instance the window will belong to
      */
-    inline GraphicWindow(uvec2 size, GraphicInstance* instance) {create(size, instance);}
+    GraphicWindow(Window* window, GraphicInstance* instance) {create(window, instance);}
 
     /**
      * @brief Destroy the Graphic Window
      */
-    inline ~GraphicWindow() {destroy();}
+    virtual ~GraphicWindow() {destroy();}
 
     /**
      * @brief create a new window
      * 
-     * @param size the size of the window in pixels
+     * @param window a pointer to the parent window
      * @param instance a pointer to the graphic instance the window will belong to
      */
-    void create(uvec2 size, GraphicInstance* instance);
+    virtual void create(Window* window, GraphicInstance* instance);
 
     /**
      * @brief destroy the window
      */
-    void destroy();
+    virtual void destroy();
 
     /**
      * @brief Get the Size of the window
@@ -78,6 +80,28 @@ public:
      * @return GraphicFramebuffer* a pointer to the framebuffer of the window
      */
     inline GraphicFramebuffer* getFramebuffer() noexcept {return m_framebuffer;}
+
+    /**
+     * @brief get if the renderer is active
+     * 
+     * @return true : the renderer is active
+     * @return false : the renderer is not active
+     */
+    inline bool isRendererActive() const noexcept {return m_runRenderer;}
+
+    /**
+     * @brief Get the Window the graphic window belongs to
+     * 
+     * @return Window* a pointer to the parent window
+     */
+    inline Window* getWindow() noexcept {return m_window;}
+
+    /**
+     * @brief Get the Command Buffer of the window
+     * 
+     * @return GraphicCommandBuffer* a pointer to the command buffer belonging to the window
+     */
+    inline GraphicCommandBuffer* getCommandBuffer() noexcept {return m_buffer;}
 
 protected:
 
@@ -98,6 +122,22 @@ protected:
      * @brief store the framebuffer of the window
      */
     GraphicFramebuffer* m_framebuffer = 0;
+    /**
+     * @brief store the command buffer for the window
+     */
+    GraphicCommandBuffer* m_buffer = 0;
+    /**
+     * @brief store if the render thread is active
+     */
+    bool m_runRenderer = false;
+    /**
+     * @brief store the render thread for the window
+     */
+    std::thread m_render;
+    /**
+     * @brief store the parent window
+     */
+    Window* m_window = 0;
 
 };
 

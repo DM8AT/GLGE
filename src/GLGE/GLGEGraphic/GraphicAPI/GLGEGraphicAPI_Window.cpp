@@ -11,9 +11,10 @@
 
 //include the graphic window
 #include "GLGEGraphicAPI_Window.h"
+//include windows
+#include "../GLGEWindow.h"
 
-
-void GraphicWindow::create(uvec2 size, GraphicInstance* instance)
+void GraphicWindow::create(Window* window, GraphicInstance* instance)
 {
     //check if the texture is set up
     if (m_graphicInstance)
@@ -24,13 +25,14 @@ void GraphicWindow::create(uvec2 size, GraphicInstance* instance)
     }
 
     //store the inputs
-    m_size = size;
+    m_size = window->getSize();
+    m_window = window;
     m_graphicInstance = instance;
     //add the element to the instance
     m_graphicInstance->addElement(this);
 
     //call the create hook
-    onCreate();
+    this->onCreate();
 }
 
 void GraphicWindow::destroy()
@@ -46,4 +48,5 @@ void GraphicWindow::destroy()
     m_graphicInstance = 0;
     //reset the variables
     m_size = 0;
+    m_window = 0;
 }

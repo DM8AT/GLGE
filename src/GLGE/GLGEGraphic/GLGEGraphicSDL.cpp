@@ -20,29 +20,6 @@
  */
 void SDL_Main_Thread(Logger* logger)
 {
-    //initalize SDL2
-    if (SDL_InitSubSystem(SDL_INIT_EVERYTHING) < 0)
-    {
-        //print an error
-        if (logger) {logger->log("Failed to initalize SDL2", MESSAGE_TYPE_FATAL_ERROR);}
-        //stop the function
-        return;
-    }
-
-    //print a debug message
-    GLGE_DEBUG_WRAPPER(
-        //check if a logger exists
-        if (logger)
-        {
-            //check if debugging is enabled
-            if (logger->isDebug())
-            {
-                //log a debug message
-                logger->log("Initalized SLD2", MESSAGE_TYPE_DEBUG);
-            }
-        }
-    )
-
     //wait till there are windows
     while (__glge_all_windows_sdl.size() == 0) {std::this_thread::sleep_for(std::chrono::milliseconds(10));}
 
@@ -89,6 +66,13 @@ void SDL_Main_Thread(Logger* logger)
             default:
                 break;
             }
+        }
+
+        //loop over all instances
+        for (size_t i = 0; i < __glge_all_instances->size(); ++i)
+        {
+            //render the instance
+            (*__glge_all_instances)[i]->getGraphicInstance()->onRender();
         }
 
         //end the tick

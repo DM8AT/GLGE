@@ -19,6 +19,9 @@
 //check if the graphic core is enabled
 #if GLGE_INCLUDE_GRAPHICS
 
+//include all APIs
+#include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
+
 //check if the math core is included
 #if !GLGE_INCLUDE_MATH
 //check if compile time errors are enabled

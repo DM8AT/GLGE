@@ -12,6 +12,16 @@
 //include the instance
 #include "GLGEInstance.h"
 
+//check if graphics is enabled
+#if GLGE_INCLUDE_GRAPHICS
+//include all API overloads
+#include "../GLGEGraphic/GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
+//include windows
+#include "../GLGEGraphic/GLGEWindow.h"
+//include SDL2
+#include <SDL2/SDL.h>
+#endif //Graphic section
+
 /**
  * @brief this is a function for the update thread of an instance
  * 
@@ -39,7 +49,7 @@ void instance_update_thread(Instance* instance)
     }
 }
 
-Instance::Instance(std::string_view name, APIs api) : m_name(name), m_api(api) 
+Instance::Instance(std::string_view name, APIs api) : m_name(name), m_api(api)
 {
     //create the instance update thread
     m_updateThread = std::thread(instance_update_thread, this);
@@ -104,3 +114,44 @@ void Instance::removeElement(InstAttachableClass* element) noexcept
     //erase the element
     m_elements.erase(pos);
 }
+
+//check if graphics is enabled
+#if GLGE_INCLUDE_GRAPHICS
+
+void Instance::initGraphicAPI(Window* window)
+{
+    //check if the graphic api is initalized
+    if (m_gInstance) {return;}
+
+    //store a temporary pointer
+    void* tmp = 0;
+    //switch over the graphic api
+    if (m_api == API_OPENGL_3_3)
+    {
+        //set the OpenGL attributes
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, SDL_TRUE);
+        SDL_GL_SetSwapInterval(-1);
+        //create a OpenGL context
+        tmp = SDL_GL_CreateContext((SDL_Window*)window->getSDL2Window());
+        //bind no context
+        SDL_GL_MakeCurrent((SDL_Window*)window->getSDL2Window(), 0);
+        //create a new OpenGL 3.3 instance
+        m_gInstance = new OGL3_3_Instance(tmp, this);
+    }
+}
+
+void Instance::closeGraphiAPI()
+{
+    //check if the graphic api is not initalized
+    if (!m_gInstance) {return;}
+
+    //delete the graphic instance
+    m_gInstance->destroy();
+    delete m_gInstance;
+    //set the graphic instance to 0
+    m_gInstance = 0;
+}
+
+#endif //Graphic section

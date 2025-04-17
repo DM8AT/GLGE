@@ -11,6 +11,8 @@
 
 //include the base graphic API
 #include "GLGEGraphicAPI_Instance.h"
+//include the shared graphic data
+#include "../GLGEGraphicShared.h"
 
 void GraphicInstance::addElement(GraphicInstAttatchable* element) noexcept
 {
@@ -62,7 +64,15 @@ bool GraphicInstance::onUpdate() noexcept
     return true;
 }
 
-GraphicInstance::~GraphicInstance()
+GraphicInstance::GraphicInstance(Instance* instance) : InstAttachableClass(instance, "GraphicInstance") 
+{
+    //add the instance
+    __glge_all_instances->push_back(m_instance);
+    //call the create hook
+    onCreate();
+}
+
+void GraphicInstance::destroy()
 {
     //iterate over all attatched elements
     while (m_elements.size() > 0)
@@ -72,4 +82,10 @@ GraphicInstance::~GraphicInstance()
         //erase the element
         m_elements.erase(m_elements.begin());
     }
+    //call the destruction hook
+    onDestroy();
+    //remove the instance
+    auto pos = std::find(__glge_all_instances->begin(), __glge_all_instances->end(), m_instance);
+    //erase the element if it exists
+    if (pos != __glge_all_instances->end()) {__glge_all_instances->erase(pos);}
 }

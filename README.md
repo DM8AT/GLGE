@@ -31,7 +31,7 @@ For different grafic APIs add the following libraries:
     - `API_VULKAN_1_2_DEFAULT`
     - `API_VULKAN_1_2_INDIRECT`
     - `API_VULKAN_1_2_RTX`
-- OpenGL: Install OpenGL or disable the following graphic APIs:
+- OpenGL and GLEW: Install OpenGL and GLEW or disable the following graphic APIs:
     - `API_OPENGL_3_3`
     - `API_OPENGL_4_6`
     - `API_OPENGL_4_6_RTX`

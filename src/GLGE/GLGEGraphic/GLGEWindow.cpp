@@ -16,6 +16,8 @@
 
 //include SLD2
 #include "GLGEGraphicSDL.cpp"
+//incldue all grpahic APIs
+#include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
 void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, const WindowSettings& settings, Instance& instance) noexcept
 {
@@ -46,13 +48,34 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
         m_instance->logDebug(Message(stream, MESSAGE_TYPE_DEBUG));
     )
 
+    //store if this was the first window
+    bool first = false;
     //check if SDL2 is initalized
     if (!__glge_sdl_2_thread)
     {
+        //initalize SDL2
+        if (SDL_InitSubSystem(SDL_INIT_EVERYTHING) < 0)
+        {
+            //print an error
+            m_instance->log("Failed to initalize SDL2", MESSAGE_TYPE_FATAL_ERROR);
+            //stop the function
+            return;
+        }
+
+        //print a debug message
+        GLGE_DEBUG_WRAPPER(
+            //log a debug message
+            m_instance->logDebug("Initalized SLD2", MESSAGE_TYPE_DEBUG);
+        )
+
         //create a new thread. Bind it to the logger of the instance
         __glge_sdl_2_thread = new std::thread(SDL_Main_Thread, m_instance->getLogger());
         //create the counter to count how many windows are open
         __glge_all_window_count = new uint32_t(0);
+        //create a vector for all instances
+        __glge_all_instances = new std::vector<Instance*>;
+        //store that this is the first window
+        first = true;
     }
 
     //store the window parameters
@@ -76,6 +99,28 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     //check if the winow should have the keyboard focused
     flags = (SDL_WindowFlags)(flags | (m_settings.inputFocused ? SDL_WINDOW_INPUT_FOCUS : (SDL_WindowFlags)0));
 
+    //add the correct flag for the Graphic API the instance uses
+    switch (m_instance->getAPI())
+    {
+    //add flags for OpenGL
+    case API_OPENGL_3_3:
+    case API_OPENGL_4_6:
+    case API_OPENGL_4_6_RTX:
+        flags = (SDL_WindowFlags)(flags | SDL_WINDOW_OPENGL);
+        break;
+    
+    //add flags for Vulkan
+    case API_VULKAN_1_2_DEFAULT:
+    case API_VULKAN_1_2_INDIRECT:
+    case API_VULKAN_1_2_RTX:
+        flags = (SDL_WindowFlags)(flags | SDL_WINDOW_VULKAN);
+        break;
+        
+    //for software, add no flags
+    default:
+        break;
+    }
+
     //create the window
     m_window = SDL_CreateWindow(m_name.data(), m_pos.x, m_pos.y, m_size.x, m_size.y, flags);
     //check if the window was created successfully
@@ -86,17 +131,38 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
         //stop the function
         return;
     }
+    //check if this is the first window
+    if (first)
+    {
+        //initalize the graphic API
+        m_instance->initGraphicAPI(this);
+    }
 
     //store the window mapping
     __glge_all_windows_sdl[SDL_GetWindowID((SDL_Window*)m_window)] = this;
     //increment the amount of existing windows
     ++(*__glge_all_window_count);
+
+    //switch over the graphic APIs
+    switch (m_instance->getAPI())
+    {
+    case API_OPENGL_3_3:
+        m_gWindow = new OGL3_3_Window(this, m_instance->getGraphicInstance());
+        break;
+    
+    default:
+        break;
+    }
 }
 
 void Window::close() noexcept
 {
     //if the window is not open, stop
     if (!isOpen()) {return;}
+
+    //close the graphic window
+    delete m_gWindow;
+    m_gWindow = 0;
 
     //get the window id
     uint64_t winId = SDL_GetWindowID((SDL_Window*)m_window);
@@ -110,19 +176,25 @@ void Window::close() noexcept
     //check if this is the last window
     if ((__glge_all_windows_sdl.size() == 0) && (__glge_sdl_2_thread))
     {
-        //check if the thread is joinable
+        //close the graphic API
+        m_instance->closeGraphiAPI();
+
+        //wait for the thread to close
         if (__glge_sdl_2_thread->joinable())
         {
-            //join the thread
             __glge_sdl_2_thread->join();
         }
         //destroy the thread
         delete __glge_sdl_2_thread;
+        __glge_sdl_2_thread = 0;
         //set the thread to 0
         __glge_sdl_2_thread = 0;
         //delete the window counter
         delete __glge_all_window_count;
         __glge_all_window_count = 0;
+        //delete the instance vector
+        delete __glge_all_instances;
+        __glge_all_instances = 0;
     }
 
     //reset all window parameters

@@ -18,6 +18,8 @@
 
 //include windows
 #include "GLGEWindow.h"
+//include SDL2
+#include <SDL2/SDL.h>
 
 //check for C++
 #ifdef GLGE_CPP
@@ -30,6 +32,9 @@ extern std::thread* __glge_sdl_2_thread;
 
 //store the amount of open windows
 extern uint32_t* __glge_all_window_count;
+
+//store all instances
+extern std::vector<Instance*>* __glge_all_instances;
 
 #endif
 

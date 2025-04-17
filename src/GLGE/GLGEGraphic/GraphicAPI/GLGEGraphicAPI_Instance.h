@@ -23,6 +23,8 @@
 
 //graphic instance attachables will exist
 class GraphicInstAttatchable;
+//graphic command buffers will be defined later
+class GraphicCommandBuffer;
 
 /**
  * @brief manage the lifetime of all graphic dependend objects
@@ -41,12 +43,17 @@ public:
      * 
      * @param instance a pointer to the instance the graphic instance belongs to
      */
-    GraphicInstance(Instance* instance) : InstAttachableClass(instance, "GraphicInstance") {}
+    GraphicInstance(Instance* instance);
 
     /**
      * @brief Destroy the Graphic Instance
      */
-    virtual ~GraphicInstance();
+    virtual ~GraphicInstance() {}
+
+    /**
+     * @brief destroy the graphic instance
+     */
+    virtual void destroy();
 
     /**
      * @brief add a new object to the class
@@ -85,7 +92,42 @@ public:
      */
     inline Instance* getInstance() noexcept {return m_instance;}
 
+    /**
+     * @brief do the rendering for this graphic instance
+     */
+    virtual void onRender() {}
+
+    /**
+     * @brief add a graphic command buffer
+     * 
+     * @param buffer a pointer to the buffer to add
+     */
+    void addCommandBuffer(GraphicCommandBuffer* buffer) noexcept {m_buffers.push_back(buffer);}
+
+    /**
+     * @brief remove a command buffer from execution
+     * 
+     * @param buffer a pointer to the command buffer to remove
+     */
+    void removeCommandBuffer(GraphicCommandBuffer* buffer) noexcept {auto pos = std::find(m_buffers.begin(), m_buffers.end(), buffer); if (pos != m_buffers.end()) { m_buffers.erase(pos); } }
+
+    /**
+     * @brief Get the command buffers
+     * 
+     * @return std::vector<GraphicCommandBuffer*>& a reference to all command buffers
+     */
+    inline std::vector<GraphicCommandBuffer*>& getBuffers() noexcept {return m_buffers;}
+
 protected:
+
+    /**
+     * @brief a overloadable hook that is called when the instance is created
+     */
+    virtual void onCreate() {}
+    /**
+     * @brief a overloadable hook that is called when the instance is destroyed
+     */
+    virtual void onDestroy() {}
 
     /**
      * @brief store the used graphic api
@@ -95,6 +137,10 @@ protected:
      * @brief store all attatched elements
      */
     std::vector<GraphicInstAttatchable*> m_elements;
+    /**
+     * @brief store all command buffers
+     */
+    std::vector<GraphicCommandBuffer*> m_buffers;
 
 };
 
@@ -138,6 +184,13 @@ public:
      * @return false : the element no longer exists
      */
     virtual bool onUpdate() {return true;}
+
+    /**
+     * @brief Get the Instance the instance attatchable belongs to
+     * 
+     * @return GraphicInstance* a pointer to the parent instance
+     */
+    inline GraphicInstance* getInstance() noexcept {return m_graphicInstance;}
 
 protected:
 
