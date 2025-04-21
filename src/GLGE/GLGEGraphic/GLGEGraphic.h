@@ -31,6 +31,8 @@
 #endif //compile errors
 #endif //math include check
 
+//include textures
+#include "GLGETexture.h"
 //include windows
 #include "GLGEWindow.h"
 

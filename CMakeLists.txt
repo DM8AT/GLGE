@@ -29,7 +29,9 @@ set(SOURCE_FILES_CPP
 
     # Graphic files
     ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGEColor.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
     # Subelement : Graphic API
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Instance.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Texture.cpp
@@ -40,6 +42,7 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Instance.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Window.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_CommandBuffer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Texture.cpp
 
     # Math files
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp

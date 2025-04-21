@@ -15,6 +15,10 @@
 
 //include the instance
 #include "GLGE_OGL3_3_Instance.h"
+//include the command buffer
+#include "GLGE_OGL3_3_CommandBuffer.h"
+//include the texture
+#include "GLGE_OGL3_3_Texture.h"
 //include the window
 #include "GLGE_OGL3_3_Window.h"
 

@@ -41,49 +41,34 @@ protected:
 
 int main()
 {
-    //store all APIs that might work
-    std::vector<APIs> apiList {
-        API_VULKAN_1_2_INDIRECT,
-        API_VULKAN_1_2_DEFAULT,
-        API_OPENGL_4_6,
-        API_OPENGL_3_3,
-        API_SOFTWARE
+    std::vector<APIs> apis = {
+        API_OPENGL_3_3
     };
-    //get the best API
-    APIs best = getBestGraphicAPI(apiList.data(), apiList.size());
-    //check if an API was found
-    if (best == API_FALLBACK_ERROR)
-    {
-        //print an error
-        std::cerr << "[ERROR] No good graphic API was found\n";
-        //return an error
-        return EXIT_FAILURE;
-    }
+    APIs best = getBestGraphicAPI(apis.data(), apis.size());
+    if (best == API_FALLBACK_ERROR) {return 1;}
+    Instance inst("Main instance", best);
 
-    //print the selected API
-    std::cout << "Selected Graphics API: " << best << "\n";
-    //create an instance with the best API
-    Instance instance("Main Instance", best);
-    //create a logger
-    instance.setLogger(new FileLogger("TEST_CPP.log", true));
-
-    //create a new window
-    Window window("Hello World!", uvec2(600), uvec2(0), WINDOW_SETTINGS_DEFAULT, instance);
-    //create custom window settings
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
-    //make the window borderless
-    settings.maximized = false;
-    //create another window
-    Window other("Second window", 300, 0, settings, instance);
+    settings.borderless = true;
+    settings.alwaysOnTop = true;
+    Window win("Hello World!", 600, 0, settings, inst);
+    Texture tex("assets/textures/cubeTexture.png", true, inst);
+    Texture depth(TEXTURE_PURPOSE_DEPTH, win.getSize(), 0, 0, inst);
 
-    //create a framerate limiter
+    Color clear = Color(0, 1, 1, 1, COLOR_SPACE_HSVA);
+
     Limiter lim = 60;
-
-    while (Window::openWindowCount() > 0)
+    lim.start();
+    while (win.isOpen())
     {
-        //start the tick
-        lim.start();
-        //end the tick
+        win.setClearColor(clear);
+        vec4 values = clear.getValues() + vec4(0.125/lim.getIPS(), 0, 0, 0);
+        values.x = (values.x > 1.) ? 0 : values.x;
+        clear.setValues(values);
+
+        std::cout << "\rCurrent FPS: " << (uint32_t)win.getRenderLimiter().getIPS() << ", clear color: " << clear << "\x1b[0K" << std::flush;
+        
         lim.endTick();
     }
+    std::cout << "\n";
 }

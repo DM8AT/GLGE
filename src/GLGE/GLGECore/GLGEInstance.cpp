@@ -22,6 +22,9 @@
 #include <SDL2/SDL.h>
 #endif //Graphic section
 
+//define the SDL2 limiter for the instance
+Limiter Instance::m_sdlLimiter = 60;
+
 /**
  * @brief this is a function for the update thread of an instance
  * 
@@ -132,7 +135,7 @@ void Instance::initGraphicAPI(Window* window)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, SDL_TRUE);
-        SDL_GL_SetSwapInterval(-1);
+        SDL_GL_SetSwapInterval(0);
         //create a OpenGL context
         tmp = SDL_GL_CreateContext((SDL_Window*)window->getSDL2Window());
         //bind no context

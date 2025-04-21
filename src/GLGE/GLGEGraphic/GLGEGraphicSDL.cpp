@@ -23,11 +23,8 @@ void SDL_Main_Thread(Logger* logger)
     //wait till there are windows
     while (__glge_all_windows_sdl.size() == 0) {std::this_thread::sleep_for(std::chrono::milliseconds(10));}
 
-    //create a limiter to limit to 240 iterations per second
-    Limiter sdlLimiter = 240;
-
-    //start the limiter
-    sdlLimiter.start();
+    //start the sdl limiter
+    Instance::getSDLLimiter().start();
 
     //loop while there are windows available
     while (__glge_all_windows_sdl.size() > 0)
@@ -76,7 +73,7 @@ void SDL_Main_Thread(Logger* logger)
         }
 
         //end the tick
-        sdlLimiter.endTick();
+        Instance::getSDLLimiter().endTick();
     }
 
     //close SDL

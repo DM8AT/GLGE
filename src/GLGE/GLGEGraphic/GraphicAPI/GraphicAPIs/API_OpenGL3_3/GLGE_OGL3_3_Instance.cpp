@@ -53,16 +53,24 @@ void OGL3_3_Instance::initalizeGLEW(OGL3_3_Window* window)
 
     //store that GLEW is initalized
     m_hasGLEW = true;
+    //add the data command buffer
+    addCommandBuffer(&m_dataBuffer);
 }
 
 void OGL3_3_Instance::onCreate()
 {
     //say that GLEW is not initalized
     m_hasGLEW = false;
+    //create the data command buffer
+    m_dataBuffer.create(this);
 }
 
 void OGL3_3_Instance::onDestroy()
 {
+    //remove the command buffer
+    removeCommandBuffer(&m_dataBuffer);
+    //delete the command buffer
+    m_dataBuffer.destroy();
     //clear the context
     SDL_GL_DeleteContext(m_context);
     m_context = 0;

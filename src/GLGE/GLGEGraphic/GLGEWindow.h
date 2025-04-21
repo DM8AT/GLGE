@@ -19,6 +19,8 @@
 #include "../GLGEMath/GLGEMath.h"
 //include the graphic API
 #include "GraphicAPI/GLGEGraphicAPI.h"
+//include colors
+#include "GLGEColor.h"
 
 /**
  * @brief specify some settings for a window
@@ -64,10 +66,14 @@ typedef struct s_WindowSettings {
      * @brief store if the mouse is focused
      */
     bool mouseFocused;
+    /**
+     * @brief store if the window is allways on top
+     */
+    bool alwaysOnTop;
 } WindowSettings;
 
 //create a constant default
-const WindowSettings WINDOW_SETTINGS_DEFAULT = {false,false,true,true,false,false,false,false,true,true};
+const WindowSettings WINDOW_SETTINGS_DEFAULT = {false,false,true,true,false,false,false,false,true,true,false};
 
 //check for C++
 #if GLGE_CPP
@@ -99,7 +105,7 @@ public:
     /**
      * @brief Destroy the Window
      */
-    inline ~Window() noexcept { if (m_window) {close(); }}
+    inline ~Window() noexcept { if (m_window) {close();} }
 
     /**
      * @brief open a window
@@ -154,7 +160,7 @@ public:
      * 
      * @return Limiter& a reference to the render limiter
      */
-    inline Limiter& renderLimiter() noexcept {return m_renderLimiter;}
+    inline Limiter& getRenderLimiter() noexcept {return m_renderLimiter;}
 
     /**
      * @brief get the amount of currently opend windows
@@ -183,6 +189,37 @@ public:
      * @return void* a pointer to the SDL2 window
      */
     inline void* getSDL2Window() noexcept {return m_window;}
+
+    /**
+     * @brief Set the clear color of the window
+     * 
+     * @param r the red component of the clear color
+     * @param g the green component of the clear color
+     * @param b the blue component of the clear color
+     * @param a the alpha component of the clear color
+     */
+    inline void setClearColor(float r, float g, float b, float a) noexcept {m_clear = Color(r,g,b,a, COLOR_SPACE_RGBA);}
+
+    /**
+     * @brief Set the clear color of the window
+     * 
+     * @param color the color in RGBA for the clear color
+     */
+    inline void setClearColor(const vec4& color) noexcept {m_clear = Color(color, COLOR_SPACE_RGBA);}
+
+    /**
+     * @brief Set the clear color of the window
+     * 
+     * @param color the clear color of the window
+     */
+    inline void setClearColor(const Color& color) noexcept {m_clear = color;}
+
+    /**
+     * @brief Get the clear color of the window
+     * 
+     * @return const Color& the clear color of the window
+     */
+    inline const Color& getClearColor() const noexcept {return m_clear;}
 
 protected:
 
@@ -217,6 +254,10 @@ protected:
      * @brief store the graphic window
      */
     GraphicWindow* m_gWindow;
+    /**
+     * @brief store the own clear color
+     */
+    Color m_clear = Color(vec4(0.5,0.5,0.5,1), COLOR_SPACE_RGBA);
 
 };
 

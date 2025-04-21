@@ -15,6 +15,8 @@
 
 //include instances
 #include "../../GLGEGraphicAPI_Instance.h"
+//include command buffers
+#include "GLGE_OGL3_3_CommandBuffer.h"
 
 //check if this is C++
 #if GLGE_CPP
@@ -75,6 +77,13 @@ public:
      */
     void initalizeGLEW(OGL3_3_Window* window);
 
+    /**
+     * @brief Get the Data Buffer
+     * 
+     * @return OGL3_3_CommandBuffer& the data buffer
+     */
+    inline OGL3_3_CommandBuffer& getDataBuffer() noexcept {return m_dataBuffer;}
+
 protected:
 
     /**
@@ -85,6 +94,11 @@ protected:
      * @brief override the destruction hook
      */
     void onDestroy() override;
+
+    /**
+     * @brief store the data command buffer
+     */
+    OGL3_3_CommandBuffer m_dataBuffer;
 
     /**
      * @brief store that GLEW is not initalized

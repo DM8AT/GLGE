@@ -21,6 +21,8 @@
 #include "Logging/GLGELogger.h"
 //include the time
 #include "Time/GLGETime.h"
+//include limiter
+#include "Time/GLGELimiter.h"
 
 //check if this is C++
 #if GLGE_CPP
@@ -180,6 +182,13 @@ public:
      */
     void closeGraphiAPI();
 
+    /**
+     * @brief get the SLD2 limiter
+     * 
+     * @return Limiter& the limiter for the SDL2 thread
+     */
+    static inline Limiter& getSDLLimiter() noexcept {return m_sdlLimiter;}
+
     #endif //Graphic only section
 
 private:
@@ -224,6 +233,12 @@ private:
      * @brief store a pointer to the graphic instance
      */
     GraphicInstance* m_gInstance = 0;
+
+    /**
+     * @brief store the SDL limiter
+     */
+    static Limiter m_sdlLimiter;
+
     #endif //Graphic only section
 };
 

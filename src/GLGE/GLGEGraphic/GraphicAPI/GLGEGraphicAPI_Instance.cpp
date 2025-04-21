@@ -74,14 +74,8 @@ GraphicInstance::GraphicInstance(Instance* instance) : InstAttachableClass(insta
 
 void GraphicInstance::destroy()
 {
-    //iterate over all attatched elements
-    while (m_elements.size() > 0)
-    {
-        //destroy the element
-        delete m_elements[0];
-        //erase the element
-        m_elements.erase(m_elements.begin());
-    }
+    //clear the attatched elements
+    m_elements.clear();
     //call the destruction hook
     onDestroy();
     //remove the instance

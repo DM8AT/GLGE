@@ -98,6 +98,8 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     flags = (SDL_WindowFlags)(flags | (m_settings.mouseFocused ? SDL_WINDOW_MOUSE_FOCUS : (SDL_WindowFlags)0));
     //check if the winow should have the keyboard focused
     flags = (SDL_WindowFlags)(flags | (m_settings.inputFocused ? SDL_WINDOW_INPUT_FOCUS : (SDL_WindowFlags)0));
+    //check if the winow should be always on top
+    flags = (SDL_WindowFlags)(flags | (m_settings.alwaysOnTop ? SDL_WINDOW_ALWAYS_ON_TOP : (SDL_WindowFlags)0));
 
     //add the correct flag for the Graphic API the instance uses
     switch (m_instance->getAPI())
