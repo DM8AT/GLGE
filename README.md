@@ -30,11 +30,11 @@ For different grafic APIs add the following libraries:
 - Vulkan: Install Vulkan or disable the following graphic APIs:
     - `API_VULKAN_1_2_DEFAULT`
     - `API_VULKAN_1_2_INDIRECT`
-    - `API_VULKAN_1_2_RTX`
+    - `API_VULKAN_1_2_RT`
 - OpenGL and GLEW: Install OpenGL and GLEW or disable the following graphic APIs:
     - `API_OPENGL_3_3`
     - `API_OPENGL_4_6`
-    - `API_OPENGL_4_6_RTX`
+    - `API_OPENGL_4_6_RT`
 
 ### Enabeling / Disabeling graphic APIs
 To disable a graphic API, navigate to the file `GLGE/GLGECore/GraphicAPIs/GLGEImplementationList.h` and change the define of the API you want to disable from `GLGE_API_UNDEFINED` to `GLGE_API_DEFINED`. To enable the API again, change them back. 

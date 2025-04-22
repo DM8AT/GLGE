@@ -107,14 +107,14 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     //add flags for OpenGL
     case API_OPENGL_3_3:
     case API_OPENGL_4_6:
-    case API_OPENGL_4_6_RTX:
+    case API_OPENGL_4_6_RT:
         flags = (SDL_WindowFlags)(flags | SDL_WINDOW_OPENGL);
         break;
     
     //add flags for Vulkan
     case API_VULKAN_1_2_DEFAULT:
     case API_VULKAN_1_2_INDIRECT:
-    case API_VULKAN_1_2_RTX:
+    case API_VULKAN_1_2_RT:
         flags = (SDL_WindowFlags)(flags | SDL_WINDOW_VULKAN);
         break;
         

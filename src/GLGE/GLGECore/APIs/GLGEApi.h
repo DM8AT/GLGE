@@ -42,7 +42,7 @@ typedef enum e_APIs {
     /**
      * @brief say that OpenGL should be used for graphics and that a compute ray tracer used
      */
-    API_OPENGL_4_6_RTX,
+    API_OPENGL_4_6_RT,
     /**
      * @brief say that vulkan 1.2 should be used in a simple implementation
      */
@@ -55,7 +55,7 @@ typedef enum e_APIs {
      * @brief say that vulkan 1.2 should be used with ray tracing
      * @warning even if the engine supports this, it is not given that the graphics card supports it. The graphics card must support the vulkan ray tracing extension. 
      */
-    API_VULKAN_1_2_RTX,
+    API_VULKAN_1_2_RT,
     /**
      * @brief say that a software rasterizer should be used
      */
@@ -63,7 +63,7 @@ typedef enum e_APIs {
     /**
      * @brief say that a software ray tracer should be used
      */
-    API_SOFTWARE_RTX,
+    API_SOFTWARE_RT,
     /**
      * @brief say that a fallback error occoured
      */

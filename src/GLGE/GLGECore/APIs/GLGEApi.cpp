@@ -21,12 +21,12 @@ static std::string_view apiLookupTable[] = {
     "API_NONE",
     "API_OPENGL_3_3",
     "API_OPENGL_4_6",
-    "API_OPENGL_4_6_RTX",
+    "API_OPENGL_4_6_RT",
     "API_VULKAN_1_2_DEFAULT",
     "API_VULKAN_1_2_INDIRECT",
-    "API_VULKAN_1_2_RTX",
+    "API_VULKAN_1_2_RT",
     "API_SOFTWARE",
-    "API_SOFTWARE_RTX",
+    "API_SOFTWARE_RT",
     "API_FALLBACK_ERROR"
 };
 
@@ -60,17 +60,17 @@ bool GLGE_C_FUNC(getAPISupport)(APIs api) GLGE_FUNC_NOEXCEPT
     //check if opengl 4.6 is supported
     __GLGE_SWITCH_HELPER(API_OPENGL_4_6, GLGE_API_SUPPORTS_API_OPENGL_4_6)
     //check if opengl 4.6 ray tracing is supported
-    __GLGE_SWITCH_HELPER(API_OPENGL_4_6_RTX, GLGE_API_SUPPORTS_API_OPENGL_4_6_RTX)
+    __GLGE_SWITCH_HELPER(API_OPENGL_4_6_RT, GLGE_API_SUPPORTS_API_OPENGL_4_6_RT)
     //check if vulkan 1.2 default is supported
     __GLGE_SWITCH_HELPER(API_VULKAN_1_2_DEFAULT, GLGE_API_SUPPORTS_API_VULKAN_1_2_DEFAULT)
     //check if vulkan 1.2 indirect is supported
     __GLGE_SWITCH_HELPER(API_VULKAN_1_2_INDIRECT, GLGE_API_SUPPORTS_API_VULKAN_1_2_INDIRECT)
     //check if vulkan 1.2 ray traing is supported
-    __GLGE_SWITCH_HELPER(API_VULKAN_1_2_RTX, GLGE_API_SUPPORTS_API_VULKAN_1_2_RTX)
+    __GLGE_SWITCH_HELPER(API_VULKAN_1_2_RT, GLGE_API_SUPPORTS_API_VULKAN_1_2_RT)
     //check if software rasterization is supported
     __GLGE_SWITCH_HELPER(API_SOFTWARE, GLGE_API_SUPPORTS_API_SOFTWARE)
     //check if software ray tracing is supported
-    __GLGE_SWITCH_HELPER(API_SOFTWARE_RTX, GLGE_API_SUPPORTS_API_SOFTWARE_RTX)
+    __GLGE_SWITCH_HELPER(API_SOFTWARE_RT, GLGE_API_SUPPORTS_API_SOFTWARE_RT)
     
     //undefine the helper macro
     #undef __GLGE_SWITCH_HELPER
