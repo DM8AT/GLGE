@@ -13,3 +13,7 @@ shader/glslc.sh
 
 # Ignore raw text
 *.txt
+# Ignore LibreOffice Draw files
+*.odg
+# Ignore LibreOffice Draw lock files
+*.odg#

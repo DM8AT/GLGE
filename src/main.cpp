@@ -49,8 +49,6 @@ int main()
     Instance inst("Main instance", best);
 
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
-    settings.borderless = true;
-    settings.alwaysOnTop = true;
     Window win("Hello World!", 600, 0, settings, inst);
     Texture tex("assets/textures/cubeTexture.png", true, inst);
     Texture depth(TEXTURE_PURPOSE_DEPTH, win.getSize(), 0, 0, inst);
@@ -67,7 +65,7 @@ int main()
         clear.setValues(values);
 
         std::cout << "\rCurrent FPS: " << (uint32_t)win.getRenderLimiter().getIPS() << ", clear color: " << clear << "\x1b[0K" << std::flush;
-        
+
         lim.endTick();
     }
     std::cout << "\n";

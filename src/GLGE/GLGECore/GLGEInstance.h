@@ -16,7 +16,7 @@
 //include the settings
 #include "GLGESettings.h"
 //include the APIs
-#include "GraphicAPIs/GLGEApi.h"
+#include "APIs/GLGEApi.h"
 //include a logger
 #include "Logging/GLGELogger.h"
 //include the time
