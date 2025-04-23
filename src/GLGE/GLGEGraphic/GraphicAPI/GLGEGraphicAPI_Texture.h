@@ -28,7 +28,7 @@ typedef enum e_TexturePurpose {
     /**
      * @brief state that the purpose of the texture is to be used as a read source for rendering
      */
-    TEXTURE_PURPOSE_IMAGE,
+    TEXTURE_PURPOSE_IMAGE = 0,
     /**
      * @brief state that the purpose of the texture is to be used as a target for rendering either through compute shaders (if they exist) or as a framebuffer color attatchment
      */
@@ -39,9 +39,28 @@ typedef enum e_TexturePurpose {
     TEXTURE_PURPOSE_DEPTH
 } TexturePurpose;
 
+/**
+ * @brief convert the texture purpose to a string
+ * 
+ * @return const char* the C-String
+ */
+const char* GLGE_C_FUNC(texturePurposeToString(TexturePurpose purpose));
+
 //check for C++
 #if GLGE_CPP
 
+/**
+ * @brief print a texture purpose to an output stream
+ * 
+ * @param os the output stream to print to
+ * @param purp the texture purpose to print
+ * @return std::ostream& the filled output stream
+ */
+inline std::ostream& operator<<(std::ostream& os, const TexturePurpose& purp) noexcept {return os << GLGE_C_FUNC(texturePurposeToString)(purp);}
+
+/**
+ * @brief store a graphic texture
+ */
 class GraphicTexture : public GraphicInstAttatchable
 {
 public:

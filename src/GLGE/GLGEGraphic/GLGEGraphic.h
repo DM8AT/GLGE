@@ -33,6 +33,8 @@
 
 //include textures
 #include "GLGETexture.h"
+//include framebuffers
+#include "GLGEFramebuffer.h"
 //include windows
 #include "GLGEWindow.h"
 

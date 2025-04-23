@@ -12,6 +12,28 @@
 //include the graphic texture
 #include "GLGEGraphicAPI_Texture.h"
 
+/**
+ * @brief store a lookup table for the texture purposes
+ */
+const char* TEXTURE_PURPOSE_LUT[] = {
+    "TEXTURE_PURPOSE_IMAGE",
+    "TEXTURE_PURPOSE_RENDER",
+    "TEXTURE_PURPOSE_DEPTH"
+};
+
+const char* GLGE_C_FUNC(texturePurposeToString(TexturePurpose purpose))
+{
+    //check if the purpose is in bounds
+    if (((uint32_t)purpose) > (sizeof(TEXTURE_PURPOSE_LUT) / sizeof(*TEXTURE_PURPOSE_LUT)))
+    {
+        //return empty
+        return 0;
+    }
+
+    //else, return the correct string
+    return TEXTURE_PURPOSE_LUT[(uint32_t)purpose];
+}
+
 void GraphicTexture::create(void* data, bool isHDR, bool alpha, const uvec2& size, GraphicInstance* instance)
 {
     //check if the texture is set up

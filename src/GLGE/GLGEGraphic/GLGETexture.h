@@ -105,6 +105,22 @@ public:
      */
     inline void createMipMaps() {m_texture->createMipMap();}
 
+    /**
+     * @brief Get the purpose of the texture
+     * 
+     * @return TexturePurpose the purpose of the texture
+     */
+    inline TexturePurpose getPurpose() const noexcept {return m_texture->getPurpose();}
+
+    /**
+     * @brief print the texture
+     * 
+     * @param os the output stream to print to
+     * @param tex the texture to print
+     * @return std::ostream& the filled output stream
+     */
+    inline friend std::ostream& operator<<(std::ostream& os, const Texture& tex) noexcept {return os << "texture{size: " << tex.m_texture->getSize() << ", purpose: " << tex.m_texture->getPurpose() << "}";}
+
 protected:
 
     /**

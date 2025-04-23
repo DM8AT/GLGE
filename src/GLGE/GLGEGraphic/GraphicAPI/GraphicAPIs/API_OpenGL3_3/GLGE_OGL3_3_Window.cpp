@@ -36,14 +36,6 @@ void OGL3_3_RenderFunc(void* data, uint64_t)
     //make this the current window
     SDL_GL_MakeCurrent((SDL_Window*)window->getWindow()->getSDL2Window(), ((OGL3_3_Instance*)window->getInstance())->getContext());
 
-    //clear the window
-    //get the clear color
-    vec4 clear = window->getWindow()->getClearColor().getInSpace(COLOR_SPACE_RGBA);
-    //set the clear color
-    glClearColor(clear.x, clear.y, clear.z, clear.w);
-    //clear the window
-    glClear(GL_COLOR_BUFFER_BIT);
-
     SDL_GL_SwapWindow((SDL_Window*)window->getWindow()->getSDL2Window());
 }
 

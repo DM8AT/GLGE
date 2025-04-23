@@ -21,7 +21,7 @@ project(GLGE
 set(SOURCE_FILES_CPP
     # Core files
     ${GLGE_PATH}/GLGECore/GLGEInstance.cpp
-    ${GLGE_PATH}/GLGECore/GraphicAPIs/GLGEApi.cpp
+    ${GLGE_PATH}/GLGECore/APIs/GLGEApi.cpp
     ${GLGE_PATH}/GLGECore/Logging/GLGEMessage.cpp
     ${GLGE_PATH}/GLGECore/Time/GLGEClock.cpp
     ${GLGE_PATH}/GLGECore/Time/GLGELimiter.cpp
@@ -32,6 +32,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGEColor.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
     # Subelement : Graphic API
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Instance.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Texture.cpp

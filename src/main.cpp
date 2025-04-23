@@ -53,13 +53,14 @@ int main()
     Texture tex("assets/textures/cubeTexture.png", true, inst);
     Texture depth(TEXTURE_PURPOSE_DEPTH, win.getSize(), 0, 0, inst);
 
+    Framebuffer fbuff(3, false, true, true, uvec2(600), inst);
+    std::cout << fbuff << "\n";
     Color clear = Color(0, 1, 1, 1, COLOR_SPACE_HSVA);
 
     Limiter lim = 60;
     lim.start();
     while (win.isOpen())
     {
-        win.setClearColor(clear);
         vec4 values = clear.getValues() + vec4(0.125/lim.getIPS(), 0, 0, 0);
         values.x = (values.x > 1.) ? 0 : values.x;
         clear.setValues(values);
