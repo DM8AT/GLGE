@@ -13,10 +13,12 @@
 #ifndef _GLGE_OBJECT_
 #define _GLGE_OBJECT_
 
-//include settings and instances
-#include "../GLGEInstance.h"
 //include transforms
 #include "GLGETransform.h"
+//include files
+#include "../Files/GLGEFile.h"
+//include instances
+#include "../GLGEInstance.h"
 
 //check for C++
 #if GLGE_CPP
@@ -116,6 +118,20 @@ public:
     void removeChildNamed(const std::string_view& name);
 
     /**
+     * @brief Get all children the object owns
+     * 
+     * @return const std::unordered_map<std::string_view, Object*> all bound children
+     */
+    const std::unordered_map<std::string_view, Object*>& getChildren() const noexcept {return m_children;}
+
+    /**
+     * @brief Get the parent of the object
+     * 
+     * @return Object* the parent of the object
+     */
+    Object* getParent() const noexcept {return m_parent;}
+
+    /**
      * @brief print the object to an output stream
      * 
      * @param os the output stream to print to
@@ -192,7 +208,7 @@ public:
      * 
      * @return const std::string_view& the name of the object
      */
-    inline const std::string_view& getName() noexcept {return m_name;}
+    inline const std::string_view& getName() const noexcept {return m_name;}
 
     /**
      * @brief add a new attatchment to the object
@@ -209,9 +225,100 @@ public:
     void removeAttatchment(ObjectAttatchable* attatchment);
 
     /**
-     * @brief override the update methode
+     * @brief Get the amount of bound attatchments
+     * 
+     * @return uint64_t the amount of bound attatchments
+     */
+    inline uint64_t getAttatchmentCount() const noexcept {return m_attatchments.size();}
+
+    /**
+     * @brief Get one specific attatchment
+     * @warning if the index is greater or equal to the currently attatchet attachment count this function will result in undefined behaviour
+     * 
+     * @param index the index of the attatchment to querr
+     * @return ObjectAttatchable* a pointer to the attatchment
+     */
+    inline ObjectAttatchable* getAttatchment(uint64_t index) const noexcept {return m_attatchments[index];}
+
+    /**
+     * @brief Get all attatchments attatched to the object
+     * 
+     * @return const std::vector<ObjectAttatchable*>& all attatchments the object owns
+     */
+    const std::vector<ObjectAttatchable*>& getAttatchments() const noexcept {return m_attatchments;}
+
+    /**
+     * @brief update the object
+     * 
+     * @return true : always returned
+     * @return false : never returned
      */
     virtual bool onUpdate() override;
+
+    /**
+     * @brief Get the First object attatchable that has a specific type name
+     * 
+     * @param typeName the type name of the element to find
+     * @return ObjectAttatchable* a pointer to the object attatchable or 0 if it was not found
+     */
+    ObjectAttatchable* getFirstOfTypeName(const char* typeName) const noexcept;
+
+    /**
+     * @brief Get the Nth object attatchable by its type name
+     * 
+     * @param typeName the type name of the element to find
+     * @param elementIndex specify the how manyth element to find
+     * @return ObjectAttatchable* a pointer to the object attatchable or 0 if it was not found
+     */
+    ObjectAttatchable* getNthOfTypeName(const char* typeName, uint64_t elementIndex) const noexcept;
+
+    /**
+     * @brief Get the last element that has a specific type name
+     * 
+     * @param typeName the type name to find
+     * @return ObjectAttatchable* a pointer to the object attatchable or 0 if it was not found
+     */
+    ObjectAttatchable* getLastOfTypeName(const char* typeName) const noexcept;
+
+    /**
+     * @brief Get the first object attatchable that has a specific type
+     * 
+     * @tparam T the type of the element to get. MUST INHERITE FROM ObjectAttatchable!
+     * @param example an example element to pull the string from
+     * @return T* a pointer to the object
+     */
+    template <class T> inline T* getFirstOf(const T& example = T()) const noexcept
+    {
+        //return the first element found casted to the type
+        return (T*)getFirstOfTypeName(example.getTypeName());
+    }
+
+    /**
+     * @brief Get the nth element of a specific object attatchable class
+     * 
+     * @tparam T the type of the class to find. MUST INHERITE FROM ObjectAttatchable!
+     * @param index the how manyth element to find
+     * @param example an example element to pull the string from
+     * @return T* a pointer to the object
+     */
+    template <class T> inline T* getNthOf(uint64_t index, const T& example = T()) const noexcept
+    {
+        //return the nth element found casted to the type
+        return (T*)getNthOfTypeName(example.getTypeName(), index);
+    }
+
+    /**
+     * @brief Get the last object attatchable that has a specific type
+     * 
+     * @tparam T the type of the element to get. MUST INHERITE FROM ObjectAttatchable!
+     * @param example an example element to pull the string from
+     * @return T* a pointer to the object
+     */
+    template <class T> inline T* getLastOf(const T& example = T()) const noexcept
+    {
+        //return the last element found casted to the type
+        return (T*)getLastOfTypeName(example.getTypeName());
+    }
 
 protected:
     
@@ -265,6 +372,23 @@ public:
 
     //state that the object class is a friend
     friend class Object;
+
+    /**
+     * @brief Get the Type Name
+     * @warning MUST BE OVERLOADED!
+     * 
+     * @return const char* the constant type name
+     */
+    virtual const char* getTypeName() const noexcept {return "UNDEFINED";}
+
+    /**
+     * @brief print the object attatchable pointer to the console
+     * 
+     * @param os the output stream to print to
+     * @param a the attatchable to print
+     * @return std::ostream& the filled output stream
+     */
+    inline friend std::ostream& operator<<(std::ostream& os, const ObjectAttatchable* a) {return os << "objectAttatchable{type: " << a->getTypeName() << "}";}
 
 protected:
 

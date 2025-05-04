@@ -29,6 +29,7 @@ set(SOURCE_FILES_CPP
     # Subelement : Geometry
     ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
     ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp
+    ${GLGE_PATH}/GLGECore/Geometry/World/GLGEWorld.cpp
 
     # Graphic files
     ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp

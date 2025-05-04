@@ -19,5 +19,7 @@
 #include "GLGETransform.h"
 //include objects
 #include "GLGEObject.h"
+//incldue the world
+#include "World/GLGEWorld.h"
 
 #endif

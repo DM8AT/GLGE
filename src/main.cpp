@@ -14,11 +14,26 @@ public:
     virtual void onUpdate() override
     {
         //log the update
-        m_object->getInstance()->log("Tick", MESSAGE_TYPE_INFO);
+        m_object->getInstance()->log(m_tick.data(), MESSAGE_TYPE_INFO);
     }
 
+    /**
+     * @brief Get the Type Name
+     * 
+     * @return const char* always Attatchment
+     */
+    virtual const char* getTypeName() const noexcept override {return "Attatchment";}
+
+    /**
+     * @brief Set the tick message for the attatchment
+     * 
+     * @param m the tick message
+     */
+    inline void setMsg(const std::string_view& m) {m_tick = m;}
+    
 protected:
 
+    std::string_view m_tick = "Tick";
     std::string_view m_message = "Hello World! Object: ";
 
 };
@@ -92,7 +107,13 @@ int main()
     Object child("Child", Transform(vec3(0)), 0, 0, inst);
     obj1.addChild(child);
     child.addAttatchment(new Attatchment());
-    std::cout << obj1 << "\n";
+    child.getFirstOf<Attatchment>()->setMsg("Hello");
+
+    //store all elements for the world 
+    Object* objects[] = {&obj1};
+    World world(objects, sizeof(objects)/sizeof(*objects), "Hello World!", inst);
+    //print the world
+    std::cout << "World: " << world << "\n";
 
     Framebuffer fbuff(3, false, true, true, uvec2(600), inst);
     std::cout << fbuff << "\n";

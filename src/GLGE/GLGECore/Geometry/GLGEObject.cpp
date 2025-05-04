@@ -13,7 +13,7 @@
 #include "GLGEObject.h"
 
 Object::Object(const std::string_view& name, Transform transform, Object** children, uint64_t childCount, Instance& instance)
- : InstAttachableClass(&instance, name), m_transform(transform)
+ : InstAttachableClass(&instance, name)
 {
     //check if children are available
     if (children)
@@ -167,7 +167,64 @@ bool Object::onUpdate()
         //update the element
         m_attatchments[i]->onUpdate();
     }
-    
+
     //always return true
     return true;
+}
+
+
+ObjectAttatchable* Object::getFirstOfTypeName(const char* typeName) const noexcept
+{
+    //iterate over all elements
+    for (size_t i = 0; i < m_attatchments.size(); ++i)
+    {
+        //check for the type name
+        if (strcmp(typeName, m_attatchments[i]->getTypeName()) == 0)
+        {
+            //return the element
+            return m_attatchments[i];
+        }
+    }
+    //if the code runs untill here, no element was found. Return 0.
+    return 0;
+}
+
+ObjectAttatchable* Object::getNthOfTypeName(const char* typeName, uint64_t elementIndex) const noexcept
+{
+    //store how many elements where found
+    uint64_t count = 0;
+    //iterate over all elements
+    for (size_t i = 0; i < m_attatchments.size(); ++i)
+    {
+        //check if this is of the searched type
+        if (strcmp(typeName, m_attatchments[i]->getTypeName()) == 0)
+        {
+            //increment the found count
+            ++count;
+            //check if the count is correct
+            if (count == elementIndex)
+            {
+                //return the element
+                return m_attatchments[i];
+            }
+        }
+    }
+    //if the code runs untill here, no element was found. Return 0.
+    return 0;
+}
+
+ObjectAttatchable* Object::getLastOfTypeName(const char* typeName) const noexcept
+{
+    //iterate backwards over all elements
+    for (size_t i = m_attatchments.size(); i > 0; --i)
+    {
+        //check the next element
+        if (strcmp(typeName, m_attatchments[i-1]->getTypeName()) == 0)
+        {
+            //return the text element
+            return m_attatchments[i-1];
+        }
+    }
+    //if the code runs untill here, no element was found. Return 0.
+    return 0;
 }
