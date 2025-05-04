@@ -284,6 +284,13 @@ public:
      */
     virtual bool onUpdate() {return true;}
 
+    /**
+     * @brief Get the Instance the attatchable is attatched to
+     * 
+     * @return Instance* a pointer to the parent instance
+     */
+    inline Instance* getInstance() noexcept {return m_instance;}
+
 protected:
 
     /**

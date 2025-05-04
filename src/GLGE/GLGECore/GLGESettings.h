@@ -52,6 +52,8 @@ $$$$$$$  |$$$$$$$$\ $$ |      $$ |  $$ |\$$$$$$  |$$$$$$$$\ $$ |         $$$$$$$
 #include <string_view>
 //include vectors
 #include <vector>
+//include orderd dictionaris alias maps
+#include <map>
 //include dictionaris alias unorderd maps
 #include <unordered_map>
 //include threads

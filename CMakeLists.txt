@@ -26,6 +26,9 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGECore/Time/GLGEClock.cpp
     ${GLGE_PATH}/GLGECore/Time/GLGELimiter.cpp
     ${GLGE_PATH}/GLGECore/Files/GLGEFile.cpp
+    # Subelement : Geometry
+    ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
+    ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp
 
     # Graphic files
     ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp

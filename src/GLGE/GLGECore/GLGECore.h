@@ -27,5 +27,7 @@
 
 //include instances
 #include "GLGEInstance.h"
+//include geometry
+#include "Geometry/GLGEGeometry.h"
 
 #endif

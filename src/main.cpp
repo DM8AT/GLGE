@@ -1,5 +1,28 @@
 #include "GLGE/GLGE.h"
 
+class Attatchment : public ObjectAttatchable
+{
+public:
+
+    Attatchment() = default;
+
+    virtual void onAttatch() override
+    {
+        std::cout << m_message << *m_object << "\n";
+    }
+
+    virtual void onUpdate() override
+    {
+        //log the update
+        m_object->getInstance()->log("Tick", MESSAGE_TYPE_INFO);
+    }
+
+protected:
+
+    std::string_view m_message = "Hello World! Object: ";
+
+};
+
 class FileLogger : public Logger
 {
 public:
@@ -47,11 +70,29 @@ int main()
     APIs best = getBestGraphicAPI(apis.data(), apis.size());
     if (best == API_FALLBACK_ERROR) {return 1;}
     Instance inst("Main instance", best);
+    //set a logger for the instance
+    inst.setLogger(new FileLogger("TEST_CPP.log", true));
 
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
     Window win("Hello World!", 600, 0, settings, inst);
     Texture tex("assets/textures/cubeTexture.png", true, inst);
     Texture depth(TEXTURE_PURPOSE_DEPTH, win.getSize(), 0, 0, inst);
+
+    //store all elements for a vertex
+    VertexLayoutElement elements[] = {
+        {"Position", sizeof(vec3)},
+        {"Normal", sizeof(vec3)},
+        {"Texture", sizeof(vec2)}
+    };
+    //create the vertex layout
+    VertexLayout layout(elements, sizeof(elements)/sizeof(*elements));
+    std::cout << layout << "\n";
+
+    Object obj1("Object", Transform(vec3(0)), 0, 0, inst);
+    Object child("Child", Transform(vec3(0)), 0, 0, inst);
+    obj1.addChild(child);
+    child.addAttatchment(new Attatchment());
+    std::cout << obj1 << "\n";
 
     Framebuffer fbuff(3, false, true, true, uvec2(600), inst);
     std::cout << fbuff << "\n";
