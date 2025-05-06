@@ -159,28 +159,8 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, const World& world) noexcept;
 
-    /**
-     * @brief Set the Camera of the world
-     * 
-     * The Object will automaticaly belong to the root of the world. It can be contained somewhere else too. 
-     * 
-     * @param object the camera to use as a object
-     */
-    inline void setCamera(Object& object) noexcept {m_camera = &object;}
-
-    /**
-     * @brief Get the Camera of the world
-     * 
-     * @return Object* a pointer to the camera object or 0 if no camera is defined
-     */
-    inline Object* getCamera() const noexcept {return m_camera;}
-
 protected:
 
-    /**
-     * @brief store an object that will be used as a camera
-     */
-    Object* m_camera = 0;
     /**
      * @brief store all attatched objects
      */
