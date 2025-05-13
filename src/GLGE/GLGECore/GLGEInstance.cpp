@@ -129,7 +129,7 @@ void Instance::initGraphicAPI(Window* window)
     //store a temporary pointer
     void* tmp = 0;
     //switch over the graphic api
-    if (m_api == API_OPENGL_3_3)
+    if (m_api == API_OPENGL_4_6)
     {
         //set the OpenGL attributes
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);

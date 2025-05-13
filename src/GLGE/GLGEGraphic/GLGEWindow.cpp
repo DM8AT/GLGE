@@ -105,7 +105,6 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     switch (m_instance->getAPI())
     {
     //add flags for OpenGL
-    case API_OPENGL_3_3:
     case API_OPENGL_4_6:
     case API_OPENGL_4_6_RT:
         flags = (SDL_WindowFlags)(flags | SDL_WINDOW_OPENGL);
@@ -148,7 +147,7 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     //switch over the graphic APIs
     switch (m_instance->getAPI())
     {
-    case API_OPENGL_3_3:
+    case API_OPENGL_4_6:
         m_gWindow = new OGL3_3_Window(this, m_instance->getGraphicInstance());
         break;
     

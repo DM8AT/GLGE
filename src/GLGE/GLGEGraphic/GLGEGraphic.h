@@ -37,6 +37,8 @@
 #include "GLGEFramebuffer.h"
 //include windows
 #include "GLGEWindow.h"
+//include render pipelines
+#include "GLGERenderPipeline.h"
 
 #endif //graphic including section
 

@@ -16,7 +16,7 @@
 //include instances
 #include "../../GLGEGraphicAPI_Instance.h"
 //include command buffers
-#include "GLGE_OGL3_3_CommandBuffer.h"
+#include "GLGE_OGL4_6_CommandBuffer.h"
 
 //check if this is C++
 #if GLGE_CPP

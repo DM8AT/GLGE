@@ -32,10 +32,6 @@ typedef enum e_APIs {
      */
     API_NONE = 0,
     /**
-     * @brief say that OpenGL should be used for graphics and that OpenGL 3.3 should be used as maximum
-     */
-    API_OPENGL_3_3,
-    /**
      * @brief say that OpenGL should be used for graphics and that OpenGL 4.6 should be used as maximum
      */
     API_OPENGL_4_6,

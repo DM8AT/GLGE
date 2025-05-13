@@ -20,10 +20,8 @@
 
 //say that the headless api is not defined
 #define GLGE_API_SUPPORTS_API_NONE GLGE_API_UNDEFINED
-//say that the OpenGL 3.3 api is not defined
-#define GLGE_API_SUPPORTS_API_OPENGL_3_3 GLGE_API_DEFINED
-//say that the OpenGL 4.6 api is not defined
-#define GLGE_API_SUPPORTS_API_OPENGL_4_6 GLGE_API_UNDEFINED
+//say that the OpenGL 4.6 api is defined
+#define GLGE_API_SUPPORTS_API_OPENGL_4_6 GLGE_API_DEFINED
 //say that the OpenGL 4.6 Ray Tracing api is not defined
 #define GLGE_API_SUPPORTS_API_OPENGL_4_6_RT GLGE_API_UNDEFINED
 //say that the Vulkan 1.2 default api is not defined

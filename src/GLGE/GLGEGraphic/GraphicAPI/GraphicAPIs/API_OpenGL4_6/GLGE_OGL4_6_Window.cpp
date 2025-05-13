@@ -10,11 +10,11 @@
  */
 
 //include the OpenGL 3.3 window
-#include "GLGE_OGL3_3_Window.h"
+#include "GLGE_OGL4_6_Window.h"
 //include the OpenGL instance
-#include "GLGE_OGL3_3_Instance.h"
+#include "GLGE_OGL4_6_Instance.h"
 //include the OpenGL command buffer
-#include "GLGE_OGL3_3_CommandBuffer.h"
+#include "GLGE_OGL4_6_CommandBuffer.h"
 //include windows
 #include "../../../GLGEWindow.h"
 

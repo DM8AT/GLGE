@@ -10,12 +10,12 @@
  */
 
 //include the instance
-#include "GLGE_OGL3_3_Instance.h"
+#include "GLGE_OGL4_6_Instance.h"
 //include command buffers
 #include "../../GLGEGraphicAPI_CommandBuffer.h"
 
 //include windows
-#include "GLGE_OGL3_3_Window.h"
+#include "GLGE_OGL4_6_Window.h"
 #include "../../../GLGEWindow.h"
 
 //include OpenGL

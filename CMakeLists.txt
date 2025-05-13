@@ -43,11 +43,11 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Framebuffer.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Window.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_CommandBuffer.cpp
-        # Graphic API: OpenGL 3.3
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Instance.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Window.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_CommandBuffer.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL3_3/GLGE_OGL3_3_Texture.cpp
+        # Graphic API: OpenGL 4.6
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Instance.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Window.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_CommandBuffer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Texture.cpp
 
     # Math files
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp

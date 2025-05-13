@@ -13,7 +13,7 @@
 #ifndef _GLGE_ALL_APIS_
 #define _GLGE_ALL_APIS_
 
-//include OpenGL 3.3
-#include "API_OpenGL3_3/GLGE_OGL3_3.h"
+//include OpenGL 4.6
+#include "API_OpenGL4_6/GLGE_OGL4_6.h"
 
 #endif

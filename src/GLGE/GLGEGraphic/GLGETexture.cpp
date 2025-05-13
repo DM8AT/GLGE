@@ -44,7 +44,7 @@ void Texture::create(std::string_view file, bool alpha)
     SDL_BlitSurface(img, 0, conv, 0);
 
     //switch over the graphic API
-    if (m_instance->getAPI() == API_OPENGL_3_3)
+    if (m_instance->getAPI() == API_OPENGL_4_6)
     {
         //store the new texture
         m_texture = new OGL3_3_Texture(conv->pixels, false, alpha, uvec2(conv->w, conv->h), m_instance->getGraphicInstance());
@@ -59,7 +59,7 @@ void Texture::create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool
 {
     //just create the texture
     //switch over the graphic API
-    if (m_instance->getAPI() == API_OPENGL_3_3)
+    if (m_instance->getAPI() == API_OPENGL_4_6)
     {
         //store the new texture
         m_texture = new OGL3_3_Texture(purpose, size, isHDR, alpha, m_instance->getGraphicInstance());

@@ -7,7 +7,6 @@ int main()
         API_VULKAN_1_2_INDIRECT,
         API_VULKAN_1_2_DEFAULT,
         API_OPENGL_4_6,
-        API_OPENGL_3_3,
         API_SOFTWARE
     };
     //get the best supported graphics api

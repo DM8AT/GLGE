@@ -80,7 +80,7 @@ protected:
 int main()
 {
     std::vector<APIs> apis = {
-        API_OPENGL_3_3
+        API_OPENGL_4_6
     };
     APIs best = getBestGraphicAPI(apis.data(), apis.size());
     if (best == API_FALLBACK_ERROR) {return 1;}

@@ -14,12 +14,12 @@
 #define _GLGE_OGL_3_3_
 
 //include the instance
-#include "GLGE_OGL3_3_Instance.h"
+#include "GLGE_OGL4_6_Instance.h"
 //include the command buffer
-#include "GLGE_OGL3_3_CommandBuffer.h"
+#include "GLGE_OGL4_6_CommandBuffer.h"
 //include the texture
-#include "GLGE_OGL3_3_Texture.h"
+#include "GLGE_OGL4_6_Texture.h"
 //include the window
-#include "GLGE_OGL3_3_Window.h"
+#include "GLGE_OGL4_6_Window.h"
 
 #endif

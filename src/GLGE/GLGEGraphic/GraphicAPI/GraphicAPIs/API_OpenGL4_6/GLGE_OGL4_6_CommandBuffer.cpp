@@ -10,7 +10,7 @@
  */
 
 //include the command buffer
-#include "GLGE_OGL3_3_CommandBuffer.h"
+#include "GLGE_OGL4_6_CommandBuffer.h"
 
 void OGL3_3_CommandBuffer::onPlay()
 {

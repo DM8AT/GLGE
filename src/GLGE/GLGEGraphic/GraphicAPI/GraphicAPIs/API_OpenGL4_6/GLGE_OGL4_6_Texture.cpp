@@ -10,9 +10,9 @@
  */
 
 //include the textures
-#include "GLGE_OGL3_3_Texture.h"
+#include "GLGE_OGL4_6_Texture.h"
 //inlcude OpenGL 3.3 instances
-#include "GLGE_OGL3_3_Instance.h"
+#include "GLGE_OGL4_6_Instance.h"
 //include OpenGL
 #include <GL/glew.h>
 

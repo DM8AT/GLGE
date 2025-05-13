@@ -19,7 +19,7 @@
  */
 static std::string_view apiLookupTable[] = {
     "API_NONE",
-    "API_OPENGL_3_3",
+    "API_OPENGL_4_6",
     "API_OPENGL_4_6",
     "API_OPENGL_4_6_RT",
     "API_VULKAN_1_2_DEFAULT",
@@ -55,8 +55,6 @@ bool GLGE_C_FUNC(getAPISupport)(APIs api) GLGE_FUNC_NOEXCEPT
 
     //check if headless is supported
     __GLGE_SWITCH_HELPER(API_NONE, GLGE_API_SUPPORTS_API_NONE)
-    //check if opengl 3.3 is supported
-    __GLGE_SWITCH_HELPER(API_OPENGL_3_3, GLGE_API_SUPPORTS_API_OPENGL_3_3)
     //check if opengl 4.6 is supported
     __GLGE_SWITCH_HELPER(API_OPENGL_4_6, GLGE_API_SUPPORTS_API_OPENGL_4_6)
     //check if opengl 4.6 ray tracing is supported
