@@ -73,6 +73,21 @@ public:
      */
     const std::string& getFile() const noexcept {return m_file;}
 
+    /**
+     * @brief Get the Shader Stages and the corresponding entry points the shader contains
+     * 
+     * @return const std::unordered_map<ShaderType, std::string>& the shader's stored shader stages and corresponding entry point names
+     */
+    inline const std::unordered_map<ShaderType, std::string>& getShaderStages() const noexcept {return m_shaders;}
+
+    /**
+     * @brief prepare a sourcecode snipped for a shader stage
+     * 
+     * @param src the source code of the stage to prepare
+     * @param stage the shader stage to prepare for
+     */
+    static void prepareForStage(std::string& src, ShaderType stage) noexcept;
+
 protected:
 
     /**
