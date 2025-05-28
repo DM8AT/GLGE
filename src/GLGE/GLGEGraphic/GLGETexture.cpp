@@ -47,7 +47,7 @@ void Texture::create(std::string_view file, bool alpha)
     if (m_instance->getAPI() == API_OPENGL_4_6)
     {
         //store the new texture
-        m_texture = new OGL3_3_Texture(conv->pixels, false, alpha, uvec2(conv->w, conv->h), m_instance->getGraphicInstance());
+        m_texture = new OGL4_6_Texture(conv->pixels, false, alpha, uvec2(conv->w, conv->h), m_instance->getGraphicInstance());
     }
 
     //clean up
@@ -62,7 +62,7 @@ void Texture::create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool
     if (m_instance->getAPI() == API_OPENGL_4_6)
     {
         //store the new texture
-        m_texture = new OGL3_3_Texture(purpose, size, isHDR, alpha, m_instance->getGraphicInstance());
+        m_texture = new OGL4_6_Texture(purpose, size, isHDR, alpha, m_instance->getGraphicInstance());
     }
 }
 

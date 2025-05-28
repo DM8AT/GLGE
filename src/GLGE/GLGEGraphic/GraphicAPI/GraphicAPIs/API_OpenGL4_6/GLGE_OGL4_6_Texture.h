@@ -1,7 +1,7 @@
 /**
- * @file GLGE_OGL3_3_Texture.h
+ * @file GLGE_OGL4_6_Texture.h
  * @author DM8AT
- * @brief define a texture for a OpenGL 3.3
+ * @brief define a texture for a OpenGL 4.6
  * @version 0.1
  * @date 2025-04-19
  * 
@@ -10,8 +10,8 @@
  */
 
 //header guard
-#ifndef _GLGE_OGL_3_3_TEXTURE_
-#define _GLGE_OGL_3_3_TEXTURE_
+#ifndef _GLGE_OGL_4_6_TEXTURE_
+#define _GLGE_OGL_4_6_TEXTURE_
 
 //include the window
 #include "../../GLGEGraphicAPI_Window.h"
@@ -20,19 +20,19 @@
 #if GLGE_CPP
 
 /**
- * @brief define the texture for OpenGL 3.3
+ * @brief define the texture for OpenGL 4.6
  */
-class OGL3_3_Texture : public GraphicTexture
+class OGL4_6_Texture : public GraphicTexture
 {
 public:
 
     /**
-     * @brief Construct a new OpenGL 3.3 texture
+     * @brief Construct a new OpenGL 4.6 texture
      */
-    OGL3_3_Texture() = default;
+    OGL4_6_Texture() = default;
 
     /**
-     * @brief Construct a new OpenGL 3.3 texture
+     * @brief Construct a new OpenGL 4.6 texture
      * 
      * @param data the data for the texture
      * @param isHDR the format of the data (hdr = vec4, not hdr = uint8_t[4])
@@ -40,7 +40,7 @@ public:
      * @param size the size of the texture in pixels
      * @param instance the graphic instance the texture will belong to
      */
-    inline OGL3_3_Texture(void* data, bool isHDR, bool alpha, const uvec2& size, GraphicInstance* instance) : GraphicTexture(data, isHDR, alpha, size, instance) {onCreate();}
+    inline OGL4_6_Texture(void* data, bool isHDR, bool alpha, const uvec2& size, GraphicInstance* instance) : GraphicTexture(data, isHDR, alpha, size, instance) {onCreate();}
 
     /**
      * @brief Construct a new Graphic Texture
@@ -51,7 +51,7 @@ public:
      * @param alpha specify if a alpha channel should exist or not
      * @param instance store a pointer to the graphic instance the texture belongs to
      */
-    inline OGL3_3_Texture(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, GraphicInstance* instance) : GraphicTexture(purpose, size, isHDR, alpha, instance) {onCreate();}
+    inline OGL4_6_Texture(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, GraphicInstance* instance) : GraphicTexture(purpose, size, isHDR, alpha, instance) {onCreate();}
 
     /**
      * @brief create the OpenGL texture

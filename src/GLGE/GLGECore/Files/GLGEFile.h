@@ -17,6 +17,8 @@
 #include "../GLGESettings.h"
 //include the utilities
 #include "../GLGEUtil.h"
+//include pathes
+#include "GLGEPath.h"
 
 /**
  * @brief manage the contents of a file
@@ -100,7 +102,7 @@ public:
      * @param path the path to the file to open
      * @param create true : the file can be created | false : the file can not be created
      */
-    File(std::string_view path, bool create);
+    File(const Path& path, bool create);
 
     /**
      * @brief Destroy the File
@@ -155,9 +157,9 @@ private:
      */
     FileContents m_content;
     /**
-     * @brief store the path of the own file
+     * @brief store the path of the own file in the native path format
      */
-    std::string_view m_path = "";
+    std::string m_path = "";
     
     /**
      * @brief store if a potential change occoured
@@ -179,7 +181,7 @@ extern "C" {
     /**
      * @brief an opaque struct to store an instance of the File class
      */
-    typedef struct s_File sFile;
+    typedef struct s_File File_t;
 
     /**
      * @brief open a file
@@ -187,14 +189,14 @@ extern "C" {
      * @param path the path for the file to open
      * @param create true : the file will be created | false : the file will not be created
      */
-    sFile* GLGE_C_FUNC(openFile)(const char* path, bool create) GLGE_FUNC_NOEXCEPT;
+    File_t* GLGE_C_FUNC(openFile)(const Path_t* path, bool create) GLGE_FUNC_NOEXCEPT;
 
     /**
      * @brief close a file
      * 
      * @param file a pointer to the file to close
      */
-    void GLGE_C_FUNC(closeFile)(sFile* file) GLGE_FUNC_NOEXCEPT;
+    void GLGE_C_FUNC(closeFile)(File_t* file) GLGE_FUNC_NOEXCEPT;
 
     /**
      * @brief get the file contents from a file
@@ -202,7 +204,7 @@ extern "C" {
      * @param file a pointer to the file to read from
      * @return FileContents* a pointer to the contents of the file, can be used for reading and writing
      */
-    FileContents* GLGE_C_FUNC(getFileContents)(sFile* file) GLGE_FUNC_NOEXCEPT;
+    FileContents* GLGE_C_FUNC(getFileContents)(File_t* file) GLGE_FUNC_NOEXCEPT;
 
     /**
      * @brief get the length of a file in bytes
@@ -210,7 +212,7 @@ extern "C" {
      * @param file a pointer to the file to read the length from
      * @return uint64_t the length of the file in bytes
      */
-    uint64_t GLGE_C_FUNC(getFileLength)(sFile* file) GLGE_FUNC_NOEXCEPT;
+    uint64_t GLGE_C_FUNC(getFileLength)(File_t* file) GLGE_FUNC_NOEXCEPT;
 
     /**
      * @brief check if a file was updated externaly
@@ -219,7 +221,7 @@ extern "C" {
      * @return true : the file was updated externaly
      * @return false : the file was not updated externaly
      */
-    bool GLGE_C_FUNC(didFileUpdate)(sFile* file) GLGE_FUNC_NOEXCEPT;
+    bool GLGE_C_FUNC(didFileUpdate)(File_t* file) GLGE_FUNC_NOEXCEPT;
 
     /**
      * @brief reload a file with the contents stored on disk
@@ -227,14 +229,14 @@ extern "C" {
      * 
      * @param file a pointer to the file to reload
      */
-    void GLGE_C_FUNC(reloadFile)(sFile* file) GLGE_FUNC_NOEXCEPT;
+    void GLGE_C_FUNC(reloadFile)(File_t* file) GLGE_FUNC_NOEXCEPT;
 
     /**
      * @brief save a file to the disk
      * 
      * @param file a pointer to the file to save
      */
-    void GLGE_C_FUNC(saveFile)(sFile* file) GLGE_FUNC_NOEXCEPT;
+    void GLGE_C_FUNC(saveFile)(File_t* file) GLGE_FUNC_NOEXCEPT;
 
     /**
      * @brief check if a specific path is a file

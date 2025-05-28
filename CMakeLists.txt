@@ -26,6 +26,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGECore/Time/GLGEClock.cpp
     ${GLGE_PATH}/GLGECore/Time/GLGELimiter.cpp
     ${GLGE_PATH}/GLGECore/Files/GLGEFile.cpp
+    ${GLGE_PATH}/GLGECore/Files/GLGEPath.cpp
     # Subelement : Geometry
     ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
     ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp
@@ -37,6 +38,13 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
+    # Shader stuff
+    ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
+    ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp
+        # Shader extensions
+        ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Core/GLGE_MainStatement.cpp
+        ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Core/GLGE_VersionStatement.cpp
+        ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Util/GLGE_IncludeStatement.cpp
     # Subelement : Graphic API
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Instance.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Texture.cpp
@@ -48,6 +56,7 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Window.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_CommandBuffer.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Texture.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Shader.cpp
 
     # Math files
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp

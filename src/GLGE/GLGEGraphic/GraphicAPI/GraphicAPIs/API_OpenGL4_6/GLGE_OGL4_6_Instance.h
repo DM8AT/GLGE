@@ -1,7 +1,7 @@
 /**
- * @file GLGE_OGL3_3_Instance.h
+ * @file GLGE_OGL4_6_Instance.h
  * @author DM8AT
- * @brief define instances for OpenGL 3.3
+ * @brief define instances for OpenGL 4.6
  * @version 0.1
  * @date 2025-04-16
  * 
@@ -10,8 +10,8 @@
  */
 
 //header guard
-#ifndef _GLGE_OGL_3_3_INSTANCE_
-#define _GLGE_OGL_3_3_INSTANCE_
+#ifndef _GLGE_OGL_4_6_INSTANCE_
+#define _GLGE_OGL_4_6_INSTANCE_
 
 //include instances
 #include "../../GLGEGraphicAPI_Instance.h"
@@ -21,30 +21,30 @@
 //check if this is C++
 #if GLGE_CPP
 
-//OpenGL 3.3 Windows will be defined later
-class OGL3_3_Window;
+//OpenGL 4.6 Windows will be defined later
+class OGL4_6_Window;
 
 /**
- * @brief define an instance for OpenGL 3.3
+ * @brief define an instance for OpenGL 4.6
  */
-class OGL3_3_Instance : public GraphicInstance
+class OGL4_6_Instance : public GraphicInstance
 {
 public:
     /**
-     * @brief Construct a new OpenGL 3.3 instance
+     * @brief Construct a new OpenGL 4.6 instance
      */
-    OGL3_3_Instance() = default;
+    OGL4_6_Instance() = default;
 
     /**
-     * @brief Construct a new OpenGL 3.3 instance
+     * @brief Construct a new OpenGL 4.6 instance
      * 
      * @param context a pointer to the OpenGL context
      * @param instance a pointer to the instance the graphic instance belongs to
      */
-    OGL3_3_Instance(void* context, Instance* instance) : GraphicInstance(instance), m_context(context) {onCreate();}
+    OGL4_6_Instance(void* context, Instance* instance) : GraphicInstance(instance), m_context(context) {onCreate();}
 
     /**
-     * @brief run the rendering for the OpenGL 3.3 instance
+     * @brief run the rendering for the OpenGL 4.6 instance
      */
     void onRender() override;
 
@@ -75,14 +75,14 @@ public:
      * 
      * @param window a pointer to the window to use for initalization
      */
-    void initalizeGLEW(OGL3_3_Window* window);
+    void initalizeGLEW(OGL4_6_Window* window);
 
     /**
      * @brief Get the Data Buffer
      * 
-     * @return OGL3_3_CommandBuffer& the data buffer
+     * @return OGL4_6_CommandBuffer& the data buffer
      */
-    inline OGL3_3_CommandBuffer& getDataBuffer() noexcept {return m_dataBuffer;}
+    inline OGL4_6_CommandBuffer& getDataBuffer() noexcept {return m_dataBuffer;}
 
 protected:
 
@@ -98,7 +98,7 @@ protected:
     /**
      * @brief store the data command buffer
      */
-    OGL3_3_CommandBuffer m_dataBuffer;
+    OGL4_6_CommandBuffer m_dataBuffer;
 
     /**
      * @brief store that GLEW is not initalized

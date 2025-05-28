@@ -1,7 +1,7 @@
 /**
- * @file GLGE_OGL3_3_Instance.cpp
+ * @file GLGE_OGL4_6_Instance.cpp
  * @author DM8AT
- * @brief implement the OpenGL 3.3 instance
+ * @brief implement the OpenGL 4.6 instance
  * @version 0.1
  * @date 2025-04-16
  * 
@@ -23,7 +23,7 @@
 //include SDL2
 #include <SDL2/SDL.h>
 
-void OGL3_3_Instance::onRender()
+void OGL4_6_Instance::onRender()
 {
     //loop over all command buffers
     for (size_t i = 0; i < m_buffers.size(); ++i)
@@ -33,7 +33,7 @@ void OGL3_3_Instance::onRender()
     }
 }
 
-void OGL3_3_Instance::initalizeGLEW(OGL3_3_Window* window)
+void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
 {
     //activate the context
     SDL_GL_MakeCurrent((SDL_Window*)window->getWindow()->getSDL2Window(), m_context);
@@ -57,7 +57,7 @@ void OGL3_3_Instance::initalizeGLEW(OGL3_3_Window* window)
     addCommandBuffer(&m_dataBuffer);
 }
 
-void OGL3_3_Instance::onCreate()
+void OGL4_6_Instance::onCreate()
 {
     //say that GLEW is not initalized
     m_hasGLEW = false;
@@ -65,7 +65,7 @@ void OGL3_3_Instance::onCreate()
     m_dataBuffer.create(this);
 }
 
-void OGL3_3_Instance::onDestroy()
+void OGL4_6_Instance::onDestroy()
 {
     //remove the command buffer
     removeCommandBuffer(&m_dataBuffer);

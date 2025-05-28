@@ -1,5 +1,5 @@
 /**
- * @file GLGE_OGL3_3_CommandBuffer.cpp
+ * @file GLGE_OGL4_6_CommandBuffer.cpp
  * @author DM8AT
  * @brief implement the command buffer
  * @version 0.1
@@ -12,7 +12,7 @@
 //include the command buffer
 #include "GLGE_OGL4_6_CommandBuffer.h"
 
-void OGL3_3_CommandBuffer::onPlay()
+void OGL4_6_CommandBuffer::onPlay()
 {
     //iterate over all commands
     while (m_commands.size() > 0)

@@ -148,7 +148,7 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     switch (m_instance->getAPI())
     {
     case API_OPENGL_4_6:
-        m_gWindow = new OGL3_3_Window(this, m_instance->getGraphicInstance());
+        m_gWindow = new OGL4_6_Window(this, m_instance->getGraphicInstance());
         break;
     
     default:

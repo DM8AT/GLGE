@@ -53,7 +53,7 @@ void s_FileContents::resize(uint64_t size)
 
 
 
-File::File(std::string_view path, bool create) : m_path(path)
+File::File(const Path& path, bool create) : m_path(path.getPath(PATH_LAYOUT_NATIVE))
 {
     //check if the file exists
     if (!exists(m_path) && create)
@@ -128,43 +128,43 @@ void File::reload()
 
 
 
-sFile* GLGE_C_FUNC(openFile)(const char* path, bool create) GLGE_FUNC_NOEXCEPT
+File_t* GLGE_C_FUNC(openFile)(const Path* path, bool create) GLGE_FUNC_NOEXCEPT
 {
     //create the new file instance, cast and return it
-    return (sFile*)(new File(path, create));
+    return (File_t*)(new File(*path, create));
 }
 
-void GLGE_C_FUNC(closeFile)(sFile* file) GLGE_FUNC_NOEXCEPT
+void GLGE_C_FUNC(closeFile)(File_t* file) GLGE_FUNC_NOEXCEPT
 {
     //cast and delete the file
     delete ((File*)file);
 }
 
-FileContents* GLGE_C_FUNC(getFileContents)(sFile* file) GLGE_FUNC_NOEXCEPT
+FileContents* GLGE_C_FUNC(getFileContents)(File_t* file) GLGE_FUNC_NOEXCEPT
 {
     //use the C++ function to read the contensts
     return &(((File*)file)->content());
 }
 
-uint64_t GLGE_C_FUNC(getFileLength)(sFile* file) GLGE_FUNC_NOEXCEPT
+uint64_t GLGE_C_FUNC(getFileLength)(File_t* file) GLGE_FUNC_NOEXCEPT
 {
     //use the C++ function to read the length
     return ((File*)file)->getLength();
 }
 
-bool GLGE_C_FUNC(didFileUpdate)(sFile* file) GLGE_FUNC_NOEXCEPT
+bool GLGE_C_FUNC(didFileUpdate)(File_t* file) GLGE_FUNC_NOEXCEPT
 {
     //use the C++ function to check for an update
     return ((File*)file)->didUpdate();
 }
 
-void GLGE_C_FUNC(reloadFile)(sFile* file) GLGE_FUNC_NOEXCEPT
+void GLGE_C_FUNC(reloadFile)(File_t* file) GLGE_FUNC_NOEXCEPT
 {
     //use the C++ function to reload the file
     ((File*)file)->reload();
 }
 
-void GLGE_C_FUNC(saveFile)(sFile* file) GLGE_FUNC_NOEXCEPT
+void GLGE_C_FUNC(saveFile)(File_t* file) GLGE_FUNC_NOEXCEPT
 {
     //use the C++ function to save the file
     ((File*)file)->save();

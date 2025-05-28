@@ -141,7 +141,7 @@ void Instance::initGraphicAPI(Window* window)
         //bind no context
         SDL_GL_MakeCurrent((SDL_Window*)window->getSDL2Window(), 0);
         //create a new OpenGL 3.3 instance
-        m_gInstance = new OGL3_3_Instance(tmp, this);
+        m_gInstance = new OGL4_6_Instance(tmp, this);
     }
 }
 

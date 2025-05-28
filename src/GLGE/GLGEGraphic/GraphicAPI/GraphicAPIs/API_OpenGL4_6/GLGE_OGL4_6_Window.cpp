@@ -1,7 +1,7 @@
 /**
- * @file GLGE_OGL3_3_Window.cpp
+ * @file GLGE_OGL4_6_Window.cpp
  * @author DM8AT
- * @brief implement the functionality for the OpenGL 3.3 window
+ * @brief implement the functionality for the OpenGL 4.6 window
  * @version 0.1
  * @date 2025-04-16
  * 
@@ -9,7 +9,7 @@
  * 
  */
 
-//include the OpenGL 3.3 window
+//include the OpenGL 4.6 window
 #include "GLGE_OGL4_6_Window.h"
 //include the OpenGL instance
 #include "GLGE_OGL4_6_Instance.h"
@@ -22,24 +22,24 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
-void OGL3_3_RenderFunc(void* data, uint64_t)
+void OGL4_6_RenderFunc(void* data, uint64_t)
 {
     //extract the window
-    OGL3_3_Window* window = (OGL3_3_Window*)data;
+    OGL4_6_Window* window = (OGL4_6_Window*)data;
 
     //check if GLEW is initalized
-    if (!((OGL3_3_Instance*)window->getInstance())->isGlewInitalized())
+    if (!((OGL4_6_Instance*)window->getInstance())->isGlewInitalized())
     {
         //if not, initalize GLEw
-        ((OGL3_3_Instance*)window->getInstance())->initalizeGLEW(window);
+        ((OGL4_6_Instance*)window->getInstance())->initalizeGLEW(window);
     }
     //make this the current window
-    SDL_GL_MakeCurrent((SDL_Window*)window->getWindow()->getSDL2Window(), ((OGL3_3_Instance*)window->getInstance())->getContext());
+    SDL_GL_MakeCurrent((SDL_Window*)window->getWindow()->getSDL2Window(), ((OGL4_6_Instance*)window->getInstance())->getContext());
 
     SDL_GL_SwapWindow((SDL_Window*)window->getWindow()->getSDL2Window());
 }
 
-void OGL3_3_RenderThread(OGL3_3_Window* window)
+void OGL4_6_RenderThread(OGL4_6_Window* window)
 {
     //loop while the instance is running
     while (window->isRendererActive())
@@ -50,7 +50,7 @@ void OGL3_3_RenderThread(OGL3_3_Window* window)
             //lock the command buffer
             window->getCommandBuffer()->begin();
             //record the command buffer
-            window->getCommandBuffer()->add(0, (void*)OGL3_3_RenderFunc, (void*)window, sizeof(window));
+            window->getCommandBuffer()->add(0, (void*)OGL4_6_RenderFunc, (void*)window, sizeof(window));
             //stop the command buffer
             window->getCommandBuffer()->end();
         }
@@ -60,18 +60,18 @@ void OGL3_3_RenderThread(OGL3_3_Window* window)
     }
 }
 
-void OGL3_3_Window::onCreate()
+void OGL4_6_Window::onCreate()
 {
     //create the command buffer
-    m_buffer = new OGL3_3_CommandBuffer(m_graphicInstance);
+    m_buffer = new OGL4_6_CommandBuffer(m_graphicInstance);
     //add the command buffer to the instance
     m_graphicInstance->addCommandBuffer(m_buffer);
     //start the render thread
     m_runRenderer = true;
-    m_render = std::thread(OGL3_3_RenderThread, this);
+    m_render = std::thread(OGL4_6_RenderThread, this);
 }
 
-void OGL3_3_Window::onDestroy()
+void OGL4_6_Window::onDestroy()
 {
     //stop the render thread
     m_runRenderer = false;

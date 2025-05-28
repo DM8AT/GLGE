@@ -39,6 +39,10 @@
 #include "GLGEWindow.h"
 //include render pipelines
 #include "GLGERenderPipeline.h"
+//include shaders
+#include "Shader/GLGEShader.h"
+//include shader processors
+#include "Shader/GLGEShaderProcessor.h"
 
 #endif //graphic including section
 

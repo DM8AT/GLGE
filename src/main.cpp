@@ -47,7 +47,7 @@ public:
      * @param path the path to the log file
      * @param debug say if debugging is enabled
      */
-    FileLogger(std::string_view path, bool debug) : Logger(debug), m_file(path, true)
+    FileLogger(Path path, bool debug) : Logger(debug), m_file(path, true)
     {
         //clear the file contents
         m_file.content() = "";
@@ -86,7 +86,7 @@ int main()
     if (best == API_FALLBACK_ERROR) {return 1;}
     Instance inst("Main instance", best);
     //set a logger for the instance
-    inst.setLogger(new FileLogger("TEST_CPP.log", true));
+    inst.setLogger(new FileLogger(Path("TEST_CPP.log", PATH_LAYOUT_DEBIAN), true));
 
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
     Window win("Hello World!", 600, 0, settings, inst);
@@ -118,6 +118,12 @@ int main()
     Framebuffer fbuff(3, false, true, true, uvec2(600), inst);
     std::cout << fbuff << "\n";
     Color clear = Color(0, 1, 1, 1, COLOR_SPACE_HSVA);
+
+    ShaderProcessor processor;
+    processor.loadPackage(Path("shader/test.gp", PATH_LAYOUT_DEBIAN), "test");
+    std::cout << processor << "\n";
+
+    Shader shader(Path("shader/test.gs", PATH_LAYOUT_DEBIAN), &processor, inst);
 
     Limiter lim = 60;
     lim.start();

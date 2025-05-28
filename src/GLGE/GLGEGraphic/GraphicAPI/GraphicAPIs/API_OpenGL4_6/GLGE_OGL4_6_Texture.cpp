@@ -1,7 +1,7 @@
 /**
- * @file GLGE_OGL3_3_Texture.cpp
+ * @file GLGE_OGL4_6_Texture.cpp
  * @author DM8AT
- * @brief implement the OpenGL 3.3 texture
+ * @brief implement the OpenGL 4.6 texture
  * @version 0.1
  * @date 2025-04-20
  * 
@@ -11,15 +11,15 @@
 
 //include the textures
 #include "GLGE_OGL4_6_Texture.h"
-//inlcude OpenGL 3.3 instances
+//inlcude OpenGL 4.6 instances
 #include "GLGE_OGL4_6_Instance.h"
 //include OpenGL
 #include <GL/glew.h>
 
-void OGL3_3_Texture::createOgl(void* data, uint64_t)
+void OGL4_6_Texture::createOgl(void* data, uint64_t)
 {
     //extract the texture
-    OGL3_3_Texture* texture = (OGL3_3_Texture*)data;
+    OGL4_6_Texture* texture = (OGL4_6_Texture*)data;
 
     //create a new OpenGL texture
     glGenTextures(1, &texture->m_tex);
@@ -82,19 +82,19 @@ void OGL3_3_Texture::createOgl(void* data, uint64_t)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
-void OGL3_3_Texture::deleteOgl(void* data, uint64_t)
+void OGL4_6_Texture::deleteOgl(void* data, uint64_t)
 {
     //extract the texture
-    OGL3_3_Texture* texture = (OGL3_3_Texture*)data;
+    OGL4_6_Texture* texture = (OGL4_6_Texture*)data;
 
     //delete the texture
     glDeleteTextures(1, &texture->m_tex);
 }
 
-void OGL3_3_Texture::mipMap(void* data, uint64_t)
+void OGL4_6_Texture::mipMap(void* data, uint64_t)
 {
     //extract the texture
-    OGL3_3_Texture* texture = (OGL3_3_Texture*)data;
+    OGL4_6_Texture* texture = (OGL4_6_Texture*)data;
 
     //bind the texture to unit 0
     glActiveTexture(GL_TEXTURE0);
@@ -103,10 +103,10 @@ void OGL3_3_Texture::mipMap(void* data, uint64_t)
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-void OGL3_3_Texture::onCreate()
+void OGL4_6_Texture::onCreate()
 {
     //get the command buffer
-    GraphicCommandBuffer& cmdBuff = ((OGL3_3_Instance*)m_graphicInstance)->getDataBuffer();
+    GraphicCommandBuffer& cmdBuff = ((OGL4_6_Instance*)m_graphicInstance)->getDataBuffer();
     //start the command buffer recording
     cmdBuff.begin();
     //queue the create function
@@ -115,10 +115,10 @@ void OGL3_3_Texture::onCreate()
     cmdBuff.end();
 }
 
-void OGL3_3_Texture::onDestroy()
+void OGL4_6_Texture::onDestroy()
 {
     //get the command buffer
-    GraphicCommandBuffer& cmdBuff = ((OGL3_3_Instance*)m_graphicInstance)->getDataBuffer();
+    GraphicCommandBuffer& cmdBuff = ((OGL4_6_Instance*)m_graphicInstance)->getDataBuffer();
     //start the command buffer recording
     cmdBuff.begin();
     //queue the delete function
@@ -127,10 +127,10 @@ void OGL3_3_Texture::onDestroy()
     cmdBuff.end();
 }
 
-void OGL3_3_Texture::createMipMap() noexcept
+void OGL4_6_Texture::createMipMap() noexcept
 {
     //get the command buffer
-    GraphicCommandBuffer& cmdBuff = ((OGL3_3_Instance*)m_graphicInstance)->getDataBuffer();
+    GraphicCommandBuffer& cmdBuff = ((OGL4_6_Instance*)m_graphicInstance)->getDataBuffer();
     //start the command buffer recording
     cmdBuff.begin();
     //queue the mip map function

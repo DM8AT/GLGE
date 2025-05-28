@@ -25,11 +25,17 @@
  *
  * Defines set by GLGE:
  *  - GLGE_SHADER_TYPE
- *      A unsigned integer that defines the 
+ *      A unsigned integer that defines the stage of the shader. The mapping is as follows:
+ *       0 : Vertex Shader
+ *       1 : Fragment Shader
+ *       2 : Geometry Shader
+ *       3 : Tesselation controll Shader
+ *       4 : Tesselatoin evaluation Shader
+ *       5 : Compute Shader
  */
 
 //specify the GLGE version. The GLSL version will be translated to the newest version the graphic API supports. 
-#version GLGE 0.1
+#version GLGE 0.1.0
 
 //include the test package and all contained elements
 #include <test>
@@ -40,23 +46,34 @@ vec3 verts[] = vec3[](
     vec3(0,1,0)
 );
 
+//check if the shader type is a vertex shader
+#ifdef GLGE_SHADER_TYPE
+#if (GLGE_SHADER_TYPE == 0)
+
 // say that the next function is a main function in the stage specified in the brackets. Here, it is in the vertex shader stage. 
-@main(vertex)
+@main(stage_vertex)
 void mainVert()
 {
     //simply select the correct vertex for the index
     gl_Position = vec4(verts[gl_VertexID], 1);
 }
 
-#define GLGE_SHADER_TYPE 0
+#endif //vertex shader section
 
+//check if the shader type is a fragment shader
+#ifdef GLGE_SHADER_TYPE
 #if (GLGE_SHADER_TYPE == 1)
+
+//do fragment shader related stuff
 out vec4 FragColor;
 
-@main(fragment)
-void mainFrag()
+@main(stage_fragment)
+void mainFrag ()
 {
     //simply write red
     FragColor = vec4(1,0,0,1);
 }
+
+//end the fragment shader
+#endif
 #endif
