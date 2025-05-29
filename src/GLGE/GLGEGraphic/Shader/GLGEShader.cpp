@@ -47,33 +47,7 @@ Shader::Shader(const Path& file, ShaderProcessor* processor, const Instance& ins
 void prepareForStage(std::string& src, ShaderType stage) noexcept
 {
     //store the string to prefix
-    std::string prefix = "#define GLGE_SHADER_TYPE ";
-
-    //switch over the shader stage and prefix with the correct number
-    switch (stage)
-    {
-    case SHADER_TYPE_VERTEX:
-        prefix += "0\n";
-        break;
-    case SHADER_TYPE_FRAGMENT:
-        prefix += "1 \n";
-        break;
-    case SHADER_TYPE_GEOMETRY:
-        prefix += "2\n";
-        break;
-    case SHADER_TYPE_TESSELATION_CONTROLL:
-        prefix += "3\n";
-        break;
-    case SHADER_TYPE_TESSELATION_EVALUATION:
-        prefix += "4\n";
-        break;
-    case SHADER_TYPE_COMPUTE:
-        prefix += "5\n";
-        break;
-    
-    default:
-        break;
-    }
+    std::string prefix = "#define GLGE_SHADER_TYPE " + std::to_string((uint32_t)stage) + "\n";
 
     //prefix the source code with the define
     src = prefix + src;
