@@ -38,6 +38,7 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGE_AABB.cpp
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGESphere.cpp
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGERay.cpp
+        ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGETriangle.cpp
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGECollision.cpp
 
     # Graphic files

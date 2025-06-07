@@ -17,3 +17,6 @@ shader/glslc.sh
 *.odg
 # Ignore LibreOffice Draw lock files
 *.odg#
+# Ignore doxygen files
+doxygen
+Doxyfile

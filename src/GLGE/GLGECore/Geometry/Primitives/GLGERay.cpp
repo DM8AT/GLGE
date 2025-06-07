@@ -29,3 +29,28 @@ void Ray::refract(const vec3& normal, float qr) noexcept
     //re-calculate the ray direction's reciprical
     m_idir = vec3(1)/m_dir;
 }
+
+//C-Function maps
+
+//A function map is as follows: Cast to the C++ type and then execute the desired functionallity
+//if a sphere object is returned, cast it to the C type before returning it. 
+
+Ray_t* GLGE_C_FUNC(ray_Create)(const vec3* origen, const vec3* dir) {return (Ray_t*)(new Ray(*origen, *dir));}
+
+void GLGE_C_FUNC(ray_Destroy)(Ray_t* ray) {delete ((Ray*)ray);}
+
+const vec3* GLGE_C_FUNC(ray_getOrigen)(const Ray_t* ray) {return &((Ray*)ray)->getOrigen();}
+
+const vec3* GLGE_C_FUNC(ray_getDir)(const Ray_t* ray) {return &((Ray*)ray)->getDir();}
+
+const vec3* GLGE_C_FUNC(ray_getRecpDir)(const Ray_t* ray) {return &((Ray*)ray)->getRecipDir();}
+
+void GLGE_C_FUNC(ray_setOrigen)(const vec3* origen, Ray_t* ray) {((Ray*)ray)->setOrigen(*origen);}
+
+void GLGE_C_FUNC(ray_setDir)(const vec3* dir, Ray_t* ray) {((Ray*)ray)->setDir(*dir);}
+
+void GLGE_C_FUNC(ray_reflect)(const vec3* normal, Ray_t* ray) {((Ray*)ray)->reflect(*normal);}
+
+void GLGE_C_FUNC(ray_refract)(const vec3* normal, float qr, Ray_t* ray) {((Ray*)ray)->refract(*normal, qr);}
+
+void GLGE_C_FUNC(ray_stepForward)(float length, Ray_t* ray) {((Ray*)ray)->stepForward(length);}

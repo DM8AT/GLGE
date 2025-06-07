@@ -19,6 +19,8 @@
 #include "GLGESphere.h"
 //include bounding volume hirachies
 #include "GLGERay.h"
+//include triangles
+#include "GLGETriangle.h"
 //include all collisions
 #include "GLGECollision.h"
 

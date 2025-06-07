@@ -28,12 +28,12 @@ typedef uint32_t index_t;
 /**
  * @brief define the indices of a triangle
  */
-typedef struct s_Triangle {
+typedef struct s_idx_Triangle {
     /**
      * @brief store the indices of the triangle for the mesh
      */
     index_t a, b, c;
-} Triangle;
+} idx_Triangle;
 
 //check for C++
 #if GLGE_CPP
@@ -58,7 +58,7 @@ public:
      * @param triangles a list of triangles containing indices for the submesh
      * @param triangleCount the amout of triangles in the index array
      */
-    Mesh(SimpleVertex* vertices, uint64_t vertexCount, Triangle* triangles, uint32_t triangleCount) noexcept;
+    Mesh(SimpleVertex* vertices, uint64_t vertexCount, idx_Triangle* triangles, uint32_t triangleCount) noexcept;
 
     /**
      * @brief Destroy the Mesh

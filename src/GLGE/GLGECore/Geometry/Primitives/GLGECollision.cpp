@@ -127,3 +127,12 @@ bool collide_aabb_sphere(const AABB_t* a, const Sphere_t* b) {return collide(*((
 
 //Sphere - Sphere
 bool collide_sphere_sphere(const Sphere_t* a, const Sphere_t* b) {return collide(*((Sphere*)a), *((Sphere*)b));}
+
+//AABB - Ray
+bool collide_aabb_ray(const AABB_t* a, const Ray_t* b) {return collide(*((AABB*)a), *((Ray*)b));}
+
+//Sphere - Ray
+bool collide_aabb_ray(const Sphere_t* a, const Ray_t* b) {return collide(*((Sphere*)a), *((Ray*)b));}
+
+//Ray - Ray
+bool collide_aabb_ray(const Ray_t* a, const Ray_t* b) {return collide(*((Ray*)a), *((Ray*)b));}

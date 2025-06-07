@@ -12,7 +12,7 @@
 //include submeshes
 #include "GLGEMesh.h"
 
-Mesh::Mesh(SimpleVertex* vertices, uint64_t vertexCount, Triangle* triangles, uint32_t triangleCount) noexcept
+Mesh::Mesh(SimpleVertex* vertices, uint64_t vertexCount, idx_Triangle* triangles, uint32_t triangleCount) noexcept
 {
     //store the vertex default vertex layout as implied by the SimpleVertex type in the constructor. 
     //The structure of SimpleVertex is as follows:

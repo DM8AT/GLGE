@@ -63,14 +63,54 @@ inline bool collide(const Sphere& a, const AABB& b) noexcept {return collide(b, 
  */
 bool collide(const Sphere& a, const Sphere& b) noexcept;
 
+/**
+ * @brief check for a collision between an axis alligned bounding box and a ray
+ * 
+ * @param a the axis alligned bounding box to check for intersection
+ * @param b the ray to check if it intersects
+ * @return true : the ray intersects with the AABB somewhere
+ * @return false : they don't intersect
+ */
 bool collide(const AABB& a, const Ray& b) noexcept;
 
+/**
+ * @brief check for a collision between an axis alligned bounding box and a ray
+ * 
+ * @param a the ray to check if it intersects
+ * @param b the axis alligned bounding box to check for intersection
+ * @return true : the ray intersects with the AABB somewhere
+ * @return false : they don't intersect
+ */
 inline bool collide(const Ray& a, const AABB& b) noexcept {return collide(b,a);}
 
+/**
+ * @brief check for a collision between a sphere and a ray
+ * 
+ * @param a the ray to check if it intersects
+ * @param b the sphere to check for intersection
+ * @return true : the ray intersects with the sphere somewhere
+ * @return false : they don't intersect
+ */
 bool collide(const Sphere& a, const Ray& b) noexcept;
 
+/**
+ * @brief check for a collision between a sphere and a ray
+ * 
+ * @param a the ray to check if it intersects
+ * @param b the sphere to check for intersection
+ * @return true : the ray intersects with the sphere somewhere
+ * @return false : they don't intersect
+ */
 inline bool collide(const Ray& a, const Sphere& b) noexcept {return collide(b,a);}
 
+/**
+ * @brief check if two rays intersect somewhere
+ * 
+ * @param a the first ray to check for intersection
+ * @param b the other ray to check for intersection
+ * @return true : the rays intersect somewhere
+ * @return false : the rays do not intersect
+ */
 bool collide(const Ray& a, const Ray& b) noexcept;
 
 //start a C-Section
@@ -116,6 +156,56 @@ inline bool collide_sphere_aabb(const Sphere_t* a, const AABB_t* b) {return coll
  * @return false : the spheres do not overlap
  */
 bool collide_sphere_sphere(const Sphere_t* a, const Sphere_t* b);
+
+/**
+ * @brief check for a collision between an axis alligned bounding box and a ray
+ * 
+ * @param a the axis alligned bounding box to check for intersection
+ * @param b the ray to check if it intersects
+ * @return true : the ray intersects with the AABB somewhere
+ * @return false : they don't intersect
+ */
+bool collide_aabb_ray(const AABB_t* a, const Ray_t* b);
+
+/**
+ * @brief check for a collision between an axis alligned bounding box and a ray
+ * 
+ * @param a the ray to check if it intersects
+ * @param b the axis alligned bounding box to check for intersection
+ * @return true : the ray intersects with the AABB somewhere
+ * @return false : they don't intersect
+ */
+inline bool collide_ray_aabb(const Ray_t* a, const AABB_t* b) {return collide_aabb_ray(b, a);}
+
+/**
+ * @brief check for a collision between a sphere and a ray
+ * 
+ * @param a the ray to check if it intersects
+ * @param b the sphere to check for intersection
+ * @return true : the ray intersects with the sphere somewhere
+ * @return false : they don't intersect
+ */
+bool collide_sphere_ray(const Sphere_t* a, const Ray_t* b);
+
+/**
+ * @brief check for a collision between a sphere and a ray
+ * 
+ * @param a the ray to check if it intersects
+ * @param b the sphere to check for intersection
+ * @return true : the ray intersects with the sphere somewhere
+ * @return false : they don't intersect
+ */
+inline bool collide_ray_sphere(const Ray_t* a, const Sphere_t* b) {return collide_sphere_ray(b, a);}
+
+/**
+ * @brief check if two rays intersect somewhere
+ * 
+ * @param a the first ray to check for intersection
+ * @param b the other ray to check for intersection
+ * @return true : the rays intersect somewhere
+ * @return false : the rays do not intersect
+ */
+bool collide_ray_ray(const Ray_t* a, const Ray_t* b);
 
 //check for a potential C-Section to end
 #if GLGE_CPP
