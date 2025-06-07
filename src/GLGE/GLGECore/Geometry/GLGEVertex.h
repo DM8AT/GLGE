@@ -15,6 +15,26 @@
 
 //include the settings
 #include "../GLGESettings.h"
+//include vectors
+#include "../../GLGEMath/Vectors/GLGEVectors.h"
+
+/**
+ * @brief store the simple vertex assumed by meshes if no custom vertex is supplied
+ */
+typedef struct s_SimpleVertex {
+    /**
+     * @brief store the position of the vertex
+     */
+    vec3 pos;
+    /**
+     * @brief store the texture coordinate
+     */
+    vec2 tex;
+    /**
+     * @brief store the normal of the vertex
+     */
+    vec3 normal;
+} SimpleVertex;
 
 /**
  * @brief define a single element of the vertex structure
@@ -73,6 +93,13 @@ public:
      */
     inline const std::vector<std::string_view>& getElements() const noexcept {return m_elementOrderd;}
 
+    /**
+     * @brief print the vertex layout into an output stream
+     * 
+     * @param os the output stream to print to
+     * @param l the layout to print
+     * @return std::ostream& the filled output stream
+     */
     friend std::ostream& operator<<(std::ostream& os, VertexLayout& l) noexcept;
 
 protected:

@@ -53,7 +53,7 @@ void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
 
     //store that GLEW is initalized
     m_hasGLEW = true;
-    //add the data command buffer
+    //add the data command buffer. It must be buffer 0. 
     addCommandBuffer(&m_dataBuffer);
 }
 

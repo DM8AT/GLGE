@@ -16,6 +16,9 @@
 //include the shader processor
 #include "GLGEShaderProcessor.h"
 
+//include all graphic APIs
+#include "../GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
+
 Shader::Shader(const Path& file, ShaderProcessor* processor, const Instance& instance)
  : InstAttachableClass((Instance*)&instance, file.getRawPath())
 {
@@ -42,13 +45,45 @@ Shader::Shader(const Path& file, ShaderProcessor* processor, const Instance& ins
 
     //process the source GLGE source code to convert it to GLSL source code
     processor->processShader(*this);
+
+    //switch over the selected graphic API
+    switch (m_instance->getAPI())
+    {
+    case API_OPENGL_4_6:
+        m_shader = new OGL4_6_Shader(this, m_instance->getGraphicInstance());
+        break;
+    
+    default:
+        break;
+    }
+
+    //create the shader
+    m_shader->onCreate();
 }
 
-void prepareForStage(std::string& src, ShaderType stage) noexcept
+Shader::~Shader()
+{
+    //return if the shader actual is not set
+    if (!m_shader) {return;}
+
+    //destroy the actual shader
+    m_shader->onDestroy();
+    //delete the shader
+    delete m_shader;
+    m_shader = 0;
+}
+
+void Shader::prepareForStage(std::string& src, ShaderType stage) noexcept
 {
     //store the string to prefix
     std::string prefix = "#define GLGE_SHADER_TYPE " + std::to_string((uint32_t)stage) + "\n";
 
     //prefix the source code with the define
     src = prefix + src;
+}
+
+void Shader::attatch(GraphicCommandBuffer* cmdBuff) noexcept
+{
+    //attatch the actual shader
+    m_shader->onAttatch(cmdBuff);
 }

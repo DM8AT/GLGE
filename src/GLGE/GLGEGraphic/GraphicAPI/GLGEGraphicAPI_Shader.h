@@ -17,6 +17,8 @@
 #include "../../GLGECore/GLGESettings.h"
 //include instances
 #include "GLGEGraphicAPI_Instance.h"
+//include command buffers
+#include "GLGEGraphicAPI_CommandBuffer.h"
 
 /**
  * @brief define the type of the shader. The mapping is forced as follows:
@@ -80,7 +82,7 @@ public:
     /**
      * @brief Destroy the Graphic Shader
      */
-    virtual ~GraphicShader() {onDestroy();}
+    virtual ~GraphicShader();
 
     /**
      * @brief Get the parent shader
@@ -101,8 +103,10 @@ public:
 
     /**
      * @brief a hook for the shader attatchment
+     * 
+     * @param cmdBuff the command buffer to enable the buffer on
      */
-    virtual void onAttatch() noexcept {}
+    virtual void onAttatch(GraphicCommandBuffer*) noexcept {}
 
 protected:
 

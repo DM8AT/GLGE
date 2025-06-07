@@ -13,7 +13,7 @@
 #include "GLGEObject.h"
 
 Object::Object(const std::string_view& name, Transform transform, Object** children, uint64_t childCount, Instance& instance)
- : InstAttachableClass(&instance, name)
+ : InstAttachableClass(&instance, name), m_transform(transform)
 {
     //check if children are available
     if (children)

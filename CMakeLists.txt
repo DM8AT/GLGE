@@ -30,7 +30,15 @@ set(SOURCE_FILES_CPP
     # Subelement : Geometry
     ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
     ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp
-    ${GLGE_PATH}/GLGECore/Geometry/World/GLGEWorld.cpp
+        # Sub-Subelement : Worlds
+        ${GLGE_PATH}/GLGECore/Geometry/World/GLGEWorld.cpp
+        # Sub-Subelement : Mesh
+        ${GLGE_PATH}/GLGECore/Geometry/Mesh/GLGEMesh.cpp
+        # Sub-Subelement : Primitives
+        ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGE_AABB.cpp
+        ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGESphere.cpp
+        ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGERay.cpp
+        ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGECollision.cpp
 
     # Graphic files
     ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp
@@ -51,6 +59,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Framebuffer.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Window.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_CommandBuffer.cpp
+    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Shader.cpp
         # Graphic API: OpenGL 4.6
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Instance.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Window.cpp

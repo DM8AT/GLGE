@@ -14,7 +14,7 @@
 //include shader
 #include "../../GLGEShader.h"
 
-bool ShaderExt_Version::onFind(std::string& source, ShaderProcessor* processor, Shader* shader, uint64_t elementIdx) noexcept
+bool ShaderExt_Version::onFind(std::string& source, ShaderProcessor*, Shader* shader, uint64_t elementIdx) noexcept
 {
     //search the end of the line
     uint64_t lineEnd = source.find('\n', elementIdx);
@@ -67,8 +67,6 @@ bool ShaderExt_Version::onFind(std::string& source, ShaderProcessor* processor, 
     //remove the GLGE version
     source.erase(elementIdx + 9, (lineEnd - (elementIdx + 9)));
     source.insert(elementIdx + 9, "450 core");
-
-    std::cout << source << "\n";
 
     //return the success
     return true;

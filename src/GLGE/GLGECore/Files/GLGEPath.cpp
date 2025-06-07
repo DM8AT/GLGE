@@ -161,8 +161,10 @@ bool Path::createPathFromTokens(std::string& str, PathLayout layout, const std::
     //iterate over all tokens
     for (uint64_t i = start; i < tokens.size(); ++i)
     {
+        //store the string to insert
+        std::string insert = tokens[i];
         //add the current token to the string prefixed with the correct seperator
-        str += seperator + tokens[i];
+        str += seperator + insert;
     }
 
     //return the success

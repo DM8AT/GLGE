@@ -40,6 +40,8 @@ $$$$$$$  |$$$$$$$$\ $$ |      $$ |  $$ |\$$$$$$  |$$$$$$$$\ $$ |         $$$$$$$
 #include <string.h>
 //include the time
 #include <time.h>
+//include mathematics
+#include <math.h>
 
 //check for C++
 #ifdef __cplusplus
@@ -174,15 +176,11 @@ $$ |  $$\  $$  /    $$ |  $$\ $$ |      $$ |         $$\   $$ |$$ |         $$ |
 //this is assumed to be the case if one of the compiler flags for windows is set
 //there is a huge veriaty on used flags, so a lot need to be tested. 
 #if defined(__WIN32__) || defined(_WIN32) || defined(__CYGWIN32__) || defined(_MSC_VER)
-
 //define that this is windows
 #define GLGE_WINDOWS 1
-
 #else
-
 //define that this is not windows
 #define GLGE_WINDOWS 0
-
 #endif
 
 //define if GLGE should create a namespace if C++ is used. If C is used, a namespace can not be created (1: a namespace will be created, 0: no namespace will be created)

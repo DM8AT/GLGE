@@ -49,7 +49,7 @@ World::World(Object** objects, uint64_t objectCount, const std::string_view& nam
  */
 World::World(const std::string_view fileName, Instance& instance, const std::string_view& fileSuffix)
 {
-
+    #warning Still need to implement file loading and saving for worlds
 }
 
 /**

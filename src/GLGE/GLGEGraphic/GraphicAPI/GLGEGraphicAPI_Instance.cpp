@@ -74,10 +74,13 @@ GraphicInstance::GraphicInstance(Instance* instance) : InstAttachableClass(insta
 
 void GraphicInstance::destroy()
 {
-    //clear the attatched elements
-    m_elements.clear();
     //call the destruction hook
     onDestroy();
+    //delete all attached elements
+    while (m_elements.size() > 0)
+    {
+        delete m_elements[0];
+    }
     //remove the instance
     auto pos = std::find(__glge_all_instances->begin(), __glge_all_instances->end(), m_instance);
     //erase the element if it exists

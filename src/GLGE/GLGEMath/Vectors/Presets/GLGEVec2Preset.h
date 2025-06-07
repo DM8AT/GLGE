@@ -142,6 +142,25 @@ typedef struct GLGE_VEC_STRUCT_NAME {
     inline void operator/=(const GLGE_VEC_STRUCT_NAME& ot) noexcept {x /= ot.x; y /= ot.y;}
 
     /**
+     * @brief get the length of the vector
+     * 
+     * @return float the length of the vector
+     */
+    inline float length() const noexcept {return sqrt(x*x + y*y);}
+
+    /**
+     * @brief get a vector that points in the same direction as this vector but has a length of 1
+     * 
+     * @return the vector with a length of 1
+     */
+    inline GLGE_VEC_STRUCT_NAME normalize() const noexcept {return *this / length();}
+
+    /**
+     * @brief set the length of this vector to always be 1
+     */
+    inline void normalizeThis() noexcept {*this /= length();}
+
+    /**
      * @brief convert a vector into a string
      * 
      * @return the string storing the vector's data
@@ -413,6 +432,19 @@ GLGE_FUNCTION_INLINE GLGE_VEC_TYPE GLGE_C_FUNC(GLGE_DEFINE_CONCATINATE(GLGE_VEC_
 {
     //return the dot product
     return a.x*b.x + a.y*b.y;
+}
+
+/**
+ * @brief calculate the length of the vector
+ * 
+ * @param v the vector to calculate the length from
+ * 
+ * @return the length of the vector
+ */
+GLGE_FUNCTION_INLINE float GLGE_C_FUNC(GLGE_DEFINE_CONCATINATE(GLGE_VEC_NAME, _length))(GLGE_CONST_REF(GLGE_VEC_NAME) v)
+{
+    //return the length of the vector
+    return sqrt(v.x*v.x + v.y*v.y);
 }
 
 //stop the C-Section

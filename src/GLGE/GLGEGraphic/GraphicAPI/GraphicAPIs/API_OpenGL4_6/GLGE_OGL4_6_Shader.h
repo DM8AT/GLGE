@@ -52,11 +52,48 @@ public:
     virtual void onDestroy() noexcept override;
 
     /**
-     * @brief override the attatch hook
+     * @brief a hook for the shader attatchment
+     * 
+     * @param cmdBuff the command buffer to enable the buffer on
      */
-    virtual void onAttatch() noexcept override;
+    virtual void onAttatch(GraphicCommandBuffer* cmdBuff) noexcept override;
 
 protected:
+
+    /**
+     * @brief add a single shader stage
+     * 
+     * @param type the type of the shader stage to add
+     * @param shader the shader to clean up
+     * 
+     * @return true : successfully added the shader stage
+     * @return false : failed to add the shader stage
+     */
+    bool compileSubProgram(ShaderType type, uint32_t& shader) noexcept;
+
+    /**
+     * @brief compile the shader
+     * 
+     * @param cmdData the data for the shader
+     * @param cmdDataSize the size of the data for the command
+     */
+    static void compileShader(void* cmdData, uint64_t cmdDataSize) noexcept;
+
+    /**
+     * @brief delete the shader
+     * 
+     * @param cmdData the data for the shader
+     * @param cmdDataSize the size of the data for the command
+     */
+    static void destroyShader(void* cmdData, uint64_t cmdDataSize) noexcept;
+
+    /**
+     * @brief attatch the shader
+     * 
+     * @param cmdData the data for the shader
+     * @param cmdDataSize the size of the data for the command
+     */
+    static void attatchShader(void* cmdData, uint64_t cmdDataSize) noexcept;
 
     /**
      * @brief store the OpenGL shader program

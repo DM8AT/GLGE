@@ -52,7 +52,7 @@ public:
     /**
      * @brief Destroy the Shader
      */
-    virtual ~Shader() {}
+    virtual ~Shader();
 
     //add the shader processor as a friend class
     friend class ShaderProcessor;
@@ -74,11 +74,18 @@ public:
     const std::string& getFile() const noexcept {return m_file;}
 
     /**
+     * @brief make this the current shader. This updates all needed uniforms. 
+     * 
+     * @param cmdBuffer the command buffer to attach the shader on
+     */
+    void attatch(GraphicCommandBuffer* cmdBuffer) noexcept;
+
+    /**
      * @brief Get the Shader Stages and the corresponding entry points the shader contains
      * 
      * @return const std::unordered_map<ShaderType, std::string>& the shader's stored shader stages and corresponding entry point names
      */
-    inline const std::unordered_map<ShaderType, std::string>& getShaderStages() const noexcept {return m_shaders;}
+    inline std::unordered_map<ShaderType, std::string>& getShaderStages() noexcept {return m_shaders;}
 
     /**
      * @brief prepare a sourcecode snipped for a shader stage
@@ -87,6 +94,9 @@ public:
      * @param stage the shader stage to prepare for
      */
     static void prepareForStage(std::string& src, ShaderType stage) noexcept;
+
+    //add the graphic shader class as a friend class
+    friend class GraphicShader;
 
 protected:
 
@@ -102,6 +112,10 @@ protected:
      * @brief store all the shader stages
      */
     std::unordered_map<ShaderType, std::string> m_shaders;
+    /**
+     * @brief store the actual graphic shader
+     */
+    GraphicShader* m_shader = 0;
 
 };
 

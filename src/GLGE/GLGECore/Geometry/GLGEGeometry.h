@@ -17,9 +17,13 @@
 #include "GLGEVertex.h"
 //include transforms
 #include "GLGETransform.h"
+//include meshes
+#include "Mesh/GLGEMesh.h"
 //include objects
 #include "GLGEObject.h"
 //incldue the world
 #include "World/GLGEWorld.h"
+//include primitives
+#include "Primitives/GLGEPrimitives.h"
 
 #endif
