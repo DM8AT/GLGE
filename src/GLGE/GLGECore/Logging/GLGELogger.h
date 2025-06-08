@@ -89,11 +89,8 @@ public:
      */
     virtual void print()
     {
-        //get the string for the message type
-        std::string_view typestr;
-        getMessageTypeString(typestr, m_messages[0].getMessageType());
-        //output the time, then the type string and finaly the message
-        std::cout << "At " << m_messages[0].getTime() << " : " << typestr << " " << m_messages[0].getMessage() << "\n" << std::flush;
+        //format and print the top most message
+        std::cout << format(m_messages[0]) << "\n" << std::flush;
     }
 
     /**
@@ -120,6 +117,24 @@ public:
     inline bool isDebug() const noexcept {return m_debug;}
 
 protected:
+
+    /**
+     * @brief a utility function to format the message for printing
+     * 
+     * @param msg a constant reference to the message to print
+     * @return std::string the final formated string
+     */
+    std::string format(const Message& msg) noexcept
+    {
+        //get the string for the message type
+        std::string_view typestr;
+        getMessageTypeString(typestr, msg.getMessageType());
+        //write the time, then the type string and finaly the message to the string stream
+        std::stringstream str;
+        str << "At " << msg.getTime() << " : " << typestr << " " << msg.getMessage();
+        //return the string stream's string
+        return str.str();
+    }
 
     /**
      * @brief specify if build-in debug messages should occour

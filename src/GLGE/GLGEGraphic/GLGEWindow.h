@@ -190,6 +190,21 @@ public:
      */
     inline void* getSDL2Window() noexcept {return m_window;}
 
+    /**
+     * @brief Get the graphic window of the window
+     * @warning ONLY USE WHEN YOU REALLY KNOW WHAT YOU'RE DOING
+     * 
+     * @return GraphicWindow* a pointer to the graphic window
+     */
+    inline GraphicWindow* getGraphicWindow() noexcept {return m_gWindow;}
+
+    /**
+     * @brief change the internal size because the SDL2 size change
+     * 
+     * @param newSize the new size of the window
+     */
+    inline void handleSDL_Resize(const uvec2& newSize) noexcept {m_size = newSize;}
+
 protected:
 
     /**
@@ -225,6 +240,18 @@ protected:
     GraphicWindow* m_gWindow;
 };
 
+//start a C-Section
+extern "C" {
 #endif //C++ section
+
+/**
+ * @brief store an instance of the window class
+ */
+typedef struct s_Window Window_t;
+
+//check if a potential C-Section should end
+#if GLGE_CPP
+}
+#endif
 
 #endif

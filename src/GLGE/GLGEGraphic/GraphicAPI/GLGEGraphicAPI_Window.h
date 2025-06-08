@@ -20,6 +20,8 @@
 #include "GLGEGraphicAPI_Instance.h"
 //include framebuffers
 #include "GLGEGraphicAPI_Framebuffer.h"
+//include command buffers
+#include "GLGEGraphicAPI_CommandBuffer.h"
 
 //include vectors
 #include "../../GLGEMath/Vectors/GLGEVectors.h"
@@ -28,6 +30,9 @@
 #if GLGE_CPP
 //windows will be defined later
 class Window;
+
+//say that pipelines will exist
+class RenderPipeline;
 
 /**
  * @brief abstract interface for a window
@@ -68,11 +73,18 @@ public:
     virtual void destroy();
 
     /**
-     * @brief Get the Size of the window
+     * @brief make a window the currently active window
      * 
-     * @return const uvec2& the size of the graphic window
+     * @param cmdBuff the command buffer to queue the activation in
      */
-    inline const uvec2& getSize() const noexcept {return m_size;}
+    virtual void makeCurrent(GraphicCommandBuffer*) {}
+
+    /**
+     * @brief swap this window's contents with the new renderd one
+     * 
+     * @param cmdBuff a pointer to the command buffer to queue the command into
+     */
+    virtual void swap(GraphicCommandBuffer*) {}
 
     /**
      * @brief Get the Framebuffer of the window
@@ -82,14 +94,6 @@ public:
     inline GraphicFramebuffer* getFramebuffer() noexcept {return m_framebuffer;}
 
     /**
-     * @brief get if the renderer is active
-     * 
-     * @return true : the renderer is active
-     * @return false : the renderer is not active
-     */
-    inline bool isRendererActive() const noexcept {return m_runRenderer;}
-
-    /**
      * @brief Get the Window the graphic window belongs to
      * 
      * @return Window* a pointer to the parent window
@@ -97,11 +101,18 @@ public:
     inline Window* getWindow() noexcept {return m_window;}
 
     /**
-     * @brief Get the Command Buffer of the window
+     * @brief get wich command buffers reference this window
      * 
-     * @return GraphicCommandBuffer* a pointer to the command buffer belonging to the window
+     * @return std::vector<RenderPipeline*> a vector containing pointrs to all command buffers that reference this window
      */
-    inline GraphicCommandBuffer* getCommandBuffer() noexcept {return m_buffer;}
+    inline std::vector<RenderPipeline*>& isReferencedBy() noexcept {return m_referencedBy;}
+
+    /**
+     * @brief add that the window was referenced by a command buffer
+     * 
+     * @param cmdBuff a pointer to the command buffer that referenced this window
+     */
+    void addReference(RenderPipeline* dBuff);
 
 protected:
 
@@ -115,30 +126,18 @@ protected:
     virtual void onDestroy() {}
 
     /**
-     * @brief store the size of the window
-     */
-    uvec2 m_size = 0;
-    /**
      * @brief store the framebuffer of the window
      */
     GraphicFramebuffer* m_framebuffer = 0;
-    /**
-     * @brief store the command buffer for the window
-     */
-    GraphicCommandBuffer* m_buffer = 0;
-    /**
-     * @brief store if the render thread is active
-     */
-    bool m_runRenderer = false;
-    /**
-     * @brief store the render thread for the window
-     */
-    std::thread m_render;
     /**
      * @brief store the parent window
      */
     Window* m_window = 0;
 
+    /**
+     * @brief store all command buffer that reference this window
+     */
+    std::vector<RenderPipeline*> m_referencedBy;
 };
 
 #endif

@@ -63,7 +63,17 @@ public:
      */
     virtual void onDestroy() override;
 
+    /**
+     * @brief Create a mip map for the texture
+     */
     virtual void createMipMap() noexcept override;
+
+    /**
+     * @brief Get the OpenGL texture identifyer
+     * 
+     * @return uint32_t the OpenGL texture identifyer
+     */
+    inline uint32_t getOglTexture() const noexcept {return m_tex;}
 
 protected:
 

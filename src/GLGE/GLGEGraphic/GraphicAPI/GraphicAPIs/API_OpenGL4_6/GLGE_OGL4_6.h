@@ -23,5 +23,9 @@
 #include "GLGE_OGL4_6_Window.h"
 //include shaders
 #include "GLGE_OGL4_6_Shader.h"
+//include the render pipeline
+#include "GLGE_OGL4_6_RenderPipeline.h"
+//include framebuffers
+#include "GLGE_OGL4_6_Framebuffer.h"
 
 #endif

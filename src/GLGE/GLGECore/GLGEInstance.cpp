@@ -67,10 +67,12 @@ Instance::~Instance() noexcept
     //iterate over all attatched elements
     while (m_elements.size() > 0)
     {
+        //cash the element pointer
+        InstAttachableClass* ptr = m_elements[0];
         //destroy the element
         delete m_elements[0];
-        //erase the element
-        m_elements.erase(m_elements.begin());
+        //erase the element, if it didn't do it itself
+        if (m_elements.size() > 0) { if (m_elements[0] == ptr) { m_elements.erase(m_elements.begin()); } }
     }
     //check if a logger exists
     if (m_logger)
@@ -140,7 +142,7 @@ void Instance::initGraphicAPI(Window* window)
         tmp = SDL_GL_CreateContext((SDL_Window*)window->getSDL2Window());
         //bind no context
         SDL_GL_MakeCurrent((SDL_Window*)window->getSDL2Window(), 0);
-        //create a new OpenGL 3.3 instance
+        //create a new OpenGL 4.6 instance
         m_gInstance = new OGL4_6_Instance(tmp, this);
     }
 }

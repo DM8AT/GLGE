@@ -13,6 +13,8 @@
 #include "GLGEGraphicAPI_Window.h"
 //include windows
 #include "../GLGEWindow.h"
+//include pipelines
+#include "../GLGERenderPipeline.h"
 
 void GraphicWindow::create(Window* window, GraphicInstance* instance)
 {
@@ -25,7 +27,6 @@ void GraphicWindow::create(Window* window, GraphicInstance* instance)
     }
 
     //store the inputs
-    m_size = window->getSize();
     m_window = window;
     m_graphicInstance = instance;
     //add the element to the instance
@@ -40,6 +41,13 @@ void GraphicWindow::destroy()
     //check if the texture is set up
     if (!m_graphicInstance) {return;}
 
+    //iterate over all render pipelines that reference this window
+    for (uint64_t i = 0; i < m_referencedBy.size(); ++i)
+    {
+        //stop the pipeline
+        m_referencedBy[i]->stop();
+    }
+
     //call the destroy hook
     onDestroy();
 
@@ -47,6 +55,15 @@ void GraphicWindow::destroy()
     m_graphicInstance->removeElement(this);
     m_graphicInstance = 0;
     //reset the variables
-    m_size = 0;
     m_window = 0;
+}
+
+void GraphicWindow::addReference(RenderPipeline* pipeline)
+{
+    //check if the reference is contained
+    if (std::find(m_referencedBy.begin(), m_referencedBy.end(), pipeline) == m_referencedBy.end())
+    {
+        //add the element
+        m_referencedBy.push_back(pipeline);
+    }
 }

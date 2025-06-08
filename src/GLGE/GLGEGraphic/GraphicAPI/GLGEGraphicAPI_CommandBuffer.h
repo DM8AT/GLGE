@@ -22,6 +22,9 @@
 //check if this is C++
 #if GLGE_CPP
 
+//say that windows will be defined
+class Window;
+
 /**
  * @brief store a command list that should be executed on the main render thread
  */
@@ -121,6 +124,8 @@ public:
      */
     inline void end() {m_inUse.unlock();m_filled = true;}
 
+    inline void clear() {m_commands.clear();}
+
     /**
      * @brief get if the command buffer is filled
      * 
@@ -128,6 +133,22 @@ public:
      * @return false : the command buffer is not filled
      */
     inline bool isFilled() const noexcept {return m_filled;}
+
+    /**
+     * @brief Get the currently active window
+     * 
+     * @return Window* a pointer to the current active window
+     */
+    inline Window* getCurrentWindow() noexcept {return m_current;}
+
+    /**
+     * @brief Set the Currently active window of the command buffer
+     * 
+     * @warning ONLY USE IF YOU KNOW WHAT YOU ARE DOING
+     * 
+     * @param window a pointer to the new currently active window
+     */
+    inline void setCurrentWindow(Window* window) noexcept {m_current = window;}
 
 protected:
 
@@ -156,6 +177,11 @@ protected:
      * @brief store if the command buffer is filled
      */
     bool m_filled = false;
+
+    /**
+     * @brief store a pointer to the currently active window or 0 if none is active
+     */
+    Window* m_current = 0;
 };
 
 #endif //C++ section

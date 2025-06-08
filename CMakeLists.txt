@@ -47,6 +47,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGERenderPipeline.cpp
     # Shader stuff
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp
@@ -61,12 +62,15 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Window.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_CommandBuffer.cpp
     ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Shader.cpp
+    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_RenderPipeline.cpp
         # Graphic API: OpenGL 4.6
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Instance.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Window.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_CommandBuffer.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Texture.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Shader.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_RenderPipeline.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Framebuffer.cpp
 
     # Math files
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp

@@ -14,6 +14,8 @@
 
 //include the settings
 #include "../../GLGECore/GLGESettings.h"
+//include command buffers
+#include "GLGEGraphicAPI_CommandBuffer.h"
 
 /**
  * @brief specify the type of render stage
@@ -39,6 +41,10 @@ typedef enum e_StageType {
      * @brief specify that the render stage should copy the contents from a window to a framebuffer. The data must contain first a window to use as source and then a framebuffer to use as destination. 
      */
     RENDER_STAGE_BLIT_FROM_WINDOW,
+    /**
+     * @brief specify that the render stage should swap the shown contents of a window
+     */
+    RENDER_STAGE_SWAP_WINDOW,
     /**
      * @brief specify that the render stage should render all objects in a world. The data must contain the world to render, an Object to use as Camera and a target framebuffer. The Object must contain a component like a camera or Light source. It must also specify if depth or color should be renderd.
      */
@@ -101,14 +107,23 @@ public:
     virtual void onDestroy() noexcept {}
 
     /**
+     * @brief this function is called when the render pipeline is fully executed
+     */
+    virtual void onExecute() noexcept;
+
+    /**
      * @brief a function that is called when one stage is executed
      * 
      * @param stageIndex the index of the executed stage
      */
-    virtual void onStageExecution(uint64_t) noexcept {}
+    virtual void onStageExecution(uint64_t stageIndex) noexcept;
 
 protected:
 
+    /**
+     * @brief store a command buffer to store all commands for rendering
+     */
+    GraphicCommandBuffer* m_cmdBuff = 0;
     /**
      * @brief store the parent render pipeline
      */

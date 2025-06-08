@@ -26,6 +26,8 @@ void GraphicCommandBuffer::create(GraphicInstance* instance)
     m_graphicInstance = instance;
     //add this to the instance
     m_graphicInstance->addElement(this);
+    //also mark this as a command buffer
+    m_graphicInstance->addCommandBuffer(this);
 
     //clear all the commands
     m_commands.clear();
@@ -39,11 +41,15 @@ void GraphicCommandBuffer::destroy()
     //check if the framebuffer is set up
     if (!m_graphicInstance) {return;}
 
+    //lock this command buffer
+    begin();
+
     //call the destroy hook
     onDestroy();
 
     //remove from the instance
     m_graphicInstance->removeElement(this);
+    m_graphicInstance->removeCommandBuffer(this);
     m_graphicInstance = 0;
     //clear the commands
     m_commands.clear();

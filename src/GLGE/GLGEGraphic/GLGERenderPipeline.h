@@ -19,7 +19,7 @@
 #include "../GLGECore/GLGEInstance.h"
 //include framebuffers
 #include "GLGEFramebuffer.h"
-//include windows
+//include windows and limiter
 #include "GLGEWindow.h"
 //include geometry (Objects and Worlds)
 #include "../GLGECore/Geometry/GLGEGeometry.h"
@@ -34,7 +34,17 @@ typedef struct s_ClearStageData {
     /**
      * @brief store a pointer to the framebuffer
      */
-    void* framebuffer;
+    Framebuffer_t* framebuffer;
+
+    //check for C++ to create a constructor
+    #if GLGE_CPP
+    /**
+     * @brief Construct a new instance of data for a clear pass 
+     * 
+     * @param _framebuffer a pointer to the framebuffer to clear
+     */
+    s_ClearStageData(Framebuffer* _framebuffer) : framebuffer((Framebuffer_t*)_framebuffer) {}
+    #endif //C++ section
 } ClearStageData;
 
 /**
@@ -44,11 +54,25 @@ typedef struct s_BlitStageData {
     /**
      * @brief store the source framebuffer
      */
-    void* src;
+    Framebuffer_t* src;
     /**
      * @brief store the destinatoin framebuffer
      */
-    void* dst;
+    Framebuffer_t* dst;
+
+    //check for C++ to create a constructor
+    #if GLGE_CPP
+
+    /**
+     * @brief Construct a new instance of data for a blit pass
+     * 
+     * @param _src the framebuffer to blit from
+     * @param _dst the framebuffer to blit to
+     */
+    s_BlitStageData(Framebuffer* _src, Framebuffer* _dst)
+     : src((Framebuffer_t*)_src), dst((Framebuffer_t*)_dst) {}
+
+    #endif //C++ section
 } BlitStageData;
 
 /**
@@ -58,11 +82,26 @@ typedef struct s_BlitToWindowStageData {
     /**
      * @brief store the framebuffer to copy from
      */
-    void* src;
+    Framebuffer_t* src;
     /**
      * @brief store the window to copy to
      */
-    void* dst;
+    Window_t* dst;
+
+    //check for C++ to create a constructor
+    #if GLGE_CPP
+
+    /**
+     * @brief copy the content of a framebuffer to a window's back buffer
+     * 
+     * @param _src the framebuffer to copy the data from
+     * @param _dst the window to write the data to
+     */
+    s_BlitToWindowStageData(Framebuffer* _src, Window* _dst)
+     : src((Framebuffer_t*)_src), dst((Window_t*)_dst) {}
+
+    #endif //end of C++ section
+
 } BlitToWindowStageData;
 
 /**
@@ -72,12 +111,50 @@ typedef struct s_BlitFromWindowStageData {
     /**
      * @brief store a pointer to the source window
      */
-    void* src;
+    Window_t* src;
     /**
      * @brief store a pointer to the destination framebuffer
      */
-    void* dst;
+    Framebuffer_t* dst;
+
+    //check for C++ to create a constructor
+    #if GLGE_CPP
+
+    /**
+     * @brief Construct a new instance of data to copy the content of a window's back buffer to a framebuffer
+     * 
+     * @param _src a pointer to the window to copy the data from
+     * @param _dst a pointer to the framebuffer to copy the data to 
+     */
+    s_BlitFromWindowStageData(Window* _src, Framebuffer* _dst)
+     : src((Window_t*)_src), dst((Framebuffer_t*)_dst) {}
+
+    #endif //end of C++ section
+
 } BlitFromWindowStageData;
+
+/**
+ * @brief store the data for a swap command
+ */
+typedef struct s_SwapWindowData {
+    /**
+     * @brief store a pointer to the window to swap
+     */
+    Window_t* window;
+
+    //check for C++ to create a constructor
+    #if GLGE_CPP
+
+    /**
+     * @brief Construct a new instance of data for swapping a window
+     * 
+     * @param _window a pointer to the window to swap
+     */
+    s_SwapWindowData(Window* _window) : window((Window_t*)_window) {}
+
+    #endif //end of C++ section
+
+} SwapWindowData;
 
 /**
  * @brief store the data for rendering a world class instance
@@ -106,6 +183,7 @@ typedef struct s_RenderWorldStageData {
  * @brief define the structure of a render stage
  */
 typedef struct s_RenderStage {
+    
     /**
      * @brief store a function that is called before this stage is executed. 0 means that no function will be called. Inputed is the user data. 
      */
@@ -134,9 +212,87 @@ typedef struct s_RenderStage {
         BlitToWindowStageData toWindow;
         //store the data for a stage that copys from a window
         BlitFromWindowStageData fromWindow;
+        //store the data used to swap a specific window
+        SwapWindowData swapWindow;
         //store the data for a stage that renders all objects from a world
         RenderWorldStageData renderWorld;
+
+        //check for C++ to create a constructor
+        #if GLGE_CPP
+
+        /**
+         * @brief Construct some new data
+         * @warning the data is just garbage
+         */
+        Data() : clear(0) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _clear a constant reference to the clear data to store
+         */
+        Data(const ClearStageData& _clear) : clear(_clear) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _blit a constant reference to the blit data to store
+         */
+        Data(const BlitStageData& _blit) : blit(_blit) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _toWindow a constant reference to the blit data to blit to a window
+         */
+        Data(const BlitToWindowStageData& _toWindow) : toWindow(_toWindow) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _fromWindow a constant reference to the blit data to blit from a window
+         */
+        Data(const BlitFromWindowStageData& _fromWindow) : fromWindow(_fromWindow) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _swapWindow a constant reference to the data used to swap the window
+         */
+        Data(const SwapWindowData& _swapWindow) : swapWindow(_swapWindow) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _renderWorld a constant reference to the data to render a world instance
+         */
+        Data(const RenderWorldStageData& _renderWorld) : renderWorld(_renderWorld) {}
+
+        #endif //end of C++ section
     } data;
+
+    //check for C++ to add constructors
+    #if GLGE_CPP
+
+    /**
+     * @brief Construct a new render stage
+     */
+    s_RenderStage() = default;
+
+    /**
+     * @brief Construct a new render stage
+     * 
+     * @param _type the type of the render stage
+     * @param _data the data for the render stage. Must be the type spezified by the render stage
+     * @param _userData a pointer to some user data, can be 0
+     * @param _before a pointer to a function that will be executed before the stage is executed. Can be 0. 
+     * @param _after a pointer to a function that will be executed after the stage is executed. Can be 0. 
+     */
+    s_RenderStage(StageType _type, Data _data, void* _userData, void (*_before)(void*), void (*_after)(void*)) 
+     : before(_before), after(_after), type(_type), userData(_userData), data(_data) {}
+
+    #endif //end of C++ section
+
 } RenderStage;
 
 //check if this is C++
@@ -159,14 +315,33 @@ public:
      * 
      * @param stages an array of stages for the render pipeline in the order of execution
      * @param stageCount the amount of stages in the render stage array
+     * @param start define if the render pipeline should start imediatly after creation
      * @param instance the instance the render pipeline will belong to
      */
-    RenderPipeline(RenderStage* stages, uint64_t stageCount, Instance& instance);
+    RenderPipeline(RenderStage* stages, uint64_t stageCount, bool start, Instance& instance);
 
     /**
      * @brief Destroy the Render Pipeline
      */
     ~RenderPipeline();
+
+    /**
+     * @brief start the render pipeline if it isn't running
+     */
+    void start();
+
+    /**
+     * @brief stop the render pipeline if it is running
+     */
+    void stop();
+
+    /**
+     * @brief get if the render pipeline is currently running
+     * 
+     * @return true : the render pipeline is running
+     * @return false : the render pipeline is not running
+     */
+    inline bool isRunning() const noexcept {return m_run;}
 
     /**
      * @brief Get a specific render stage
@@ -177,11 +352,27 @@ public:
     inline RenderStage& getStage(uint64_t index) noexcept {return m_stages[index];}
 
     /**
-     * @brief run all stages of the render pipeline
+     * @brief Get the amount of stages in the stage array
+     * 
+     * @return uint64_t the amount of single stages
      */
-    void execute() noexcept;
+    inline uint64_t getStageCount() const noexcept {return m_stages.size();}
+
+    /**
+     * @brief Get the limiter instance responsible for controlling the iteration rate
+     * 
+     * @return Limiter& a reference to the limiter instance
+     */
+    inline Limiter& getLimiter() noexcept {return m_limiter;}
 
 protected: 
+
+    /**
+     * @brief execute a render pipeline by executing all stages
+     * 
+     * @param pipeline a pointer to the pipeline to exeucte
+     */
+    static void execute(RenderPipeline* pipeline) noexcept;
 
     /**
      * @brief store a pointer to the execution layer to execute the render stages
@@ -190,7 +381,19 @@ protected:
     /**
      * @brief store all render stages for the pipeline
      */
-    std::vector<RenderStage> m_stages;
+    std::vector<RenderStage> m_stages = {};
+    /**
+     * @brief store if the render pipeline should run
+     */
+    bool m_run = false;
+    /**
+     * @brief store the thread the render pipeline runs upon
+     */
+    std::thread m_thread;
+    /**
+     * @brief store a limiter to define the iteration rate of the pipeline's execution
+     */
+    Limiter m_limiter = 60;
 
 };
 

@@ -22,9 +22,9 @@
 #if GLGE_CPP
 
 /**
- * @brief 
+ * @brief store a set of textures that can be renderd to and read from
  */
-class Framebuffer : InstAttachableClass
+class Framebuffer : public InstAttachableClass
 {
 public:
 
@@ -72,6 +72,11 @@ public:
     }
 
     /**
+     * @brief Destroy the Framebuffer
+     */
+    ~Framebuffer();
+
+    /**
      * @brief Construct a new Framebuffer
      * 
      * @param colorAttatchmentCount the amount of color attatchments
@@ -107,6 +112,20 @@ public:
     inline Texture* getColorAttatchment(uint64_t idx) noexcept {return m_colorAttatchments[idx];}
 
     /**
+     * @brief Get the Amount of color attatchments of the framebuffer
+     * 
+     * @return uint64_t the amount of attatched color attatchments
+     */
+    inline uint64_t getColorAttatchmentCount() const noexcept {return m_colorAttatchments.size();}
+
+    /**
+     * @brief Get the Depth attatchment of this framebuffer
+     * 
+     * @return Texture* a pointer to the depth attatchment of the framebuffer
+     */
+    inline Texture* getDepthAttatchment() noexcept {return m_depthAttatchment;}
+
+    /**
      * @brief Set the clear color of the window
      * 
      * @param r the red component of the clear color
@@ -137,6 +156,14 @@ public:
      */
     inline const Color& getClearColor() const noexcept {return m_clear;}
 
+    /**
+     * @brief Get the Graphic Framebuffer instance
+     * @warning ONLY USE IF YOU KNOW WHAT YOU'RE DOING
+     * 
+     * @return GraphicFramebuffer* a pointer to the graphic framebuffer
+     */
+    inline GraphicFramebuffer* getGraphicFramebuffer() noexcept {return m_fbuff;}
+
 protected:
 
     /**
@@ -159,6 +186,18 @@ protected:
 
 };
 
+//start a C-Section
+extern "C" {
 #endif //C++ section
+
+/**
+ * @brief store an instance of the framebuffer class
+ */
+typedef struct s_Framebuffer Framebuffer_t;
+
+//check if a C-Section should be ended
+#if GLGE_CPP
+}
+#endif //End of C-Section
 
 #endif

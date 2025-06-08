@@ -19,9 +19,17 @@
 #include "GLGEGraphicAPI_Instance.h"
 //include the textures
 #include "GLGEGraphicAPI_Texture.h"
+//include command buffers
+#include "GLGEGraphicAPI_CommandBuffer.h"
 
 //check if this is C++
 #if GLGE_CPP
+
+//say that framebuffers will be defined later
+class Framebuffer;
+
+//say that pipelines will exist
+class RenderPipeline;
 
 /**
  * @brief define the API for the framebuffer
@@ -38,52 +46,15 @@ public:
     /**
      * @brief Construct a new Graphic Framebuffer
      * 
-     * @param textures an array of textures for the framebuffer
-     * @param textureCount the amount of textures in the array
-     * @param depthBuffer a pointer to a depth buffer or 0
-     * @param instance a pointer to the instance the framebuffer will belong to
+     * @param framebuffer a pointer to the framebuffer this graphic framebuffer belongs to
      */
-    inline GraphicFramebuffer(GraphicTexture* textures, uint64_t textureCount, GraphicTexture* depthBuffer, GraphicInstance* instance)
-    {create(textures, textureCount, depthBuffer, instance);}
-
-    /**
-     * @brief create a new framebuffer
-     * 
-     * @param textures an array of textures for the framebuffer
-     * @param textureCount the amount of textures in the array
-     * @param depthBuffer a pointer to a depth buffer or 0
-     * @param instance a pointer to the instance the framebuffer will belong to
-     */
-    virtual void create(GraphicTexture* textures, uint64_t textureCount, GraphicTexture* depthBuffer, GraphicInstance* instance);
+    inline GraphicFramebuffer(Framebuffer* framebuffer)
+     : m_fbuff(framebuffer) {}
 
     /**
      * @brief destroy a framebuffer
      */
     virtual void destroy();
-
-    /**
-     * @brief Get a specific texture from the framebuffer
-     * 
-     * @param idx the index of the texture
-     * @return GraphicTexture* a pointer to the specific texture
-     */
-    inline GraphicTexture* getTexture(uint64_t idx) noexcept {return m_textures[idx];}
-
-    /**
-     * @brief Get the amount of color targets
-     * 
-     * @return uint64_t the amount of color targets
-     */
-    inline uint64_t getTextureCount() const noexcept {return m_textures.size();}
-
-    /**
-     * @brief Get the Depth Buffer
-     * 
-     * @return GraphicTexture* a pointer to the depth buffer
-     */
-    inline GraphicTexture* getDepthBuffer() noexcept {return m_depthBuffer;}
-
-protected:
 
     /**
      * @brief a overloadable hook to create the framebuffer
@@ -95,14 +66,37 @@ protected:
     virtual void onDestroy() {}
 
     /**
-     * @brief store all the attatched textures
+     * @brief clear the graphic framebuffer
+     * 
+     * @param cmdBuff the command buffer to queue the clearing in
      */
-    std::vector<GraphicTexture*> m_textures;
-    /**
-     * @brief store a pointer to the depth buffer texture
-     */
-    GraphicTexture* m_depthBuffer = 0;
+    virtual void clear(GraphicCommandBuffer*) {}
 
+    /**
+     * @brief get wich command buffers reference this window
+     * 
+     * @return std::vector<RenderPipeline*> a vector containing pointrs to all command buffers that reference this window
+     */
+    inline std::vector<RenderPipeline*>& isReferencedBy() noexcept {return m_referencedBy;}
+
+    /**
+     * @brief add that the window was referenced by a command buffer
+     * 
+     * @param cmdBuff a pointer to the command buffer that referenced this window
+     */
+    void addReference(RenderPipeline* dBuff);
+
+protected:
+
+    /**
+     * @brief store a pointer to the parent framebuffer
+     */
+    Framebuffer* m_fbuff = 0;
+    
+    /**
+     * @brief store all command buffer that reference this window
+     */
+    std::vector<RenderPipeline*> m_referencedBy;
 };
 
 #endif //C++ section

@@ -198,10 +198,8 @@ bool collide(const Sphere& a, const Triangle& b) noexcept
     //compute all edge vectors
     vec3 e01 = v1 - v0;
     vec3 e02 = v2 - v0;
-    vec3 e10 = v0 - v1;
     vec3 e12 = v2 - v1;
     vec3 e20 = v0 - v2;
-    vec3 e21 = v1 - v2;
     //cache the squared radius
     float r2 = a.getSquaredRadius();
     //compute the vector's normal

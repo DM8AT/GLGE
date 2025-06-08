@@ -29,6 +29,8 @@ void SDL_Main_Thread(Logger* logger)
     //loop while there are windows available
     while (__glge_all_windows_sdl.size() > 0)
     {
+        //store if window closing was requested
+        bool closedWindow = false;
         //store the current event
         SDL_Event event;
         //get all events
@@ -52,8 +54,20 @@ void SDL_Main_Thread(Logger* logger)
                     {
                         //pass the call
                         effected->setQueuedClosing(true);
+                        //store that a window was closed
+                        closedWindow = true;
                     }
                     break;
+
+                case SDL_WINDOWEVENT_RESIZED:
+                    //get the effected window
+                    effected = __glge_all_windows_sdl[event.window.windowID];
+                    //check if the window exists
+                    if (effected)
+                    {
+                        //pass the call
+                        effected->handleSDL_Resize(uvec2(event.window.data1, event.window.data2));
+                    }
                 
                 default:
                     break;
@@ -65,11 +79,33 @@ void SDL_Main_Thread(Logger* logger)
             }
         }
 
-        //loop over all instances
-        for (size_t i = 0; i < __glge_all_instances->size(); ++i)
+        //check if a window was closed
+        if (closedWindow)
         {
-            //render the instance
-            (*__glge_all_instances)[i]->getGraphicInstance()->onRender();
+            //make sure to clean up everything
+            for (size_t i = 0; i < __glge_all_instances->size(); ++i)
+            {
+                //get all attatched command buffers
+                std::vector<GraphicCommandBuffer *> & buffs = (*__glge_all_instances)[i]->getGraphicInstance()->getBuffers();
+                //execute only the first command buffer
+                buffs[0]->play();
+                //iterate over all command buffers
+                for (uint64_t i = 1; i < buffs.size(); ++i)
+                {
+                    //erase the recorded command data
+                    buffs[i]->clear();
+                }
+            }
+        }
+        //else, render as normal
+        else
+        {
+            //loop over all instances
+            for (size_t i = 0; i < __glge_all_instances->size(); ++i)
+            {
+                //render the instance
+                (*__glge_all_instances)[i]->getGraphicInstance()->onRender();
+            }
         }
 
         //end the tick

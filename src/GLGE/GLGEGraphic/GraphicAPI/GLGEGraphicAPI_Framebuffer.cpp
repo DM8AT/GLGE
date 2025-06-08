@@ -11,33 +11,8 @@
 
 //include the framebuffer
 #include "GLGEGraphicAPI_Framebuffer.h"
-
-
-void GraphicFramebuffer::create(GraphicTexture* textures, uint64_t textureCount, GraphicTexture* depthBuffer, GraphicInstance* instance)
-{
-    //check if the framebuffer exists
-    if (m_graphicInstance)
-    {
-        //print an error
-        m_graphicInstance->getInstance()->log("Can not create framebuffer because it is allready created", MESSAGE_TYPE_ERROR);
-        return;
-    }
-
-    //allocate the textures
-    m_textures.resize(textureCount);
-    //store the textures
-    memcpy(m_textures.data(), textures, sizeof(*textures)*textureCount);
-    //store the depth buffer
-    m_depthBuffer = depthBuffer;
-
-    //store the instance
-    m_graphicInstance = instance;
-    //add this to the instance
-    m_graphicInstance->addElement(this);
-
-    //call the attatch hook
-    onCreate();
-}
+//include render pipelines
+#include "../GLGERenderPipeline.h"
 
 void GraphicFramebuffer::destroy()
 {
@@ -47,11 +22,26 @@ void GraphicFramebuffer::destroy()
     //call the destroy hook
     onDestroy();
 
+    //iterate over all render pipelines that reference this window
+    for (uint64_t i = 0; i < m_referencedBy.size(); ++i)
+    {
+        //stop the pipeline
+        m_referencedBy[i]->stop();
+    }
+
     //remove from the instance
     m_graphicInstance->removeElement(this);
     m_graphicInstance = 0;
-    //free the textures
-    m_textures.clear();
-    //free the depth buffer
-    m_depthBuffer = 0;
+    //set the framebuffer to 0
+    m_fbuff = 0;
+}
+
+void GraphicFramebuffer::addReference(RenderPipeline* pipeline)
+{
+    //check if the reference is contained
+    if (std::find(m_referencedBy.begin(), m_referencedBy.end(), pipeline) == m_referencedBy.end())
+    {
+        //add the element
+        m_referencedBy.push_back(pipeline);
+    }
 }

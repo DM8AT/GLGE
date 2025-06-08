@@ -113,6 +113,14 @@ public:
     inline TexturePurpose getPurpose() const noexcept {return m_texture->getPurpose();}
 
     /**
+     * @brief Get the graphic texture
+     * @warning ONLY USE IF YOU KNOW WHAT YOU'RE DOING
+     * 
+     * @return GraphicTexture* a pointer to the graphic texture
+     */
+    inline GraphicTexture* getGraphicTexture() noexcept {return m_texture;}
+
+    /**
      * @brief print the texture
      * 
      * @param os the output stream to print to

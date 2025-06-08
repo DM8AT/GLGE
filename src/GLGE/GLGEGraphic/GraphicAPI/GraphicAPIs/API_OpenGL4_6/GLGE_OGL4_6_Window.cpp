@@ -22,11 +22,8 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
-void OGL4_6_RenderFunc(void* data, uint64_t)
+void OGL4_6_Window::OGL4_6_WindowInitFunc(OGL4_6_Window* window, uint64_t) noexcept
 {
-    //extract the window
-    OGL4_6_Window* window = (OGL4_6_Window*)data;
-
     //check if GLEW is initalized
     if (!((OGL4_6_Instance*)window->getInstance())->isGlewInitalized())
     {
@@ -34,53 +31,51 @@ void OGL4_6_RenderFunc(void* data, uint64_t)
         ((OGL4_6_Instance*)window->getInstance())->initalizeGLEW(window);
     }
     //make this the current window
-    SDL_GL_MakeCurrent((SDL_Window*)window->getWindow()->getSDL2Window(), ((OGL4_6_Instance*)window->getInstance())->getContext());
-
-    SDL_GL_SwapWindow((SDL_Window*)window->getWindow()->getSDL2Window());
+    SDL_GL_MakeCurrent((SDL_Window*)window->m_window->getSDL2Window(), ((OGL4_6_Instance*)window->getInstance())->getContext());
 }
 
-void OGL4_6_RenderThread(OGL4_6_Window* window)
+void OGL4_6_Window::OGL4_6_WindowMakeCurrent(OGL4_6_Window* window, uint64_t) noexcept
 {
-    //loop while the instance is running
-    while (window->isRendererActive())
+    //make this the current window
+    SDL_GL_MakeCurrent((SDL_Window*)window->m_window->getSDL2Window(), ((OGL4_6_Instance*)window->getInstance())->getContext());
+    //check if the size changed
+    if ((window->m_size.x != window->getWindow()->getSize().x) || (window->m_size.y != window->getWindow()->getSize().y))
     {
-        //check if the command buffer is filled
-        if (!window->getCommandBuffer()->isFilled())
-        {
-            //lock the command buffer
-            window->getCommandBuffer()->begin();
-            //record the command buffer
-            window->getCommandBuffer()->add(0, (void*)OGL4_6_RenderFunc, (void*)window, sizeof(window));
-            //stop the command buffer
-            window->getCommandBuffer()->end();
-        }
-
-        //end the render thread for the window
-        window->getWindow()->getRenderLimiter().endTick();
+        //update the currently known size
+        window->m_size = window->getWindow()->getSize();
+        //set the viewport
+        glViewport(0,0, window->m_size.x, window->m_size.y);
     }
+}
+
+void OGL4_6_Window::OGL4_6_WindowSwapFunc(OGL4_6_Window* window, uint64_t) noexcept
+{
+    //make sure to bind the window (required for Mac OS)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //swap the window's surface
+    SDL_GL_SwapWindow((SDL_Window*)window->m_window->getSDL2Window());
 }
 
 void OGL4_6_Window::onCreate()
 {
-    //create the command buffer
-    m_buffer = new OGL4_6_CommandBuffer(m_graphicInstance);
-    //add the command buffer to the instance
-    m_graphicInstance->addCommandBuffer(m_buffer);
-    //start the render thread
-    m_runRenderer = true;
-    m_render = std::thread(OGL4_6_RenderThread, this);
+    //add the init command
+    m_window->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)OGL4_6_WindowInitFunc, this, sizeof(this));
 }
 
-void OGL4_6_Window::onDestroy()
+void OGL4_6_Window::makeCurrent(GraphicCommandBuffer* cmdBuff)
 {
-    //stop the render thread
-    m_runRenderer = false;
-    m_render.join();
-    //lock the buffer
-    m_buffer->begin();
-    //remove the buffer from the instance
-    m_graphicInstance->removeCommandBuffer(m_buffer);
-    //destroy the command buffer
-    delete m_buffer;
-    m_buffer = 0;
+    //check if this is the currently active window. If not, queue the command
+    if (cmdBuff->getCurrentWindow() != m_window)
+    {
+        //queue the make current command
+        cmdBuff->add(0, (void*)OGL4_6_WindowMakeCurrent, this, sizeof(this));
+        //set the new window pointer
+        cmdBuff->setCurrentWindow(m_window);
+    }
+}
+
+void OGL4_6_Window::swap(GraphicCommandBuffer* cmdBuff)
+{
+    //queue the swapping
+    cmdBuff->add(0, (void*)OGL4_6_WindowSwapFunc, this, sizeof(this));
 }

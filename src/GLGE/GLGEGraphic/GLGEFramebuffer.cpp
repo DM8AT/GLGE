@@ -11,6 +11,8 @@
 
 //include the framebuffer
 #include "GLGEFramebuffer.h"
+//include the APIs
+#include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
 void Framebuffer::create(Texture** colorAttatchments, uint64_t colorAttatchmentCount, Texture* depthAttatchment)
 {
@@ -70,6 +72,19 @@ void Framebuffer::create(Texture** colorAttatchments, uint64_t colorAttatchmentC
 
     //store the depth attatchment
     m_depthAttatchment = depthAttatchment;
+
+    //switch over the instance's API to create the correct low-level framebuffer
+    switch (m_instance->getAPI())
+    {
+    case API_OPENGL_4_6:
+        m_fbuff = new OGL4_6_Framebuffer(this);
+        break;
+    
+    default:
+        break;
+    }
+    //create the whole framebuffer
+    m_fbuff->onCreate();
 }
 
 void Framebuffer::create(uint64_t colorAttatchmentCount, bool alpha, bool hdr, bool depthAttatchment, const uvec2& size)
@@ -89,6 +104,29 @@ void Framebuffer::create(uint64_t colorAttatchmentCount, bool alpha, bool hdr, b
         //create the depth attatchment
         m_depthAttatchment = new Texture(TEXTURE_PURPOSE_DEPTH, size, 0, 0, *m_instance);
     }
+
+    //switch over the instance's API to create the correct low-level framebuffer
+    switch (m_instance->getAPI())
+    {
+    case API_OPENGL_4_6:
+        m_fbuff = new OGL4_6_Framebuffer(this);
+        break;
+    
+    default:
+        break;
+    }
+    //create the whole framebuffer
+    m_fbuff->onCreate();
+}
+
+Framebuffer::~Framebuffer()
+{
+    //check if the framebuffer still exists
+    if (!m_fbuff) {return;}
+
+    //if it still exists, delete the graphic framebuffer
+    delete m_fbuff;
+    m_fbuff = 0;
 }
 
 
