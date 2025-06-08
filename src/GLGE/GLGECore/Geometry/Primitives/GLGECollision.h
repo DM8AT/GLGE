@@ -19,6 +19,8 @@
 #include "GLGESphere.h"
 //include rays
 #include "GLGERay.h"
+//include triangles
+#include "GLGETriangle.h"
 
 //check for C++
 #if GLGE_CPP
@@ -112,6 +114,20 @@ inline bool collide(const Ray& a, const Sphere& b) noexcept {return collide(b,a)
  * @return false : the rays do not intersect
  */
 bool collide(const Ray& a, const Ray& b) noexcept;
+
+bool collide(const AABB& a, const Triangle& b) noexcept;
+
+inline bool collide(const Triangle& a, const AABB& b) noexcept {return collide(b, a);}
+
+bool collide(const Sphere& a, const Triangle& b) noexcept;
+
+inline bool collide(const Triangle& a, const Sphere& b) noexcept {return collide(b, a);}
+
+bool collide(const Ray& a, const Triangle& b) noexcept;
+
+inline bool collide(const Triangle& a, const Ray& b) noexcept {return collide(b, a);}
+
+bool collide(const Triangle& a, const Triangle& b) noexcept;
 
 //start a C-Section
 extern "C" {

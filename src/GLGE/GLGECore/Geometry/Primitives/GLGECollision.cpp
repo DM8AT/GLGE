@@ -109,6 +109,170 @@ bool collide(const Ray& a, const Ray& b) noexcept
     return false;
 }
 
+/**
+ * @brief a simple utility function to use the seperating axis therom (SAT) to check if a triangle intersects with an AABB
+ * 
+ * @param a the first vertex of the triangle in the space of the AABB
+ * @param b the second vertex of the triangle in the space of the AABB
+ * @param c the thierd vertex of the triangle in the space of the AABB
+ * @param extends the extends of the axis alligned bounding box (must be centerd at 0)
+ * @param axis the axis to check for the collision
+ * 
+ * @return true : they intersect on this axis
+ * @return false : they don't intersect on this axis
+ */
+static bool IntersectsTriangleAABB_SAT(const vec3& a, const vec3& b, const vec3& c, vec3 extends, vec3 axis)
+{
+    //compute the positions of the triangle's vertices 
+    float pr0 = dot(a, axis);
+    float pr1 = dot(b, axis);
+    float pr2 = dot(c, axis);
+
+    //project the aabb to the axis
+    float prAABB = extends.x * fabs(dot(vec3(1,0,0), axis)) + 
+                   extends.y * fabs(dot(vec3(0,1,0), axis)) + 
+                   extends.z * fabs(dot(vec3(0,0,1), axis));
+    
+    //compute the minimum and maximum of the triangle's vertices on the axis
+    float prMin = fminf(pr0, fminf(pr1, pr2));
+    float prMax = fmaxf(pr0, fmaxf(pr1, pr2));
+
+    //check if the AABB and triangle intersect
+    return !(fmaxf(-prMax, prMin) > prAABB);
+}
+
+bool collide(const AABB& a, const Triangle& b) noexcept
+{
+    //calculate the center and extend of the AABB
+    vec3 center = (a.getMin() + a.getMax()) / 2.;
+    vec3 extend = a.getMax() - a.getMin();
+    //compute the points relative to the AABB
+    vec3 v0 = b.getA() - center;
+    vec3 v1 = b.getB() - center;
+    vec3 v2 = b.getC() - center;
+    //calculate the unit direction vectors for the triangle's edges
+    vec3 ab = (v1 - v0).normalize();
+    vec3 bc = (v2 - v1).normalize();
+    vec3 ca = (v0 - v2).normalize();
+
+    //compute the axis perpandicular to the axis of the triangle and the normal of the AABB
+    //Perpandicular to normal (1,0,0) (X-Axis)
+    vec3 a00 = vec3(0, -ab.z, ab.y);
+    vec3 a01 = vec3(0, -bc.z, bc.y);
+    vec3 a02 = vec3(0, -ca.z, ca.y);
+    //Perpandicular to normal (0,1,0) (Y-Axis)
+    vec3 a10 = vec3(ab.z, 0, -ab.x);
+    vec3 a11 = vec3(bc.z, 0, -bc.x);
+    vec3 a12 = vec3(ca.z, 0, -ca.x);
+    //Perpandicular to normal (0,0,1) (Z-Axis)
+    vec3 a20 = vec3(-ab.y, ab.x, 0);
+    vec3 a21 = vec3(-bc.y, bc.x, 0);
+    vec3 a22 = vec3(-ca.y, ca.x, 0);
+
+    //check if they intersect on each axis. If they don't intersect, instantly return as they can't intersect
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a00)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a01)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a02)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a10)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a11)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a12)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a20)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a21)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, a22)) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, vec3(1,0,0))) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, vec3(0,1,0))) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, vec3(0,0,1))) {return false;}
+    if (!IntersectsTriangleAABB_SAT(v0, v1, v2, extend, cross(ab, bc))) {return false;}
+
+    //if this point is reached, they intersect on each axis. So they intersect. 
+    return true;
+}
+
+bool collide(const Sphere& a, const Triangle& b) noexcept
+{
+    //Algorithem source: https://realtimecollisiondetection.net/blog/?p=103
+    //compute the vertices of the triangle in the space of the sphere
+    vec3 v0 = b.getA() - a.getPos();
+    vec3 v1 = b.getB() - a.getPos();
+    vec3 v2 = b.getC() - a.getPos();
+    //compute all edge vectors
+    vec3 e01 = v1 - v0;
+    vec3 e02 = v2 - v0;
+    vec3 e10 = v0 - v1;
+    vec3 e12 = v2 - v1;
+    vec3 e20 = v0 - v2;
+    vec3 e21 = v1 - v2;
+    //cache the squared radius
+    float r2 = a.getSquaredRadius();
+    //compute the vector's normal
+    vec3 triNormal = cross(e01, e02);
+    //compute the distance between the sphere center and the plane formed by the triangle
+    float d = fabs(dot(v0, triNormal));
+    //compute a factor to correct for potentially nor normalized normal
+    float e = dot(triNormal, triNormal);
+    //they don't intersect if the distance is bigger than the radius. 
+    bool sep1 = (d * d) > (r2 * e);
+
+    //check if the vertices lie all on the outside
+    //dot all vertices together to get all squared possibilities for intersection tests
+    float d00 = dot(v0, v0);
+    float d01 = dot(v0, v1);
+    float d02 = dot(v0, v2);
+    float d11 = dot(v1, v1);
+    float d12 = dot(v1, v2);
+    float d22 = dot(v2, v2);
+    //the sphere and triangle are seperated when all points lie on the outside of the sphere
+    bool sep2 = ((d00 > r2) && (d01 > d00) && (d02 > d00)) ||
+                ((d11 > r2) && (d01 > d11) && (d12 > d11)) ||
+                ((d22 > r2) && (d02 > d22) && (d12 > d22));
+
+    //check if the sphere intersects with a triangle's edge
+
+    //V0 - V1 edge test
+    //project scalings to project the point without division
+    float d1 = dot(v0, e01);
+    float e1 = dot(e01, e01);
+    //calulate the projected point and make sure to correct the division
+    vec3 Q1 = v0 * e1 - e01 * d1;
+    vec3 QC = v2 * e1 - Q1;
+
+    //V1 - V2 edge test
+    //project scalings to project the point without division
+    float d2 = dot(v1, e12);
+    float e2 = dot(e12, e12);
+    //calulate the projected point and make sure to correct the division
+    vec3 Q2 = v1 * e2 - e12 * d2;
+    vec3 QA = v0 * e2 - Q2;
+    
+    //V2 - V0 edge test
+    //project scalings to project the point without division
+    float d3 = dot(v2, e20);
+    float e3 = dot(e20, e20);
+    //calulate the projected point and make sure to correct the division
+    vec3 Q3 = v2 * e3 - e20 * d3;
+    vec3 QB = v1 * e3 - Q3;
+    
+    //finally, check if any of the axis overlap
+    bool sep3 = ((dot(Q1, Q1) > (r2 * e1*e1)) && (dot(Q1, QC) > 0)) ||
+                ((dot(Q2, Q2) > (r2 * e2*e2)) && (dot(Q2, QA) > 0)) || 
+                ((dot(Q3, Q3) > (r2 * e3*e3)) && (dot(Q3, QB) > 0));
+
+    //check for seperation and finaly return if they are not seperated
+    return !(sep1 || sep2 || sep3);
+}
+
+bool collide(const Ray& a, const Triangle& b) noexcept
+{
+    #warning Collision Ray-Triangle not implemented
+    return false;
+}
+
+bool collide(const Triangle& a, const Triangle& b) noexcept
+{
+    #warning Collision Triangle - Triangle not implemented
+    return false;
+}
+
 
 
 
