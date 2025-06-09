@@ -19,6 +19,9 @@
 //incldue all grpahic APIs
 #include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
+//include the icon
+#include "GLGEWindowIcon.h"
+
 void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, const WindowSettings& settings, Instance& instance) noexcept
 {
     //check if the window is not open
@@ -154,6 +157,14 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     default:
         break;
     }
+
+    //set the default window icon
+
+    //create the window icon
+    setWindowIcon(new Texture((void*)gimp_image.pixel_data, TEXTURE_PURPOSE_CPU_ONLY, uvec2(gimp_image.width, gimp_image.height), 
+                              false, (gimp_image.bytes_per_pixel == 4), *m_instance));
+    //say that the icon was not external
+    m_customIcon = false;
 }
 
 void Window::close() noexcept
@@ -235,4 +246,24 @@ uint64_t Window::openWindowCount() noexcept
 {
     //return the amount of open windows
     return ((__glge_all_window_count) ? *__glge_all_window_count : 0);
+}
+
+void Window::setWindowIcon(Texture* icon)
+{
+    //check if the texture type is cpu only
+    if (icon->getPurpose() != TEXTURE_PURPOSE_CPU_ONLY)
+    {
+        //log an error
+        m_instance->log("Can not create a window icon from a texture that is on the GPU", MESSAGE_TYPE_ERROR);
+        return;
+    }
+    //if the texture is not custom, delete it
+    if (!m_customIcon) {delete m_icon;}
+    //store that the icon is custom
+    m_customIcon = true;
+    //store the icon texture
+    m_icon = icon;
+
+    //set the icon
+    SDL_SetWindowIcon((SDL_Window*)m_window, (SDL_Surface*)m_icon->getGraphicTexture());
 }

@@ -66,7 +66,7 @@ void SDL_Main_Thread(Logger* logger)
                     if (effected)
                     {
                         //pass the call
-                        effected->handleSDL_Resize(uvec2(event.window.data1, event.window.data2));
+                        effected->sdl_HandleResize(uvec2(event.window.data1, event.window.data2));
                     }
                 
                 default:

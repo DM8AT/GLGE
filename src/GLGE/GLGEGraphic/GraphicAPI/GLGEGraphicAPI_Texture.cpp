@@ -11,6 +11,8 @@
 
 //include the graphic texture
 #include "GLGEGraphicAPI_Texture.h"
+//include textures
+#include "../GLGETexture.h"
 
 /**
  * @brief store a lookup table for the texture purposes
@@ -34,7 +36,7 @@ const char* GLGE_C_FUNC(texturePurposeToString(TexturePurpose purpose))
     return TEXTURE_PURPOSE_LUT[(uint32_t)purpose];
 }
 
-void GraphicTexture::create(void* data, bool isHDR, bool alpha, const uvec2& size, GraphicInstance* instance)
+void GraphicTexture::create(Texture* texture, void* data, bool isHDR, bool alpha, GraphicInstance* instance)
 {
     //check if the texture is set up
     if (m_graphicInstance)
@@ -44,15 +46,16 @@ void GraphicTexture::create(void* data, bool isHDR, bool alpha, const uvec2& siz
         return;
     }
 
+    //store the parent texture
+    m_texture = texture;
     //store the inputs
     m_isHDR = isHDR;
     m_hasAlpha = alpha;
-    m_size = size;
     m_graphicInstance = instance;
     //add the element to the instance
     m_graphicInstance->addElement(this);
     //calcualte the data size
-    uint64_t datSize = ((m_isHDR) ? sizeof(float) : sizeof(uint8_t)) * ((m_hasAlpha) ? 4 : 3) * m_size.x * m_size.y;
+    uint64_t datSize = ((m_isHDR) ? sizeof(float) : sizeof(uint8_t)) * ((m_hasAlpha) ? 4 : 3) * m_texture->getSize().x * m_texture->getSize().y;
     //create the data
     m_data = malloc(datSize);
     //copy the data
@@ -62,7 +65,7 @@ void GraphicTexture::create(void* data, bool isHDR, bool alpha, const uvec2& siz
     onCreate();
 }
 
-void GraphicTexture::create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, GraphicInstance* instance)
+void GraphicTexture::create(Texture* texture, bool isHDR, bool alpha, GraphicInstance* instance)
 {
     //check if the texture is set up
     if (m_graphicInstance)
@@ -72,11 +75,11 @@ void GraphicTexture::create(TexturePurpose purpose, const uvec2& size, bool isHD
         return;
     }
 
+    //store the parent texture
+    m_texture = texture;
     //store the inputs
-    m_purpose = purpose;
     m_isHDR = isHDR;
     m_hasAlpha = alpha;
-    m_size = size;
     m_graphicInstance = instance;
     //add the element to the instance
     m_graphicInstance->addElement(this);
@@ -101,5 +104,4 @@ void GraphicTexture::destroy()
     m_data = 0;
     //reset the variables
     m_isHDR = false;
-    m_size = 0;
 }

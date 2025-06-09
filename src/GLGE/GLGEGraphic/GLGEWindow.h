@@ -21,6 +21,8 @@
 #include "GraphicAPI/GLGEGraphicAPI.h"
 //include colors
 #include "GLGEColor.h"
+//include textures
+#include "GLGETexture.h"
 
 /**
  * @brief specify some settings for a window
@@ -203,7 +205,14 @@ public:
      * 
      * @param newSize the new size of the window
      */
-    inline void handleSDL_Resize(const uvec2& newSize) noexcept {m_size = newSize;}
+    inline void sdl_HandleResize(const uvec2& newSize) noexcept {m_size = newSize;}
+
+    /**
+     * @brief Set the icon of the window
+     * 
+     * @param icon a pointer to the texture containing the window icon
+     */
+    void setWindowIcon(Texture* icon);
 
 protected:
 
@@ -238,6 +247,15 @@ protected:
      * @brief store the graphic window
      */
     GraphicWindow* m_gWindow;
+
+    /**
+     * @brief store a texture containing the window's icon
+     */
+    Texture* m_icon = 0;
+    /**
+     * @brief store if the icon is custom
+     */
+    bool m_customIcon = false;
 };
 
 //start a C-Section

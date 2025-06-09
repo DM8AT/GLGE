@@ -34,24 +34,23 @@ public:
     /**
      * @brief Construct a new OpenGL 4.6 texture
      * 
+     * @param texture a pointer to the parent texture
      * @param data the data for the texture
      * @param isHDR the format of the data (hdr = vec4, not hdr = uint8_t[4])
      * @param alpha store if a alpha channel should be used
-     * @param size the size of the texture in pixels
      * @param instance the graphic instance the texture will belong to
      */
-    inline OGL4_6_Texture(void* data, bool isHDR, bool alpha, const uvec2& size, GraphicInstance* instance) : GraphicTexture(data, isHDR, alpha, size, instance) {onCreate();}
+    inline OGL4_6_Texture(Texture* texture, void* data, bool isHDR, bool alpha, GraphicInstance* instance) : GraphicTexture(texture, data, isHDR, alpha, instance) {onCreate();}
 
     /**
      * @brief Construct a new Graphic Texture
      * 
-     * @param purpose the purpose of the texture (isHDR and alpha are only used for TEXTURE_PURPOSE_IMAGE and TEXTURE_PURPOSE_RENDER)
-     * @param size the size of the texture in pixels
+     * @param texture a pointer to the parent texture
      * @param isHDR true : the texture will be in high dynamic range (all components are 32 bit floats) | false : the texture will be in low dynamic range (all components are 8 bit unsigned integers)
      * @param alpha specify if a alpha channel should exist or not
      * @param instance store a pointer to the graphic instance the texture belongs to
      */
-    inline OGL4_6_Texture(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, GraphicInstance* instance) : GraphicTexture(purpose, size, isHDR, alpha, instance) {onCreate();}
+    inline OGL4_6_Texture(Texture* texture, bool isHDR, bool alpha, GraphicInstance* instance) : GraphicTexture(texture, isHDR, alpha, instance) {onCreate();}
 
     /**
      * @brief create the OpenGL texture

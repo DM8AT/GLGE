@@ -13,6 +13,8 @@
 #include "GLGE_OGL4_6_Texture.h"
 //inlcude OpenGL 4.6 instances
 #include "GLGE_OGL4_6_Instance.h"
+//include textures
+#include "../../../GLGETexture.h"
 //include OpenGL
 #include <GL/glew.h>
 
@@ -20,6 +22,9 @@ void OGL4_6_Texture::createOgl(void* data, uint64_t)
 {
     //extract the texture
     OGL4_6_Texture* texture = (OGL4_6_Texture*)data;
+
+    //if the texture's purpose is CPU only, stop. No GPU texture is needed. 
+    if (texture->m_texture->getPurpose() == TEXTURE_PURPOSE_CPU_ONLY) {return;}
 
     //create a new OpenGL texture
     glGenTextures(1, &texture->m_tex);
@@ -32,7 +37,7 @@ void OGL4_6_Texture::createOgl(void* data, uint64_t)
     //store the selected format
     GLenum format = GL_RGBA32F;
     //check if the texture purpose is as a render target or image
-    if ((texture->m_purpose == TEXTURE_PURPOSE_IMAGE) || (texture->m_purpose == TEXTURE_PURPOSE_RENDER))
+    if ((texture->m_texture->getPurpose() == TEXTURE_PURPOSE_IMAGE) || (texture->m_texture->getPurpose() == TEXTURE_PURPOSE_RENDER))
     {
         //check the texture format
         if (texture->m_isHDR)
@@ -66,14 +71,14 @@ void OGL4_6_Texture::createOgl(void* data, uint64_t)
         }
     }
     //check for the depth format
-    else if (texture->m_purpose == TEXTURE_PURPOSE_DEPTH)
+    else if (texture->m_texture->getPurpose() == TEXTURE_PURPOSE_DEPTH)
     {
         //set the format to the depth format
         format = GL_DEPTH_COMPONENT32F;
         baseFmt = GL_DEPTH_COMPONENT;
     }
     //create the texture
-    glTexImage2D(GL_TEXTURE_2D, 0, format, texture->m_size.x, texture->m_size.y, 0, baseFmt, GL_UNSIGNED_BYTE, texture->m_data);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, texture->m_texture->getSize().x, texture->m_texture->getSize().y, 0, baseFmt, GL_UNSIGNED_BYTE, texture->m_data);
 
     //set the texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

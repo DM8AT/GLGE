@@ -42,17 +42,10 @@ public:
      * 
      * @param file the file for the texture
      * @param alpha store if a alpha channel should be used
+     * @param purpose state the purpose of the texture
      * @param instance the instance the texture will belong to
      */
-    Texture(std::string_view file, bool alpha, Instance& instance) : InstAttachableClass(&instance, file) {create(file, alpha);}
-
-    /**
-     * @brief set the texture by loading a file
-     * 
-     * @param file the file for the texture
-     * @param alpha store if a alpha channel should be used
-     */
-    void create(std::string_view file, bool alpha);
+    Texture(std::string_view file, bool alpha, TexturePurpose purpose, Instance& instance) : InstAttachableClass(&instance, file) {create(file, purpose, alpha);}
 
     /**
      * @brief Construct a new blank Texture
@@ -67,6 +60,32 @@ public:
     Texture(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance& instance) : InstAttachableClass(&instance, "dynamic_texture") {create(purpose, size, isHDR, alpha);}
 
     /**
+     * @brief Construct a new Texture
+     * 
+     * @param data the data for the texture
+     * @param purpose the purpose of the texture
+     * @param size the size of the texture
+     * @param isHDR spezify if the texture is in high dynamic range or low dynamic range
+     * @param alpha spezify if four or three texture channels exist
+     * @param instance a reference to the instance
+     */
+    Texture(void* data, TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance& instance) : InstAttachableClass(&instance, "data_texture") {create(data, purpose, size, isHDR, alpha);}
+
+    /**
+     * @brief Destroy the Texture
+     */
+    ~Texture();
+
+    /**
+     * @brief set the texture by loading a file
+     * 
+     * @param file the file for the texture
+     * @param purpose the purpose of the texture
+     * @param alpha store if a alpha channel should be used
+     */
+    void create(std::string_view file, TexturePurpose purpose, bool alpha);
+
+    /**
      * @brief set the texture to a blank texture
      * ew Graphic Texture
      * 
@@ -78,11 +97,22 @@ public:
     void create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha);
 
     /**
+     * @brief Load the texture from arbituary data
+     * 
+     * @param data the data for the texture
+     * @param purpose the purpose of the texture
+     * @param size the size of the texture
+     * @param isHDR spezify if the texture is in high dynamic range or low dynamic range
+     * @param alpha spezify if four or three texture channels exist
+     */
+    void create(void* data, TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha);
+
+    /**
      * @brief Get the size of the texture
      * 
      * @return const uvec2& the size of the texture in pixels
      */
-    inline const uvec2& getSize() const noexcept {return m_texture->getSize();}
+    inline const uvec2& getSize() const noexcept {return m_size;}
 
     /**
      * @brief Get the Color of a pixel
@@ -110,7 +140,7 @@ public:
      * 
      * @return TexturePurpose the purpose of the texture
      */
-    inline TexturePurpose getPurpose() const noexcept {return m_texture->getPurpose();}
+    inline TexturePurpose getPurpose() const noexcept {return m_purpose;}
 
     /**
      * @brief Get the graphic texture
@@ -127,7 +157,7 @@ public:
      * @param tex the texture to print
      * @return std::ostream& the filled output stream
      */
-    inline friend std::ostream& operator<<(std::ostream& os, const Texture& tex) noexcept {return os << "texture{size: " << tex.m_texture->getSize() << ", purpose: " << tex.m_texture->getPurpose() << "}";}
+    inline friend std::ostream& operator<<(std::ostream& os, const Texture& tex) noexcept {return os << "texture{size: " << tex.m_size << ", purpose: " << tex.m_purpose << "}";}
 
 protected:
 
@@ -139,6 +169,15 @@ protected:
      * @brief store if the texture should reupload
      */
     bool upload = false;
+
+    /**
+     * @brief store the size of the image in pixels
+     */
+    uvec2 m_size = 0;
+    /**
+     * @brief store the purpose of the texture
+     */
+    TexturePurpose m_purpose = TEXTURE_PURPOSE_CPU_ONLY;
 
 };
 

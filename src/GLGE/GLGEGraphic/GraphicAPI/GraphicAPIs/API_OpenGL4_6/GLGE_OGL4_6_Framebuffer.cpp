@@ -72,7 +72,10 @@ void OGL4_6_Framebuffer::ogl_create(OGL4_6_Framebuffer* fbuff, uint64_t) noexcep
     {
         //delete the framebuffer
         glDeleteFramebuffers(1, &fbuff->m_OglFbuff);
-        fbuff->m_fbuff = 0;
+        fbuff->m_OglFbuff = 0;
+
+        //say that the creation failed
+        fbuff->m_fbuff->getInstance()->log("Failed to create OpenGL framebuffer", MESSAGE_TYPE_ERROR);
     }
 }
 

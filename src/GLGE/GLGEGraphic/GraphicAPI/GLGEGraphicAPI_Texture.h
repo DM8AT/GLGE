@@ -36,7 +36,12 @@ typedef enum e_TexturePurpose {
     /**
      * @brief state that the purpose of the texture is to be used as a depth buffer
      */
-    TEXTURE_PURPOSE_DEPTH
+    TEXTURE_PURPOSE_DEPTH,
+    /**
+     * @brief state that the purpose of the texture is to be only used on the CPU
+     * @warning this disquallifies the texture from all render-related usage
+     */
+    TEXTURE_PURPOSE_CPU_ONLY
 } TexturePurpose;
 
 /**
@@ -48,6 +53,9 @@ const char* GLGE_C_FUNC(texturePurposeToString(TexturePurpose purpose));
 
 //check for C++
 #if GLGE_CPP
+
+//say that textures will exist
+class Texture;
 
 /**
  * @brief print a texture purpose to an output stream
@@ -73,24 +81,23 @@ public:
     /**
      * @brief Construct a new Graphic Texture
      * 
+     * @param texture a pointer to the parent texture
      * @param data the data for the texture
      * @param isHDR specify the texture format
      * @param alpha store if a alpha channel should be used
-     * @param size specify the size of the texture in pixels
      * @param instance store a pointer to the graphic instance the texture belongs to
      */
-    inline GraphicTexture(void* data, bool isHDR, bool alpha, const uvec2& size, GraphicInstance* instance) {create(data, isHDR, alpha, size, instance);}
+    inline GraphicTexture(Texture* texture, void* data, bool isHDR, bool alpha, GraphicInstance* instance) {create(texture, data, isHDR, alpha, instance);}
 
     /**
      * @brief Construct a new Graphic Texture
      * 
-     * @param purpose the purpose of the texture (isHDR and alpha are only used for TEXTURE_PURPOSE_IMAGE and TEXTURE_PURPOSE_RENDER)
-     * @param size the size of the texture in pixels
+     * @param texture a pointer to the parent texture
      * @param isHDR true : the texture will be in high dynamic range (all components are 32 bit floats) | false : the texture will be in low dynamic range (all components are 8 bit unsigned integers)
      * @param alpha specify if a alpha channel should exist or not
      * @param instance store a pointer to the graphic instance the texture belongs to
      */
-    inline GraphicTexture(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, GraphicInstance* instance) {create(purpose, size, isHDR, alpha, instance);};
+    inline GraphicTexture(Texture* texture, bool isHDR, bool alpha, GraphicInstance* instance) {create(texture, isHDR, alpha, instance);};
 
     /**
      * @brief Destroy the Graphic Texture
@@ -100,24 +107,23 @@ public:
     /**
      * @brief Construct a new Graphic Texture
      * 
+     * @param texture a pointer to the parent texture
      * @param data the data for the texture
      * @param isHDR specify the texture format
      * @param alpha store if a alpha channel should be used
-     * @param size specify the size of the texture in pixels
      * @param instance store a pointer to the graphic instance the texture belongs to
      */
-    virtual void create(void* data, bool isHDR, bool alpha, const uvec2& size, GraphicInstance* instance);
+    virtual void create(Texture* texture, void* data, bool isHDR, bool alpha, GraphicInstance* instance);
 
     /**
      * @brief Construct a new Graphic Texture
      * 
-     * @param purpose the purpose of the texture (isHDR and alpha are only used for TEXTURE_PURPOSE_IMAGE and TEXTURE_PURPOSE_RENDER)
-     * @param size the size of the texture in pixels
+     * @param texture a pointer to the parent texture
      * @param isHDR true : the texture will be in high dynamic range (all components are 32 bit floats) | false : the texture will be in low dynamic range (all components are 8 bit unsigned integers)
      * @param alpha specify if a alpha channel should exist or not
      * @param instance store a pointer to the graphic instance the texture belongs to
      */
-    virtual void create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, GraphicInstance* instance);
+    virtual void create(Texture* texture, bool isHDR, bool alpha, GraphicInstance* instance);
 
     /**
      * @brief destroy the texture
@@ -140,23 +146,9 @@ public:
     inline void* getData() noexcept {return m_data;}
 
     /**
-     * @brief Get the Size of the texture
-     * 
-     * @return const uvec2& the size of the texture
-     */
-    inline const uvec2& getSize() const noexcept {return m_size;}
-
-    /**
      * @brief Create the mip chain for the texture
      */
     virtual void createMipMap() noexcept {}
-
-    /**
-     * @brief Get the purpose of the texture
-     * 
-     * @return TexturePurpose the purpose of the texture
-     */
-    inline TexturePurpose getPurpose() const noexcept {return m_purpose;}
 
     /**
      * @brief get if the texture has an alpha channel
@@ -165,6 +157,13 @@ public:
      * @return false : the texture has no alpha channel
      */
     inline bool hasAlpha() const noexcept {return m_hasAlpha;}
+
+    /**
+     * @brief Get the parent texture
+     * 
+     * @return Texture* a pointer to the parent texture
+     */
+    inline Texture* getTexture() noexcept {return m_texture;}
 
 protected:
 
@@ -195,14 +194,11 @@ protected:
      * @brief store the data of the image in the format specified by `m_isHDR`
      */
     void* m_data = 0;
+
     /**
-     * @brief store the size of the image in pixels
+     * @brief store the parent texture
      */
-    uvec2 m_size = 0;
-    /**
-     * @brief store the purpose of the texture
-     */
-    TexturePurpose m_purpose = TEXTURE_PURPOSE_IMAGE;
+    Texture* m_texture = 0;
 
 };
 

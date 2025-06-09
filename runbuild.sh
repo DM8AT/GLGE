@@ -1,5 +1,7 @@
 #! /bin/bash
 
+# print info about the start of the compilation
+echo "[INFO] Started to compile GLGE"
 # check if the build directory exists
 if [ ! -d "build" ]; then
     # if not, create it
@@ -13,6 +15,9 @@ cmake ..
 make -j
 # go back into the main directory
 cd ..
+# inform about the ending of the compillation
+echo "[INFO] Finished GLGE compillation"
+echo ""
 
 # enable / disable shader compillation (1: enabled | 0: disabled)
 compileShader=0

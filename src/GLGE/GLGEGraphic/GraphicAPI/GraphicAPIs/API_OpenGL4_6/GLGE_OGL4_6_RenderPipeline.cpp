@@ -51,6 +51,8 @@ void OGL4_6_RenderPipeline::onStageExecution(uint64_t stageIndex) noexcept
     //execute the before function if it exists
     if (stage.before) {(*stage.before)(stage.userData);}
 
+    Framebuffer* tmp = (Framebuffer*)stage.data.clear.framebuffer;
+
     //switch over the stage type
     switch (stage.type)
     {
