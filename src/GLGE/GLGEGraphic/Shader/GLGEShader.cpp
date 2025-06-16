@@ -78,8 +78,12 @@ void Shader::prepareForStage(std::string& src, ShaderType stage) noexcept
     //store the string to prefix
     std::string prefix = "#define GLGE_SHADER_TYPE " + std::to_string((uint32_t)stage) + "\n";
 
-    //prefix the source code with the define
-    src = prefix + src;
+    //search the version directive (it must be the first thing)
+    uint64_t pos = src.find_first_of("#version");
+    //after that, search the next line
+    pos = src.find_first_of('\n', pos);
+    //insert the define after the new line
+    src.insert(pos + 1, prefix);
 }
 
 void Shader::attatch(GraphicCommandBuffer* cmdBuff) noexcept

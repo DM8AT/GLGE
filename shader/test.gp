@@ -20,7 +20,7 @@ struct Vertex
     vec3 pos;
     vec2 tex;
     vec3 norm;
-}
+};
 
 /**
  * Create an input buffer for vertices. 
@@ -39,13 +39,22 @@ struct Vertex
  * 
  * The buffer below is a dynamicaly sized array of Vertices. It can be used like a vertex buffer. It is set by GLGE and can not be 
  * written to by the shader. 
+ * 
+ * WARNING: Currently not implemented
  */
-in buffer Vertex glge_Vertices[];
+//in buffer Vertex glge_Vertices[];
+
+layout (std430, binding = 0) readonly buffer glge_VertexBuffer
+{
+    Vertex glge_Vertices[];
+};
 
 /**
  * The buffer below is a dynamicaly sized array of Indices. It can be used like a index buffer. It is set by GLGE and can not be
  * written to by the shader. 
+ *
+ * WARNING: Currently not implemented
  */
-in buffer int glge_Indices[];
+//in buffer int glge_Indices[];
 
 #endif // end of header guard

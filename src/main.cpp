@@ -96,6 +96,44 @@ int main()
     //the render pipeline is also registerd to the instance. 
     RenderPipeline pipeline = RenderPipeline(stages, sizeof(stages)/sizeof(*stages), true, inst);
 
+    ShaderProcessor shaderProc;
+    shaderProc.loadPackage(Path("shader/test.gp"), "test");
+    Shader shader(Path("shader/test file.gs"), &shaderProc, inst);
+
+    SimpleVertex vertices[] = {
+        {vec3(-0.5,0,0), vec2(0,0),   vec3(0,0,1)},
+        {vec3(0,1,0),    vec2(0.5,1), vec3(0,0,1)},
+        {vec3(0.5,0,0),  vec2(1,0),   vec3(0,0,1)}
+    };
+    idx_Triangle indices[] = {
+        {0,1,2}
+    };
+    Mesh mesh = Mesh(vertices, sizeof(vertices)/sizeof(*vertices), indices, sizeof(indices) / sizeof(*indices));
+
+    RenderMesh rMesh = RenderMesh(&mesh);
+
+    //create a memory arena FOR TEST ONLY, NEVER USE THIS DIRECLTY! MEMORY LEAK WARNING!
+    //(i know the memory is leaked here too, but for testing, i don't care since the program
+    //terminates direclty afterwards. I can't insert the arena from here into the default
+    //destruction chain)
+    GraphicMemoryArena* arena = new OGL4_6_MemoryArena(64, true, MEMORY_USAGE_UNIFORM, inst);
+    arena->onCreate();
+    std::vector<GraphicMemoryArena::GraphicPointer> ptrs;
+    for (uint64_t i = 0; i < 4; ++i)
+    {
+        ptrs.push_back(arena->allocate(8));
+    }
+    uint64_t dat = 0xff00ff00ff00ff00;
+    uint64_t adat = ~dat;
+    arena->update(ptrs[0], &dat);
+    arena->update(ptrs[1], &adat);
+    arena->update(ptrs[2], &dat);
+    arena->update(ptrs[3], &adat);
+    for (GraphicMemoryArena::GraphicPointer& ptr : ptrs)
+    {
+        arena->release(ptr);
+    }
+
     //create a new limiter
     //a limiter is used to limit the iteration rate of a loop. They are mostly used to 
     //stop main loops like the render or update loop from using a CPU core fully if not needed

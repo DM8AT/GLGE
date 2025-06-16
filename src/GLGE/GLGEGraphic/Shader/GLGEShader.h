@@ -98,6 +98,13 @@ public:
     //add the graphic shader class as a friend class
     friend class GraphicShader;
 
+    /**
+     * @brief Get the source processed by GLGE from the shader file
+     * 
+     * @return const std::string& a constant reference to the shader source code
+     */
+    inline const std::string& getSource() const noexcept {return m_glgeSource;}
+
 protected:
 
     /**

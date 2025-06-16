@@ -61,7 +61,6 @@ void mainVert()
 #endif //vertex shader section
 
 //check if the shader type is a fragment shader
-#ifdef GLGE_SHADER_TYPE
 #if (GLGE_SHADER_TYPE == 1)
 
 //do fragment shader related stuff
@@ -76,4 +75,5 @@ void mainFrag ()
 
 //end the fragment shader
 #endif
-#endif
+
+#endif //check if shader actually compiled correctly. Only then, GLGE_SHADER_TYPE will be available. 

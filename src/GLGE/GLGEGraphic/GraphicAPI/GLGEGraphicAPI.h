@@ -21,5 +21,7 @@
 #include "GLGEGraphicAPI_Framebuffer.h"
 //include windows
 #include "GLGEGraphicAPI_Window.h"
+//include memory arenas
+#include "GLGEGraphicAPI_MemoryArena.h"
 
 #endif

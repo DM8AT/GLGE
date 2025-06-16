@@ -40,7 +40,10 @@ void OGL4_6_RenderPipeline::onDestroy() noexcept
 
 void OGL4_6_RenderPipeline::getSupportedStageTypes(std::vector<StageType>& types) const noexcept
 {
-    //
+    //add all (currently) supported opperations to the types
+    types.push_back(RENDER_STAGE_CLEAR);
+    types.push_back(RENDER_STAGE_BLIT_TO_WINDOW);
+    types.push_back(RENDER_STAGE_SWAP_WINDOW);
 }
 
 void OGL4_6_RenderPipeline::onStageExecution(uint64_t stageIndex) noexcept
@@ -50,8 +53,6 @@ void OGL4_6_RenderPipeline::onStageExecution(uint64_t stageIndex) noexcept
 
     //execute the before function if it exists
     if (stage.before) {(*stage.before)(stage.userData);}
-
-    Framebuffer* tmp = (Framebuffer*)stage.data.clear.framebuffer;
 
     //switch over the stage type
     switch (stage.type)

@@ -80,7 +80,7 @@ void GLGE_C_FUNC(triangle_setB)(const vec3* val, Triangle_t* triangle) {((Triang
 
 void GLGE_C_FUNC(triangle_setC)(const vec3* val, Triangle_t* triangle) {((Triangle*)triangle)->setC(*val);}
 
-float GLGE_C_FUNC(triangle_getArea)(const Triangle_t* triangle) {((Triangle*)triangle)->getArea();}
+float GLGE_C_FUNC(triangle_getArea)(const Triangle_t* triangle) {return ((Triangle*)triangle)->getArea();}
 
 void GLGE_C_FUNC(triangle_translate)(const vec3* delta, Triangle_t* triangle) {((Triangle*)triangle)->translate(*delta);}
 

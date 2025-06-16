@@ -27,5 +27,7 @@
 #include "GLGE_OGL4_6_RenderPipeline.h"
 //include framebuffers
 #include "GLGE_OGL4_6_Framebuffer.h"
+//include memory arenas
+#include "GLGE_OGL4_6_MemoryArena.h"
 
 #endif
