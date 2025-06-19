@@ -41,6 +41,15 @@ public:
         m_file.content() += format(m_messages[0]) + "\n";
     }
 
+    /**
+     * @brief overload the hook that says that all messages are printed
+     */
+    virtual void finishPrint() override
+    {
+        //when the printing finishes, save all changes
+        m_file.save();
+    }
+
 protected:
 
     /**

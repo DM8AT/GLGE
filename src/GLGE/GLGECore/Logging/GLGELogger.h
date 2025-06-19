@@ -94,6 +94,11 @@ public:
     }
 
     /**
+     * @brief a hook that is called when the printing of the message finishes
+     */
+    virtual void finishPrint() {}
+
+    /**
      * @brief print the whole log
      */
     void printAll()
@@ -106,6 +111,9 @@ public:
             //erase the message
             m_messages.erase(m_messages.begin());
         }
+
+        //call the finish printing hook
+        finishPrint();
     }
 
     /**
