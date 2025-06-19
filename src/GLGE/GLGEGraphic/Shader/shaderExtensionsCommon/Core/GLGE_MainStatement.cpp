@@ -70,7 +70,7 @@ bool ShaderExt_Main::onFind(std::string& source, ShaderProcessor*, Shader* shade
     while (source[p] != ' ') {--p;}
 
     //extract the function name
-    std::string_view fName = source.substr(p+1, funcNameEnd-p);
+    std::string fName = source.substr(p+1, funcNameEnd-p);
 
     //add the element as an entry point
 
