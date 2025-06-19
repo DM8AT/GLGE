@@ -103,6 +103,9 @@ public:
      */
     void printAll()
     {
+        //stop if there are no messages
+        if (m_messages.size() == 0) {return;}
+        
         //iterate over all elements
         while (m_messages.size() > 0)
         {
