@@ -52,7 +52,7 @@ static void oglMessageCallback(GLenum source, GLenum type, GLuint id, GLenum sev
     //construct an ouput stream
     std::stringstream stream;
     //fill the stream with the error
-    stream << "OpenGL error occouret at " << source << ". Severity: " << severity << ", callback type: " << type << ". Message: \n" << message << "\n";
+    stream << "OpenGL error occourred at " << source << ". Severity: " << severity << ", callback type: " << type << ". Message: \n" << message << "\n";
     //log the stream
     inst->getInstance()->log(stream, MESSAGE_TYPE_INFO);
 }
