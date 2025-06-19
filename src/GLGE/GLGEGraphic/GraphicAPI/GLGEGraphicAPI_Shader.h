@@ -108,6 +108,13 @@ public:
      */
     virtual void onAttatch(GraphicCommandBuffer*) noexcept {}
 
+    /**
+     * @brief a hook to finish the usage of this shader
+     * 
+     * @param cmdBuff the command buffer the shader should be disabled in
+     */
+    virtual void onDetatch(GraphicCommandBuffer*) noexcept {}
+
 protected:
 
     /**

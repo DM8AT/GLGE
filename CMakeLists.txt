@@ -48,6 +48,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGERenderPipeline.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGEBuffer.cpp
     # Shader stuff
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp

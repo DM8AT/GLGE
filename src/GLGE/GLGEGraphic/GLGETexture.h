@@ -125,8 +125,8 @@ public:
     /**
      * @brief Set the Color of a specific pixel
      * 
-     * @param pos 
-     * @param color 
+     * @param pos the position of the pixel to set
+     * @param color a constant reference to a color to set the pixel's color to
      */
     void setColor(const uvec2& pos, const Color& color);
 
@@ -151,6 +151,14 @@ public:
     inline GraphicTexture* getGraphicTexture() noexcept {return m_texture;}
 
     /**
+     * @brief change the size of the texture
+     * @warning this action clears the texture to fully black
+     * 
+     * @param newSize the new size of the texture
+     */
+    inline void resize(uvec2 newSize) noexcept {m_texture->resize(newSize);}
+
+    /**
      * @brief print the texture
      * 
      * @param os the output stream to print to
@@ -158,6 +166,18 @@ public:
      * @return std::ostream& the filled output stream
      */
     inline friend std::ostream& operator<<(std::ostream& os, const Texture& tex) noexcept {return os << "texture{size: " << tex.m_size << ", purpose: " << tex.m_purpose << "}";}
+
+    /**
+     * @brief add the graphic texture class as a friend class
+     */
+    friend class GraphicTexture;
+
+    /**
+     * @brief Get the identifyer of the texture
+     * 
+     * @return uint64_t the identifyer of the texture
+     */
+    inline uint64_t getIdentifyer() const noexcept {return m_texture->getIdentifyer();}
 
 protected:
 
@@ -181,6 +201,43 @@ protected:
 
 };
 
+//start a C section
+extern "C" {
 #endif //C++ section
+
+/**
+ * @brief store an instance of the texture class
+ */
+typedef struct s_Texture Texture_t;
+
+//C implementation not ready
+#if 0
+/**
+ * @brief load a texture from a file
+ * 
+ * @param file the file to load the texture from (in unix format)
+ * @param alpha true : the texture will be loaded with alpha | false : alpha will be discarded
+ * @param purpose the purpose of the texture
+ * @param instance a pointer
+ * @return Texture_t* 
+ */
+Texture_t* texture_load(std::string_view file, bool alpha, TexturePurpose purpose, Instance* instance);
+Texture_t* texture_create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance* instance);
+Texture_t* texture_createFrom(void* data, TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance* instance);
+
+const uvec2* texture_getSize(const Texture_t* texture);
+
+Color_t* texture_getColor(const uvec2* pos, const Texture_t* texture);
+void texture_setColor(const Color_t* color, const uvec2* pos, Texture_t* texture);
+
+void texture_createMipMap(Texture_t* texture);
+
+TexturePurpose texture_getPurpose(const Texture_t* texture);
+#endif
+
+//end a potential C section
+#if GLGE_CPP
+}
+#endif //end of C section
 
 #endif

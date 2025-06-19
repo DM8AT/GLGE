@@ -165,6 +165,38 @@ public:
      */
     inline Texture* getTexture() noexcept {return m_texture;}
 
+    /**
+     * @brief say that the texture could be about to be sampled (for rendering)
+     */
+    virtual void activate() noexcept {}
+
+    /**
+     * @brief say that the texture can no longer be sampled (for rendering)
+     */
+    virtual void deactivate() noexcept {}
+
+    /**
+     * @brief this resizes AND CLEARS TO BLACK the texture
+     * 
+     * @param newSize the new size for the texture
+     */
+    virtual void resize(const uvec2&) noexcept {}
+
+    /**
+     * @brief DIRECTLY set the size of the parent texture
+     * @warning DO NOT USE DIRECTLY
+     * 
+     * @param size the new size of the texture
+     */
+    void setParentSize(const uvec2& size) noexcept;
+
+    /**
+     * @brief Get the texture's identifyer (the index in the instance's texture array)
+     * 
+     * @return uint64_t the number used to identify the texture
+     */
+    virtual uint64_t getIdentifyer() const noexcept {return 0;}
+
 protected:
 
     /**

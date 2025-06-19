@@ -80,6 +80,13 @@ protected:
      * @param data the data for the command execution
      */
     static void ogl_blitToWindow(void* data, uint64_t) noexcept;
+
+    /**
+     * @brief execute a compute shader
+     * 
+     * @param data the data to execute a compute shader
+     */
+    static void ogl_executeCompute(void* data, uint64_t) noexcept;
 };
 
 #endif

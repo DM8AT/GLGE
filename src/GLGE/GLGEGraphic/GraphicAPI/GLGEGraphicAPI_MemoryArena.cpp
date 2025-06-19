@@ -13,7 +13,7 @@
 #include "GLGEGraphicAPI_MemoryArena.h"
 
 GraphicMemoryArena::GraphicMemoryArena(uint64_t size, bool allowResize, MemoryUsage usage, Instance& instance) noexcept
- : InstAttachableClass(&instance, "memoryArena")
+ : GraphicInstAttatchable(instance.getGraphicInstance())
 {
     //store the inputed size as the new size of the memory arena
     m_size = size;
@@ -28,7 +28,7 @@ GraphicMemoryArena::GraphicMemoryArena(uint64_t size, bool allowResize, MemoryUs
     if (!m_data)
     {
         //error : calloc failed
-        m_instance->log("Failed to allocate memory for memory arena", MESSAGE_TYPE_ERROR);
+        m_graphicInstance->getInstance()->log("Failed to allocate memory for memory arena", MESSAGE_TYPE_ERROR);
         return;
     }
 
@@ -44,19 +44,23 @@ GraphicMemoryArena::~GraphicMemoryArena()
     //lock the data
     lock();
 
-    //check if there is space in the memory arena
-    if (m_free.size() == 0)
+    //only print if this is not an API arena
+    if (!m_isAPI)
     {
-        //no space. Print a warning
-        m_instance->log("Freed a full graphic memory arena", MESSAGE_TYPE_WARNING);
-    }
-    else
-    {
-        //there's space. Check if the whole space is free. 
-        if (m_free[0].size != m_size)
+        //check if there is space in the memory arena
+        if (m_free.size() == 0)
         {
-            //not everything was freed. Print a warning
-            m_instance->log("Freed a graphic memory arena that still contains data", MESSAGE_TYPE_WARNING);
+            //no space. Print a warning
+            m_graphicInstance->getInstance()->log("Freed a full graphic memory arena", MESSAGE_TYPE_WARNING);
+        }
+        else
+        {
+            //there's space. Check if the whole space is free. 
+            if (m_free[0].size != m_size)
+            {
+                //not everything was freed. Print a warning
+                m_graphicInstance->getInstance()->log("Freed a graphic memory arena that still contains data", MESSAGE_TYPE_WARNING);
+            }
         }
     }
 
@@ -75,7 +79,7 @@ GraphicMemoryArena::~GraphicMemoryArena()
 GraphicMemoryArena::GraphicPointer GraphicMemoryArena::allocate(uint64_t size) noexcept
 {
     //if the instance is not set, return a null pointer
-    if (!m_instance) {return {0,0};}
+    if (!m_graphicInstance) {return {0,0};}
     //iterate over all free reagions
     for (uint64_t i = 0; i < m_free.size(); ++i)
     {
@@ -105,7 +109,7 @@ GraphicMemoryArena::GraphicPointer GraphicMemoryArena::allocate(uint64_t size) n
     if (!m_allowResize)
     {
         //if not, log an error and stop
-        m_instance->log("Dynamic resizing is not allowed and a memory arena ran out of space", MESSAGE_TYPE_ERROR);
+        m_graphicInstance->getInstance()->log("Dynamic resizing is not allowed and a memory arena ran out of space", MESSAGE_TYPE_ERROR);
         return {0,0};
     }
 
@@ -285,7 +289,7 @@ bool GraphicMemoryArena::resize(uint64_t size) noexcept
     if (!dat)
     {
         //error : memory could not be allocated
-        m_instance->log("Failed to allocate memory for graphic memory arena during resizing", MESSAGE_TYPE_ERROR);
+        m_graphicInstance->getInstance()->log("Failed to allocate memory for graphic memory arena during resizing", MESSAGE_TYPE_ERROR);
         return false;
     }
 

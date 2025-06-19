@@ -51,7 +51,7 @@ typedef enum e_MemoryUsage {
 /**
  * @brief store an continues area in VRam for arbituary data storage
  */
-class GraphicMemoryArena : public InstAttachableClass
+class GraphicMemoryArena : public GraphicInstAttatchable
 {
 public:
 
@@ -177,6 +177,13 @@ public:
      */
     inline bool isLocked() const noexcept {return m_locked;}
 
+    /**
+     * @brief Get the Size of the memory arena
+     * 
+     * @return const uint64_t& the size of the memory arena
+     */
+    inline const uint64_t& getSize() const noexcept {return m_size;}
+
 protected:
 
     /**
@@ -205,6 +212,11 @@ protected:
      * @brief store a vector of pointer pointing to changed reagions
      */
     std::vector<GraphicPointer> m_changed;
+
+    /**
+     * @brief stores if this memory arena is used by background stuff. This will silence the warnings for freeing it while content exists
+     */
+    bool m_isAPI = false;
 
     /**
      * @brief store a full CPU copy of the VRam reagion for fast write access

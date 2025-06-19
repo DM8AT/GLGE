@@ -17,6 +17,8 @@
 #include "../../GLGEGraphicAPI_Instance.h"
 //include command buffers
 #include "GLGE_OGL4_6_CommandBuffer.h"
+//include memory arenas
+#include "GLGE_OGL4_6_MemoryArena.h"
 
 //check if this is C++
 #if GLGE_CPP
@@ -30,8 +32,9 @@ class OGL4_6_Window;
 class OGL4_6_Instance : public GraphicInstance
 {
 public:
+
     /**
-     * @brief Construct a new OpenGL 4.6 instance
+     * @brief Construct a new OpenGL 4.6 Instance
      */
     OGL4_6_Instance() = default;
 
@@ -41,7 +44,9 @@ public:
      * @param context a pointer to the OpenGL context
      * @param instance a pointer to the instance the graphic instance belongs to
      */
-    OGL4_6_Instance(void* context, Instance* instance) : GraphicInstance(instance), m_context(context) {onCreate();}
+    OGL4_6_Instance(void* context, Instance* instance)
+     : GraphicInstance(instance), m_context(context)
+    {onCreate();}
 
     /**
      * @brief run the rendering for the OpenGL 4.6 instance
@@ -84,6 +89,20 @@ public:
      */
     inline OGL4_6_CommandBuffer& getDataBuffer() noexcept {return m_dataBuffer;}
 
+    /**
+     * @brief Get the memory arena that contains all textures
+     * 
+     * @return OGL4_6_MemoryArena* a pointer to the memory arena that contains all textures
+     */
+    inline OGL4_6_MemoryArena* getTextureArena() noexcept {return m_textures;}
+
+    /**
+     * @brief Get the memory arena that contains all images
+     * 
+     * @return OGL4_6_MemoryArena* a pointer to the memory arena that contains all images
+     */
+    inline OGL4_6_MemoryArena* getImageArena() noexcept {return m_images;}
+
 protected:
 
     /**
@@ -99,6 +118,14 @@ protected:
      * @brief store the data command buffer
      */
     OGL4_6_CommandBuffer m_dataBuffer;
+    /**
+     * @brief store a list of all available textures (using bindless textures)
+     */
+    OGL4_6_MemoryArena* m_textures = 0;
+    /**
+     * @brief store a list of all level 0 images
+     */
+    OGL4_6_MemoryArena* m_images = 0;
 
     /**
      * @brief store that GLEW is not initalized

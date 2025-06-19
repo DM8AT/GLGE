@@ -45,6 +45,8 @@
 #include "Shader/GLGEShaderProcessor.h"
 //include render meshes
 #include "GLGERenderMesh.h"
+//include buffers
+#include "GLGEBuffer.h"
 
 #endif //graphic including section
 

@@ -164,6 +164,13 @@ public:
      */
     inline GraphicFramebuffer* getGraphicFramebuffer() noexcept {return m_fbuff;}
 
+    /**
+     * @brief change the size of the framebuffer
+     * 
+     * @param newSize the new size of the framebuffer
+     */
+    inline void resize(const uvec2& newSize) noexcept {m_fbuff->resize(newSize);}
+
 protected:
 
     /**

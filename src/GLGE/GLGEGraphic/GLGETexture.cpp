@@ -60,6 +60,9 @@ void Texture::create(std::string_view file, TexturePurpose purpose, bool alpha)
     //store the data
     SDL_BlitSurface(img, 0, conv, 0);
 
+    //store the size of the texture
+    m_size = uvec2(img->w, img->h);
+
     //check if the texture should be CPU only. A CPU texture is stored as a SDL surface
     if (purpose == TEXTURE_PURPOSE_CPU_ONLY)
     {
@@ -252,3 +255,27 @@ void Texture::setColor(const uvec2& pos, const Color& color)
         data[pos.x * m_size.y + pos.y] = rgba.x;
     }
 }
+
+
+
+
+
+
+
+
+
+#if 0
+
+Texture_t* texture_load(std::string_view file, bool alpha, TexturePurpose purpose, Instance* instance);
+Texture_t* texture_create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance* instance);
+Texture_t* texture_createFrom(void* data, TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance* instance);
+
+const uvec2* texture_getSize(const Texture_t* texture);
+
+Color_t* texture_getColor(const uvec2* pos, const Texture_t* texture);
+void texture_setColor(const Color_t* color, const uvec2* pos, Texture_t* texture);
+
+void texture_createMipMap(Texture_t* texture);
+
+TexturePurpose texture_getPurpose(const Texture_t* texture);
+#endif

@@ -86,6 +86,14 @@ public:
      */
     void addReference(RenderPipeline* dBuff);
 
+    /**
+     * @brief change the size of the framebuffer
+     * @warning this will update the size of all the textures the framebuffer owns
+     * 
+     * @param newSize the new size for the framebuffer
+     */
+    virtual void resize(const uvec2&) noexcept {}
+
 protected:
 
     /**

@@ -63,6 +63,14 @@ public:
      */
     inline uint32_t getOpenGLFramebuffer() const noexcept {return m_OglFbuff;}
 
+    /**
+     * @brief change the size of the framebuffer
+     * @warning this will update the size of all the textures the framebuffer owns
+     * 
+     * @param newSize the new size for the framebuffer
+     */
+    virtual void resize(const uvec2& newSize) noexcept;
+
 protected:
 
     /**
@@ -85,6 +93,14 @@ protected:
      * @param fbuff a pointer to the framebuffer to clear
      */
     static void ogl_clear(OGL4_6_Framebuffer* fbuff, uint64_t) noexcept;
+
+    /**
+     * @brief change the size of the actual framebuffer object
+     * 
+     * @param fbuff a pointer to the framebuffer the call came from
+     * @param size the size (packed from a uvec2)
+     */
+    static void ogl_resize(OGL4_6_Framebuffer* fbuff, uint64_t size) noexcept;
 
     /**
      * @brief store the identifyer of the framebuffer

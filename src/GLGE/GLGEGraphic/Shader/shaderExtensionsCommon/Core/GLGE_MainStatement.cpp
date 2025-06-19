@@ -88,6 +88,30 @@ bool ShaderExt_Main::onFind(std::string& source, ShaderProcessor*, Shader* shade
         //store the correct type
         type = SHADER_TYPE_FRAGMENT;
     }
+    //else, check if the type is a geometry shader
+    else if (substr == "stage_geometry")
+    {
+        //store the correct type
+        type = SHADER_TYPE_GEOMETRY;
+    }
+    //else, check if the type is a tesselation controll shader
+    else if (substr == "stage_tess_controll")
+    {
+        //store the correct type
+        type = SHADER_TYPE_TESSELATION_CONTROLL;
+    }
+    //else, check if the type is a tesselation evaluation shader
+    else if (substr == "stage_tess_evaluate")
+    {
+        //store the correct type
+        type = SHADER_TYPE_TESSELATION_EVALUATION;
+    }
+    //else, check if the type is a compute shader
+    else if (substr == "stage_compute")
+    {
+        //store the correct type
+        type = SHADER_TYPE_COMPUTE;
+    }
     
     //check for undefined
     if (type == (ShaderType)UINT8_MAX)

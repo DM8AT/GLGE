@@ -21,6 +21,8 @@
 #include "GLGEFramebuffer.h"
 //include windows and limiter
 #include "GLGEWindow.h"
+//include shader
+#include "Shader/GLGEShader.h"
 //include geometry (Objects and Worlds)
 #include "../GLGECore/Geometry/GLGEGeometry.h"
 
@@ -180,6 +182,36 @@ typedef struct s_RenderWorldStageData {
 } RenderWorldStageData;
 
 /**
+ * @brief store the data for a compute shader execution
+ */
+typedef struct s_ComputeStageData {
+    /**
+     * @brief store the shader to execute
+     */
+    void* shader;
+    /**
+     * @brief store the amount for executions
+     */
+    uvec3 executions;
+
+    //check for C++
+    #if GLGE_CPP
+
+    /**
+     * @brief Store a new pack of data for a compute shader execution
+     * 
+     * @param _shader a reference to the shader to execute (must be a compute shader)
+     * @param _executions the amount of thread groups to execute per axis
+     */
+    s_ComputeStageData(Shader& _shader, const uvec3& _executions)
+     : shader((void*)(&_shader)), executions(_executions)
+    {}
+
+    #endif //end of C++ section
+
+} ComputeStageData;
+
+/**
  * @brief define the structure of a render stage
  */
 typedef struct s_RenderStage {
@@ -216,6 +248,8 @@ typedef struct s_RenderStage {
         SwapWindowData swapWindow;
         //store the data for a stage that renders all objects from a world
         RenderWorldStageData renderWorld;
+        //store teh data for a stage that executions a compute shader
+        ComputeStageData compute;
 
         //check for C++ to create a constructor
         #if GLGE_CPP
@@ -267,6 +301,13 @@ typedef struct s_RenderStage {
          * @param _renderWorld a constant reference to the data to render a world instance
          */
         Data(const RenderWorldStageData& _renderWorld) : renderWorld(_renderWorld) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _compute a constant refenrence to the data to execute a compute shader
+         */
+        Data(const ComputeStageData& _compute) : compute(_compute) {}
 
         #endif //end of C++ section
     } data;

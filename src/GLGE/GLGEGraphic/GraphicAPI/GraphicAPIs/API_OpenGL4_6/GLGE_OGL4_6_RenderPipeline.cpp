@@ -15,6 +15,8 @@
 #include "../../../GLGERenderPipeline.h"
 //include command buffers
 #include "GLGE_OGL4_6_CommandBuffer.h"
+//include shader
+#include "../../../Shader/GLGEShader.h"
 //include OpenGL
 #include <GL/glew.h>
 
@@ -90,6 +92,16 @@ void OGL4_6_RenderPipeline::onStageExecution(uint64_t stageIndex) noexcept
         ((Window*)stage.data.swapWindow.window)->getGraphicWindow()->swap(m_cmdBuff);
         break;
 
+    //execute a compute shader
+    case RENDER_STAGE_COMPUTE:
+        //attatch the shader
+        ((Shader*)stage.data.compute.shader)->attatch(m_cmdBuff);
+        //add the execution of the stage
+        m_cmdBuff->add(0, (void*)ogl_executeCompute, &stage.data.compute, sizeof(&stage.data.compute));
+        //detatch the shader
+        ((Shader*)stage.data.compute.shader)->detatch(m_cmdBuff);
+        break;
+
     //handle RENDER_STAGE_NONE or a unknown command
     default:
         break;
@@ -127,4 +139,12 @@ void OGL4_6_RenderPipeline::ogl_blitToWindow(void* data, uint64_t) noexcept
 
     //free the data
     free(data);
+}
+
+void OGL4_6_RenderPipeline::ogl_executeCompute(void* data, uint64_t) noexcept
+{
+    //extract the data
+    const uvec3& executions = ((ComputeStageData*)data)->executions;
+    //run the shader
+    glDispatchCompute(executions.x, executions.y, executions.z);
 }

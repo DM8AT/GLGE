@@ -283,6 +283,18 @@ protected:
 
 };
 
+//start a C section
+extern "C" {
 #endif //C++ section
+
+/**
+ * @brief store a reference of the color class
+ */
+typedef struct s_Color Color_t;
+
+//end a potential C section
+#if GLGE_CPP
+}
+#endif //end of C section
 
 #endif

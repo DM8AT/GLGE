@@ -27,6 +27,8 @@
 
 //say that a shader processor will be defined
 class ShaderProcessor;
+//say that textures will be defined
+class Texture;
 
 /**
  * @brief a shader is a code program that runs on the GPU
@@ -81,6 +83,13 @@ public:
     void attatch(GraphicCommandBuffer* cmdBuffer) noexcept;
 
     /**
+     * @brief remove this shader from being the compute and clean up
+     * 
+     * @param cmdBuffer the command buffer to detatch the shader from
+     */
+    void detatch(GraphicCommandBuffer* cmdBuffer) noexcept;
+
+    /**
      * @brief Get the Shader Stages and the corresponding entry points the shader contains
      * 
      * @return const std::unordered_map<ShaderType, std::string>& the shader's stored shader stages and corresponding entry point names
@@ -105,6 +114,36 @@ public:
      */
     inline const std::string& getSource() const noexcept {return m_glgeSource;}
 
+    /**
+     * @brief set a texture the shader will be able to access
+     * 
+     * @param texture a pointer to the texture the shader will be able to access
+     * @param name the name to identify the texture with (NOT related to the access in the shader)
+     */
+    void setTexture(Texture* texture, const std::string_view& name) noexcept;
+
+    /**
+     * @brief Get a specific texture that is attatched to the shader
+     * 
+     * @param name the name of the texture to querry
+     * @return Texture* a pointer to the texture or 0 if it was not found
+     */
+    inline Texture* getTexture(const std::string_view& name) noexcept {return (m_textures.find(name) != m_textures.end()) ? m_textures[name] : 0;}
+
+    /**
+     * @brief Get the amount of bound textures
+     * 
+     * @return uint64_t the amount of bound textures
+     */
+    inline uint64_t getTextureCount() const noexcept {return m_textures.size();}
+
+    /**
+     * @brief Get all the textures bound to the shader
+     * 
+     * @return std::unordered_map<std::string_view, Texture*>& a reference to an unorderd map of all textures
+     */
+    inline std::unordered_map<std::string_view, Texture*>& getTextures() noexcept {return m_textures;}
+
 protected:
 
     /**
@@ -123,6 +162,11 @@ protected:
      * @brief store the actual graphic shader
      */
     GraphicShader* m_shader = 0;
+
+    /**
+     * @brief store all textures the shader can access
+     */
+    std::unordered_map<std::string_view, Texture*> m_textures;
 
 };
 

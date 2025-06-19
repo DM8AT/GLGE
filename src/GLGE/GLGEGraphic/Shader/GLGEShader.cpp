@@ -86,8 +86,29 @@ void Shader::prepareForStage(std::string& src, ShaderType stage) noexcept
     src.insert(pos + 1, prefix);
 }
 
+void Shader::setTexture(Texture* texture, const std::string_view& name) noexcept
+{
+    //check if the texture is a nullpointer
+    if (texture == 0)
+    {
+        //return if the element is not found
+        if (m_textures.find(name) == m_textures.end()) {return;}
+        //erase the element
+        m_textures.erase(name);
+        return;
+    }
+    //set the element directly
+    m_textures[name] = texture;
+}
+
 void Shader::attatch(GraphicCommandBuffer* cmdBuff) noexcept
 {
     //attatch the actual shader
     m_shader->onAttatch(cmdBuff);
+}
+
+void Shader::detatch(GraphicCommandBuffer* cmdBuffer) noexcept
+{
+    //detatch the actual shader
+    m_shader->onDetatch(cmdBuffer);
 }

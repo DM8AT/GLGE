@@ -162,14 +162,19 @@ public:
      * 
      * @param gInstance a pointer to the new graphic instance
      */
-    void setGraphicInstance(GraphicInstance* gInstance) noexcept {m_gInstance = gInstance;}
+    inline void setGraphicInstance(GraphicInstance* gInstance) noexcept {m_gInstance = gInstance;}
 
     /**
      * @brief Get the Graphic Instance
      * 
      * @return GraphicInstance* a pointer to the graphic instance
      */
-    GraphicInstance* getGraphicInstance() noexcept {return m_gInstance;}
+    inline GraphicInstance* getGraphicInstance() noexcept {return m_gInstance;}
+
+    /**
+     * @brief syncronize with the initalization of the instance
+     */
+    void syncGraphicSetup() const noexcept;
 
     /**
      * @brief initalize the graphic API

@@ -25,7 +25,7 @@ void OGL4_6_MemoryArena::onCreate() noexcept
     lock();
 
     //queue the object creation
-    m_instance->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_create, this, sizeof(this));
+    m_graphicInstance->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_create, this, sizeof(this));
 
     //queuing done, continue
     unlock();
@@ -37,7 +37,7 @@ void OGL4_6_MemoryArena::onDestroy() noexcept
     lock();
 
     //queue the object destruction
-    m_instance->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_destroy, this, sizeof(this));
+    m_graphicInstance->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_destroy, this, sizeof(this));
 
     //no need to unlock. To make sure no threads interfear in the destruction, the object will remain locked untill the destruction finishes
 }
@@ -45,13 +45,13 @@ void OGL4_6_MemoryArena::onDestroy() noexcept
 void OGL4_6_MemoryArena::gpuUpdate() noexcept
 {
     //queue the data update command
-    m_instance->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_contentUpdate, this, sizeof(this));
+    m_graphicInstance->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_contentUpdate, this, sizeof(this));
 }
 
 void OGL4_6_MemoryArena::gpuSizeChanged() noexcept
 {
     //queue the size change
-    m_instance->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_sizeChange, this, sizeof(this));
+    m_graphicInstance->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)ogl_sizeChange, this, sizeof(this));
     //lock the mutex for resizing
     m_resizeMutex.lock();
 }
@@ -67,7 +67,7 @@ void OGL4_6_MemoryArena::ogl_sizeChange(void* data, uint64_t) noexcept
 
     //write the data into it, with the new size
     glBindBuffer(arena.m_bindingType, buff);
-    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, GL_DYNAMIC_READ);
+    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, GL_STREAM_COPY);
 
     //swap this with the old buffer and delete the old one
     glDeleteBuffers(1, &arena.m_buff);
@@ -89,7 +89,12 @@ void OGL4_6_MemoryArena::ogl_contentUpdate(void* data, uint64_t) noexcept
     const GraphicPointer& ptr = arena.m_changed[0];
     //update the data
     glBindBuffer(arena.m_bindingType, arena.m_buff);
-    glBufferSubData(arena.m_bindingType, ptr.startIdx, ptr.size, (void*)(((uint8_t*)arena.m_data) + ptr.startIdx));
+    //map the data to the CPU
+    void* dat = glMapBufferRange(arena.m_bindingType, ptr.startIdx, ptr.size, GL_MAP_WRITE_BIT);
+    //write the data
+    memcpy(dat, &(((uint8_t*)arena.m_data)[ptr.startIdx]), ptr.size);
+    //unmap the buffer
+    glUnmapBuffer(arena.m_bindingType);
     //remove the written element from the buffer
     arena.m_changed.erase(arena.m_changed.begin());
 }
@@ -125,7 +130,7 @@ void OGL4_6_MemoryArena::ogl_create(void* data, uint64_t) noexcept
     
     default:
         //log that something went wront
-        arena.m_instance->log("Failed to determine correct buffer type for a OpenGL 4.6 Buffer", MESSAGE_TYPE_ERROR);
+        arena.m_graphicInstance->getInstance()->log("Failed to determine correct buffer type for a OpenGL 4.6 Buffer", MESSAGE_TYPE_ERROR);
         return;
         break;
     }

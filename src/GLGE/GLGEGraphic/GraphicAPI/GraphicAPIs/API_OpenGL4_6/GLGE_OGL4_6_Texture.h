@@ -15,9 +15,14 @@
 
 //include the window
 #include "../../GLGEGraphicAPI_Window.h"
+//include memory arenas
+#include "GLGE_OGL4_6_MemoryArena.h"
 
 //check if this is C++
 #if GLGE_CPP
+
+//say that OpenGL framebuffers will exist
+class OGL4_6_Framebuffer;
 
 /**
  * @brief define the texture for OpenGL 4.6
@@ -74,6 +79,33 @@ public:
      */
     inline uint32_t getOglTexture() const noexcept {return m_tex;}
 
+    /**
+     * @brief resize the texture AND CLEAR IT TO BLACK
+     * 
+     * @param newSize the new size for the texture
+     */
+    virtual void resize(const uvec2& newSize) noexcept override;
+
+    /**
+     * @brief Get the index of the texture in the texture array
+     * 
+     * @return uint64_t the identifyer of the texture
+     */
+    virtual uint64_t getIdentifyer() const noexcept override {return (uint64_t)(m_ptr.startIdx / sizeof(m_handle));}
+
+    /**
+     * @brief say that the texture could be about to be sampled (for rendering)
+     */
+    virtual void activate() noexcept;
+
+    /**
+     * @brief say that the texture can no longer be sampled (for rendering)
+     */
+    virtual void deactivate() noexcept;
+
+    //add framebuffers as a friend class
+    friend class OGL4_6_Framebuffer;
+
 protected:
 
     /**
@@ -93,6 +125,14 @@ protected:
     static void deleteOgl(void* data, uint64_t dataSize);
 
     /**
+     * @brief change the size of an OpenGL texture
+     * 
+     * @param data a pointer to the OpenGL texture that made the call
+     * @param dataSize the size of the data (packed: *((uint64_t*)&newSize) ; unpacked: *((uvec2*)&newSize))
+     */
+    static void ogl_resize(void* data, uint64_t) noexcept;
+
+    /**
      * @brief Create the mip chain for an OpenGL texture
      * 
      * @param data the data inputed to the function
@@ -101,9 +141,26 @@ protected:
     static void mipMap(void* data, uint64_t dataSize);
 
     /**
+     * @brief store a pointer to the reagion of the texture buffer the texture owns
+     */
+    OGL4_6_MemoryArena::GraphicPointer m_ptr;
+    /**
+     * @brief store a pointer to the reagion of the image buffer the texture owns
+     */
+    OGL4_6_MemoryArena::GraphicPointer m_imgPtr;
+
+    /**
      * @brief store the actual OpenGL texture
      */
     uint32_t m_tex = 0;
+    /**
+     * @brief store the handle for bindless textures
+     */
+    uint64_t m_handle = 0;
+    /**
+     * @brief store the handle for the image
+     */
+    uint64_t m_image = 0;
 
 };
 

@@ -112,6 +112,14 @@ public:
     void removeCommandBuffer(GraphicCommandBuffer* buffer) noexcept {auto pos = std::find(m_buffers.begin(), m_buffers.end(), buffer); if (pos != m_buffers.end()) { m_buffers.erase(pos); } }
 
     /**
+     * @brief check if the initalization is done
+     * 
+     * @return true : setup is done, finalization can continue
+     * @return false : still waiting for initalization to finish
+     */
+    inline bool isSetupDone() const noexcept {return m_isSetupFinished;}
+
+    /**
      * @brief Get the command buffers
      * 
      * @return std::vector<GraphicCommandBuffer*>& a reference to all command buffers
@@ -128,6 +136,11 @@ protected:
      * @brief a overloadable hook that is called when the instance is destroyed
      */
     virtual void onDestroy() {}
+
+    /**
+     * @brief store if the initalization is done
+     */
+    bool m_isSetupFinished = false;
 
     /**
      * @brief store the used graphic api

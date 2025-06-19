@@ -11,6 +11,7 @@
 
 //header guard
 #ifndef _GLGE_OGL_4_6_MEMORY_ARENA_
+#define _GLGE_OGL_4_6_MEMORY_ARENA_
 
 //include memory arenas
 #include "../../GLGEGraphicAPI_MemoryArena.h"
@@ -21,6 +22,11 @@
 class OGL4_6_MemoryArena : public GraphicMemoryArena
 {
 public:
+
+    /**
+     * @brief Construct a new memory arena for OpenGL
+     */
+    OGL4_6_MemoryArena() = default;
 
     /**
      * @brief Construct a new memory arena for OpenGL
@@ -43,6 +49,20 @@ public:
      * @brief a hook that is called when the memory arena is destroyed
      */
     virtual void onDestroy() noexcept;
+
+    /**
+     * @brief Get the OpenGL buffer the data is stored in
+     * 
+     * @return const uint32_t the name of the OpenGL buffer
+     */
+    inline uint32_t getBuffer() const noexcept {return m_buff;}
+
+    /**
+     * @brief specify if this is an API memory arena
+     * 
+     * @param api set if this is a memory arena related for the API or not
+     */
+    inline void setAPI(bool api) noexcept {m_isAPI = api;}
 
 protected:
 

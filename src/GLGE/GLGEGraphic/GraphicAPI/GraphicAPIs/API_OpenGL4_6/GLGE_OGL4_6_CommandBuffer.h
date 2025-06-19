@@ -19,6 +19,9 @@
 //check if this is C++
 #if GLGE_CPP
 
+/**
+ * @brief store a command buffer for OpenGL
+ */
 class OGL4_6_CommandBuffer : public GraphicCommandBuffer
 {
 public:

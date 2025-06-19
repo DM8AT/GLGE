@@ -65,11 +65,17 @@ int main()
     //the window is also registerd to the instance created in the steps before
     Window win = Window("Hello Triangle!", 600, 0, WINDOW_SETTINGS_DEFAULT, inst);
 
-    //create a new framebuffer. The Framebuffer will have 1 color attatchment in low dynamic range without an alpha channel
+    //wait for the setup to be done (setup may execute on another thread)
+    //MAKE SURE TO CALL AFTER THE WINDOW IS CREATED
+    //the graphic instance creation is started when the window is created
+    inst.syncGraphicSetup();
+
+    //create a new framebuffer. The Framebuffer will have 1 color attatchment in low dynamic range with an alpha channel
+    //for some reason OpenGL images can only be created if the alpha channel is enabled
     //the framebuffer will also have no depth buffer. 
     //the inital size of the framebuffer is the inital size of the window
     //the framebuffer is also registerd to the instance
-    Framebuffer fbuff = Framebuffer(1, false, false, false, win.getSize(), inst);
+    Framebuffer fbuff = Framebuffer(1, true, false, false, win.getSize(), inst);
     //this stores the clear color of the framebuffer. Initaly, it is red
     Color clear = Color(0,1,0.5,1, COLOR_SPACE_HSLA);
     //set the clear color of the framebuffer to the color created in the line above. 
@@ -77,11 +83,34 @@ int main()
     //take effect unless it is explicetly set again
     fbuff.setClearColor(clear);
 
+    //a shader processor is a class to manage the packages a shader may include
+    //it is usually good practice to only use what you need
+    ShaderProcessor shaderProc;
+    //load the package to handle textures with GLGE
+    shaderProc.loadPackage(Path("shader/glgeTextures.gp"), "GLGETextures");
+
+    //load a compute shader and compile it with the packages added to the shader processor
+    Shader compute(Path("shader/compute.gs"), &shaderProc, inst);
+    //load the texture named "cube texture" (i know it is applied to a circle) from disk
+    //the texture will be used to texture an image
+    Texture tex = Texture("assets/textures/cubeTexture.png", false, TEXTURE_PURPOSE_IMAGE, inst);
+    //add the color attatchment of the framebuffer to the compute shader
+    //the name has nothing to do with the access in the shader
+    compute.setTexture(fbuff.getColorAttatchment(0), "WriteTo");
+    //also add the loaded texture to the compute shader
+    //this will be used to texture the circle
+    compute.setTexture(&tex, "Texture");
+    
     //store a list of all stages followed for rendering
     RenderStage stages[] = {
-        //thie clear stage clears a specific framebuffer to the clear color the framebuffer is set to. 
-        //in this case, no user data or user functions are passed
-        RenderStage(RENDER_STAGE_CLEAR, RenderStage::Data(ClearStageData(&fbuff)), 0,0,0),
+        //Add a render stage that invoces the compute shader
+        RenderStage(RENDER_STAGE_COMPUTE, RenderStage::Data(ComputeStageData(compute, 
+            //the amount of invocations is divided by 8 because each invocation has 8 threads per axis
+            //but it is rounded up to still compute the whole image
+            //this is used to not waste performance
+            uvec3(ceil(fbuff.getColorAttatchment(0)->getSize().x / 8.), ceil(fbuff.getColorAttatchment(0)->getSize().y / 8.),
+                1))), 0,0,0),
+
         //the blit to window stage copies the content from a framebuffer to a window. 
         //also here, there are no user define functionalities used
         RenderStage(RENDER_STAGE_BLIT_TO_WINDOW, RenderStage::Data(BlitToWindowStageData(&fbuff, &win)), 0,0,0),
@@ -95,44 +124,6 @@ int main()
     //start at a user spezified time point. 
     //the render pipeline is also registerd to the instance. 
     RenderPipeline pipeline = RenderPipeline(stages, sizeof(stages)/sizeof(*stages), true, inst);
-
-    ShaderProcessor shaderProc;
-    shaderProc.loadPackage(Path("shader/test.gp"), "test");
-    Shader shader(Path("shader/test file.gs"), &shaderProc, inst);
-
-    SimpleVertex vertices[] = {
-        {vec3(-0.5,0,0), vec2(0,0),   vec3(0,0,1)},
-        {vec3(0,1,0),    vec2(0.5,1), vec3(0,0,1)},
-        {vec3(0.5,0,0),  vec2(1,0),   vec3(0,0,1)}
-    };
-    idx_Triangle indices[] = {
-        {0,1,2}
-    };
-    Mesh mesh = Mesh(vertices, sizeof(vertices)/sizeof(*vertices), indices, sizeof(indices) / sizeof(*indices));
-
-    RenderMesh rMesh = RenderMesh(&mesh);
-
-    //create a memory arena FOR TEST ONLY, NEVER USE THIS DIRECLTY! MEMORY LEAK WARNING!
-    //(i know the memory is leaked here too, but for testing, i don't care since the program
-    //terminates direclty afterwards. I can't insert the arena from here into the default
-    //destruction chain)
-    GraphicMemoryArena* arena = new OGL4_6_MemoryArena(64, true, MEMORY_USAGE_UNIFORM, inst);
-    arena->onCreate();
-    std::vector<GraphicMemoryArena::GraphicPointer> ptrs;
-    for (uint64_t i = 0; i < 4; ++i)
-    {
-        ptrs.push_back(arena->allocate(8));
-    }
-    uint64_t dat = 0xff00ff00ff00ff00;
-    uint64_t adat = ~dat;
-    arena->update(ptrs[0], &dat);
-    arena->update(ptrs[1], &adat);
-    arena->update(ptrs[2], &dat);
-    arena->update(ptrs[3], &adat);
-    for (GraphicMemoryArena::GraphicPointer& ptr : ptrs)
-    {
-        arena->release(ptr);
-    }
 
     //create a new limiter
     //a limiter is used to limit the iteration rate of a loop. They are mostly used to 
@@ -154,6 +145,15 @@ int main()
         clear.setValues(vals);
         //register the changes made to the clear color
         fbuff.setClearColor(clear);
+        //update the size of the window (change is discarded if the size dosn't change)
+        fbuff.resize(win.getSize());
+        //change the amount of executions to still compute the image correctly 
+        //even if the size changed
+        pipeline.getStage(0).data.compute.executions = uvec3(
+            ceil(win.getSize().x / 8.),
+            ceil(win.getSize().y / 8.),
+            1);
+
         //print the current frames per second of the render pipeline to the console. Use flush to print
         //it imeadiatly
         std::cout << "\33[2K\rCurrent FPS: " << pipeline.getLimiter().getIPS() << std::flush;

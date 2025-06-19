@@ -105,3 +105,9 @@ void GraphicTexture::destroy()
     //reset the variables
     m_isHDR = false;
 }
+
+void GraphicTexture::setParentSize(const uvec2& size) noexcept
+{
+    //store the new size to the parent
+    m_texture->m_size = size;
+}

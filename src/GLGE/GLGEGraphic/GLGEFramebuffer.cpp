@@ -95,7 +95,7 @@ void Framebuffer::create(uint64_t colorAttatchmentCount, bool alpha, bool hdr, b
     for (uint64_t i = 0; i < colorAttatchmentCount; ++i)
     {
         //create the color attatchment
-        m_colorAttatchments.emplace_back(new Texture(TEXTURE_PURPOSE_RENDER, size, alpha, hdr, *m_instance));
+        m_colorAttatchments.emplace_back(new Texture(TEXTURE_PURPOSE_RENDER, size, hdr, alpha, *m_instance));
     }
 
     //check if a depth attatchment should be created

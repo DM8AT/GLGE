@@ -13,10 +13,15 @@
 #include "GLGE_OGL4_6_Shader.h"
 //include the actual shader
 #include "../../../Shader/GLGEShader.h"
-//include command buffers
-#include "GLGE_OGL4_6_CommandBuffer.h"
+//include textures
+#include "../../../GLGETexture.h"
 //include OpenGL
 #include <GL/glew.h>
+
+//include OpenGL instances
+#include "GLGE_OGL4_6_Instance.h"
+//include command buffers
+#include "GLGE_OGL4_6_CommandBuffer.h"
 
 void OGL4_6_Shader::onCreate() noexcept
 {
@@ -34,6 +39,12 @@ void OGL4_6_Shader::onAttatch(GraphicCommandBuffer* cmdBuff) noexcept
 {
     //add the attatching to the command buffer
     cmdBuff->add(0, (void*)attatchShader, this, sizeof(this));
+}
+
+void OGL4_6_Shader::onDetatch(GraphicCommandBuffer* cmdBuff) noexcept
+{
+    //add the detatching to the command buffer
+    cmdBuff->add(0, (void*)detatchShader, this, sizeof(this));
 }
 
 bool OGL4_6_Shader::compileSubProgram(ShaderType type, uint32_t& shader) noexcept
@@ -219,6 +230,41 @@ void OGL4_6_Shader::destroyShader(void* data, uint64_t) noexcept
 
 void OGL4_6_Shader::attatchShader(void* data, uint64_t) noexcept
 {
+    //extract the shader
+    OGL4_6_Shader* shader = (OGL4_6_Shader*)data;
+
+    //check if textures exist
+    if (shader->m_shader->getTextureCount() > 0)
+    {
+        //bind the texture buffer to unit 0
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ((OGL4_6_Instance*)shader->m_shader->getInstance()->getGraphicInstance())->getTextureArena()->getBuffer());
+        //and the image buffer to unit 1
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ((OGL4_6_Instance*)shader->m_shader->getInstance()->getGraphicInstance())->getImageArena()->getBuffer());
+    }
+
+    //iterate over all (potential) textures
+    for (auto it = shader->m_shader->getTextures().begin(); it != shader->m_shader->getTextures().end(); ++it)
+    {
+        //activate the texture
+        it->second->getGraphicTexture()->activate();
+    }
+
     //attach the shader
-    glUseProgram(((OGL4_6_Shader*)data)->m_program);
+    glUseProgram(shader->m_program);
+}
+
+void OGL4_6_Shader::detatchShader(void* data, uint64_t) noexcept
+{
+    //extract the shader
+    OGL4_6_Shader* shader = (OGL4_6_Shader*)data;
+
+    //unbind any shader
+    glUseProgram(0);
+
+    //iterate over all (potential) textures
+    for (auto it = shader->m_shader->getTextures().begin(); it != shader->m_shader->getTextures().end(); ++it)
+    {
+        //deactivate the texture
+        it->second->getGraphicTexture()->deactivate();
+    }
 }

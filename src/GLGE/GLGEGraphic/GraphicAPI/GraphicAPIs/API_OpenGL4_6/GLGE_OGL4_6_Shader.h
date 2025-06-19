@@ -58,6 +58,13 @@ public:
      */
     virtual void onAttatch(GraphicCommandBuffer* cmdBuff) noexcept override;
 
+    /**
+     * @brief a hook to finish the usage of this shader
+     * 
+     * @param cmdBuff the command buffer the shader should be disabled in
+     */
+    virtual void onDetatch(GraphicCommandBuffer* cmdBuff) noexcept override;
+
 protected:
 
     /**
@@ -94,6 +101,14 @@ protected:
      * @param cmdDataSize the size of the data for the command
      */
     static void attatchShader(void* cmdData, uint64_t cmdDataSize) noexcept;
+
+    /**
+     * @brief detatch the shader
+     * 
+     * @param cmdData stores the shader
+     * @param cmdDataSize unused
+     */
+    static void detatchShader(void* cmdData, uint64_t cmdDataSize) noexcept;
 
     /**
      * @brief store the OpenGL shader program

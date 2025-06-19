@@ -159,4 +159,10 @@ void Instance::closeGraphiAPI()
     m_gInstance = 0;
 }
 
+void Instance::syncGraphicSetup() const noexcept
+{
+    //synchronize with the graphic instance
+    while (!m_gInstance->isSetupDone()) {std::this_thread::sleep_for(std::chrono::microseconds(10));}
+}
+
 #endif //Graphic section
