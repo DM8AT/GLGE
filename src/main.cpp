@@ -163,6 +163,9 @@ int main()
             ceil(win.getSize().y / 8.),
             1);
 
+        //print all stages messages
+        inst.getLogger()->printAll();
+
         //print the current frames per second of the render pipeline to the console. Use flush to print
         //it imeadiatly
         std::cout << "\33[2K\rCurrent FPS: " << pipeline.getLimiter().getIPS() << std::flush;
