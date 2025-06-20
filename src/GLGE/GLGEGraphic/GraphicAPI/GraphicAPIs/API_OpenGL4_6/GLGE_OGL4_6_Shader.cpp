@@ -15,6 +15,8 @@
 #include "../../../Shader/GLGEShader.h"
 //include textures
 #include "../../../GLGETexture.h"
+//include buffer
+#include "../../../GLGEBuffer.h"
 //include OpenGL
 #include <GL/glew.h>
 
@@ -247,6 +249,13 @@ void OGL4_6_Shader::attatchShader(void* data, uint64_t) noexcept
     {
         //activate the texture
         it->second->getGraphicTexture()->activate();
+    }
+
+    //iterate over all buffers
+    for (auto it = shader->m_shader->getBuffers().begin(); it != shader->m_shader->getBuffers().end(); ++it)
+    {
+        //directly bind the buffer
+        ((OGL4_6_MemoryArena*)(((Buffer*)it->second.buffer)->getMemoryArena()))->directBind(it->second.unit);
     }
 
     //attach the shader

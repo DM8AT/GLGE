@@ -40,18 +40,20 @@ public:
     /**
      * @brief Construct a new Buffer
      * 
+     * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    Buffer(Instance& instance);
+    Buffer(MemoryUsage usage, Instance& instance);
 
     /**
      * @brief Construct a new Buffer
      * 
      * @param data the inital data for the buffer (set to NULL to fill it with zeros)
      * @param size the size in bytes of the buffer
+     * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    Buffer(void* data, uint64_t size, Instance& instance);
+    Buffer(void* data, uint64_t size, MemoryUsage usage, Instance& instance);
 
     /**
      * @brief Destroy the Buffer
@@ -87,6 +89,21 @@ public:
      */
     bool set(void* data, uint64_t size, uint64_t offset) noexcept;
 
+    /**
+     * @brief Get the memory usage of the buffer
+     * 
+     * @return const MemoryUsage& the memory usage of the buffer
+     */
+    inline MemoryUsage getUsage() const noexcept {return m_arena->getUsage();}
+
+    /**
+     * @brief Get the memory arena the buffer uses for storage
+     * @warning ONLY USE IF YOU KNOW WHAT YOUR DOING
+     * 
+     * @return GraphicMemoryArena* a pointer to the used memory arena
+     */
+    inline GraphicMemoryArena* getMemoryArena() const noexcept {return m_arena;}
+
 protected:
 
     /**
@@ -113,29 +130,32 @@ public:
     /**
      * @brief Construct a new Structured Buffer
      * 
+     * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    StructuredBuffer(Instance& instance)
-     : Buffer(instance) {}
+    StructuredBuffer(MemoryUsage usage, Instance& instance)
+     : Buffer(usage, instance) {}
 
     /**
      * @brief Construct a new Structured Buffer
      * 
      * @param elements the amount of elements in the array
+     * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    StructuredBuffer(uint64_t elements, Instance& instance)
-     : Buffer(0, elements*sizeof(T), instance) {}
+    StructuredBuffer(uint64_t elements, MemoryUsage usage, Instance& instance)
+     : Buffer(0, elements*sizeof(T), usage, instance) {}
 
     /**
      * @brief Construct a new Buffer
      * 
      * @param data an array of instances of the T class
      * @param count the amount of instance of the type T in the data array
+     * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    StructuredBuffer(T* data, uint64_t count, Instance& instance)
-     : Buffer(data, count * sizeof(T), instance) {}
+    StructuredBuffer(T* data, uint64_t count, MemoryUsage usage, Instance& instance)
+     : Buffer(data, count * sizeof(T), usage, instance) {}
 
     /**
      * @brief write some element of the structured buffer

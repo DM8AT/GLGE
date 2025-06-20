@@ -14,7 +14,7 @@
 //include all APIs
 #include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
-Buffer::Buffer(Instance& instance)
+Buffer::Buffer(MemoryUsage usage, Instance& instance)
  : InstAttachableClass(&instance, "buffer")
 {
     //switch over the graphic API
@@ -22,7 +22,7 @@ Buffer::Buffer(Instance& instance)
     {
     case API_OPENGL_4_6:
         //create an opengl 4.6 memory arena
-        m_arena = new OGL4_6_MemoryArena(0, false, MEMORY_USAGE_READ_WRITE, instance);
+        m_arena = new OGL4_6_MemoryArena(0, false, usage, instance);
         break;
     
     default:
@@ -36,7 +36,7 @@ Buffer::Buffer(Instance& instance)
     m_arena->onCreate();
 }
 
-Buffer::Buffer(void* data, uint64_t size, Instance& instance)
+Buffer::Buffer(void* data, uint64_t size, MemoryUsage usage, Instance& instance)
  : InstAttachableClass(&instance, "buffer")
 {
     //switch over the graphic API
@@ -44,7 +44,7 @@ Buffer::Buffer(void* data, uint64_t size, Instance& instance)
     {
     case API_OPENGL_4_6:
         //create an opengl 4.6 memory arena
-        m_arena = new OGL4_6_MemoryArena(size, false, MEMORY_USAGE_READ_WRITE, instance);
+        m_arena = new OGL4_6_MemoryArena(size, false, usage, instance);
         break;
     
     default:

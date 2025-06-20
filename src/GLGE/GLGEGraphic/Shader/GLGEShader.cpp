@@ -19,7 +19,9 @@
 //include all graphic APIs
 #include "../GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
-Shader::Shader(const Path& file, ShaderProcessor* processor, const Instance& instance)
+Shader::Shader(const Path& file, ShaderProcessor* processor,
+            std::unordered_map<std::string_view, Texture*> textures, 
+            std::unordered_map<std::string_view, BufferShaderBinding> buffers, const Instance& instance)
  : InstAttachableClass((Instance*)&instance, file.getRawPath())
 {
     //calculate the path in the native format
@@ -45,6 +47,10 @@ Shader::Shader(const Path& file, ShaderProcessor* processor, const Instance& ins
 
     //process the source GLGE source code to convert it to GLSL source code
     processor->processShader(*this);
+
+    //store the inputed textures and buffers
+    m_textures = textures;
+    m_buffers = buffers;
 
     //switch over the selected graphic API
     switch (m_instance->getAPI())
@@ -84,21 +90,6 @@ void Shader::prepareForStage(std::string& src, ShaderType stage) noexcept
     pos = src.find_first_of('\n', pos);
     //insert the define after the new line
     src.insert(pos + 1, prefix);
-}
-
-void Shader::setTexture(Texture* texture, const std::string_view& name) noexcept
-{
-    //check if the texture is a nullpointer
-    if (texture == 0)
-    {
-        //return if the element is not found
-        if (m_textures.find(name) == m_textures.end()) {return;}
-        //erase the element
-        m_textures.erase(name);
-        return;
-    }
-    //set the element directly
-    m_textures[name] = texture;
 }
 
 void Shader::attatch(GraphicCommandBuffer* cmdBuff) noexcept

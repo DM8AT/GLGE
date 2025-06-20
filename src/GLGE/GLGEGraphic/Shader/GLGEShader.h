@@ -21,6 +21,39 @@
 #include "../GraphicAPI/GLGEGraphicAPI_Shader.h"
 //include pathes
 #include "../../GLGECore/Files/GLGEPath.h"
+//include buffer
+#include "../GLGEBuffer.h"
+
+/**
+ * @brief store a mapping from a buffer to a shader binding point
+ */
+typedef struct s_BufferShaderBinding
+{
+    /**
+     * @brief store the index of the unit to bind to
+     * 
+     * @warning the first few units (like 0 and 1) are often used by GLGE itself
+     */
+    uint32_t unit;
+    /**
+     * @brief store a pointer to the buffer to bind
+     */
+    void* buffer;
+
+    //check for C++ to add a constructor
+    #if GLGE_CPP
+
+    /**
+     * @brief Construct new information of a mapping from a buffer to a shader binding point
+     * 
+     * @param _unit the index of the shader unit to bind to
+     * @param _buffer a pointer to the buffer to bind
+     */
+    s_BufferShaderBinding(uint32_t _unit, Buffer* _buffer) : unit(_unit), buffer(_buffer) {}
+
+    #endif //end of C++ section
+
+} BufferShaderBinding;
 
 //check for C++
 #if GLGE_CPP
@@ -47,9 +80,13 @@ public:
      * 
      * @param path the path to the file to load as a shader
      * @param processor the shader processor to use for compillation
+     * @param textures store an unorderd map that maps names to texture pointers the shader can access
+     * @param buffers store an unorderd map that maps names to buffer binding solutions
      * @param instance the instance the shader will belong to
      */
-    Shader(const Path& path, ShaderProcessor* processor, const Instance& instance);
+    Shader(const Path& path, ShaderProcessor* processor, 
+            std::unordered_map<std::string_view, Texture*> textures, 
+            std::unordered_map<std::string_view, BufferShaderBinding> buffers, const Instance& instance);
 
     /**
      * @brief Destroy the Shader
@@ -115,14 +152,6 @@ public:
     inline const std::string& getSource() const noexcept {return m_glgeSource;}
 
     /**
-     * @brief set a texture the shader will be able to access
-     * 
-     * @param texture a pointer to the texture the shader will be able to access
-     * @param name the name to identify the texture with (NOT related to the access in the shader)
-     */
-    void setTexture(Texture* texture, const std::string_view& name) noexcept;
-
-    /**
      * @brief Get a specific texture that is attatched to the shader
      * 
      * @param name the name of the texture to querry
@@ -143,6 +172,21 @@ public:
      * @return std::unordered_map<std::string_view, Texture*>& a reference to an unorderd map of all textures
      */
     inline std::unordered_map<std::string_view, Texture*>& getTextures() noexcept {return m_textures;}
+
+    /**
+     * @brief Get the amount of buffers bound to the shader
+     * @warning This is both compute as well as shader storage buffer
+     * 
+     * @return uint64_t The amount of buffer shader bindings the shader can access
+     */
+    inline uint64_t getBufferCount() const noexcept {return m_buffers.size();}
+
+    /**
+     * @brief Get all the buffers bound to the shader
+     * 
+     * @return std::unordered_map<std::string_view, BufferShaderBinding>& a reference to the unorderd map of all buffer bindings
+     */
+    inline std::unordered_map<std::string_view, BufferShaderBinding>& getBuffers() noexcept {return m_buffers;}
 
 protected:
 
@@ -167,6 +211,11 @@ protected:
      * @brief store all textures the shader can access
      */
     std::unordered_map<std::string_view, Texture*> m_textures;
+
+    /**
+     * @brief store all buffers the shader can read and write to / from
+     */
+    std::unordered_map<std::string_view, BufferShaderBinding> m_buffers;
 
 };
 

@@ -9,14 +9,29 @@
 #include <GLGETextures>
 
 //specify how many threads are used per invocation per axis
-layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+//good are a lot, this helps to speed up rendering
+//I tested on my GPU (RTX 5070 TI) with different counts for this shader:
+// 1x1x1 instances per execution
+//  --> 214 µs per execution
+// 8x8x1 instances per execution
+//  --> 12 µs per execution
+// 32x32x1 instances per execution
+//  --> 11.75 µs per execution
+// => higher values are better, from my experience the difference is stronger on AMD than NVidia
+//    no idea how the difference is on Intel GPUs
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+layout (std140, binding = 0) uniform cmpInfo {
+    int writeTo;
+    int tex;
+};
 
 //entry point for the compute shader
 @main(stage_compute)
 void main()
 {
     //read the size of the output image (image 0)
-    ivec2 imgSize = imageSize(image2D(glge_Image[0]));
+    ivec2 imgSize = imageSize(image2D(glge_Image[writeTo]));
     //compute the aspect ratio of the image to prevent warping
     float aspect = float(imgSize.x) / float(imgSize.y);
 
@@ -35,8 +50,8 @@ void main()
     float dist = distance(pos, vec2(0));
     //set the color of the pixel to the color if it is inside the circle and to a background color
     //if it isn't
-    vec4 col = (dist > 1) ? vec4(0) : texture(sampler2D(glge_Texture[1]), pos.xy).rgba;
+    vec4 col = (dist > 1) ? vec4(0) : texture(sampler2D(glge_Texture[tex]), pos.xy).rgba;
 
     //store the new color
-    imageStore(image2D(glge_Image[0]), i, col);
+    imageStore(image2D(glge_Image[writeTo]), i, col);
 }

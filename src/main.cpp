@@ -98,18 +98,42 @@ int main()
     //load the package to handle textures with GLGE
     shaderProc.loadPackage(Path("shader/glgeTextures.gp"), "GLGETextures");
 
-    //load a compute shader and compile it with the packages added to the shader processor
-    Shader compute(Path("shader/compute.gs"), &shaderProc, inst);
     //load the texture named "cube texture" (i know it is applied to a circle) from disk
     //the texture will be used to texture an image
     Texture tex = Texture("assets/textures/cubeTexture.png", false, TEXTURE_PURPOSE_IMAGE, inst);
-    //add the color attatchment of the framebuffer to the compute shader
-    //the name has nothing to do with the access in the shader
-    compute.setTexture(fbuff.getColorAttatchment(0), "WriteTo");
-    //also add the loaded texture to the compute shader
-    //this will be used to texture the circle
-    compute.setTexture(&tex, "Texture");
+
+    //store a structure that mapps the data the compute shader can access
+    struct ComputeData
+    {
+        //this stores the identifyer of the texture the compute shader will write to
+        int32_t writeTo;
+        //this stores the identifyer of the texture the compute shader will use for texturing
+        int32_t texture;
+    } computeData;
+    //load the identifyers of the textures to the data to ship it to the compute shader
+    computeData.writeTo = fbuff.getColorAttatchment(0)->getIdentifyer();
+    computeData.texture = tex.getIdentifyer();
+    //create the GPU buffer to ship to the compute shader
+    StructuredBuffer<ComputeData> cmpData(&computeData, 1, MEMORY_USAGE_UNIFORM, inst);
     
+    //load a compute shader and compile it with the packages added to the shader processor
+    Shader compute(Path("shader/compute.gs"), &shaderProc, {
+            //add the color attatchment of the framebuffer to the compute shader
+            //the name has nothing to do with the access in the shader
+            {"WriteTo", fbuff.getColorAttatchment(0)},
+            //also add the loaded texture to the compute shader
+            //this will be used to texture the circle
+            {"Texture", &tex}
+        }, {
+            //specify the buffer the shader can access
+            //bind it to unit 0 (BE CAREFULL, HERE IT IS A UNIFORM BUFFER
+            //                   BUT SHADER STORAGE BUFFER 0 AND 1 ARE 
+            //                   ALLREADY IMPLICITLY USED)
+            {"Textures", BufferShaderBinding(0, &cmpData)}
+        }, inst);
+    //store the amount of instances per execution for the compute shader
+    uvec3 instance(32,32,1);
+
     //store a list of all stages followed for rendering
     RenderStage stages[] = {
         //Add a render stage that invoces the compute shader
@@ -117,7 +141,7 @@ int main()
             //the amount of invocations is divided by 8 because each invocation has 8 threads per axis
             //but it is rounded up to still compute the whole image
             //this is used to not waste performance
-            uvec3(ceil(fbuff.getColorAttatchment(0)->getSize().x / 8.), ceil(fbuff.getColorAttatchment(0)->getSize().y / 8.),
+            uvec3(ceil(fbuff.getColorAttatchment(0)->getSize().x / (float)instance.x), ceil(fbuff.getColorAttatchment(0)->getSize().y / (float)instance.y),
                 1))), 0,0,0),
 
         //the blit to window stage copies the content from a framebuffer to a window. 
@@ -159,8 +183,8 @@ int main()
         //change the amount of executions to still compute the image correctly 
         //even if the size changed
         pipeline.getStage(0).data.compute.executions = uvec3(
-            ceil(win.getSize().x / 8.),
-            ceil(win.getSize().y / 8.),
+            ceil(win.getSize().x / (float)instance.x),
+            ceil(win.getSize().y / (float)instance.y),
             1);
 
         //print all stages messages

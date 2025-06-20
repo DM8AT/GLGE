@@ -64,6 +64,21 @@ public:
      */
     inline void setAPI(bool api) noexcept {m_isAPI = api;}
 
+    /**
+     * @brief bind the buffer to a specific unit on a command buffer
+     * 
+     * @param unit the unit to bind to
+     * @param cmdBuff the commandbuffer the binding should occoure in
+     */
+    virtual void onBind(uint64_t unit, GraphicCommandBuffer* cmdBuff) noexcept override;
+
+    /**
+     * @brief directly bind the buffer to a unit without a command buffer
+     * 
+     * @param unit the unit to bind to
+     */
+    void directBind(uint64_t unit) noexcept;
+
 protected:
 
     /**
@@ -107,6 +122,14 @@ protected:
      * @param data the data for the buffer destruction
      */
     static void ogl_destroy(void* data, uint64_t) noexcept;
+
+    /**
+     * @brief actually bind the memory arena using OpenGL
+     * 
+     * @param arena a pointer to the arena the call came from
+     * @param unit the unit (just re-using the size because it is there)
+     */
+    static void ogl_bind(OGL4_6_MemoryArena* arena, uint64_t unit) noexcept;
 
     /**
      * @brief store thee OpenGL buffer

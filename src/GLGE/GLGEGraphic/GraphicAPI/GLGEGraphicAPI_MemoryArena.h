@@ -184,6 +184,28 @@ public:
      */
     inline const uint64_t& getSize() const noexcept {return m_size;}
 
+    /**
+     * @brief Get the memory usage of the memory arena
+     * 
+     * @return const MemoryUsage& the memory usage of the memory arena
+     */
+    inline const MemoryUsage& getUsage() const noexcept {return m_usage;}
+
+    /**
+     * @brief bind the buffer to a specific unit on a command buffer
+     * 
+     * @param unit the unit to bind to
+     * @param cmdBuff the commandbuffer the binding should occoure in
+     */
+    virtual void onBind(uint64_t, GraphicCommandBuffer*) noexcept {}
+
+    /**
+     * @brief unbind the buffer from a command buffer
+     * 
+     * @param cmdBuff the commandbuffer to de-couple from
+     */
+    virtual void onUnbind(GraphicCommandBuffer*) noexcept {}
+
 protected:
 
     /**

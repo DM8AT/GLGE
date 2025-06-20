@@ -42,6 +42,18 @@ void OGL4_6_MemoryArena::onDestroy() noexcept
     //no need to unlock. To make sure no threads interfear in the destruction, the object will remain locked untill the destruction finishes
 }
 
+void OGL4_6_MemoryArena::onBind(uint64_t unit, GraphicCommandBuffer* cmdBuff) noexcept
+{
+    //queue the binding to the command buffer
+    cmdBuff->add(0, (void*)ogl_bind, this, unit);
+}
+
+void OGL4_6_MemoryArena::directBind(uint64_t unit) noexcept
+{
+    //directly call the binding function
+    ogl_bind(this, unit);
+}
+
 void OGL4_6_MemoryArena::gpuUpdate() noexcept
 {
     //queue the data update command
@@ -151,4 +163,10 @@ void OGL4_6_MemoryArena::ogl_destroy(void* data, uint64_t) noexcept
 
     //unlock the buffer to continue destruction
     arena.unlock();
+}
+
+void OGL4_6_MemoryArena::ogl_bind(OGL4_6_MemoryArena* arena, uint64_t unit) noexcept
+{
+    //bind the arena to the specified unit
+    glBindBufferBase(arena->m_bindingType, unit, arena->m_buff);
 }
