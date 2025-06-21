@@ -87,6 +87,28 @@ protected:
      * @param data the data to execute a compute shader
      */
     static void ogl_executeCompute(void* data, uint64_t) noexcept;
+
+    //check for ImGui
+    #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+    /**
+     * @brief start the ImGui frame
+     */
+    static void ogl_ImGui_StartFrame(void*, uint64_t) noexcept;
+
+    /**
+     * @brief end the ImGui frame
+     */
+    static void ogl_Imgui_EndFrame(void*, uint64_t) noexcept;
+
+    /**
+     * @brief execute a function that uses Dear ImGui
+     * 
+     * @param data the data used to execute the function
+     */
+    static void ogl_ImGui_Execute(void* data, uint64_t) noexcept;
+
+    #endif //end of ImGui section
 };
 
 #endif

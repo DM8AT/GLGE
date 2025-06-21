@@ -19,6 +19,9 @@
 //check for C++
 #if GLGE_CPP
 
+/**
+ * @brief store a shader extension that adds GLGE versions
+ */
 class ShaderExt_Version : public ShaderExtension
 {
 public:

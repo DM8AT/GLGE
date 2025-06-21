@@ -20,7 +20,7 @@
 #if GLGE_CPP
 
 /**
- * @brief 
+ * @brief specify an extension that adds an include statement to GLGE shaders
  */
 class ShaderExt_Include : public ShaderExtension
 {

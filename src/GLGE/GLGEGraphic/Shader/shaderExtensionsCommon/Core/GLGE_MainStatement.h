@@ -19,6 +19,9 @@
 //check for C++
 #if GLGE_CPP
 
+/**
+ * @brief add a shader extension that adds main statements
+ */
 class ShaderExt_Main : public ShaderExtension
 {
 public:

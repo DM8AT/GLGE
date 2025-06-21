@@ -48,6 +48,14 @@
 //include buffers
 #include "GLGEBuffer.h"
 
+//check if Dear ImGui should be used. It can sadly only be used in C++
+#if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI && GLGE_CPP
+
+//include the main ImGui file
+#include "../GLGE3rdParty/imgui/imgui.h"
+
+#endif //Dear ImGui section
+
 #endif //graphic including section
 
 #endif

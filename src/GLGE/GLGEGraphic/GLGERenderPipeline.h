@@ -211,6 +211,45 @@ typedef struct s_ComputeStageData {
 
 } ComputeStageData;
 
+//check if a Dear ImGui binding should be included
+#if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+/**
+ * @brief store a stage to handle a Dear ImGui drawing
+ */
+typedef struct s_DearImGuiStageData {
+
+    /**
+     * @brief the function to call for the Dear ImGui implementation
+     */
+    void (*imGuiFunction)(void*, uint64_t);
+    /**
+     * @brief store the data the function will recive
+     */
+    void* data;
+    /**
+     * @brief store the data size (can be literally anything, just mostly the size) that is given to the function
+     */
+    uint64_t size;
+
+    //check for C++ to create the constructor
+    #if GLGE_CPP
+
+    /**
+     * @brief Construct a new pack of data for a ImGui construction
+     * 
+     * @param _func a pointer to the function to execute ImGui in
+     * @param _data a pointer to some arbituary data to be given to the function
+     * @param _size the size of the data
+     */
+    s_DearImGuiStageData(void (*_func)(void*, uint64_t), void* _data, uint64_t _size) : imGuiFunction(_func), data(_data), size(_size) {}
+
+    #endif //C++ section
+
+} DearImGuiStageData;
+
+#endif //end of the Dear ImGui binding
+
 /**
  * @brief define the structure of a render stage
  */
@@ -248,8 +287,10 @@ typedef struct s_RenderStage {
         SwapWindowData swapWindow;
         //store the data for a stage that renders all objects from a world
         RenderWorldStageData renderWorld;
-        //store teh data for a stage that executions a compute shader
+        //store the data for a stage that executions a compute shader
         ComputeStageData compute;
+        //store the data for the dear imgui stage to execute a function
+        DearImGuiStageData imguiFunc;
 
         //check for C++ to create a constructor
         #if GLGE_CPP
@@ -308,6 +349,13 @@ typedef struct s_RenderStage {
          * @param _compute a constant refenrence to the data to execute a compute shader
          */
         Data(const ComputeStageData& _compute) : compute(_compute) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _imguiFunc a constant refenrence to the data to execute a imgui function stage
+         */
+        Data(const s_DearImGuiStageData& _imguiFunc) : imguiFunc(_imguiFunc) {}
 
         #endif //end of C++ section
     } data;

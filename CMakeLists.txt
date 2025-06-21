@@ -1,3 +1,12 @@
+#  $$$$$$\  $$$$$$$$\ $$$$$$$$\ $$\   $$\ $$$$$$$\  
+# $$  __$$\ $$  _____|\__$$  __|$$ |  $$ |$$  __$$\ 
+# $$ /  \__|$$ |         $$ |   $$ |  $$ |$$ |  $$ |
+# \$$$$$$\  $$$$$\       $$ |   $$ |  $$ |$$$$$$$  |
+#  \____$$\ $$  __|      $$ |   $$ |  $$ |$$  ____/ 
+# $$\   $$ |$$ |         $$ |   $$ |  $$ |$$ |      
+# \$$$$$$  |$$$$$$$$\    $$ |   \$$$$$$  |$$ |      
+#  \______/ \________|   \__|    \______/ \__|      
+
 # default setup for CMake
 cmake_minimum_required(VERSION 3.2...3.31)
 # define C++ standard
@@ -6,11 +15,74 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # path to GLGE
 set(GLGE_PATH src/GLGE)
+#  $$$$$$\  $$$$$$$$\ $$$$$$$$\ $$$$$$$$\ $$$$$$\ $$\   $$\  $$$$$$\   $$$$$$\  
+# $$  __$$\ $$  _____|\__$$  __|\__$$  __|\_$$  _|$$$\  $$ |$$  __$$\ $$  __$$\ 
+# $$ /  \__|$$ |         $$ |      $$ |     $$ |  $$$$\ $$ |$$ /  \__|$$ /  \__|
+# \$$$$$$\  $$$$$\       $$ |      $$ |     $$ |  $$ $$\$$ |$$ |$$$$\ \$$$$$$\  
+#  \____$$\ $$  __|      $$ |      $$ |     $$ |  $$ \$$$$ |$$ |\_$$ | \____$$\ 
+# $$\   $$ |$$ |         $$ |      $$ |     $$ |  $$ |\$$$ |$$ |  $$ |$$\   $$ |
+# \$$$$$$  |$$$$$$$$\    $$ |      $$ |   $$$$$$\ $$ | \$$ |\$$$$$$  |\$$$$$$  |
+#  \______/ \________|   \__|      \__|   \______|\__|  \__| \______/  \______/ 
+
+# enable / disable Dear ImGui
+set(GLGE_USE_DEAR_IMGUI true)
+
+
+#  $$$$$$\  $$$$$$$\  $$$$$$$\        $$$$$$$\                      $$\               
+# $$ ___$$\ $$  __$$\ $$  __$$\       $$  __$$\                     $$ |              
+# \_/   $$ |$$ |  $$ |$$ |  $$ |      $$ |  $$ |$$$$$$\   $$$$$$\ $$$$$$\   $$\   $$\ 
+#   $$$$$ / $$$$$$$  |$$ |  $$ |      $$$$$$$  |\____$$\ $$  __$$\\_$$  _|  $$ |  $$ |
+#   \___$$\ $$  __$$< $$ |  $$ |      $$  ____/ $$$$$$$ |$$ |  \__| $$ |    $$ |  $$ |
+# $$\   $$ |$$ |  $$ |$$ |  $$ |      $$ |     $$  __$$ |$$ |       $$ |$$\ $$ |  $$ |
+# \$$$$$$  |$$ |  $$ |$$$$$$$  |      $$ |     \$$$$$$$ |$$ |       \$$$$  |\$$$$$$$ |
+#  \______/ \__|  \__|\_______/       \__|      \_______|\__|        \____/  \____$$ |
+#                                                                           $$\   $$ |
+#                                                                           \$$$$$$  |
+#                                                                            \______/ 
+
+# check for Dear ImGui
+if (GLGE_USE_DEAR_IMGUI)
+
+    # load all source files
+    set(DEAR_IMGUI_SOURCE
+            # add all generic header files
+            ${GLGE_PATH}/GLGE3rdParty/imgui/imgui.cpp
+            ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_demo.cpp
+            ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_draw.cpp
+            ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_tables.cpp
+            ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_widgets.cpp
+            ${GLGE_PATH}/GLGE3rdParty/imgui/imgui.cpp
+
+            # add all needed implementation files
+            ${GLGE_PATH}/GLGE3rdParty/imgui/backends/imgui_impl_opengl3.cpp
+            ${GLGE_PATH}/GLGE3rdParty/imgui/backends/imgui_impl_sdl2.cpp
+        )
+    
+    # add the include directory for Dear ImGui
+    include_directories(${GLGE_PATH}/GLGE3rdParty/imgui)
+
+else()
+
+    # else load emtpy as the source files
+    set(DEAR_IMGUI_SOURCE )
+
+endif() # end of Dear ImGui file loading
+
+# SDL2 Can not be disabled since it is neccecery for GLGE
 # search SDL2
 INCLUDE(FindPkgConfig)
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
 INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
+
+#  $$$$$$\  $$\       $$$$$$\  $$$$$$$$\ 
+# $$  __$$\ $$ |     $$  __$$\ $$  _____|
+# $$ /  \__|$$ |     $$ /  \__|$$ |      
+# $$ |$$$$\ $$ |     $$ |$$$$\ $$$$$\    
+# $$ |\_$$ |$$ |     $$ |\_$$ |$$  __|   
+# $$ |  $$ |$$ |     $$ |  $$ |$$ |      
+# \$$$$$$  |$$$$$$$$\\$$$$$$  |$$$$$$$$\ 
+#  \______/ \________|\______/ \________|
 
 # GLGE project initalisation
 project(GLGE
@@ -80,6 +152,10 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEFloatVec.cpp
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEIntVec.cpp
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEUIntVec.cpp
+
+    # 3rd Party
+        # Dear ImGui
+        ${DEAR_IMGUI_SOURCE}
 )
 # add the executables to the library
 add_library(GLGE STATIC ${SOURCE_FILES_CPP})
@@ -97,6 +173,15 @@ TARGET_LINK_LIBRARIES(GLGE GLEW)
 # enable threading
 target_compile_options(GLGE PRIVATE -pthread)
 target_link_options(GLGE PRIVATE -pthread)
+
+# $$$$$$$$\                    $$\               
+# \__$$  __|                   $$ |              
+#    $$ | $$$$$$\   $$$$$$$\ $$$$$$\    $$$$$$$\ 
+#    $$ |$$  __$$\ $$  _____|\_$$  _|  $$  _____|
+#    $$ |$$$$$$$$ |\$$$$$$\    $$ |    \$$$$$$\  
+#    $$ |$$   ____| \____$$\   $$ |$$\  \____$$\ 
+#    $$ |\$$$$$$$\ $$$$$$$  |  \$$$$  |$$$$$$$  |
+#    \__| \_______|\_______/    \____/ \_______/ 
 
 # C - Test:
     project(TEST_CPP

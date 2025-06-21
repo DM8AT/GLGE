@@ -23,6 +23,16 @@
 //include SDL2
 #include <SDL2/SDL.h>
 
+//check for Dear ImGui usage
+#if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+//include Dear ImGui
+#include "../../../../GLGE3rdParty/imgui/imgui.h"
+#include "../../../../GLGE3rdParty/imgui/backends/imgui_impl_sdl2.h"
+#include "../../../../GLGE3rdParty/imgui/backends/imgui_impl_opengl3.h"
+
+#endif
+
 /**
  * @brief a callback function for an OpenGL error
  * 
@@ -137,6 +147,36 @@ void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
     m_images = new OGL4_6_MemoryArena(0, true, MEMORY_USAGE_READ_WRITE, *m_instance);
     m_images->onCreate();
     m_images->setAPI(true);
+
+    //check if Dear ImGui should be used
+    #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+    //check the ImGui version
+    IMGUI_CHECKVERSION();
+    //create the context for Dear ImGui
+    ImGui::CreateContext();
+    //set the instances
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+    //set the default style to classic
+    ImGui::StyleColorsClassic();
+
+    //initalize Dear ImGui
+    if (!ImGui_ImplSDL2_InitForOpenGL((SDL_Window*)window->getWindow()->getSDL2Window(), m_context))
+    {
+        //failed to initalize ImGui for SDL2
+        m_instance->log("Failed to initalize SDL2 for ImGui", MESSAGE_TYPE_ERROR);
+    }
+    //initalize both SDL2 and OpenGL
+    if (!ImGui_ImplOpenGL3_Init())
+    {
+        //failed to initalize ImGui for OpenGL
+        m_instance->log("Failed to initalize OpenGL for ImGui", MESSAGE_TYPE_ERROR);
+    }
+
+    #endif
 
     //initalization is done
     m_isSetupFinished = true;

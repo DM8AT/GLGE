@@ -19,6 +19,9 @@
 //check for C++
 #if GLGE_CPP
 
+/**
+ * @brief store the overload for the GraphicMemoryArena for OpenGL
+ */
 class OGL4_6_MemoryArena : public GraphicMemoryArena
 {
 public:

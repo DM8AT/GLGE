@@ -15,6 +15,16 @@
 //include SDL2
 #include <SDL2/SDL.h>
 
+//check for Dear ImGui usage
+#if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+//include Dear ImGui
+#include "../GLGE3rdParty/imgui/imgui.h"
+#include "../GLGE3rdParty/imgui/backends/imgui_impl_sdl2.h"
+#include "../GLGE3rdParty/imgui/backends/imgui_impl_opengl3.h"
+
+#endif
+
 /**
  * @brief main thread for SDL, this has nothing to do with the 
  */
@@ -36,6 +46,19 @@ void SDL_Main_Thread(Logger* logger)
         //get all events
         while (SDL_PollEvent(&event))
         {
+            //check for ImGui support
+            #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+            //check if a context exists
+            //a context is created on initalization of ImGui
+            if (SDL_GL_GetCurrentContext())
+            {
+                //handle the event with ImGui
+                ImGui_ImplSDL2_ProcessEvent(&event);
+            }
+
+            #endif //ImGui section
+
             //store an effected window
             Window* effected = 0;
             //switch over the event type

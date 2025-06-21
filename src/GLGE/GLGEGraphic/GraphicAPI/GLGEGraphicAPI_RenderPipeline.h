@@ -57,6 +57,22 @@ typedef enum e_StageType {
      * @brief specify that the render stage should apply a post processing effect to a framebuffer. The data must contain the framebuffer and the post processing effect
      */
     RENDER_STAGE_POST_PROCESSING
+
+    //check if a binding to DearImGui should be included
+    #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+    /**
+     * @brief specify that this stage will handle the start of an ImGui frame
+     */
+    , RENDER_STAGE_DEAR_IMGUI_START_FRAME = 0xf01, 
+    /**
+     * @brief specify that this stage will execute a function that uses ImGui functions
+     */
+    RENDER_STAGE_DEAR_IMGUI_FUNCTION = 0xf02,
+    /**
+     * @brief specify that this stage will handle the end of an ImGui frame
+     */
+    RENDER_STAGE_DEAR_IMGUI_END_FRAME = 0xf03
+    #endif
 } StageType;
 
 //check if this is C++

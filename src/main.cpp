@@ -59,6 +59,39 @@ protected:
 
 };
 
+//store a structure that mapps the data the compute shader can access
+struct ComputeData
+{
+    //this stores the identifyer of the texture the compute shader will write to
+    int32_t writeTo;
+    //this stores the identifyer of the texture the compute shader will use for texturing
+    int32_t texture;
+};
+
+/**
+ * @brief this function creates a window to set the background color of the window
+ * 
+ * @param color a pointer to the color value used to set the framebuffer's clear color
+ */
+void imGuiBgColorPicker(void* color, uint64_t)
+{
+    //extract the color
+    Color* col = (Color*)color;
+
+    //start a ImGui window
+    ImGui::Begin("Background");
+    
+    //store the color
+    vec3 col_v = col->getColor(col->getInSpace(COLOR_SPACE_RGBA), COLOR_SPACE_RGBA);
+    //draw a color picker
+    ImGui::ColorPicker3("Color", (float*)&col_v);
+    //update the color
+    col->setTo(col_v.x, col_v.y, col_v.z, 1, COLOR_SPACE_RGBA);
+
+    //end the window
+    ImGui::End();
+}
+
 int main()
 {
     //create a new instance using the OpenGL 4.6 API
@@ -102,14 +135,8 @@ int main()
     //the texture will be used to texture an image
     Texture tex = Texture("assets/textures/cubeTexture.png", false, TEXTURE_PURPOSE_IMAGE, inst);
 
-    //store a structure that mapps the data the compute shader can access
-    struct ComputeData
-    {
-        //this stores the identifyer of the texture the compute shader will write to
-        int32_t writeTo;
-        //this stores the identifyer of the texture the compute shader will use for texturing
-        int32_t texture;
-    } computeData;
+    //store an instance of the compute data to ship to the GPU
+    ComputeData computeData;
     //load the identifyers of the textures to the data to ship it to the compute shader
     computeData.writeTo = fbuff.getColorAttatchment(0)->getIdentifyer();
     computeData.texture = tex.getIdentifyer();
@@ -136,6 +163,10 @@ int main()
 
     //store a list of all stages followed for rendering
     RenderStage stages[] = {
+        //the ImGui render stage is only available if GLGE was compiled using ImGui. Else, it won't do anything
+        RenderStage(RENDER_STAGE_DEAR_IMGUI_START_FRAME, RenderStage::Data(), 0,0,0),
+        //the clear stage fills a specific framebuffer with the clear color specified for it
+        //the color can be changed on the framebuffer object to take effect
         RenderStage(RENDER_STAGE_CLEAR, RenderStage::Data(ClearStageData(&fbuff)), 0,0,0),
         //Add a render stage that invoces the compute shader
         RenderStage(RENDER_STAGE_COMPUTE, RenderStage::Data(ComputeStageData(compute, 
@@ -148,6 +179,12 @@ int main()
         //the blit to window stage copies the content from a framebuffer to a window. 
         //also here, there are no user define functionalities used
         RenderStage(RENDER_STAGE_BLIT_TO_WINDOW, RenderStage::Data(BlitToWindowStageData(&fbuff, &win)), 0,0,0),
+        //the ImGui Function render stage executes a function that wrapps around a lot of ImGui functions
+        //it will also do nothing when GLGE was compiled without ImGui
+        RenderStage(RENDER_STAGE_DEAR_IMGUI_FUNCTION, RenderStage::Data(DearImGuiStageData(imGuiBgColorPicker, &clear, sizeof(clear))), 0,0,0),
+        //the ImGui End function ends the frame for ImGui. After that all ImGui functions will raise errors
+        //when GLGE was compiled without ImGui it won't do anything
+        RenderStage(RENDER_STAGE_DEAR_IMGUI_END_FRAME, RenderStage::Data(), 0,0,0),
         //the swap window stage is used to update the content of a window
         RenderStage(RENDER_STAGE_SWAP_WINDOW, RenderStage::Data(SwapWindowData(&win)), 0,0,0)
     };
@@ -172,18 +209,13 @@ int main()
     //this loop will run while the main window is open
     while (win.isOpen())
     {
-        //rotate the clear color of the framebuffer a bit around the hue weel
-        vec4 vals = clear.getValues();
-        vals.x += 0.001;
-        vals.x = fmodf(vals.x, 1.);
-        clear.setValues(vals);
         //register the changes made to the clear color
         fbuff.setClearColor(clear);
         //update the size of the window (change is discarded if the size dosn't change)
         fbuff.resize(win.getSize());
         //change the amount of executions to still compute the image correctly 
         //even if the size changed
-        pipeline.getStage(1).data.compute.executions = uvec3(
+        pipeline.getStage(2).data.compute.executions = uvec3(
             ceil(win.getSize().x / (float)instance.x),
             ceil(win.getSize().y / (float)instance.y),
             1);

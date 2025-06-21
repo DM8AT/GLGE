@@ -20,3 +20,6 @@ shader/glslc.sh
 # Ignore doxygen files
 doxygen
 Doxyfile
+
+# Ignore the file used to store ImGui windows
+imgui.ini

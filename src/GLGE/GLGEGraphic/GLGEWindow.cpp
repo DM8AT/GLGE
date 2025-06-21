@@ -113,11 +113,17 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
         flags = (SDL_WindowFlags)(flags | SDL_WINDOW_OPENGL);
 
         //setup OpenGL parameters
+        //disable all context flags
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
         //set the OpenGL version to 4.6
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
         //specify that the context is a core context
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        //specify some default parameters for the window's context
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         break;
     
     //add flags for Vulkan
