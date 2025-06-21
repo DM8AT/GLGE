@@ -1,0 +1,3 @@
+[submodule "src/GLGE/GLGE3rdParty/imgui"]
+	path = src/GLGE/GLGE3rdParty/imgui
+	url = https://github.com/ocornut/imgui.git
