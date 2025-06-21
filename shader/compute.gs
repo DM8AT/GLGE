@@ -48,10 +48,14 @@ void main()
 
     //calculate the distance of th pixel from the center
     float dist = distance(pos, vec2(0));
-    //set the color of the pixel to the color if it is inside the circle and to a background color
-    //if it isn't
-    vec4 col = (dist > 1) ? vec4(0) : texture(sampler2D(glge_Texture[tex]), pos.xy).rgba;
+    
+    //store the color to set
+    vec4 col = (dist > 0.99) ? vec4(0) : texture(sampler2D(glge_Texture[tex]), pos.xy).rgba;
 
-    //store the new color
-    imageStore(image2D(glge_Image[writeTo]), i, col);
+    //check if the value is inside the circle
+    if (dist <= 1.)
+    {
+        //draw a color from the texture to the image
+        imageStore(image2D(glge_Image[writeTo]), i, col);
+    }
 }

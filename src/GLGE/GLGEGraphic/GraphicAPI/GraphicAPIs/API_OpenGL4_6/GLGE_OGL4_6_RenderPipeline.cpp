@@ -128,14 +128,11 @@ void OGL4_6_RenderPipeline::ogl_blitToWindow(void* data, uint64_t) noexcept
 {
     //extract the framebuffer and window
     Framebuffer* fbuff = *((Framebuffer**)data);
+    OGL4_6_Framebuffer* gl_Fb = (OGL4_6_Framebuffer*)((fbuff)->getGraphicFramebuffer());
     Window* window = *((Window**)data + 1);
 
-    //bind the framebuffer as source and the window as destination
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, ((OGL4_6_Framebuffer*)fbuff->getGraphicFramebuffer())->getOpenGLFramebuffer());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
     //execute the blit command
-    glBlitFramebuffer(0,0, fbuff->getSize().x, fbuff->getSize().y, 0,0, window->getSize().x, window->getSize().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitNamedFramebuffer(gl_Fb->getOpenGLFramebuffer(), 0, 0,0, fbuff->getSize().x, fbuff->getSize().y, 0,0, window->getSize().x, window->getSize().y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     //free the data
     free(data);

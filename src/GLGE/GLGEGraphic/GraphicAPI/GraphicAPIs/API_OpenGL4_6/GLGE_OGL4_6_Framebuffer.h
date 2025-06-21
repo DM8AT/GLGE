@@ -37,8 +37,13 @@ public:
      * 
      * @param fbuff a pointer to the parent framebuffer
      */
-    OGL4_6_Framebuffer(Framebuffer* fbuff)
-     : GraphicFramebuffer(fbuff) {}
+    OGL4_6_Framebuffer(Framebuffer* fbuff, Instance* instance)
+     : GraphicFramebuffer(fbuff, instance) {}
+
+    /**
+     * @brief Destroy the OpenGL framebuffer
+     */
+    virtual ~OGL4_6_Framebuffer() {destroy();}
 
     /**
      * @brief a overloadable hook to create the framebuffer

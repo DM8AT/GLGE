@@ -77,7 +77,7 @@ void Framebuffer::create(Texture** colorAttatchments, uint64_t colorAttatchmentC
     switch (m_instance->getAPI())
     {
     case API_OPENGL_4_6:
-        m_fbuff = new OGL4_6_Framebuffer(this);
+        m_fbuff = new OGL4_6_Framebuffer(this, m_instance);
         break;
     
     default:
@@ -109,7 +109,7 @@ void Framebuffer::create(uint64_t colorAttatchmentCount, bool alpha, bool hdr, b
     switch (m_instance->getAPI())
     {
     case API_OPENGL_4_6:
-        m_fbuff = new OGL4_6_Framebuffer(this);
+        m_fbuff = new OGL4_6_Framebuffer(this, m_instance);
         break;
     
     default:
@@ -123,6 +123,9 @@ Framebuffer::~Framebuffer()
 {
     //check if the framebuffer still exists
     if (!m_fbuff) {return;}
+
+    //destroy the framebuffer
+    m_fbuff->destroy();
 
     //if it still exists, delete the graphic framebuffer
     delete m_fbuff;
@@ -162,4 +165,12 @@ std::ostream& operator<<(std::ostream& os, const Framebuffer& fbuff) noexcept
     }
     //add the ending and return
     return os << "}";
+}
+
+void Framebuffer::resize(const uvec2& newSize) noexcept
+{
+    //check if the framebuffer exists
+    if (!m_fbuff) {return;}
+    //update the size of the graphic framebuffer
+    m_fbuff->resize(newSize);
 }

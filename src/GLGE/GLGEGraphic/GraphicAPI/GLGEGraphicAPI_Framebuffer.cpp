@@ -19,6 +19,8 @@ void GraphicFramebuffer::destroy()
     //check if the framebuffer is set up
     if (!m_graphicInstance) {return;}
 
+    //detatch from the framebuffer
+    m_fbuff->m_fbuff = 0;
     //call the destroy hook
     onDestroy();
 

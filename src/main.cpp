@@ -136,6 +136,7 @@ int main()
 
     //store a list of all stages followed for rendering
     RenderStage stages[] = {
+        RenderStage(RENDER_STAGE_CLEAR, RenderStage::Data(ClearStageData(&fbuff)), 0,0,0),
         //Add a render stage that invoces the compute shader
         RenderStage(RENDER_STAGE_COMPUTE, RenderStage::Data(ComputeStageData(compute, 
             //the amount of invocations is divided by 8 because each invocation has 8 threads per axis
@@ -182,7 +183,7 @@ int main()
         fbuff.resize(win.getSize());
         //change the amount of executions to still compute the image correctly 
         //even if the size changed
-        pipeline.getStage(0).data.compute.executions = uvec3(
+        pipeline.getStage(1).data.compute.executions = uvec3(
             ceil(win.getSize().x / (float)instance.x),
             ceil(win.getSize().y / (float)instance.y),
             1);

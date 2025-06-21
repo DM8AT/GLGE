@@ -48,8 +48,13 @@ public:
      * 
      * @param framebuffer a pointer to the framebuffer this graphic framebuffer belongs to
      */
-    inline GraphicFramebuffer(Framebuffer* framebuffer)
-     : m_fbuff(framebuffer) {}
+    inline GraphicFramebuffer(Framebuffer* framebuffer, Instance* instance)
+     : GraphicInstAttatchable(instance->getGraphicInstance()), m_fbuff(framebuffer) {}
+
+    /**
+     * @brief Destroy the Graphic Framebuffer
+     */
+    virtual ~GraphicFramebuffer() {destroy();}
 
     /**
      * @brief destroy a framebuffer

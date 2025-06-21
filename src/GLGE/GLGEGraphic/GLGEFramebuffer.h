@@ -169,7 +169,12 @@ public:
      * 
      * @param newSize the new size of the framebuffer
      */
-    inline void resize(const uvec2& newSize) noexcept {m_fbuff->resize(newSize);}
+    void resize(const uvec2& newSize) noexcept;
+
+    /**
+     * @brief allow private access for the graphic framebuffer
+     */
+    friend class GraphicFramebuffer;
 
 protected:
 
