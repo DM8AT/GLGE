@@ -105,7 +105,7 @@ protected:
     uint64_t m_vertexCount = 0;
 
     /**
-     * @brief store all materials applied to the submesh mapped by theire type
+     * @brief store all materials applied to the submesh mapped by their type
      */
     std::unordered_map<uint64_t, MeshMaterial*> m_materials;
 
