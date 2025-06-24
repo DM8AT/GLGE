@@ -19,7 +19,7 @@
 //include windows
 #include "../GLGEGraphic/GLGEWindow.h"
 //include SDL2
-#include <SDL2/SDL.h>
+#include "../GLGEGraphic/GLGEGraphicShared.h"
 #endif //Graphic section
 
 //define the SDL2 limiter for the instance
@@ -56,6 +56,16 @@ Instance::Instance(std::string_view name, APIs api) : m_name(name), m_api(api)
 {
     //create the instance update thread
     m_updateThread = std::thread(instance_update_thread, this);
+
+    //check for graphic APIs
+    #if GLGE_INCLUDE_GRAPHICS
+
+    //add the keyboard layer
+    m_globalLayers.addLayer(new KeyboardEventLayer(this));
+    //add the mouse layer
+    m_globalLayers.addLayer(new MouseEventLayer(this));
+
+    #endif //end oc graphic specific section
 }
 
 Instance::~Instance() noexcept
@@ -144,7 +154,26 @@ void Instance::initGraphicAPI(Window* window)
         SDL_GL_MakeCurrent((SDL_Window*)window->getSDL2Window(), 0);
         //create a new OpenGL 4.6 instance
         m_gInstance = new OGL4_6_Instance(tmp, this);
+
+        //stop the function
+        return;
     }
+    
+    //check if the API is marked as supported
+    if (GLGE_C_FUNC(getAPISupport(m_api)))
+    {
+        //if it is supported, log that the API is supported but no instance was implemented (WHAT?)
+        m_logger->log("Graphic API is marked as supported, but no instance could be created. Are you working on an implementation?", MESSAGE_TYPE_FATAL_ERROR);
+        //make sure to empty the logger before closing
+        m_logger->printAll();
+        //exit code 1
+        exit(1);
+    }
+    //log that the API is simply not supported
+    m_logger->log("Using a not supported graphic API", MESSAGE_TYPE_FATAL_ERROR);
+    //make sure to empty the logger before closing
+    m_logger->printAll();    
+    exit(1);
 }
 
 void Instance::closeGraphiAPI()
@@ -163,6 +192,20 @@ void Instance::syncGraphicSetup() const noexcept
 {
     //synchronize with the graphic instance
     while (!m_gInstance->isSetupDone()) {std::this_thread::sleep_for(std::chrono::microseconds(10));}
+}
+
+
+
+Buffer* Instance::getTextureBuffer() const noexcept
+{
+    //return the texture buffer
+    return m_gInstance->getTextureBuffer();
+}
+
+Buffer* Instance::getImageBuffer() const noexcept
+{
+    //return the image buffer
+    return m_gInstance->getImageBuffer();
 }
 
 #endif //Graphic section

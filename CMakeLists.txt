@@ -99,6 +99,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGECore/Time/GLGELimiter.cpp
     ${GLGE_PATH}/GLGECore/Files/GLGEFile.cpp
     ${GLGE_PATH}/GLGECore/Files/GLGEPath.cpp
+    ${GLGE_PATH}/GLGECore/GLGELayers.cpp
     # Subelement : Geometry
     ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
     ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp
@@ -121,6 +122,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGERenderPipeline.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEBuffer.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGEKeyboard.cpp
     # Shader stuff
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp

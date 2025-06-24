@@ -15,6 +15,8 @@
 #include "GLGE_OGL4_6_Instance.h"
 //include textures
 #include "../../../GLGETexture.h"
+//include buffer
+#include "../../../GLGEBuffer.h"
 //include OpenGL
 #include <GL/glew.h>
 
@@ -111,7 +113,7 @@ void OGL4_6_Texture::createOgl(void* data, uint64_t)
     //create the handle from a texture
     texture->m_handle = glGetTextureHandleARB(texture->m_tex);
     //store the texture handle in the data
-    ((OGL4_6_Instance*)texture->m_graphicInstance)->getTextureArena()->update(texture->m_ptr, &texture->m_handle);
+    ((OGL4_6_Instance*)texture->m_graphicInstance)->getTextureBuffer()->getMemoryArena()->update(texture->m_ptr, &texture->m_handle);
 
     //only create an image handle if the format has an alpha channel (OpenGL dosn't like images without alpha)
     if (texture->m_hasAlpha)
@@ -119,7 +121,7 @@ void OGL4_6_Texture::createOgl(void* data, uint64_t)
         //get the new image handle
         texture->m_image = glGetImageHandleARB(texture->m_tex, 0, GL_FALSE, 0, format);
         //store the image handle in the data
-        ((OGL4_6_Instance*)texture->m_graphicInstance)->getImageArena()->update(texture->m_imgPtr, &texture->m_image);
+        ((OGL4_6_Instance*)texture->m_graphicInstance)->getImageBuffer()->getMemoryArena()->update(texture->m_imgPtr, &texture->m_image);
     }
     else
     {
@@ -134,18 +136,17 @@ void OGL4_6_Texture::deleteOgl(void* data, uint64_t)
     OGL4_6_Texture* texture = (OGL4_6_Texture*)data;
 
     //make sure to free the texture and image pointer
-    ((OGL4_6_Instance*)texture->m_graphicInstance)->getTextureArena()->release(texture->m_ptr);
-    ((OGL4_6_Instance*)texture->m_graphicInstance)->getImageArena()->release(texture->m_imgPtr);
+    ((OGL4_6_Instance*)texture->m_graphicInstance)->getTextureBuffer()->getMemoryArena()->release(texture->m_ptr);
+    ((OGL4_6_Instance*)texture->m_graphicInstance)->getImageBuffer()->getMemoryArena()->release(texture->m_imgPtr);
 
     //delete the texture
     glDeleteTextures(1, &texture->m_tex);
 }
 
-void OGL4_6_Texture::ogl_resize(void* data, uint64_t newSize) noexcept
+void OGL4_6_Texture::ogl_resize(void* data, uint64_t) noexcept
 {
     //extract the texture and size
     OGL4_6_Texture* tex = (OGL4_6_Texture*)data;
-    uvec2 oSize = *((uvec2*)&newSize);
 
     //compute the format
     //store the selected base format
@@ -184,12 +185,12 @@ void OGL4_6_Texture::ogl_resize(void* data, uint64_t newSize) noexcept
     //get the new texture handle
     tex->m_handle = glGetTextureHandleARB(tex->m_tex);
     //store the texture handle in the data
-    ((OGL4_6_Instance*)tex->m_graphicInstance)->getTextureArena()->update(tex->m_ptr, &tex->m_handle);
+    ((OGL4_6_Instance*)tex->m_graphicInstance)->getTextureBuffer()->getMemoryArena()->update(tex->m_ptr, &tex->m_handle);
 
     //get the new image handle
     tex->m_image = glGetImageHandleARB(tex->m_tex, 0, GL_FALSE, 0, format);
     //store the image handle in the data
-    ((OGL4_6_Instance*)tex->m_graphicInstance)->getImageArena()->update(tex->m_imgPtr, &tex->m_image);
+    ((OGL4_6_Instance*)tex->m_graphicInstance)->getImageBuffer()->getMemoryArena()->update(tex->m_imgPtr, &tex->m_image);
 
     //make sure to clean up the data
     free(dat);
@@ -211,8 +212,8 @@ void OGL4_6_Texture::onCreate()
 {
     OGL4_6_Instance* inst = (OGL4_6_Instance*)m_graphicInstance;
     //allocate a reagion of the texture and image buffer
-    m_ptr = inst->getTextureArena()->allocate(sizeof(m_handle));
-    m_imgPtr = inst->getImageArena()->allocate(sizeof(m_image));
+    m_ptr = inst->getTextureBuffer()->getMemoryArena()->allocate(sizeof(m_handle));
+    m_imgPtr = inst->getImageBuffer()->getMemoryArena()->allocate(sizeof(m_image));
     //get the command buffer
     GraphicCommandBuffer& cmdBuff = ((OGL4_6_Instance*)m_graphicInstance)->getDataBuffer();
     //start the command buffer recording

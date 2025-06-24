@@ -113,7 +113,17 @@ void Framebuffer::create(uint64_t colorAttatchmentCount, bool alpha, bool hdr, b
         break;
     
     default:
+    {
+        //log the missing framebuffer creation as a fatal error
+        std::stringstream stream;
+        stream << "No overload for API " << m_instance->getAPI() << " for a framebuffer was implemented";
+        m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
+        //make sure to print everything before closing
+        m_instance->getLogger()->printAll();
+        exit(1);
         break;
+    }
+    
     }
     //create the whole framebuffer
     m_fbuff->onCreate();
@@ -165,12 +175,4 @@ std::ostream& operator<<(std::ostream& os, const Framebuffer& fbuff) noexcept
     }
     //add the ending and return
     return os << "}";
-}
-
-void Framebuffer::resize(const uvec2& newSize) noexcept
-{
-    //check if the framebuffer exists
-    if (!m_fbuff) {return;}
-    //update the size of the graphic framebuffer
-    m_fbuff->resize(newSize);
 }

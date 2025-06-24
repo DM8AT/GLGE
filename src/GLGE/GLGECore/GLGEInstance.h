@@ -23,6 +23,8 @@
 #include "Time/GLGETime.h"
 //include limiter
 #include "Time/GLGELimiter.h"
+//include layers
+#include "GLGELayers.h"
 
 //check if this is C++
 #if GLGE_CPP
@@ -33,6 +35,14 @@
 class GraphicInstance;
 //say that windows will be defined later
 class Window;
+//say that buffers will be defined later
+class Buffer;
+
+//include keyboards
+#include "../GLGEGraphic/GLGEKeyboard.h"
+//include mouse
+#include "../GLGEGraphic/GLGEMouse.h"
+
 #endif //Graphic API include
 
 /**
@@ -49,8 +59,14 @@ public:
 
     /**
      * @brief Construct a new Instance
+     * @warning forbidden, no name nor an API is defined
      */
-    Instance() = default;
+    Instance() = delete;
+
+    /**
+     * @brief forbid the copy operator, only one instance of teh instance may exist at any time
+     */
+    void operator=(Instance&) = delete;
 
     /**
      * @brief Construct a new Instance
@@ -153,6 +169,23 @@ public:
      */
     inline Limiter& updateLimiter() noexcept {return m_updateLimiter;}
 
+    /**
+     * @brief add a layer to the layer stack that is shared between windows
+     * 
+     * @param layer a pointer to the layer to add to the stack
+     */
+    inline void addLayer(Layer* layer) noexcept {m_globalLayers.addLayer(layer);}
+
+    /**
+     * @brief send an event through the shared layer stack untill it is handled or reaches the bottom
+     * 
+     * @param event a pointer to the event to send
+     * 
+     * @return true : the event was handled
+     * @return false : the event was not handled
+     */
+    inline bool handleEvent(Event* event) noexcept {return m_globalLayers.sendEvent(event);}
+
     //check if graphics should be included
     #if GLGE_INCLUDE_GRAPHICS
 
@@ -194,6 +227,56 @@ public:
      */
     static inline Limiter& getSDLLimiter() noexcept {return m_sdlLimiter;}
 
+    /**
+     * @brief Get the Texture Buffer
+     * @warning the format of the textures is API-dependend. 
+     * 
+     * @return Buffer* a buffer containing references to all instances
+     */
+    Buffer* getTextureBuffer() const noexcept;
+
+    /**
+     * @brief Get the Image Buffer
+     * @warning the format of the textures is API-dependend. 
+     * 
+     * @return Buffer* a buffer containing references to all instances
+     */
+    Buffer* getImageBuffer() const noexcept;
+
+    /**
+     * @brief Get the keyboard of the instance
+     * 
+     * @return Keyboard& a reference to the keyboard that stores all keys pressed for the instance
+     */
+    inline Keyboard& getKeys() noexcept {return m_keyboard;}
+
+    /**
+     * @brief Get the keyboard with all keys that changed
+     * 
+     * @return Keyboard& a reference to the keyboard with all changed keys
+     */
+    inline Keyboard& getChangedKeys() noexcept {return m_toggled;}
+
+    //add the keyboard layer as a friend class
+    friend class KeyboardEventLayer;
+
+    /**
+     * @brief Get the mouse state of the instance
+     * 
+     * @return Mouse& a reference to the mouse state stored by the instance
+     */
+    inline Mouse& getMouse() noexcept {return m_mouse;}
+
+    /**
+     * @brief Get how much the mouse was changed
+     * 
+     * @return Mouse& a reference to a mouse that stores the change in the mouse data
+     */
+    inline Mouse& getMouseChange() noexcept {return m_deltaMouse;}
+
+    //add the mouse layer as a friend class
+    friend class MouseEventLayer;
+
     #endif //Graphic only section
 
 private:
@@ -232,12 +315,39 @@ private:
      */
     std::vector<InstAttachableClass*> m_elements;
 
+    /**
+     * @brief store a layer stack that shares events between windows
+     */
+    LayerStack m_globalLayers;
+
     //check if graphics should be included
     #if GLGE_INCLUDE_GRAPHICS
     /**
      * @brief store a pointer to the graphic instance
      */
     GraphicInstance* m_gInstance = 0;
+
+    /**
+     * @brief store a global keyboard that stores all key states for the instance
+     */
+    Keyboard m_keyboard;
+    /**
+     * @brief store a global keyboard that stores all toggled key states for the instance
+     * @warning a value here is true if it CHANGED, NOT if it CHANGED TO TRUE
+     */
+    Keyboard m_toggled;
+
+    /**
+     * @brief store the current mouse state
+     */
+    Mouse m_mouse;
+    /**
+     * @brief store the difference in mouse state
+     * 
+     * Buttons : stores if the buttons where toggled
+     * position : stores how much the mouse was moved
+     */
+    Mouse m_deltaMouse;
 
     /**
      * @brief store the SDL limiter

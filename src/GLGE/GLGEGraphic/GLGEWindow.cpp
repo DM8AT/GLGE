@@ -40,6 +40,8 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     m_settings = settings;
     //add this window to the instance
     m_instance->addElement(this);
+    //add the default layer stack to the window
+    m_layerStack.addLayer(new WindowEventLayer(this));
 
     //print some debug info
     GLGE_DEBUG_WRAPPER(
@@ -168,7 +170,17 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
         break;
     
     default:
+    {
+        //log the missing window creation as a fatal error
+        std::stringstream stream;
+        stream << "No overload for API " << m_instance->getAPI() << " for a window was implemented";
+        m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
+        //make sure to print everything before closing
+        m_instance->getLogger()->printAll();
+        exit(1);
         break;
+    }
+
     }
 
     //set the default window icon
@@ -279,4 +291,58 @@ void Window::setWindowIcon(Texture* icon)
 
     //set the icon
     SDL_SetWindowIcon((SDL_Window*)m_window, (SDL_Surface*)m_icon->getGraphicTexture());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool WindowEventLayer::onEvent(Event* event) noexcept
+{
+    //don't handle the event if it is not a window event
+    if (event->getIdentifyer().library != GLGE_EVENT_IDENTIFYER_WINDOW) {return false;}
+
+    //check for SDL events
+    if (event->getIdentifyer().event == GLGE_WINDOW_EVENT_SDL_EVENT)
+    {
+        //convert the event to a window event
+        WindowEvent* wEv = (WindowEvent*)event;
+        
+        //switch over the window event types
+        switch (wEv->event.window.event)
+        {
+        //check for closing
+        case SDL_WINDOWEVENT_CLOSE:
+            m_window->setQueuedClosing(true);
+            break;
+
+        //check for resizing
+        case SDL_WINDOWEVENT_RESIZED:
+            m_window->sdl_HandleResize(uvec2(wEv->event.window.data1, wEv->event.window.data2));
+            break;
+
+        //check for window moving
+        case SDL_WINDOWEVENT_MOVED:
+            m_window->m_pos = uvec2(wEv->event.window.data1, wEv->event.window.data2);
+            break;
+        
+        default:
+            break;
+        }
+
+        //event was handled successfully
+        return true;
+    }
+
+    //the event was not handled
+    return false;
 }

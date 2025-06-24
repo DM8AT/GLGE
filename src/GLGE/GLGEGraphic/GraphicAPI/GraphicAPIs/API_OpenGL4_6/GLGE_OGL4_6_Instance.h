@@ -89,20 +89,6 @@ public:
      */
     inline OGL4_6_CommandBuffer& getDataBuffer() noexcept {return m_dataBuffer;}
 
-    /**
-     * @brief Get the memory arena that contains all textures
-     * 
-     * @return OGL4_6_MemoryArena* a pointer to the memory arena that contains all textures
-     */
-    inline OGL4_6_MemoryArena* getTextureArena() noexcept {return m_textures;}
-
-    /**
-     * @brief Get the memory arena that contains all images
-     * 
-     * @return OGL4_6_MemoryArena* a pointer to the memory arena that contains all images
-     */
-    inline OGL4_6_MemoryArena* getImageArena() noexcept {return m_images;}
-
 protected:
 
     /**
@@ -118,14 +104,6 @@ protected:
      * @brief store the data command buffer
      */
     OGL4_6_CommandBuffer m_dataBuffer;
-    /**
-     * @brief store a list of all available textures (using bindless textures)
-     */
-    OGL4_6_MemoryArena* m_textures = 0;
-    /**
-     * @brief store a list of all level 0 images
-     */
-    OGL4_6_MemoryArena* m_images = 0;
 
     /**
      * @brief store that GLEW is not initalized

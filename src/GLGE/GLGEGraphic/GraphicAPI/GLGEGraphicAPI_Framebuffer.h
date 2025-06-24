@@ -95,9 +95,10 @@ public:
      * @brief change the size of the framebuffer
      * @warning this will update the size of all the textures the framebuffer owns
      * 
+     * @param cmdBuff a pointer to the command buffer the resize will be queued in
      * @param newSize the new size for the framebuffer
      */
-    virtual void resize(const uvec2&) noexcept {}
+    virtual void resize(GraphicCommandBuffer*, const uvec2&) noexcept {}
 
 protected:
 

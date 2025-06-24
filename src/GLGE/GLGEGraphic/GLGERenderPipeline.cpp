@@ -67,8 +67,17 @@ RenderPipeline::RenderPipeline(RenderStage* stages, uint64_t stageCount, bool _s
     
     //default: use the base class
     default:
+    {
+        //log the missing render pipeline implementaion as a cricial warning
+        std::stringstream stream;
+        stream << "No overload for API " << m_instance->getAPI() << " for a render pipeline was implemented";
+        m_instance->log(stream, MESSAGE_TYPE_CRITICAL_WARNING);
+
+        //fall back to the base class
         m_renderPipeline = new GraphicRenderPipeline(this);
         break;
+    }
+    
     }
 
     //Initalize the render pipeline

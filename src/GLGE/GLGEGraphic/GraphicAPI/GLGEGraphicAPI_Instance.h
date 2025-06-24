@@ -25,6 +25,8 @@
 class GraphicInstAttatchable;
 //graphic command buffers will be defined later
 class GraphicCommandBuffer;
+//buffer will be defined later
+class Buffer;
 
 /**
  * @brief manage the lifetime of all graphic dependend objects
@@ -126,6 +128,22 @@ public:
      */
     inline std::vector<GraphicCommandBuffer*>& getBuffers() noexcept {return m_buffers;}
 
+    /**
+     * @brief Get the Texture Buffer
+     * @warning the format of the textures is API-dependend. 
+     * 
+     * @return Buffer* a buffer containing references to all instances
+     */
+    inline Buffer* getTextureBuffer() const noexcept {return m_textures;}
+
+    /**
+     * @brief Get the Image Buffer
+     * @warning the format of the textures is API-dependend. 
+     * 
+     * @return Buffer* a buffer containing references to all instances
+     */
+    inline Buffer* getImageBuffer() const noexcept {return m_images;}
+
 protected:
 
     /**
@@ -155,6 +173,15 @@ protected:
      */
     std::vector<GraphicCommandBuffer*> m_buffers;
 
+    /**
+     * @brief store all textures for the instance
+     */
+    Buffer* m_textures;
+    /**
+     * @brief store all images for the instance
+     * An image is a single layer of an image (as example a single mip-map layer)
+     */
+    Buffer* m_images;
 };
 
 /**

@@ -34,6 +34,10 @@ typedef enum e_StageType {
      */
     RENDER_STAGE_BLIT,
     /**
+     * @brief specify that the render stage should change the size of a framebuffer. The data must contain a pointer to the framebuffer to change the size and the size in pixels to change to. 
+     */
+    RENDER_STAGE_RESIZE_FRAMEBUFFER,
+    /**
      * @brief specify that the render stage should copy a framebuffer to a window. The data must contain first a framebuffer to use as a source and then a window to use as a destination. 
      */
     RENDER_STAGE_BLIT_TO_WINDOW,

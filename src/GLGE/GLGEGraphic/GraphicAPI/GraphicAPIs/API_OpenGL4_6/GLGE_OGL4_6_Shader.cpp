@@ -235,15 +235,6 @@ void OGL4_6_Shader::attatchShader(void* data, uint64_t) noexcept
     //extract the shader
     OGL4_6_Shader* shader = (OGL4_6_Shader*)data;
 
-    //check if textures exist
-    if (shader->m_shader->getTextureCount() > 0)
-    {
-        //bind the texture buffer to unit 0
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ((OGL4_6_Instance*)shader->m_shader->getInstance()->getGraphicInstance())->getTextureArena()->getBuffer());
-        //and the image buffer to unit 1
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ((OGL4_6_Instance*)shader->m_shader->getInstance()->getGraphicInstance())->getImageArena()->getBuffer());
-    }
-
     //iterate over all (potential) textures
     for (auto it = shader->m_shader->getTextures().begin(); it != shader->m_shader->getTextures().end(); ++it)
     {

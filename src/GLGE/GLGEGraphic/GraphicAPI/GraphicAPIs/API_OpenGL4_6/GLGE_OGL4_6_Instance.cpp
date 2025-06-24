@@ -17,6 +17,8 @@
 //include windows
 #include "GLGE_OGL4_6_Window.h"
 #include "../../../GLGEWindow.h"
+//include buffer
+#include "../../../GLGEBuffer.h"
 
 //include OpenGL
 #include <GL/glew.h>
@@ -44,7 +46,7 @@
  * @param message the error message
  * @param instance a pointer to the instance the call came from
  */
-static void oglMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* instance)
+static void oglMessageCallback(GLenum source, GLenum type, GLuint, GLenum severity, GLsizei, const GLchar* message, const void* instance)
 {
     //extract the instance
     OGL4_6_Instance* inst = (OGL4_6_Instance*)instance;
@@ -140,13 +142,13 @@ void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
     addCommandBuffer(&m_dataBuffer);
 
     //create the texture buffer
-    m_textures = new OGL4_6_MemoryArena(0, true, MEMORY_USAGE_READ_WRITE, *m_instance);
-    m_textures->onCreate();
-    m_textures->setAPI(true);
+    m_textures = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_textures->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_textures->getMemoryArena())->setAPI(true);
     //create the image buffer
-    m_images = new OGL4_6_MemoryArena(0, true, MEMORY_USAGE_READ_WRITE, *m_instance);
-    m_images->onCreate();
-    m_images->setAPI(true);
+    m_images = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_images->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_images->getMemoryArena())->setAPI(true);
 
     //check if Dear ImGui should be used
     #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI

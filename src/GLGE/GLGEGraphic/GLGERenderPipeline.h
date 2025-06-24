@@ -50,6 +50,28 @@ typedef struct s_ClearStageData {
 } ClearStageData;
 
 /**
+ * @brief store the data that is used to change the size of a framebuffer
+ */
+typedef struct s_ResizeFramebufferData {
+    /**
+     * @brief store a pointer to the framebuffer to change the size of
+     */
+    Framebuffer_t* framebuffer;
+    /**
+     * @brief store the new size for the framebuffer
+     */
+    uvec2 size;
+
+    //check for C++ to create a constructor
+    #if GLGE_CPP
+    s_ResizeFramebufferData(Framebuffer* _fbuff, const uvec2& _size)
+     : framebuffer((Framebuffer_t*)_fbuff), size(_size)
+    {}
+    #endif //end of C++ section
+
+} ResizeFramebufferData;
+
+/**
  * @brief store the data for a blit stage
  */
 typedef struct s_BlitStageData {
@@ -277,6 +299,8 @@ typedef struct s_RenderStage {
     union Data {
         //store the data for a clear stage
         ClearStageData clear;
+        //store the data to change a framebuffer's size
+        ResizeFramebufferData resizeFramebuffer;
         //store the data for a blit stage
         BlitStageData blit;
         //store the data for a stage that copys to a window
@@ -307,6 +331,13 @@ typedef struct s_RenderStage {
          * @param _clear a constant reference to the clear data to store
          */
         Data(const ClearStageData& _clear) : clear(_clear) {}
+
+        /**
+         * @brief Construct some new data
+         * 
+         * @param _changeFbuffSize a constant reference to the data to change a framebuffer's size
+         */
+        Data(const ResizeFramebufferData& _changeFbuffSize) : resizeFramebuffer(_changeFbuffSize) {}
 
         /**
          * @brief Construct some new data

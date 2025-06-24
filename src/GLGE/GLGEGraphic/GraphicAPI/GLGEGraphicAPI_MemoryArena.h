@@ -206,6 +206,22 @@ public:
      */
     virtual void onUnbind(GraphicCommandBuffer*) noexcept {}
 
+    /**
+     * @brief Change if the memory arena can be resized
+     * @warning only use if you know what you're doing
+     * 
+     * @param resizabe true : the memory arena will resize automatically | false : the arena won't resize automatically
+     */
+    inline void setResizable(bool resizabe) noexcept {m_allowResize = resizabe;}
+
+    /**
+     * @brief get if the memory arena resizes automatically
+     * 
+     * @return true : the memory arena will resize automatically
+     * @return false : the arena won't resize automatically
+     */
+    inline bool isResizable()const noexcept {return m_allowResize;}
+
 protected:
 
     /**

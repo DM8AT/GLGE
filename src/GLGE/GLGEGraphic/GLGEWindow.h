@@ -23,6 +23,8 @@
 #include "GLGEColor.h"
 //include textures
 #include "GLGETexture.h"
+//include layers
+#include "../GLGECore/GLGELayers.h"
 
 /**
  * @brief specify some settings for a window
@@ -214,6 +216,27 @@ public:
      */
     void setWindowIcon(Texture* icon);
 
+    /**
+     * @brief add a layer to the window's layer stack
+     * @warning the layer stack will own the new layer
+     * 
+     * @param layer a pointer to the layer to add
+     */
+    inline void addLayer(Layer* layer) noexcept {m_layerStack.addLayer(layer);}
+
+    /**
+     * @brief send an event through the window's layer stack untill it is handled or reaches the bottom
+     * 
+     * @param event a pointer to the event to send
+     * 
+     * @return true : the event was handled
+     * @return false : the event was not handled
+     */
+    inline bool handleEvent(Event* event) noexcept {return m_layerStack.sendEvent(event);}
+
+    //add the window event layer as a friend class
+    friend class WindowEventLayer;
+
 protected:
 
     /**
@@ -256,6 +279,50 @@ protected:
      * @brief store if the icon is custom
      */
     bool m_customIcon = false;
+
+    /**
+     * @brief store the layer stack for the window
+     */
+    LayerStack m_layerStack;
+};
+
+/**
+ * @brief the default layer all windows use to handle window events
+ */
+class WindowEventLayer : public Layer
+{
+public:
+
+    /**
+     * @brief Construct a new Window Event Layer
+     * @warning explicitly deleted
+     */
+    WindowEventLayer() = delete;
+
+    /**
+     * @brief Construct a new Window Event Layer
+     * 
+     * @param window a pointer to the parent window
+     */
+    WindowEventLayer(Window* window) : m_window(window) {}
+
+    /**
+     * @brief handle an event
+     * 
+     * @param event a pointer to the event to handle
+     * 
+     * @return true : the event was handled successfully
+     * @return false : the event was not handled
+     */
+    virtual bool onEvent(Event* event) noexcept override;
+
+protected:
+
+    /**
+     * @brief store a pointer to the parent window
+     */
+    Window* m_window = 0;
+
 };
 
 //start a C-Section

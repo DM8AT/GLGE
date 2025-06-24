@@ -5,7 +5,7 @@
 build/*
 
 # ignore vscode
-.vscode/*
+.vscode/settings.json
 
 # ignore compiled shaders
 *.spv

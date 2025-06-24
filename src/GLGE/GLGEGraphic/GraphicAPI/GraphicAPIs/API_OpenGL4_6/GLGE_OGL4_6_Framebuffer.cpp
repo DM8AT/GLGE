@@ -49,17 +49,13 @@ void OGL4_6_Framebuffer::clear(GraphicCommandBuffer* cmdBuff)
     cmdBuff->add(0, (void*)ogl_clear, this, sizeof(this));
 }
 
-void OGL4_6_Framebuffer::resize(const uvec2& newSize) noexcept
+void OGL4_6_Framebuffer::resize(GraphicCommandBuffer* cmdBuff, const uvec2& newSize) noexcept
 {
     //if the size is the current size, stop
     if ((newSize.x == m_fbuff->getSize().x) && (newSize.y == m_fbuff->getSize().y)) {return;}
-    //also stop if the graphic instance is deleted
-    if (!m_graphicInstance) {return;}
-    //get the command buffer
-    GraphicCommandBuffer& cmdBuff = ((OGL4_6_Instance*)m_graphicInstance)->getDataBuffer();
 
     //queue the resizing of the resizing
-    cmdBuff.add(0, (void*)ogl_resize, this, *((uint64_t*)&newSize));
+    cmdBuff->add(0, (void*)ogl_resize, this, *((uint64_t*)&newSize));
 }
 
 void OGL4_6_Framebuffer::ogl_create(OGL4_6_Framebuffer* fbuff, uint64_t) noexcept

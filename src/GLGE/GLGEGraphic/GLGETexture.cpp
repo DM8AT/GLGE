@@ -75,6 +75,16 @@ void Texture::create(std::string_view file, TexturePurpose purpose, bool alpha)
         //store the new texture
         m_texture = new OGL4_6_Texture(this, conv->pixels, false, alpha, m_instance->getGraphicInstance());
     }
+    else
+    {
+        //log the missing texture creation as a fatal error
+        std::stringstream stream;
+        stream << "No overload for API " << m_instance->getAPI() << " for a texture was implemented";
+        m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
+        //make sure to print everything before closing
+        m_instance->getLogger()->printAll();
+        exit(1);
+    }
 
     //clean up
     SDL_FreeSurface(img);
@@ -98,10 +108,25 @@ void Texture::create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool
     }
     //just create the texture
     //switch over the graphic API
-    if (m_instance->getAPI() == API_OPENGL_4_6)
+    switch (m_instance->getAPI())
     {
+    case API_OPENGL_4_6:
         //store the new texture
         m_texture = new OGL4_6_Texture(this, isHDR, alpha, m_instance->getGraphicInstance());
+        break;
+    
+    default:
+    {
+        //log the missing texture creation as a fatal error
+        std::stringstream stream;
+        stream << "No overload for API " << m_instance->getAPI() << " for a texture was implemented";
+        m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
+        //make sure to print everything before closing
+        m_instance->getLogger()->printAll();
+        exit(1);
+        break;
+    }
+
     }
 }
 
@@ -123,6 +148,16 @@ void Texture::create(void* data, TexturePurpose purpose, const uvec2& size, bool
     {
         //store the texture
         m_texture = new OGL4_6_Texture(this, data, isHDR, alpha, m_instance->getGraphicInstance());
+    }
+    else
+    {
+        //log the missing texture creation as a fatal error
+        std::stringstream stream;
+        stream << "No overload for API " << m_instance->getAPI() << " for a texture was implemented";
+        m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
+        //make sure to print everything before closing
+        m_instance->getLogger()->printAll();
+        exit(1);
     }
 }
 

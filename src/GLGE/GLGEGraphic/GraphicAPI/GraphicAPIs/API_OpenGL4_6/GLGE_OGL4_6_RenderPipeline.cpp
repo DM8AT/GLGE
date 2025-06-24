@@ -80,6 +80,12 @@ void OGL4_6_RenderPipeline::onStageExecution(uint64_t stageIndex) noexcept
         ((Framebuffer*)stage.data.clear.framebuffer)->getGraphicFramebuffer()->clear(m_cmdBuff);
         break;
 
+    //handle framebuffer resizing
+    case RENDER_STAGE_RESIZE_FRAMEBUFFER:
+        //queue the size change for the framebuffer
+        ((Framebuffer*)stage.data.resizeFramebuffer.framebuffer)->getGraphicFramebuffer()->resize(m_cmdBuff, stage.data.resizeFramebuffer.size);
+        break;
+
     //handle a blit stage
     case RENDER_STAGE_BLIT:
         /* code */

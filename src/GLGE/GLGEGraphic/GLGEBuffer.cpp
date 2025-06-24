@@ -48,7 +48,17 @@ Buffer::Buffer(void* data, uint64_t size, MemoryUsage usage, Instance& instance)
         break;
     
     default:
+    {
+        //log the missing buffer creation as a fatal error
+        std::stringstream stream;
+        stream << "No overload for API " << m_instance->getAPI() << " for a buffer memory arena was implemented";
+        m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
+        //make sure to print everything before closing
+        m_instance->getLogger()->printAll();
+        exit(1);
         break;
+    }
+    
     }
 
     //check if the arena was successfully created

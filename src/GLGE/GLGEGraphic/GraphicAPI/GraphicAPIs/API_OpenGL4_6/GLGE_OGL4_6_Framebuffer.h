@@ -36,6 +36,7 @@ public:
      * @brief Construct a new framebuffer for OpenGL 4.6
      * 
      * @param fbuff a pointer to the parent framebuffer
+     * @param instance a pointer to the instance to wich graphic's instance the framebuffer will belong
      */
     OGL4_6_Framebuffer(Framebuffer* fbuff, Instance* instance)
      : GraphicFramebuffer(fbuff, instance) {}
@@ -72,9 +73,10 @@ public:
      * @brief change the size of the framebuffer
      * @warning this will update the size of all the textures the framebuffer owns
      * 
+     * @param cmdBuff a pointer to the command buffer the resize will be queued in
      * @param newSize the new size for the framebuffer
      */
-    virtual void resize(const uvec2& newSize) noexcept;
+    virtual void resize(GraphicCommandBuffer* cmdBuff, const uvec2& newSize) noexcept override;
 
 protected:
 

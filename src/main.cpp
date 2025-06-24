@@ -92,6 +92,36 @@ void imGuiBgColorPicker(void* color, uint64_t)
     ImGui::End();
 }
 
+/**
+ * @brief store some data that is used to resize the framebuffer
+ */
+struct FramebufferResizeData
+{
+    /**
+     * @brief store a pointer to the render pipeline that resizes the framebuffer
+     */
+    RenderPipeline* pipeline;
+    /**
+     * @brief store the identifyer of the stage that changes the framebuffer's size
+     */
+    uint64_t stageID;
+    /**
+     * @brief store a pointer to the window the framebuffer should fit into
+     */
+    Window* window;
+};
+
+/**
+ * @brief this function is used to calculate the new size for the main framebuffer to keep is as close as pissible to the actual window size
+ * 
+ * @param data a pointer to some data storing the data needed for the resizing of the framebuffer
+ */
+void calculateFramebufferSize(FramebufferResizeData* data)
+{
+    //set the new stage size
+    data->pipeline->getStage(data->stageID).data.resizeFramebuffer.size = data->window->getSize();
+}
+
 int main()
 {
     //create a new instance using the OpenGL 4.6 API
@@ -152,19 +182,32 @@ int main()
             //this will be used to texture the circle
             {"Texture", &tex}
         }, {
+            //give the shader access to all textures
+            //this must be done manually since the wanted position of the buffer
+            //responsible for passing texture data can't be guessed. 
+            //here, it will be bound to unit 0
+            {"GLGE_TextureBuffer", BufferShaderBinding(0, inst.getTextureBuffer())},
+            //give the shader access to all images
+            //this way that compute shader can write to the images, but can't write to textures
+            //here, the texture buffer will bind to unit 1
+            {"GLGE_ImageBuffer", BufferShaderBinding(1, inst.getImageBuffer())},
             //specify the buffer the shader can access
-            //bind it to unit 0 (BE CAREFULL, HERE IT IS A UNIFORM BUFFER
-            //                   BUT SHADER STORAGE BUFFER 0 AND 1 ARE 
-            //                   ALLREADY IMPLICITLY USED)
+            //bind it to unit 0
             {"Textures", BufferShaderBinding(0, &cmpData)}
         }, inst);
     //store the amount of instances per execution for the compute shader
     uvec3 instance(32,32,1);
 
+    //store the data that is used to change the framebuffer's size
+    FramebufferResizeData fbuffResizeData;
+
     //store a list of all stages followed for rendering
     RenderStage stages[] = {
         //the ImGui render stage is only available if GLGE was compiled using ImGui. Else, it won't do anything
         RenderStage(RENDER_STAGE_DEAR_IMGUI_START_FRAME, RenderStage::Data(), 0,0,0),
+        //this render stage is responsible for updating the framebuffer's size
+        RenderStage(RENDER_STAGE_RESIZE_FRAMEBUFFER, RenderStage::Data(ResizeFramebufferData(&fbuff, win.getSize())), 
+                    (void*)&fbuffResizeData, (void (*)(void*))calculateFramebufferSize, 0),
         //the clear stage fills a specific framebuffer with the clear color specified for it
         //the color can be changed on the framebuffer object to take effect
         RenderStage(RENDER_STAGE_CLEAR, RenderStage::Data(ClearStageData(&fbuff)), 0,0,0),
@@ -191,10 +234,20 @@ int main()
     //create a new render pipeline using the stages specified above. 
     //the render pipeline will iterate over all stages in a different thread and record a command buffer
     //according to the stages. The stages are iterated over from index 0 to n, where n is the length of the stage
-    //array minus 1. Here it is spezified that the render pipeline starts imediatly, but it may also be defferd to 
-    //start at a user spezified time point. 
+    //array minus 1. Here it is spezified that the render pipeline does not start immediatly, instead
+    //it should start execution at a user-specified time point
     //the render pipeline is also registerd to the instance. 
-    RenderPipeline pipeline = RenderPipeline(stages, sizeof(stages)/sizeof(*stages), true, inst);
+    RenderPipeline pipeline = RenderPipeline(stages, sizeof(stages)/sizeof(*stages), false, inst);
+
+    //populate the data for the buffer resizing
+    //because that relies on the render pipeline existing, it
+    //can't be populated when it is created.
+    fbuffResizeData.pipeline = &pipeline;
+    fbuffResizeData.stageID = 1;
+    fbuffResizeData.window = &win;
+
+    //now, after all data is populated, the render pipeline can be started
+    pipeline.start();
 
     //create a new limiter
     //a limiter is used to limit the iteration rate of a loop. They are mostly used to 
@@ -211,11 +264,9 @@ int main()
     {
         //register the changes made to the clear color
         fbuff.setClearColor(clear);
-        //update the size of the window (change is discarded if the size dosn't change)
-        fbuff.resize(win.getSize());
         //change the amount of executions to still compute the image correctly 
         //even if the size changed
-        pipeline.getStage(2).data.compute.executions = uvec3(
+        pipeline.getStage(3).data.compute.executions = uvec3(
             ceil(win.getSize().x / (float)instance.x),
             ceil(win.getSize().y / (float)instance.y),
             1);
