@@ -20,7 +20,6 @@
 static std::string_view apiLookupTable[] = {
     "API_NONE",
     "API_OPENGL_4_6",
-    "API_OPENGL_4_6",
     "API_OPENGL_4_6_RT",
     "API_VULKAN_1_2_DEFAULT",
     "API_VULKAN_1_2_INDIRECT",
