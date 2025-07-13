@@ -53,7 +53,7 @@ bool ShaderExt_Include::onFind(std::string& source, ShaderProcessor* processor, 
     bool package = (source[start] == '<');
 
     //extract the name of the element to include
-    std::string_view toInclude = source.substr(start+1, end-start - 1);
+    std::string toInclude = source.substr(start+1, end-start - 1);
 
     //erase the line
     source.erase(elementIdx, (end-elementIdx) + 1);

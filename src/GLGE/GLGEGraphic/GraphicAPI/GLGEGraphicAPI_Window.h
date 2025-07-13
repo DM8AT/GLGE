@@ -87,13 +87,6 @@ public:
     virtual void swap(GraphicCommandBuffer*) {}
 
     /**
-     * @brief Get the Framebuffer of the window
-     * 
-     * @return GraphicFramebuffer* a pointer to the framebuffer of the window
-     */
-    inline GraphicFramebuffer* getFramebuffer() noexcept {return m_framebuffer;}
-
-    /**
      * @brief Get the Window the graphic window belongs to
      * 
      * @return Window* a pointer to the parent window
@@ -125,10 +118,6 @@ protected:
      */
     virtual void onDestroy() {}
 
-    /**
-     * @brief store the framebuffer of the window
-     */
-    GraphicFramebuffer* m_framebuffer = 0;
     /**
      * @brief store the parent window
      */

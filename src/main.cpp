@@ -198,6 +198,41 @@ int main()
     //store the amount of instances per execution for the compute shader
     uvec3 instance(32,32,1);
 
+    struct MaterialData
+    {
+        vec4 color = vec4(0.9,0.9,0.9,1);
+        float roughness = 0.8;
+        float metallic = 0;
+
+        MaterialData() = default;
+    } matData;
+
+    RenderMaterial mat = RenderMaterial(sizeof(MaterialData), inst);
+    Shader default3DShader(Path("shader/default.gs"), &shaderProc, {}, {
+        {"GLGE_TextureBuffer", BufferShaderBinding(0, inst.getTextureBuffer())},
+        {"GLGE_ImageBuffer", BufferShaderBinding(1, inst.getImageBuffer())},
+        {"GLGE_MaterialBuffer", BufferShaderBinding(2, &mat.getBuffer())},
+        {"GLGE_Vertices", BufferShaderBinding(3, &mat.getVertexBuffer())},
+        {"GLGE_Indices", BufferShaderBinding(4, &mat.getIndexBuffer())}
+    }, inst);
+    mat.setShader(&default3DShader);
+
+    std::vector<SimpleVertex> verts {
+        {vec3(0,0,0), vec2(0,0), vec3(0,0,1)},
+        {vec3(0,1,0), vec2(0,1), vec3(0,0,1)},
+        {vec3(1,0,0), vec2(1,0), vec3(0,0,1)}
+    };
+    std::vector<idx_Triangle> indices = {{0,1,2}};
+
+    Mesh mesh(verts.data(),verts.size(),indices.data(), indices.size());
+
+    Object obj("Test Object", Transform(), 0,0, inst);
+    obj.addAttatchment(new RenderMesh(&mesh, &mat));
+    ((RenderMesh*)obj.getAttatchment(0))->setMaterialData(&matData);
+
+    Object* objs[] = {&obj};
+    World mainWorld(objs, sizeof(objs)/sizeof(*objs), "Main World", inst);
+
     //store the data that is used to change the framebuffer's size
     FramebufferResizeData fbuffResizeData;
 
@@ -218,6 +253,8 @@ int main()
             //this is used to not waste performance
             uvec3(ceil(fbuff.getColorAttatchment(0)->getSize().x / (float)instance.x), ceil(fbuff.getColorAttatchment(0)->getSize().y / (float)instance.y),
                 1))), 0,0,0),
+
+        RenderStage(RENDER_STAGE_RENDER_WORLD, RenderStage::Data(RenderWorldStageData(mainWorld, obj, fbuff, false)), 0,0,0),
 
         //the blit to window stage copies the content from a framebuffer to a window. 
         //also here, there are no user define functionalities used

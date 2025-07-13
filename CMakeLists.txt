@@ -12,6 +12,12 @@ cmake_minimum_required(VERSION 3.2...3.31)
 # define C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+# store the compiler options
+set(COMPILER_OPTIONS -Wall -Wextra -Wpedantic -Wno-unused-function -ggdb )
+# Copy to compiler and link libraries for more debug info
+# -fsanitize=address
+# store some libraries for linking
+set(LINK_LIBS )
 
 # path to GLGE
 set(GLGE_PATH src/GLGE)
@@ -123,6 +129,8 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGERenderPipeline.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEBuffer.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEKeyboard.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGERenderMaterial.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGERenderMesh.cpp
     # Shader stuff
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp
@@ -163,7 +171,7 @@ set(SOURCE_FILES_CPP
 add_library(GLGE STATIC ${SOURCE_FILES_CPP})
 # specify compiler settings for default
 target_compile_definitions(GLGE PRIVATE USE_NEW_AUDIO_ENGINE)
-target_compile_options(GLGE PRIVATE -Wall -Wextra -Wpedantic -Wno-unused-function -ggdb)
+target_compile_options(GLGE PRIVATE ${COMPILER_OPTIONS})
 # add SDL2
 TARGET_LINK_LIBRARIES(GLGE ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
 # add vulkan
@@ -171,7 +179,7 @@ TARGET_LINK_LIBRARIES(GLGE vulkan)
 # add OpenGL
 TARGET_LINK_LIBRARIES(GLGE GL)
 # add GLEW
-TARGET_LINK_LIBRARIES(GLGE GLEW)
+TARGET_LINK_LIBRARIES(GLGE GLEW ${LINK_LIBS})
 # enable threading
 target_compile_options(GLGE PRIVATE -pthread)
 target_link_options(GLGE PRIVATE -pthread)
@@ -195,7 +203,7 @@ target_link_options(GLGE PRIVATE -pthread)
     src/main.c)
     # define compiler settings
     target_compile_definitions(TEST_C PRIVATE USE_NEW_AUDIO_ENGINE)
-    target_compile_options(TEST_C PRIVATE -Wall -Wextra -Wpedantic -ggdb)
+    target_compile_options(TEST_C PRIVATE ${COMPILER_OPTIONS})
     # set the C version
     set_property(TARGET TEST_C PROPERTY C_STANDARD 99)
     # add GLGE
@@ -211,6 +219,6 @@ target_link_options(GLGE PRIVATE -pthread)
         src/main.cpp)
     # define compiler settings
     target_compile_definitions(TEST_CPP PRIVATE USE_NEW_AUDIO_ENGINE)
-    target_compile_options(TEST_CPP PRIVATE -Wall -Wextra -Wpedantic -ggdb)
+    target_compile_options(TEST_CPP PRIVATE ${COMPILER_OPTIONS})
     # add GLGE
     target_link_libraries(TEST_CPP GLGE)

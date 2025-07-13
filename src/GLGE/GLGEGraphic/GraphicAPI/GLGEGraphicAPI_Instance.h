@@ -182,6 +182,7 @@ protected:
      * An image is a single layer of an image (as example a single mip-map layer)
      */
     Buffer* m_images;
+    
 };
 
 /**

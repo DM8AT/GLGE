@@ -124,6 +124,9 @@ public:
      */
     inline void end() {m_inUse.unlock();m_filled = true;}
 
+    /**
+     * @brief empty the command buffer and discard all commands
+     */
     inline void clear() {m_commands.clear();}
 
     /**

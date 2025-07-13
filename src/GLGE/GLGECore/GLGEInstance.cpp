@@ -114,7 +114,7 @@ void Instance::removeElement(InstAttachableClass* element) noexcept
     //print a debug info
     GLGE_DEBUG_WRAPPER(
         std::stringstream stream;
-        stream << "Removing instance of class that inherits from InstAttachableClass from instance named \"" << m_name << "\": " << *element;
+        stream << "Removing instance of class that inherits from InstAttachableClass from instance named \"" << m_name << "\"";
         logDebug(stream, MESSAGE_TYPE_DEBUG);
     )
     //search the pointer

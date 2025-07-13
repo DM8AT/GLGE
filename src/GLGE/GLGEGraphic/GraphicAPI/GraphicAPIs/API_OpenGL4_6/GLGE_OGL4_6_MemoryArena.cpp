@@ -77,9 +77,14 @@ void OGL4_6_MemoryArena::ogl_sizeChange(void* data, uint64_t) noexcept
     uint32_t buff;
     glGenBuffers(1, &buff);
 
+    //store the type of the buffer
+    GLenum type = GL_STREAM_COPY;
+    //if this is a vertex or index buffer, use stream draw
+    if (arena.m_usage == MEMORY_USAGE_VERTEX_BUFFER || arena.m_usage == MEMORY_USAGE_INDEX_BUFFER) {type = GL_STREAM_DRAW;}
+
     //write the data into it, with the new size
     glBindBuffer(arena.m_bindingType, buff);
-    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, GL_STREAM_COPY);
+    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, type);
 
     //swap this with the old buffer and delete the old one
     glDeleteBuffers(1, &arena.m_buff);
@@ -139,6 +144,14 @@ void OGL4_6_MemoryArena::ogl_create(void* data, uint64_t) noexcept
     case MEMORY_USAGE_UNIFORM:
         arena.m_bindingType = GL_UNIFORM_BUFFER;
         break;
+    //index buffers are also declared directly
+    case MEMORY_USAGE_INDEX_BUFFER:
+        arena.m_bindingType = GL_ELEMENT_ARRAY_BUFFER;
+        break;
+    //also, vertex buffers are declared directly
+    case MEMORY_USAGE_VERTEX_BUFFER:
+        arena.m_bindingType = GL_ARRAY_BUFFER;
+        break;
     
     default:
         //log that something went wront
@@ -149,8 +162,12 @@ void OGL4_6_MemoryArena::ogl_create(void* data, uint64_t) noexcept
 
     //bind the buffer to the requested target
     glBindBuffer(arena.m_bindingType, arena.m_buff);
+    //store the type of the buffer
+    GLenum type = GL_STREAM_READ;
+    //if this is a vertex or index buffer, use stream draw
+    if (arena.m_usage == MEMORY_USAGE_VERTEX_BUFFER || arena.m_usage == MEMORY_USAGE_INDEX_BUFFER) {type = GL_STREAM_DRAW;}
     //fill the buffer with the current data. As usage, assume dynamic read
-    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, GL_DYNAMIC_READ);
+    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, type);
 }
 
 void OGL4_6_MemoryArena::ogl_destroy(void* data, uint64_t) noexcept

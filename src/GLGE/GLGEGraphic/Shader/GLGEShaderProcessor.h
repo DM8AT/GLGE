@@ -77,7 +77,7 @@ public:
      * 
      * @return std::unordered_map<std::string_view, std::string>& 
      */
-    inline const std::unordered_map<std::string_view, std::string>& getPackages() noexcept {return m_packages;}
+    inline const std::unordered_map<std::string_view, std::string>& getPackages() const noexcept {return m_packages;}
 
     /**
      * @brief remove all comments from a specific string

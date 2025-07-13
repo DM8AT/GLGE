@@ -65,6 +65,16 @@ public:
      */
     virtual void onDetatch(GraphicCommandBuffer* cmdBuff) noexcept override;
 
+    /**
+     * @brief directly attatch the shader without a command buffer
+     */
+    void attatchShaderDirect() noexcept;
+    
+    /**
+     * @brief directly detatch the shader without command buffer
+     */
+    void detatchShaderDirect() noexcept;
+
 protected:
 
     /**

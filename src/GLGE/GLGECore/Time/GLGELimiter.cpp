@@ -29,7 +29,7 @@ void Limiter::endTick() noexcept
     m_sleepLast = newLast;
 
     //shift the buffer register up
-    memcpy(m_samples+1, m_samples, sizeof(*m_samples)*(GLGE_LIMITER_IPS_SAMPLES-1));
+    memmove(m_samples+1, m_samples, sizeof(*m_samples)*(GLGE_LIMITER_IPS_SAMPLES-1));
     //store the new element
     m_samples[0] = 1E9 / (float)sleepDiff.count();
     //set the sample count

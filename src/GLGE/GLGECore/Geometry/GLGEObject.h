@@ -320,6 +320,13 @@ public:
         return (T*)getLastOfTypeName(example.getTypeName());
     }
 
+    /**
+     * @brief Get the All chilldren of the object
+     * 
+     * @param children a vector the children will be APPENDED to
+     */
+    void getAllChlidren(std::vector<Object*>& children) noexcept;
+
 protected:
     
     /**
@@ -368,7 +375,7 @@ public:
     /**
      * @brief update the attatchment
      */
-    virtual void onUpdate() {}
+    virtual void onUpdate() noexcept {}
 
     //state that the object class is a friend
     friend class Object;
@@ -395,12 +402,12 @@ protected:
     /**
      * @brief a function that is called when the object is attatched to an object
      */
-    virtual void onAttatch() {}
+    virtual void onAttatch() noexcept {}
 
     /**
      * @brief a function that is called when the object is removed from an object
      */
-    virtual void onRemove() {}
+    virtual void onRemove() noexcept {}
 
     /**
      * @brief store the parent object (0 means uninitalized)

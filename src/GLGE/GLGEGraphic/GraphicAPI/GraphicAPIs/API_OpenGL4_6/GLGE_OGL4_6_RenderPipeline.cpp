@@ -20,8 +20,14 @@
 //include OpenGL
 #include <GL/glew.h>
 
+//include render meshes for rendering worlds
+#include "../../../GLGERenderMesh.h"
+
 //include OpenGL stuff to read from it
 #include "GLGE_OGL4_6_Framebuffer.h"
+#include "GLGE_OGL4_6_Shader.h"
+#include "GLGE_OGL4_6_MemoryArena.h"
+#include "GLGE_OGL4_6_Instance.h"
 
 //check if ImGui is included
 #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
@@ -121,6 +127,12 @@ void OGL4_6_RenderPipeline::onStageExecution(uint64_t stageIndex) noexcept
         ((Shader*)stage.data.compute.shader)->detatch(m_cmdBuff);
         break;
 
+    //render a world
+    case RENDER_STAGE_RENDER_WORLD:
+        //queue the render world function
+        m_cmdBuff->add(0, (void*)ogl_renderWorld, &stage.data.renderWorld, sizeof(stage.data.renderWorld));
+        break;
+
     //check if ImGui is included
     #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
 
@@ -189,6 +201,75 @@ void OGL4_6_RenderPipeline::ogl_executeCompute(void* data, uint64_t) noexcept
     const uvec3& executions = ((ComputeStageData*)data)->executions;
     //run the shader
     glDispatchCompute(executions.x, executions.y, executions.z);
+}
+
+void OGL4_6_RenderPipeline::ogl_renderWorld(void* data, uint64_t) noexcept
+{
+    //extract the data
+    RenderWorldStageData* dat = (RenderWorldStageData*)data;
+    //extract the world
+    World* world = (World*)dat->world;
+
+    //store a list of all objects in the world
+    std::vector<Object*> objs;
+    //get all objects from the world
+    world->getAllObjects(objs);
+
+    //store all elements to render mapped to the material that they use
+    std::unordered_map<RenderMaterial*, std::vector<RenderMesh*>> toRender;
+
+    //iterate over all objects and get the materials
+    for (Object* obj : objs)
+    {
+        //get all render meshes of the object
+        for (uint64_t i = 0; i <  obj->getAttatchments().size(); ++i)
+        {
+            //check if this is a render mesh
+            if (std::string(obj->getAttatchment(i)->getTypeName()) == "RENDER_MESH")
+            {
+                //get the render mesh
+                RenderMesh* mesh = ((RenderMesh*)obj->getAttatchment(i));
+
+                //check if the material allready exists
+                if (toRender.find(mesh->getMaterial()) == toRender.end())
+                {
+                    //add a new element with the material
+                    toRender[mesh->getMaterial()] = {mesh};
+                }
+                //else, add the element to the list of it's material
+                else
+                {
+                    toRender[mesh->getMaterial()].push_back(mesh);
+                }
+            }
+        }
+    }
+
+    //bind the framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, ((OGL4_6_Framebuffer*)(((Framebuffer*)dat->target)->getGraphicFramebuffer()))->getOpenGLFramebuffer());
+
+    //set the vertex array object to prevent errors
+    //changing a VAO is not recomended (performance cost)
+    OGL4_6_Instance* inst = (OGL4_6_Instance*)((Framebuffer*)(dat->target))->getGraphicFramebuffer()->getInstance();
+    glBindVertexArray(inst->getVAO());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    //iterate over all materials
+    for (auto it = toRender.begin(); it != toRender.end(); ++it)
+    {
+        OGL4_6_MemoryArena* vert = ((OGL4_6_MemoryArena*)it->first->getVertexBuffer().getMemoryArena());
+
+        //apply the material's shader
+        ((OGL4_6_Shader*)it->first->getShader()->getGraphicShader())->attatchShaderDirect();
+
+        //iterate over all meshes that use this material
+        for (uint64_t i = 0; i < it->second.size(); ++i)
+        {
+            //draw the mesh
+            glDrawArrays(GL_TRIANGLES, it->second[i]->getIndexPointer().startIdx, it->second[i]->getMesh()->getIndices().size());
+        }
+    }
 }
 
 //check for Dear ImGui support

@@ -228,3 +228,15 @@ ObjectAttatchable* Object::getLastOfTypeName(const char* typeName) const noexcep
     //if the code runs untill here, no element was found. Return 0.
     return 0;
 }
+
+void Object::getAllChlidren(std::vector<Object*>& children) noexcept
+{
+    //iterate over all children
+    for (auto it = m_children.begin(); it != m_children.end(); ++it)
+    {
+        //add the child
+        children.push_back(it->second);
+        //call the function on the child to add its children
+        it->second->getAllChlidren(children);
+    }
+}

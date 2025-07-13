@@ -56,6 +56,15 @@ public:
     MeshMaterial() = default;
 
     /**
+     * @brief Construct a new Mesh Material
+     * 
+     * @param type the type of the material to create
+     */
+    MeshMaterial(uint64_t type)
+     : m_type(type)
+    {}
+
+    /**
      * @brief Destroy the Mesh Material
      */
     virtual ~MeshMaterial() {}

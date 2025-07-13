@@ -240,6 +240,18 @@ bool World::onUpdate() noexcept
     return true;
 }
 
+void World::getAllObjects(std::vector<Object*>& objects) noexcept
+{
+    //iterate over all objects in the world
+    for (auto it = m_objects.begin(); it != m_objects.end(); ++it)
+    {
+        //add the object to the vector
+        objects.push_back(it->second);
+        //add all children of the object to the vector
+        it->second->getAllChlidren(objects);
+    }
+}
+
 std::ostream& operator<<(std::ostream& os, const World& w) noexcept
 {
     //print the header

@@ -159,6 +159,13 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, const World& world) noexcept;
 
+    /**
+     * @brief Get the All Objects that exist in this world
+     * 
+     * @param objects a vector of all objects to fill up with pointers to the objects
+     */
+    void getAllObjects(std::vector<Object*>& objects) noexcept;
+
 protected:
 
     /**

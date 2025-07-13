@@ -89,6 +89,13 @@ public:
      */
     inline OGL4_6_CommandBuffer& getDataBuffer() noexcept {return m_dataBuffer;}
 
+    /**
+     * @brief get an empty VAO to prevent errors
+     * 
+     * @return uint32_t the empty VAO. DO NOT FILL!
+     */
+    inline uint32_t getVAO() const noexcept {return m_emptyVAO;}
+
 protected:
 
     /**
@@ -109,6 +116,10 @@ protected:
      * @brief store that GLEW is not initalized
      */
     bool m_hasGLEW = false;
+    /**
+     * @brief store an empty OpenGL VAO
+     */
+    uint32_t m_emptyVAO = 0;
 
     /**
      * @brief store the OpenGL context

@@ -42,7 +42,17 @@ typedef enum e_MemoryUsage {
     /**
      * @brief specify that a memory reagion is used as a uniform buffer
      */
-    MEMORY_USAGE_UNIFORM
+    MEMORY_USAGE_UNIFORM,
+    /**
+     * @brief specify that a memory reagion is used as an index buffer for drawing
+     * @warning manly used by the implementations, only use if you know what you're doing
+     */
+    MEMORY_USAGE_INDEX_BUFFER,
+    /**
+     * @brief specify that a memory reagoin is used as a vertex buffer for drawing
+     * @warning manly used by the implementations, only use if you know what you're doing
+     */
+    MEMORY_USAGE_VERTEX_BUFFER
 } MemoryUsage;
 
 //check for C++
@@ -221,6 +231,30 @@ public:
      * @return false : the arena won't resize automatically
      */
     inline bool isResizable()const noexcept {return m_allowResize;}
+
+    /**
+     * @brief Get the whole raw data of the memory arena
+     * 
+     * @return void* the whole raw data
+     */
+    inline void* getRaw() const noexcept {return m_data;}
+
+    /**
+     * @brief get the data of a specific pointer
+     * 
+     * @warning the reagion is not sanity-checked
+     * 
+     * @param ptr a pointer to the reagion to access
+     * @return void* the data of the reagion
+     */
+    inline void* get(const GraphicPointer& ptr) {return (void*)(((uint8_t*)m_data) + ptr.startIdx);}
+
+    /**
+     * @brief specify if this is an API memory arena
+     * 
+     * @param api set if this is a memory arena related for the API or not
+     */
+    inline void setAPI(bool api) noexcept {m_isAPI = api;}
 
 protected:
 

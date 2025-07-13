@@ -88,6 +88,13 @@ protected:
      */
     static void ogl_executeCompute(void* data, uint64_t) noexcept;
 
+    /**
+     * @brief render a world
+     * 
+     * @param data the data for the draw command
+     */
+    static void ogl_renderWorld(void* data, uint64_t) noexcept;
+
     //check for ImGui
     #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
 

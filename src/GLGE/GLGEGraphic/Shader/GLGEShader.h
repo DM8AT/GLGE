@@ -188,6 +188,14 @@ public:
      */
     inline std::unordered_map<std::string_view, BufferShaderBinding>& getBuffers() noexcept {return m_buffers;}
 
+    /**
+     * @brief Get the Graphic Shader of the shader
+     * @warning ONLY USE IF YOU KNOW WHAT YOU'RE DOING
+     * 
+     * @return GraphicShader* a pointer to the graphic shader the shader encapsulates
+     */
+    inline GraphicShader* getGraphicShader() const noexcept {return m_shader;}
+
 protected:
 
     /**

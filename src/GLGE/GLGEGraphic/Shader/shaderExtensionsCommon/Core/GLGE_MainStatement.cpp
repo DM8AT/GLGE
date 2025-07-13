@@ -39,7 +39,7 @@ bool ShaderExt_Main::onFind(std::string& source, ShaderProcessor*, Shader* shade
         if (p >= source.length()) {return false;}
     }
     //extract the substring
-    std::string_view substr = source.substr(start, p-start);
+    std::string substr = source.substr(start, p-start);
 
     //search the end of the line
     while (source[p] != '\n')

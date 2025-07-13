@@ -102,6 +102,16 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, VertexLayout& l) noexcept;
 
+    /**
+     * @brief check if two vertex layouts are identical
+     * @warning the names of the elements are ignored. If one element has "m_Pos" at index 2, an other layout that has "_Norm" at index 2 is still equal to the first, as long as all the types match up. 
+     * 
+     * @param other the other element to check
+     * @return true : vertex layouts result in the same structure
+     * @return false : the vertex layouts do not result in the same structure
+     */
+    constexpr bool operator==(VertexLayout& other) noexcept;
+
 protected:
 
     /**

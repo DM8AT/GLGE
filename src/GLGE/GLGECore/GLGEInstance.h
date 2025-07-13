@@ -244,6 +244,24 @@ public:
     Buffer* getImageBuffer() const noexcept;
 
     /**
+     * @brief Get the Vertex Buffer
+     * @warning the format of a vertex may change and is fully unknown
+     * 
+     * @return Buffer* a buffer containing all vertices
+     */
+    Buffer* getVertexBuffer() const noexcept;
+
+    /**
+     * @brief Get the Index Buffer
+     * indices are of type index_t
+     * 
+     * @warning there are multiple meshes stored where each mesh starts with index 0
+     * 
+     * @return Buffer* a buffer containing all indices
+     */
+    Buffer* getIndexBuffer() const noexcept;
+
+    /**
      * @brief Get the keyboard of the instance
      * 
      * @return Keyboard& a reference to the keyboard that stores all keys pressed for the instance

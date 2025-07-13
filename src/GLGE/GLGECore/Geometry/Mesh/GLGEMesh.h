@@ -85,6 +85,34 @@ public:
      */
     inline bool hasMaterialOfType(uint64_t type) const noexcept {return (m_materials.find(type) != m_materials.end());}
 
+    /**
+     * @brief Get the indices of the mesh
+     * 
+     * @return const std::vector<index_t>& a constant reference to the indices of the mesh
+     */
+    inline const std::vector<index_t>& getIndices() const noexcept {return m_indices;}
+
+    /**
+     * @brief Get the vertices of the mesh
+     * 
+     * @return const void* the constant vertices of the mesh
+     */
+    inline const void* getVertices() const noexcept {return m_vertices;}
+
+    /**
+     * @brief Get the amount of vertices owned by the mesh
+     * 
+     * @return uint64_t the amount of vertices owned by the mesh
+     */
+    inline uint64_t getVertexCount() const noexcept {return m_vertexCount;}
+
+    /**
+     * @brief Get the layout of the vertices used by the mesh
+     * 
+     * @return const VertexLayout& a constant reference to the vertices used by the mesh
+     */
+    inline const VertexLayout& getVertexLayout() const noexcept {return m_layout;}
+
 protected:
 
     /**

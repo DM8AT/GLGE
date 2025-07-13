@@ -150,6 +150,9 @@ void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
     m_images->getMemoryArena()->setResizable(true);
     ((OGL4_6_MemoryArena*)m_images->getMemoryArena())->setAPI(true);
 
+    //create the empty VAO
+    glGenVertexArrays(1, &m_emptyVAO);
+
     //check if Dear ImGui should be used
     #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
 
@@ -203,6 +206,19 @@ void OGL4_6_Instance::onDestroy()
     delete m_images;
     m_textures = 0;
     m_images = 0;
+    //delete the VAO
+    glDeleteVertexArrays(1, &m_emptyVAO);
+    
+    //check for ImGui
+    #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+    //close the ImGui context
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
+    #endif //end of ImGui-Shutdown section
+
     //clear the context
     SDL_GL_DeleteContext(m_context);
     m_context = 0;

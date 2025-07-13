@@ -17,29 +17,127 @@
 #include "../GLGECore/GLGESettings.h"
 //include geometry (for Meshes and related)
 #include "../GLGECore/Geometry/GLGEGeometry.h"
+//include render materials to structure the surface of a mesh
+#include "GLGERenderMaterial.h"
 
 //check if this is C++
 #if GLGE_CPP
 
 /**
- * @brief store the binding between a GPU mesh and a CPU mesh
+ * @brief store an instance of a mesh that can be renderd
  */
-class RenderMesh
+class RenderMesh final : public ObjectAttatchable
 {
 public:
 
-    RenderMesh() = default;
+    /**
+     * @brief Construct a new Render Mesh
+     * @warning explicetly deleted
+     */
+    RenderMesh() = delete;
 
-    RenderMesh(Mesh* mesh)
-     : m_mesh(mesh) 
+    /**
+     * @brief Construct a new Render Mesh
+     * 
+     * @param mesh the mesh to use for rendering
+     * @param material the material to apply to the mesh
+     */
+    RenderMesh(Mesh* mesh, RenderMaterial* material)
+     : m_mesh(mesh),
+       m_material(material)
     {}
+
+    /**
+     * @brief Destroy the Render Mesh
+     */
+    virtual ~RenderMesh() {}
+
+    /**
+     * @brief Get the Type Name
+     * @warning MUST BE OVERLOADED!
+     * 
+     * @return const char* the constant type name
+     */
+    virtual const char* getTypeName() const noexcept override {return "RENDER_MESH";}
+
+    /**
+     * @brief Set the data of the material reagion this object owns
+     * 
+     * @param data the data to set the material data to
+     * 
+     * @return true : the data was set successfully
+     * @return false : failed to set the data
+     */
+    bool setMaterialData(void* data) noexcept;
+
+    /**
+     * @brief Get the Mesh the render mesh renders
+     * 
+     * @return Mesh* a pointer to the mesh that will be renderd
+     */
+    inline Mesh* getMesh() const noexcept {return m_mesh;}
+
+    /**
+     * @brief Get the Material the render mesh uses for rendering
+     * 
+     * @return RenderMaterial* a pointer to the used material
+     */
+    inline RenderMaterial* getMaterial() const noexcept {return m_material;}
+
+    /**
+     * @brief Get the pointer into the vertex data
+     * 
+     * @return const GraphicMemoryArena::GraphicPointer& the pointer into the vertex buffer
+     */
+    inline const GraphicMemoryArena::GraphicPointer& getVertexPointer() const noexcept {return m_vPtr;}
+
+    /**
+     * @brief Get the pointer into the index data
+     * 
+     * @return const GraphicMemoryArena::GraphicPointer& the pointer into the index buffer
+     */
+    inline const GraphicMemoryArena::GraphicPointer& getIndexPointer() const noexcept {return m_iPtr;}
+
+    /**
+     * @brief Get the pointer into the material data
+     * 
+     * @return const GraphicMemoryArena::GraphicPointer& the pointer into the material buffer
+     */
+    inline const GraphicMemoryArena::GraphicPointer& getMaterialPointer() const noexcept {return m_mPtr;}
 
 protected:
 
     /**
-     * @brief 
+     * @brief a function that is called when the object is attatched to an object
+     */
+    virtual void onAttatch() noexcept override;
+
+    /**
+     * @brief a function that is called when the object is removed from an object
+     */
+    virtual void onRemove() noexcept override;
+
+    /**
+     * @brief store a pointer to the mesh that this renderable mesh will render
      */
     Mesh* m_mesh = 0;
+    /**
+     * @brief store the material that will be applied to the mesh
+     */
+    RenderMaterial* m_material = 0;
+
+    /**
+     * @brief store the reagion of the vertex buffer the renderable mesh owns
+     */
+    GraphicMemoryArena::GraphicPointer m_vPtr = {0,0};
+    /**
+     * @brief store the reagion of the index buffer the renderable mesh owns
+     */
+    GraphicMemoryArena::GraphicPointer m_iPtr = {0,0};
+    /**
+     * @brief store the reagion of the material data buffer the renderable mesh owns
+     */
+    GraphicMemoryArena::GraphicPointer m_mPtr = {0,0};
 
 };
 

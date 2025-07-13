@@ -48,6 +48,11 @@
 //include buffers
 #include "GLGEBuffer.h"
 
+//include materials
+#include "GLGERenderMaterial.h"
+//include render meshes
+#include "GLGERenderMesh.h"
+
 //check if Dear ImGui should be used. It can sadly only be used in C++
 #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI && GLGE_CPP
 

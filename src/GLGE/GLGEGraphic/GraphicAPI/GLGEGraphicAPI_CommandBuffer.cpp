@@ -14,11 +14,11 @@
 
 void GraphicCommandBuffer::create(GraphicInstance* instance)
 {
-    //check if the framebuffer exists
+    //check if the command buffer exists
     if (m_graphicInstance)
     {
         //print an error
-        m_graphicInstance->getInstance()->log("Can not create framebuffer because it is allready created", MESSAGE_TYPE_ERROR);
+        m_graphicInstance->getInstance()->log("Can not create command buffer because it is allready created", MESSAGE_TYPE_ERROR);
         return;
     }
 

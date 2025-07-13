@@ -61,13 +61,6 @@ public:
     inline uint32_t getBuffer() const noexcept {return m_buff;}
 
     /**
-     * @brief specify if this is an API memory arena
-     * 
-     * @param api set if this is a memory arena related for the API or not
-     */
-    inline void setAPI(bool api) noexcept {m_isAPI = api;}
-
-    /**
      * @brief bind the buffer to a specific unit on a command buffer
      * 
      * @param unit the unit to bind to
