@@ -258,8 +258,6 @@ void OGL4_6_RenderPipeline::ogl_renderWorld(void* data, uint64_t) noexcept
     //iterate over all materials
     for (auto it = toRender.begin(); it != toRender.end(); ++it)
     {
-        OGL4_6_MemoryArena* vert = ((OGL4_6_MemoryArena*)it->first->getVertexBuffer().getMemoryArena());
-
         //apply the material's shader
         ((OGL4_6_Shader*)it->first->getShader()->getGraphicShader())->attatchShaderDirect();
 

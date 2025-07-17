@@ -15,5 +15,7 @@
 
 //include euler angles
 #include "GLGEEuler.h"
+//include the rotation class
+#include "GLGERotation.h"
 
 #endif

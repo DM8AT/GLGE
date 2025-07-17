@@ -158,10 +158,16 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_MemoryArena.cpp
 
     # Math files
+    # Vectors
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEDoubleVec.cpp
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEFloatVec.cpp
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEIntVec.cpp
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEUIntVec.cpp
+    # Rotation
+    ${GLGE_PATH}/GLGEMath/Angles/GLGEEuler.cpp
+    ${GLGE_PATH}/GLGEMath/Angles/GLGERotation.cpp
+    # Quaternions
+    ${GLGE_PATH}/GLGEMath/Imaginary/GLGEQuaternion.cpp
 
     # 3rd Party
         # Dear ImGui

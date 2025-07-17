@@ -23,6 +23,8 @@
 #include "Vectors/GLGEVectors.h"
 //include angles
 #include "Angles/GLGEAngles.h"
+//include imaginary stuff
+#include "Imaginary/GLGEImaginary.h"
 
 #endif //math including section
 
