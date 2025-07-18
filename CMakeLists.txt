@@ -163,6 +163,11 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEFloatVec.cpp
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEIntVec.cpp
     ${GLGE_PATH}/GLGEMath/Vectors/GLGEUIntVec.cpp
+    # Matricies
+    ${GLGE_PATH}/GLGEMath/Matricies/GLGEDoubleMatricies.cpp
+    ${GLGE_PATH}/GLGEMath/Matricies/GLGEFloatMatricies.cpp
+    ${GLGE_PATH}/GLGEMath/Matricies/GLGEIntMatricies.cpp
+    ${GLGE_PATH}/GLGEMath/Matricies/GLGEUIntMatricies.cpp
     # Rotation
     ${GLGE_PATH}/GLGEMath/Angles/GLGEEuler.cpp
     ${GLGE_PATH}/GLGEMath/Angles/GLGERotation.cpp

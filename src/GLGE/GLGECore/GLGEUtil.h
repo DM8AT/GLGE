@@ -122,4 +122,11 @@
 #define GLGE_DEBUG_WRAPPER(debug)
 #endif //debug check
 
+/**
+ * @brief allign some variable to a specific byte boundry
+ * 
+ * @param bytes how many bytes to allign to
+ */
+#define GLGE_ALIGN_BYTE(bytes) __attribute__ ((aligned (bytes)))
+
 #endif

@@ -193,6 +193,11 @@ $$ |  $$\  $$  /    $$ |  $$\ $$ |      $$ |         $$\   $$ |$$ |         $$ |
 //define the name of the prefix to use
 #define GLGE_PREFIX glge_
 
+//define if GLGE is allowed to use single instruction, multiple data (SIMD) functions
+//on older CPUs, this might not work correctly and lead to errors. On newer CPUs it is recomended
+//to enable SIMD. 
+#define GLGE_USE_SIMD 1
+
 /*
 
 $$$$$$$$\ $$$$$$$\  $$$$$$$\   $$$$$$\  $$$$$$$\         $$$$$$\  $$$$$$$$\ $$$$$$$$\ $$$$$$$$\ $$$$$$\ $$\   $$\  $$$$$$\   $$$$$$\  

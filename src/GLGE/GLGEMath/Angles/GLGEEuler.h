@@ -165,15 +165,6 @@ typedef struct s_Euler {
      */
     inline dvec3 asDVec3() const noexcept {return dvec3(yaw, pitch, roll);}
 
-    /**
-     * @brief print a euler angle into a output stream
-     * 
-     * @param os the output stream to print to
-     * @param e the euler angle to print
-     * @return std::ostream& the filled output stream
-     */
-    inline friend std::ostream& operator<<(std::ostream& os, const s_Euler& e) {return os << "eulerAngle{yaw: " << e.yaw << ", pitch: " << e.pitch << ", roll: " << e.roll << "}";}
-
     #endif //C++ section
 } Euler;
 
@@ -309,6 +300,16 @@ dvec3 GLGE_C_FUNC(euler_asDVec3)(const Euler euler);
 //check for C++ to end a potential C section
 #if GLGE_CPP
 } //end of C section
+
+/**
+ * @brief print a euler angle into a output stream
+ * 
+ * @param os the output stream to print to
+ * @param e the euler angle to print
+ * @return std::ostream& the filled output stream
+ */
+inline std::ostream& operator<<(std::ostream& os, const s_Euler& e) {return os << "eulerAngle{yaw: " << e.yaw << ", pitch: " << e.pitch << ", roll: " << e.roll << "}";}
+
 #endif //end of C++ section
 
 #endif
