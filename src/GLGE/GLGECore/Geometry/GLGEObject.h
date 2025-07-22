@@ -164,9 +164,9 @@ public:
     /**
      * @brief Get the rotation of the object
      * 
-     * @return const Euler& the rotation of the object
+     * @return const Rotation& the rotation of the object
      */
-    inline const Euler& getRot() const noexcept {return m_transform.rot;}
+    inline const Rotation& getRot() const noexcept {return m_transform.rot;}
 
     /**
      * @brief Set the scale of the object

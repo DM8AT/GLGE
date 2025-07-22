@@ -50,7 +50,7 @@ typedef struct s_Quaternion
      * @brief Construct a new Quaternion
      * Just zero everything out
      */
-    s_Quaternion() : w(0), i(0), j(0), k(0) {}
+    s_Quaternion() : w(1), i(0), j(0), k(0) {}
 
     /**
      * @brief Construct a new Quaternion

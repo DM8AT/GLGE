@@ -12,14 +12,14 @@
 //include the rotation class
 #include "GLGERotation.h"
 
-Rotation::Rotation(const vec3& dir) noexcept
+s_Rotation::s_Rotation(const vec3& dir) noexcept
 {
     double angle = sqrt((1. + dot(GLGE_ROTATION_GLOBAL_FORWARD, dir)) * 0.5);
     m_quat = Quaternion(angle, cross(GLGE_ROTATION_GLOBAL_FORWARD, dir) / (dir.length() * 2. * angle));
     m_quat.j *= -1.;
 }
 
-Rotation::Rotation(const Euler& euler) noexcept
+s_Rotation::s_Rotation(const Euler& euler) noexcept
 {
     //store the half euler
     dvec3 hEuler = euler.asDVec3() * 0.5 * GLGE_DEGREES_TO_RADIANS;
@@ -33,7 +33,7 @@ Rotation::Rotation(const Euler& euler) noexcept
     m_quat.k = coses.x*coses.y*sines.z - sines.x*sines.y*coses.z;
 }
 
-vec3 Rotation::rotate(const vec3& vector) const noexcept
+vec3 s_Rotation::rotate(const vec3& vector) const noexcept
 {
     //compute the quaternion
     Quaternion quat = m_quat * vector * -m_quat;
@@ -41,7 +41,7 @@ vec3 Rotation::rotate(const vec3& vector) const noexcept
     return vec3(quat.i, quat.j, quat.k);
 }
 
-dvec3 Rotation::rotate(const dvec3& vector) const noexcept
+dvec3 s_Rotation::rotate(const dvec3& vector) const noexcept
 {
     //compute the quaternion
     Quaternion quat = m_quat * vector * -m_quat;
@@ -49,7 +49,7 @@ dvec3 Rotation::rotate(const dvec3& vector) const noexcept
     return dvec3(quat.i, quat.j, quat.k);
 }
 
-Euler Rotation::getEulerRotation() const noexcept
+Euler s_Rotation::getEulerRotation() const noexcept
 {
     //source (edited to fit the class): https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Source_code_2
 

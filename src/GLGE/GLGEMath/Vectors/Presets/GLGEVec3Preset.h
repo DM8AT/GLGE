@@ -152,6 +152,15 @@ typedef struct GLGE_VEC_STRUCT_NAME {
     inline GLGE_VEC_TYPE& operator[](uint8_t idx) noexcept {return *((&x) + idx);}
 
     /**
+     * @brief access a specifc element of the vector by its index
+     * @warning the index is not sanity-checked
+     * 
+     * @param idx the index of the element to access
+     * @return GLGE_VEC_TYPE& a reference to the element stored at that position
+     */
+    inline const GLGE_VEC_TYPE& operator[](uint8_t idx) const noexcept {return *((&x) + idx);}
+
+    /**
      * @brief get the length of the vector
      * 
      * @return float the length of the vector

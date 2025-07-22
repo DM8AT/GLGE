@@ -17,8 +17,8 @@
 #include "../GLGEUtil.h"
 //include 3D vectors
 #include "../../GLGEMath/Vectors/GLGEFloatVec.h"
-//include euler angles
-#include "../../GLGEMath/Angles/GLGEEuler.h"
+//include the rotation class
+#include "../../GLGEMath/Angles/GLGERotation.h"
 
 /**
  * @brief define the layout of a transform
@@ -31,7 +31,7 @@ typedef struct s_Transform {
     /**
      * @brief store the rotation of the transform
      */
-    Euler rot;
+    Rotation rot;
     /**
      * @brief store the scaling of the transform
      */
