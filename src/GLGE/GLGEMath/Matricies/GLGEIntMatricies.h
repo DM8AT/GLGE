@@ -23,4 +23,18 @@
 #define GLGE_MAT_VEC_TYPE ivec2
 #include "Presets/GLGEMat2Preset.h"
 
+//define the integer 3x3 matrix
+#define GLGE_MAT_TYPE int32_t
+#define GLGE_MAT_NAME imat3
+#define GLGE_MAT_STRUCT_NAME s_imat3
+#define GLGE_MAT_VEC_TYPE ivec3
+#include "Presets/GLGEMat3Preset.h"
+
+//define the int32_t 4x4 matrix
+#define GLGE_MAT_TYPE int32_t
+#define GLGE_MAT_NAME imat4
+#define GLGE_MAT_STRUCT_NAME s_imat4
+#define GLGE_MAT_VEC_TYPE ivec4
+#include "Presets/GLGEMat4Preset.h"
+
 #endif

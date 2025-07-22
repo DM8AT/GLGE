@@ -47,6 +47,14 @@ void GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _divideScalarFrom))(GLGE
 
 double GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _determinant))(GLGE_MAT_NAME mat) {return mat.determinant();}
 
+GLGE_MAT_NAME GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _cofactors))(GLGE_MAT_NAME mat) {return mat.cofactors();}
+
+void GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _cofactorThis))(GLGE_MAT_NAME* mat) {mat->cofactorThis();}
+
+GLGE_MAT_NAME GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _adjugate))(GLGE_MAT_NAME mat) {return mat.adjugate();}
+
+void GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _adjugateThis))(GLGE_MAT_NAME* mat) {mat->adjugateThis();}
+
 GLGE_MAT_NAME GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _invert))(GLGE_MAT_NAME mat) {return mat.inverse();}
 
 void GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _invertThis))(GLGE_MAT_NAME* mat) {mat->inverseThis();}

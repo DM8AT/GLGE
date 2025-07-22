@@ -23,4 +23,18 @@
 #define GLGE_MAT_VEC_TYPE uvec2
 #include "Presets/GLGEMat2Preset.h"
 
+//define the unsigned integer 3x3 matrix
+#define GLGE_MAT_TYPE uint32_t
+#define GLGE_MAT_NAME umat3
+#define GLGE_MAT_STRUCT_NAME s_umat3
+#define GLGE_MAT_VEC_TYPE uvec3
+#include "Presets/GLGEMat3Preset.h"
+
+//define the unsigned integer 4x4 matrix
+#define GLGE_MAT_TYPE uint32_t
+#define GLGE_MAT_NAME umat4
+#define GLGE_MAT_STRUCT_NAME s_umat4
+#define GLGE_MAT_VEC_TYPE uvec4
+#include "Presets/GLGEMat4Preset.h"
+
 #endif

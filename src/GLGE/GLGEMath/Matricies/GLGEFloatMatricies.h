@@ -23,4 +23,18 @@
 #define GLGE_MAT_VEC_TYPE vec2
 #include "Presets/GLGEMat2Preset.h"
 
+//define the float 3x3 matrix
+#define GLGE_MAT_TYPE float
+#define GLGE_MAT_NAME mat3
+#define GLGE_MAT_STRUCT_NAME s_mat3
+#define GLGE_MAT_VEC_TYPE vec3
+#include "Presets/GLGEMat3Preset.h"
+
+//define the float 4x4 matrix
+#define GLGE_MAT_TYPE float
+#define GLGE_MAT_NAME mat4
+#define GLGE_MAT_STRUCT_NAME s_mat4
+#define GLGE_MAT_VEC_TYPE vec4
+#include "Presets/GLGEMat4Preset.h"
+
 #endif

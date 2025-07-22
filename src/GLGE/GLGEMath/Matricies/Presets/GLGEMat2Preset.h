@@ -94,6 +94,19 @@ typedef struct GLGE_MAT_STRUCT_NAME
     }
 
     /**
+     * @brief Construct a new matrix strucutre object
+     * 
+     * @param row0 the top row stored in a vector
+     * @param row1 the bottom row stored in a vector
+     */
+    GLGE_MAT_STRUCT_NAME(GLGE_MAT_VEC_TYPE row0, GLGE_MAT_VEC_TYPE row1)
+    {
+        //directly store the rows
+        m[0] = row0;
+        m[1] = row1;
+    }
+
+    /**
      * @brief Construct a new matrix structure object
      * @warning the matrix must be defined in a row-major order
      * 
@@ -192,7 +205,7 @@ typedef struct GLGE_MAT_STRUCT_NAME
 
     /**
      * @brief multiply two matrices together
-     * @warning in contrast to matrix multiplication, this is done with correct matrix multiplication and not element-wise
+     * @warning in contrast to vector multiplication, this is done with correct matrix multiplication and not element-wise
      * 
      * @param other the other matrix to multiply with
      * @return GLGE_MAT_STRUCT_NAME the product of the two matricies
@@ -366,16 +379,58 @@ typedef struct GLGE_MAT_STRUCT_NAME
     inline double determinant() const noexcept {return (m[0].x*m[1].y - m[0].y*m[1].x);}
 
     /**
+     * @brief calculate the cofactors of this matrix
+     * 
+     * @return GLGE_MAT_STRUCT_NAME the cofactor matrix of the matrix
+     */
+    inline GLGE_MAT_STRUCT_NAME cofactors() const noexcept
+    {
+        //return the matrix with the correctly swapped elements
+        return GLGE_MAT_STRUCT_NAME(
+            m[1].y, -m[1].x,
+            -m[0].y, m[0].x
+        );
+    }
+
+    /**
+     * @brief set this matrix to it's own cofactor matrix
+     */
+    inline void cofactorThis() noexcept
+    {
+        //set this matrix to it's own cofactor matrix
+        *this = cofactors();
+    }
+
+    /**
+     * @brief get the adjoint of the matrix
+     * 
+     * @return GLGE_MAT_STUCT_NAME the adjoint of this matrix
+     */
+    inline GLGE_MAT_STRUCT_NAME adjugate() const noexcept
+    {
+        //return the matrix with the correctly swapped elements
+        return GLGE_MAT_STRUCT_NAME(
+            m[1].y, -m[0].y,
+            -m[1].x, m[0].x
+        );
+    }
+
+    /**
+     * @brief set this matrix to it's own adjoint
+     */
+    inline void adjugateThis() noexcept {*this = adjugate();}
+
+    /**
      * @brief compute the inverse matrix
      * 
      * @return GLGE_MAT_STRUCT_NAME the inverted matrix
      */
-    inline GLGE_MAT_STRUCT_NAME inverse() const noexcept {return *this * (GLGE_MAT_TYPE)determinant();}
+    inline GLGE_MAT_STRUCT_NAME inverse() const noexcept {return adjugate() * (GLGE_MAT_TYPE)(1. / determinant());}
 
     /**
      * @brief set this to its own inverse matrix
      */
-    inline void inverseThis() noexcept {*this *= determinant();}
+    inline void inverseThis() noexcept {*this *= inverse();}
 
     /**
      * @brief morror the matrix on its diagonal from top left to bottom right
@@ -572,6 +627,36 @@ void GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _divideScalarFrom))(GLGE
  * @return double the determinant of the matrix
  */
 double GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _determinant))(GLGE_MAT_NAME mat);
+
+/**
+ * @brief compute the cofactor matrix of a matrix
+ * 
+ * @param mat the matrix to compute the cofactors of
+ * @return GLGE_MAT_NAME the cofactors of the inputed matrix
+ */
+GLGE_MAT_NAME GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _cofactors))(GLGE_MAT_NAME mat);
+
+/**
+ * @brief compute the adjoint of a matrix and set the inputed matrix to the cofactors
+ * 
+ * @param mat a pointer to the matrix to compute the cofactors of and to store the cofactors matrix to
+ */
+void GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _cofactorThis))(GLGE_MAT_NAME* mat);
+
+/**
+ * @brief compute the adjoint of a matrix
+ * 
+ * @param mat the matrix to compute the adjoint of
+ * @return the adjoint of the inputed matrix
+ */
+GLGE_MAT_NAME GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _adjugate))(GLGE_MAT_NAME mat);
+
+/**
+ * @brief compute the adjoint of a matrix and set the inputed matrix to the adjoint
+ * 
+ * @param mat a pointer to the matrix to compute the adjoint of and to store the adjugated matrix to
+ */
+void GLGE_C_FUNC(GLGE_CONCATINATE_DEFINE(GLGE_MAT_NAME, _adjugateThis))(GLGE_MAT_NAME* mat);
 
 /**
  * @brief calculate the inverse matrix of a matrix
