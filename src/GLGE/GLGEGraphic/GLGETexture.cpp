@@ -81,9 +81,6 @@ void Texture::create(std::string_view file, TexturePurpose purpose, bool alpha)
         std::stringstream stream;
         stream << "No overload for API " << m_instance->getAPI() << " for a texture was implemented";
         m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
-        //make sure to print everything before closing
-        m_instance->getLogger()->printAll();
-        exit(1);
     }
 
     //clean up
@@ -121,9 +118,6 @@ void Texture::create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool
         std::stringstream stream;
         stream << "No overload for API " << m_instance->getAPI() << " for a texture was implemented";
         m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
-        //make sure to print everything before closing
-        m_instance->getLogger()->printAll();
-        exit(1);
         break;
     }
 
@@ -155,9 +149,6 @@ void Texture::create(void* data, TexturePurpose purpose, const uvec2& size, bool
         std::stringstream stream;
         stream << "No overload for API " << m_instance->getAPI() << " for a texture was implemented";
         m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
-        //make sure to print everything before closing
-        m_instance->getLogger()->printAll();
-        exit(1);
     }
 }
 

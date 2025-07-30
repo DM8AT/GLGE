@@ -13,7 +13,7 @@
 #pragma once
 
 //GLGE is needed for loggers
-#include "../GLGE/GLGE.h"
+#include "../../GLGE/GLGE.h"
 
 /**
  * @brief overload the logger class so the output is written into a log file and not into the console

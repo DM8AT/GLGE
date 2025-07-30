@@ -293,7 +293,7 @@ protected:
     /**
      * @brief store the graphic window
      */
-    GraphicWindow* m_gWindow;
+    GraphicWindow* m_gWindow = 0;
 
     /**
      * @brief store a texture containing the window's icon

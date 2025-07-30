@@ -73,6 +73,8 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
             m_instance->logDebug("Initalized SLD2", MESSAGE_TYPE_DEBUG);
         )
 
+        //say that the SDL2 thread should be open
+        __glge_sdl_thread_open = true;
         //create a new thread. Bind it to the logger of the instance
         __glge_sdl_2_thread = new std::thread(SDL_Main_Thread, m_instance->getLogger());
         //create the counter to count how many windows are open
@@ -175,9 +177,6 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
         std::stringstream stream;
         stream << "No overload for API " << m_instance->getAPI() << " for a window was implemented";
         m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
-        //make sure to print everything before closing
-        m_instance->getLogger()->printAll();
-        exit(1);
         break;
     }
 
@@ -197,9 +196,13 @@ void Window::close() noexcept
     //if the window is not open, stop
     if (!isOpen()) {return;}
 
-    //close the graphic window
-    delete m_gWindow;
-    m_gWindow = 0;
+    //check for a graphic window
+    if (m_gWindow)
+    {
+        //close the graphic window
+        delete m_gWindow;
+        m_gWindow = 0;
+    }
 
     //get the window id
     uint64_t winId = SDL_GetWindowID((SDL_Window*)m_window);
@@ -216,6 +219,8 @@ void Window::close() noexcept
         //close the graphic API
         m_instance->closeGraphiAPI();
 
+        //say that the SDL2 thread should be closed
+        __glge_sdl_thread_open = false;
         //wait for the thread to close
         if (__glge_sdl_2_thread->joinable())
         {
@@ -223,7 +228,6 @@ void Window::close() noexcept
         }
         //destroy the thread
         delete __glge_sdl_2_thread;
-        __glge_sdl_2_thread = 0;
         //set the thread to 0
         __glge_sdl_2_thread = 0;
         //delete the window counter

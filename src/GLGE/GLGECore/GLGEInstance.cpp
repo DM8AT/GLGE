@@ -164,16 +164,9 @@ void Instance::initGraphicAPI(Window* window)
     {
         //if it is supported, log that the API is supported but no instance was implemented (WHAT?)
         m_logger->log("Graphic API is marked as supported, but no instance could be created. Are you working on an implementation?", MESSAGE_TYPE_FATAL_ERROR);
-        //make sure to empty the logger before closing
-        m_logger->printAll();
-        //exit code 1
-        exit(1);
     }
     //log that the API is simply not supported
     m_logger->log("Using a not supported graphic API", MESSAGE_TYPE_FATAL_ERROR);
-    //make sure to empty the logger before closing
-    m_logger->printAll();    
-    exit(1);
 }
 
 void Instance::closeGraphiAPI()
@@ -190,6 +183,8 @@ void Instance::closeGraphiAPI()
 
 void Instance::syncGraphicSetup() const noexcept
 {
+    //if no graphic instance exists, stop
+    if (!m_gInstance) {return;}
     //synchronize with the graphic instance
     while (!m_gInstance->isSetupDone()) {std::this_thread::sleep_for(std::chrono::microseconds(10));}
 }

@@ -27,6 +27,9 @@
 //store all the windows
 extern std::unordered_map<uint32_t, Window*> __glge_all_windows_sdl;
 
+//store if the SDL2 thread should be open
+extern bool __glge_sdl_thread_open;
+
 //store the SDL2 thread
 extern std::thread* __glge_sdl_2_thread;
 

@@ -13,7 +13,7 @@
 #pragma once
 
 //GLGE is needed for the objects
-#include "../GLGE/GLGE.h"
+#include "../../GLGE/GLGE.h"
 
 /**
  * @brief a simple class to controll a 3D camera

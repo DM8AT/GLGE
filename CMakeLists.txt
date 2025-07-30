@@ -208,21 +208,22 @@ target_link_options(GLGE PRIVATE -pthread)
 #    $$ |\$$$$$$$\ $$$$$$$  |  \$$$$  |$$$$$$$  |
 #    \__| \_______|\_______/    \____/ \_______/ 
 
-# C - Test:
-    project(TEST_CPP
-    VERSION 1.0
-    DESCRIPTION "A simple test for GLGE in C++"
-    LANGUAGES C)
-    # executable for test project
-    add_executable(TEST_C
-    src/main.c)
-    # define compiler settings
-    target_compile_definitions(TEST_C PRIVATE USE_NEW_AUDIO_ENGINE)
-    target_compile_options(TEST_C PRIVATE ${COMPILER_OPTIONS})
-    # set the C version
-    set_property(TARGET TEST_C PROPERTY C_STANDARD 99)
-    # add GLGE
-    target_link_libraries(TEST_C GLGE)
+# Unused
+# # C - Test:
+#     project(TEST_CPP
+#     VERSION 1.0
+#     DESCRIPTION "A simple test for GLGE in C++"
+#     LANGUAGES C)
+#     # executable for test project
+#     add_executable(TEST_C
+#     src/main.c)
+#     # define compiler settings
+#     target_compile_definitions(TEST_C PRIVATE USE_NEW_AUDIO_ENGINE)
+#     target_compile_options(TEST_C PRIVATE ${COMPILER_OPTIONS})
+#     # set the C version
+#     set_property(TARGET TEST_C PROPERTY C_STANDARD 99)
+#     # add GLGE
+#     target_link_libraries(TEST_C GLGE)
 
 # First person example test
     project(FP_EXAMPLE_CPP
@@ -231,11 +232,42 @@ target_link_options(GLGE PRIVATE -pthread)
         LANGUAGES CXX)
     # executable for test project
     add_executable(FP_EXAMPLE_CPP
-        src/FirstPersonExample/main.cpp
-        src/FirstPersonExample/CameraController.cpp
+        src/CPP/FirstPersonExample/main.cpp
+        src/CPP/FirstPersonExample/CameraController.cpp
     )
     # define compiler settings
     target_compile_definitions(FP_EXAMPLE_CPP PRIVATE USE_NEW_AUDIO_ENGINE)
     target_compile_options(FP_EXAMPLE_CPP PRIVATE ${COMPILER_OPTIONS})
     # add GLGE
     target_link_libraries(FP_EXAMPLE_CPP GLGE)
+
+# Unit tests
+    project(UNIT_TEST_CPP
+        VERSION 1.0
+        DESCRIPTION "A list of automated tests for GLGE"
+        LANGUAGES CXX)
+    # executable for test project
+    add_executable(UNIT_TEST_CPP
+        src/CPP/UnitTest/main.cpp
+        src/CPP/UnitTest/tests.cpp
+    )
+    # define compiler settings
+    target_compile_definitions(UNIT_TEST_CPP PRIVATE USE_NEW_AUDIO_ENGINE)
+    target_compile_options(UNIT_TEST_CPP PRIVATE ${COMPILER_OPTIONS})
+    # add GLGE
+    target_link_libraries(UNIT_TEST_CPP GLGE)
+
+# Example hub
+    project(EXAMPLE_HUB_CPP
+        VERSION 1.0
+        DESCRIPTION "A hub to start other example projects from"
+        LANGUAGES CXX)
+    # executable for test project
+    add_executable(EXAMPLE_HUB_CPP
+        src/main.cpp
+    )
+    # define compiler settings
+    target_compile_definitions(EXAMPLE_HUB_CPP PRIVATE USE_NEW_AUDIO_ENGINE)
+    target_compile_options(EXAMPLE_HUB_CPP PRIVATE ${COMPILER_OPTIONS})
+    # add GLGE
+    target_link_libraries(EXAMPLE_HUB_CPP GLGE)

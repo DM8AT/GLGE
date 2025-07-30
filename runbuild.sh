@@ -39,8 +39,8 @@ if [ $# == 0 ]; then
     echo -e ""
 
     # run the C++ test program
-    echo [INFO] Running first person example
-    ./build/FP_EXAMPLE_CPP
-    echo [INFO] Finished first person example
+    echo [INFO] Running example hub
+    ./build/EXAMPLE_HUB_CPP
+    echo [INFO] Finished example hub
 
 fi

@@ -31,7 +31,10 @@
 void SDL_Main_Thread(Logger* logger)
 {
     //wait till there are windows
-    while (__glge_all_windows_sdl.size() == 0) {std::this_thread::sleep_for(std::chrono::milliseconds(10));}
+    while ((__glge_all_windows_sdl.size() == 0) && __glge_sdl_thread_open) {std::this_thread::sleep_for(std::chrono::milliseconds(10));}
+
+    //if the thread was closed, stop
+    if (!__glge_sdl_thread_open) {return;}
 
     //start the sdl limiter
     Instance::getSDLLimiter().start();
