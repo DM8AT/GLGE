@@ -2,3 +2,6 @@
 	path = src/GLGE/GLGE3rdParty/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "src/GLGE/GLGE3rdParty/assimp"]
+	path = src/GLGE/GLGE3rdParty/assimp
+	url = https://github.com/assimp/assimp.git
