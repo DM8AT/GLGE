@@ -1,0 +1,245 @@
+/**
+ * @file GLGE_OGL4_6_Instance.cpp
+ * @author DM8AT
+ * @brief implement the OpenGL 4.6 instance
+ * @version 0.1
+ * @date 2025-04-16
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
+
+//include the instance
+#include "GLGE_OGL4_6_Instance.h"
+//include command buffers
+#include "../../GLGEGraphicAPI_CommandBuffer.h"
+
+//include windows
+#include "GLGE_OGL4_6_Window.h"
+#include "../../../GLGEWindow.h"
+//include buffer
+#include "../../../GLGEBuffer.h"
+
+//include OpenGL
+#include <GL/glew.h>
+//include SDL2
+#include <SDL2/SDL.h>
+
+//inlcude the shared graphic data
+#include "../../../GLGEGraphicShared.h"
+
+//check for Dear ImGui usage
+#if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+//include Dear ImGui
+#include "../../../../GLGE3rdParty/imgui/imgui.h"
+#include "../../../../GLGE3rdParty/imgui/backends/imgui_impl_sdl2.h"
+#include "../../../../GLGE3rdParty/imgui/backends/imgui_impl_opengl3.h"
+
+#endif
+
+/**
+ * @brief a callback function for an OpenGL error
+ * 
+ * @param source the source of the error
+ * @param type the type of the error
+ * @param id the error's ID
+ * @param severity the severity of the error
+ * @param length the length of the error message
+ * @param message the error message
+ * @param instance a pointer to the instance the call came from
+ */
+static void oglMessageCallback(GLenum source, GLenum type, GLuint, GLenum severity, GLsizei, const GLchar* message, const void* instance)
+{
+    //extract the instance
+    OGL4_6_Instance* inst = (OGL4_6_Instance*)instance;
+
+    //stop junk from passing through
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {return;}
+    
+    //check if debugging is disabled
+    #if !GLGE_ENABLE_DEBUGGING
+    //allow only performance warnings and errors
+    if (!((type == GL_DEBUG_TYPE_ERROR) || (type == GL_DEBUG_TYPE_PERFORMANCE)))
+    {return;}
+    #endif //no debug section
+
+    //construct an ouput stream
+    std::stringstream stream;
+    //fill the stream with the error
+    stream << "OpenGL error occourred at " << source << ". Severity: " << severity << ", callback type: " << type << ". Message: \n" << message << "\n";
+    //log the stream
+    inst->getInstance()->log(stream, MESSAGE_TYPE_INFO);
+}
+
+void OGL4_6_Instance::onRender()
+{
+    //loop over all command buffers
+    for (size_t i = 0; i < m_buffers.size(); ++i)
+    {
+        //execute the command buffer
+        m_buffers[i]->play();
+    }
+}
+
+void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
+{
+    //activate the context
+    SDL_GL_MakeCurrent((SDL_Window*)window->getWindow()->getSDL2Window(), m_context);
+    //initalize GLEW
+    GLenum res = glewInit();
+    //check if GLEW initalized good
+    if (res != GLEW_OK)
+    {
+        //get the error string
+        char* str = (char*)glewGetErrorString(res);
+        //print an error
+        std::stringstream out;
+        out << "Failed to initalize GLEW: " << str;
+        m_instance->log(out, MESSAGE_TYPE_FATAL_ERROR);
+        return;
+    }
+
+    //add error logging
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(oglMessageCallback, this);
+
+    //store all needed extensions
+    const std::vector<std::string_view> needed = {
+        //bindless textures are needed for textures
+        "GL_ARB_bindless_texture"
+    };
+    //store the amount of found extensions
+    uint64_t found = 0;
+
+    //get all OpenGL extensions
+    int32_t extensionCount = 0;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &extensionCount);
+    //iterate over all extensions
+    for (int32_t i = 0; i < extensionCount; ++i)
+    {
+        //get the name of the extension
+        const GLubyte* name = glGetStringi(GL_EXTENSIONS, i);
+        //convert the name to a const string view
+        std::string_view view = (const char*)name;
+
+        //check if the element is in the needed list
+        if (std::find(needed.begin(), needed.end(), view) != needed.end())
+        {
+            //increment the amount of found extensions
+            ++found;
+        }
+    }
+    //check if not all extensions where found
+    if (found != needed.size())
+    {
+        //fatal error!
+        //inform about the error
+        m_instance->log("Failed to find all neccecery OpenGL extensions. Nececcery are:\n - GL_ARB_bindless_texture", MESSAGE_TYPE_FATAL_ERROR);
+        return;
+    }
+
+    //store that GLEW is initalized
+    m_hasGLEW = true;
+    //add the data command buffer. It must be buffer 0. 
+    addCommandBuffer(&m_dataBuffer);
+
+    //create the texture buffer
+    m_textures = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_textures->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_textures->getMemoryArena())->setAPI(true);
+    //create the image buffer
+    m_images = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_images->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_images->getMemoryArena())->setAPI(true);
+
+    //create the camera buffer
+    m_camera = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_camera->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_camera->getMemoryArena())->setAPI(true);
+
+    //create the object buffer
+    m_objTransf = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_objTransf->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_objTransf->getMemoryArena())->setAPI(true);
+
+    //check if Dear ImGui should be used
+    #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+    //check the ImGui version
+    IMGUI_CHECKVERSION();
+    //create the context for Dear ImGui
+    ImGui::CreateContext();
+    //set the instances
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+    //set the default style to classic
+    ImGui::StyleColorsClassic();
+
+    //initalize Dear ImGui
+    if (!ImGui_ImplSDL2_InitForOpenGL((SDL_Window*)window->getWindow()->getSDL2Window(), m_context))
+    {
+        //failed to initalize ImGui for SDL2
+        m_instance->log("Failed to initalize SDL2 for ImGui", MESSAGE_TYPE_ERROR);
+    }
+    //initalize both SDL2 and OpenGL
+    if (!ImGui_ImplOpenGL3_Init())
+    {
+        //failed to initalize ImGui for OpenGL
+        m_instance->log("Failed to initalize OpenGL for ImGui", MESSAGE_TYPE_ERROR);
+    }
+
+    //say that ImGui is now initalized
+    __glge_imgui_inited = true;
+
+    #endif
+
+    //initalization is done
+    m_isSetupFinished = true;
+}
+
+void OGL4_6_Instance::onCreate()
+{
+    //say that GLEW is not initalized
+    m_hasGLEW = false;
+    //create the data command buffer
+    m_dataBuffer.create(this);
+}
+
+void OGL4_6_Instance::onDestroy()
+{
+    //remove the command buffer
+    removeCommandBuffer(&m_dataBuffer);
+    //delete the command buffer
+    m_dataBuffer.destroy();
+    //free the texture and image buffer
+    delete m_textures;
+    delete m_images;
+    m_textures = 0;
+    m_images = 0;
+    //delete the camera buffer
+    delete m_camera;
+    m_camera = 0;
+    //delete the object transform buffer
+    delete m_objTransf;
+    m_objTransf = 0;
+    
+    //check for ImGui
+    #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+    //say that ImGui is no longer initalized
+    __glge_imgui_inited = false;
+
+    //close the ImGui context
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
+    #endif //end of ImGui-Shutdown section
+
+    //clear the context
+    SDL_GL_DeleteContext(m_context);
+    m_context = 0;
+}

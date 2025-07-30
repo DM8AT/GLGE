@@ -17,9 +17,17 @@
 #include "GLGESettings.h"
 
 //include graphic APIs
-#include "GraphicAPIs/GLGEApi.h"
+#include "APIs/GLGEApi.h"
+//include the time
+#include "Time/GLGETime.h"
+//include logging
+#include "Logging/GLGELogger.h"
+//include files
+#include "Files/GLGEFile.h"
 
 //include instances
 #include "GLGEInstance.h"
+//include geometry
+#include "Geometry/GLGEGeometry.h"
 
 #endif

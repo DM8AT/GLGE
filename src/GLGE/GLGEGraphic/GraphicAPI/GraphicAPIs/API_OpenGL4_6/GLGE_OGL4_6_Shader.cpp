@@ -1,0 +1,282 @@
+/**
+ * @file GLGE_OGL4_6_Shader.cpp
+ * @author DM8AT
+ * @brief define the OpenGL 4.6 shader implementatoin
+ * @version 0.1
+ * @date 2025-05-13
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
+
+//include the OpenGL 4.6 shader
+#include "GLGE_OGL4_6_Shader.h"
+//include the actual shader
+#include "../../../Shader/GLGEShader.h"
+//include textures
+#include "../../../GLGETexture.h"
+//include buffer
+#include "../../../GLGEBuffer.h"
+//include OpenGL
+#include <GL/glew.h>
+
+//include OpenGL instances
+#include "GLGE_OGL4_6_Instance.h"
+//include command buffers
+#include "GLGE_OGL4_6_CommandBuffer.h"
+
+void OGL4_6_Shader::onCreate() noexcept
+{
+    //add the creation data
+    m_shader->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)compileShader, this, sizeof(this));
+}
+
+void OGL4_6_Shader::onDestroy() noexcept
+{
+    //queue the deletion of the shader
+    m_shader->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)destroyShader, this, sizeof(this));
+}
+
+void OGL4_6_Shader::onAttatch(GraphicCommandBuffer* cmdBuff) noexcept
+{
+    //add the attatching to the command buffer
+    cmdBuff->add(0, (void*)attatchShader, this, sizeof(this));
+}
+
+void OGL4_6_Shader::onDetatch(GraphicCommandBuffer* cmdBuff) noexcept
+{
+    //add the detatching to the command buffer
+    cmdBuff->add(0, (void*)detatchShader, this, sizeof(this));
+}
+
+void OGL4_6_Shader::attatchShaderDirect() noexcept
+{
+    //iterate over all (potential) textures
+    for (auto it = m_shader->getTextures().begin(); it != m_shader->getTextures().end(); ++it)
+    {
+        //activate the texture
+        it->second->getGraphicTexture()->activate();
+    }
+
+    //iterate over all buffers
+    for (auto it = m_shader->getBuffers().begin(); it != m_shader->getBuffers().end(); ++it)
+    {
+        //directly bind the buffer
+        ((OGL4_6_MemoryArena*)it->second.buffer)->directBind(it->second.unit);
+    }
+
+    //attach the shader
+    glUseProgram(m_program);
+}
+
+void OGL4_6_Shader::detatchShaderDirect() noexcept
+{
+    //unbind any shader
+    glUseProgram(0);
+
+    //iterate over all (potential) textures
+    for (auto it = m_shader->getTextures().begin(); it != m_shader->getTextures().end(); ++it)
+    {
+        //deactivate the texture
+        it->second->getGraphicTexture()->deactivate();
+    }
+}
+
+bool OGL4_6_Shader::compileSubProgram(ShaderType type, uint32_t& shader) noexcept
+{
+    //store the finalized string
+    std::string finalized = m_shader->getSource();
+    //finalize the string for the stage
+    Shader::prepareForStage(finalized, type);
+
+    //set the main function (must be called "main" for GLSL)
+    const std::string& entry = m_shader->getShaderStages()[type];
+    uint64_t pos = finalized.find(entry);
+    //safty check to check if an entry point is found
+    if (pos == std::string::npos)
+    {
+        //if not, return an error
+        std::stringstream stream;
+        stream << "Could not find an entry point named \"" << entry << "\" in a shader of type " << type;
+        m_shader->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        return false;
+    }
+    finalized.replace(pos, entry.size(), "main");
+
+    //store the correct OpenGL type
+    GLenum stage = 0;
+    //switch over the stage to select the correct OpenGL value
+    switch (type)
+    {
+    case SHADER_TYPE_VERTEX:
+        stage = GL_VERTEX_SHADER;
+        break;
+    case SHADER_TYPE_FRAGMENT:
+        stage = GL_FRAGMENT_SHADER;
+        break;
+    case SHADER_TYPE_GEOMETRY:
+        stage = GL_GEOMETRY_SHADER;
+        break;
+    case SHADER_TYPE_TESSELATION_CONTROLL:
+        stage = GL_TESS_CONTROL_SHADER;
+        break;
+    case SHADER_TYPE_TESSELATION_EVALUATION:
+        stage = GL_TESS_EVALUATION_SHADER;
+        break;
+    case SHADER_TYPE_COMPUTE:
+        stage = GL_COMPUTE_SHADER;
+        break;
+    
+    default:
+        break;
+    }
+
+    //create the shader
+    shader = glCreateShader(stage);
+
+    //store the parameters
+    const char* str = finalized.c_str();
+    int32_t size = finalized.size();
+    //add the shader's source code
+    glShaderSource(shader, 1, &str, &size);
+
+    //compile the shader
+    glCompileShader(shader);
+    //get the shader's compillation state
+    GLint state = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &state);
+
+    //check if the compillation was successfull
+    if (!state)
+    {
+        //store the error message
+        GLchar buff[1024];
+        glGetShaderInfoLog(shader, 1024, 0, buff);
+        //log an error
+        std::stringstream stream;
+        stream << "Failed to compile a shader element. Error:\n" << buff;
+        m_shader->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        //return that the compillation failed
+        return false;
+    }
+
+    //clean the error context
+    while (glGetError() != GL_NO_ERROR) {};
+    //attatch the shader
+    glAttachShader(m_program, shader);
+    //handle errors generated by attatching the element
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR)
+    {
+        //print the erro
+        std::stringstream stream;
+        stream << "Failed to attatch a sub-shader of type " << type << " to the shader - GL error: " << err << "\n";
+        //failed to compile and add the shader
+        return false;
+    }
+
+    //return that the compilation was successfull
+    return true;
+}
+
+void OGL4_6_Shader::compileShader(void* cmdData, uint64_t) noexcept
+{
+    //compile a shader from a command buffer
+
+    //read the shader
+    OGL4_6_Shader* self = (OGL4_6_Shader*)cmdData;
+
+    //store all shader
+    std::vector<uint32_t> shaders;
+    shaders.reserve(self->getShader()->getShaderStages().size());
+
+    //create the new program
+    self->m_program = glCreateProgram();
+
+    //store if the shader compiled
+    bool success = true;
+    //iterate over all stages
+    for (auto it = self->getShader()->getShaderStages().begin(); it != self->getShader()->getShaderStages().end(); ++it)
+    {
+        //store the new shader
+        uint32_t shader = 0;
+        //compile the sub shader
+        if (!self->compileSubProgram(it->first, shader))
+        {
+            //if the compillation failed, note it
+            success = false;
+            //stop
+            break;
+        }
+        //add the shader
+        shaders.push_back(shader);
+    }
+
+    //check if the compillation failed
+    if (!success)
+    {
+        //iterate over all shader
+        for (uint64_t i = 0; i < shaders.size(); ++i)
+        {
+            //delete the shader
+            glDeleteShader(shaders[i]);
+        }
+        //log the error
+        self->getShader()->getInstance()->log("Failed to compile shader - Sub shader failed to compile", MESSAGE_TYPE_ERROR);
+        return;
+    }
+
+    //link the program
+    glLinkProgram(self->m_program);
+
+    //delete all shader
+    for (uint64_t i = 0; i < shaders.size(); ++i) {glDeleteShader(shaders[i]);}
+
+    //check the link status
+    int32_t status = 0;
+    glGetProgramiv(self->m_program, GL_LINK_STATUS, &status);
+    //check the status
+    if (!status)
+    {
+        //get and store the linking error
+        GLchar buff[1024];
+        glGetProgramInfoLog(self->m_program, 1024, 0, buff);
+        //log the error
+        std::stringstream stream;
+        stream << "Failed to link the shader. Error:\n" << buff;
+        self->getShader()->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        //stop the function
+        return;
+    }
+}
+
+void OGL4_6_Shader::destroyShader(void* data, uint64_t) noexcept
+{
+    //extract the shader pointer
+    OGL4_6_Shader* shader = (OGL4_6_Shader*)data;
+    
+    //delete the shader
+    glDeleteProgram(shader->m_program);
+    //set the program to 0
+    shader->m_program = 0;
+    //make sure to use program 0
+    glUseProgram(0);
+}
+
+void OGL4_6_Shader::attatchShader(void* data, uint64_t) noexcept
+{
+    //extract the shader
+    OGL4_6_Shader* shader = (OGL4_6_Shader*)data;
+
+    //directly attatch the shader
+    shader->attatchShaderDirect();
+}
+
+void OGL4_6_Shader::detatchShader(void* data, uint64_t) noexcept
+{
+    //extract the shader
+    OGL4_6_Shader* shader = (OGL4_6_Shader*)data;
+
+    //directly detatch the shader
+    shader->detatchShaderDirect();
+}

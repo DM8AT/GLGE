@@ -144,6 +144,43 @@ typedef struct GLGE_VEC_STRUCT_NAME {
     inline void operator/=(const GLGE_VEC_STRUCT_NAME& ot) noexcept {x /= ot.x; y /= ot.y; z /= ot.z; w /= ot.w;}
 
     /**
+     * @brief access a specifc element of the vector by its index
+     * @warning the index is not sanity-checked
+     * 
+     * @param idx the index of the element to access
+     * @return GLGE_VEC_TYPE& a reference to the element stored at that position
+     */
+    inline GLGE_VEC_TYPE& operator[](uint8_t idx) noexcept {return *((&x) + idx);}
+
+    /**
+     * @brief access a specifc element of the vector by its index
+     * @warning the index is not sanity-checked
+     * 
+     * @param idx the index of the element to access
+     * @return GLGE_VEC_TYPE& a reference to the element stored at that position
+     */
+    inline const GLGE_VEC_TYPE& operator[](uint8_t idx) const noexcept {return *((&x) + idx);}
+
+    /**
+     * @brief get the length of the vector
+     * 
+     * @return float the length of the vector
+     */
+    inline float length() const noexcept {return sqrt(x*x + y*y + z*z + w*w);}
+
+    /**
+     * @brief get a vector that points in the same direction as this vector but has a length of 1
+     * 
+     * @return the vector with a length of 1
+     */
+    inline GLGE_VEC_STRUCT_NAME normalize() const noexcept {return *this / length();}
+
+    /**
+     * @brief set the length of this vector to always be 1
+     */
+    inline void normalizeThis() noexcept {*this /= length();}
+
+    /**
      * @brief convert a vector into a string
      * 
      * @return the string storing the vector's data
@@ -217,44 +254,7 @@ GLGE_FUNCTION_INLINE GLGE_VEC_NAME GLGE_C_FUNC(GLGE_DEFINE_CONCATINATE(GLGE_VEC_
  * @param vec the vector to convert to a string
  * @return const char* the vector as a string
  */
-const char* GLGE_C_FUNC(GLGE_DEFINE_CONCATINATE(GLGE_VEC_NAME, _asString))(GLGE_CONST_REF(GLGE_VEC_NAME) vec) GLGE_FUNC_NOEXCEPT
-{
-    //check if this is C++
-    #if GLGE_CPP
-    //get the C++ string
-    std::string str = vec.asString().c_str();
-    //allocate the output string
-    char* outstr = (char*)malloc(str.size()+1);
-    //clear the buffer
-    bzero(outstr, str.size()+1);
-    //copy the data
-    memcpy(outstr, str.data(), str.size());
-    //return the string
-    return (const char*)outstr;
-    //else, this is C
-    #else
-    //store the format prefix
-    const char* fmtPref = GLGE_STRINGIFY_DEFINE(GLGE_VEC_NAME);
-    //store the format suffix
-    const char* fmtSuff = "{%f, %f, %f, %f}";
-    //concatinate both
-    char fmt[20] = { 0 };
-    //copy the prefix
-    memcpy(fmt, fmtPref, strlen(fmtPref));
-    //copy the suffix
-    memcpy(fmt + strlen(fmtPref), fmtSuff, strlen(fmtSuff));
-    //get the size of the output
-    uint64_t outs = snprintf(NULL, 0, fmt, vec.x, vec.y, vec.z, vec.w);
-    //create the output
-    const char* str = (const char*)malloc(outs+1);
-    //clear the output
-    bzero((void*)str, outs+1);
-    //fill the output buffer
-    snprintf((char*)str, outs, fmt, vec.x, vec.y, vec.z, vec.w);
-    //return the string
-    return str;
-    #endif
-}
+const char* GLGE_C_FUNC(GLGE_DEFINE_CONCATINATE(GLGE_VEC_NAME, _asString))(GLGE_CONST_REF(GLGE_VEC_NAME) vec) GLGE_FUNC_NOEXCEPT;
 
 /**
  * @brief add two 4D vectors together
@@ -462,6 +462,19 @@ GLGE_FUNCTION_INLINE GLGE_VEC_TYPE GLGE_C_FUNC(GLGE_DEFINE_CONCATINATE(GLGE_VEC_
 {
     //return the dot product
     return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;
+}
+
+/**
+ * @brief calculate the length of the vector
+ * 
+ * @param v the vector to calculate the length from
+ * 
+ * @return the length of the vector
+ */
+GLGE_FUNCTION_INLINE float GLGE_C_FUNC(GLGE_DEFINE_CONCATINATE(GLGE_VEC_NAME, _length))(GLGE_CONST_REF(GLGE_VEC_NAME) v)
+{
+    //return the length of the vector
+    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);
 }
 
 //stop the C-Section

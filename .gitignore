@@ -5,8 +5,21 @@
 build/*
 
 # ignore vscode
-.vscode/*
+.vscode/settings.json
 
 # ignore compiled shaders
 *.spv
 shader/glslc.sh
+
+# Ignore raw text
+*.txt
+# Ignore LibreOffice Draw files
+*.odg
+# Ignore LibreOffice Draw lock files
+*.odg#
+# Ignore doxygen files
+doxygen
+Doxyfile
+
+# Ignore the file used to store ImGui windows
+imgui.ini

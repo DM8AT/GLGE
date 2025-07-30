@@ -102,15 +102,8 @@
 
 //check if a prefix should be used for functions
 #if GLGE_PREFIX_C_FUNCTIONS
-//check if this is C++ and prefixing should only happen in C
-#if GLGE_CPP && !GLGE_PREFIX_ALWAYS
-//define the prefix as empty
-#define GLGE_FUNC_PREFIX
-//else, use the prefix
-#else
 //define the actual function prefix as the specified prefix
 #define GLGE_FUNC_PREFIX GLGE_PREFIX
-#endif //C / C++ check
 //else, no prefixing should occour
 #else
 //set the prefix to empty
@@ -119,5 +112,34 @@
 
 //this macro helps to prefix a C function
 #define GLGE_C_FUNC(func) GLGE_DEFINE_CONCATINATE(GLGE_FUNC_PREFIX, func)
+
+//check if debugging is enabled
+#if GLGE_ENABLE_DEBUGGING
+//say that debugging is enabled
+#define GLGE_DEBUG_WRAPPER(debug) debug
+#else
+//say that debugging is disabled
+#define GLGE_DEBUG_WRAPPER(debug)
+#endif //debug check
+
+/**
+ * @brief allign some variable to a specific byte boundry
+ * 
+ * @param bytes how many bytes to allign to
+ */
+#define GLGE_ALIGN_BYTE(bytes) __attribute__ ((aligned (bytes)))
+
+/**
+ * @brief define a macro to zero out a specific memory reagion
+ */
+#ifndef bzero
+/**
+ * @brief zeros out a specific reagion of memory
+ * 
+ * @param ptr the pointer to zero out
+ * @param size the size of the pointer in bytes
+ */
+#define bzero(ptr, size) memset(ptr, 0, size)
+#endif
 
 #endif

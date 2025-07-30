@@ -21,6 +21,12 @@
 
 //include all vectors
 #include "Vectors/GLGEVectors.h"
+//include matricies
+#include "Matricies/GLGEMatrices.h"
+//include angles
+#include "Angles/GLGEAngles.h"
+//include imaginary stuff
+#include "Imaginary/GLGEImaginary.h"
 
 #endif //math including section
 

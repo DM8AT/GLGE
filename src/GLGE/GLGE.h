@@ -25,11 +25,11 @@ namespace GLGE_NAMESPACE {
 //include the library core
 #include "GLGECore/GLGECore.h"
 
-//include the math module
-#include "GLGEMath/GLGEMath.h"
-
 //include the graphic module
 #include "GLGEGraphic/GLGEGraphic.h"
+
+//include the math module
+#include "GLGEMath/GLGEMath.h"
 
 //check if a namespace should be used and if this is C++
 #if GLGE_CREATE_NAMESPACE && GLGE_CPP

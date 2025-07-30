@@ -19,6 +19,9 @@
 //check if the graphic core is enabled
 #if GLGE_INCLUDE_GRAPHICS
 
+//include all APIs
+#include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
+
 //check if the math core is included
 #if !GLGE_INCLUDE_MATH
 //check if compile time errors are enabled
@@ -28,8 +31,42 @@
 #endif //compile errors
 #endif //math include check
 
+//include textures
+#include "GLGETexture.h"
+//include framebuffers
+#include "GLGEFramebuffer.h"
 //include windows
 #include "GLGEWindow.h"
+//include render pipelines
+#include "GLGERenderPipeline.h"
+//include shaders
+#include "Shader/GLGEShader.h"
+//include shader processors
+#include "Shader/GLGEShaderProcessor.h"
+//include render meshes
+#include "GLGERenderMesh.h"
+//include buffers
+#include "GLGEBuffer.h"
+
+//include materials
+#include "GLGERenderMaterial.h"
+//include render meshes
+#include "GLGERenderMesh.h"
+//include render vertex layouts
+#include "GLGERenderVertexLayout.h"
+//inlcude object renderer
+#include "GLGEObjectRenderer.h"
+
+//include cameras
+#include "GLGECamera.h"
+
+//check if Dear ImGui should be used. It can sadly only be used in C++
+#if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI && GLGE_CPP
+
+//include the main ImGui file
+#include "../GLGE3rdParty/imgui/imgui.h"
+
+#endif //Dear ImGui section
 
 #endif //graphic including section
 
