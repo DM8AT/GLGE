@@ -18,7 +18,7 @@
 #include "../GLGEGraphic/GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 //include windows
 #include "../GLGEGraphic/GLGEWindow.h"
-//include SDL2
+//include SDL2 and shared graphics
 #include "../GLGEGraphic/GLGEGraphicShared.h"
 #endif //Graphic section
 
@@ -249,13 +249,13 @@ void Instance::captureMouseByWindow(const Window* window) noexcept
 void Instance::setCapturedCursorVisible(bool visible) const noexcept
 {
     //set if the cursor is visible
-    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE, visible ? "1" : "0");
+    SDL_SetHint("SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE", visible ? "1" : "0");
 }
 
 void Instance::setCapturedCursorCenter(bool center) const noexcept
 {
     //set if the window gets centerd
-    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, center ? "1" : "0");
+    SDL_SetHint("SDL_HINT_MOUSE_RELATIVE_MODE_CENTER", center ? "1" : "0");
 }
 
 #endif //Graphic section
