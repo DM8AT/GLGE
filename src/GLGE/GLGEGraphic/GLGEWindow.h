@@ -237,6 +237,30 @@ public:
     //add the window event layer as a friend class
     friend class WindowEventLayer;
 
+    /**
+     * @brief move the mouse cursor to a specific pixel inside the window
+     * 
+     * Mapping:
+     * h : height
+     * w : width
+     * 0/0 -- w/0
+     *  |      |
+     * 0/h -- w/h
+     * 
+     * @param pixel the pixel coordinate to warp to according to the mapping
+     */
+    void warpMouseCursor(uvec2 pixel) const noexcept;
+
+    /**
+     * @brief use this window to capture the mouse
+     */
+    inline void captureMouse() const noexcept {m_instance->captureMouseByWindow(this);}
+
+    /**
+     * @brief release the mouse from any capture
+     */
+    inline void releaseMouse() const noexcept {m_instance->captureMouseByWindow(0);}
+
 protected:
 
     /**

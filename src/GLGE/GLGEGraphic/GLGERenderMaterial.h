@@ -19,6 +19,49 @@
 #include "GLGEBuffer.h"
 //shader are needed to render a material
 #include "Shader/GLGEShader.h"
+//meshes are needed for meshes
+#include "../GLGECore/Geometry/Mesh/GLGEMesh.h"
+//information on how the verticies are stored is needed for rendering
+#include "GLGERenderVertexLayout.h"
+
+/**
+ * @brief store how the depth test works
+ */
+typedef enum e_DepthTest
+{
+    /**
+     * @brief the depth test will always pass
+     */
+    DEPTH_TEST_ALWAYS = 0,
+    /**
+     * @brief the depth test will never pass
+     */
+    DEPTH_TEST_NEVER,
+    /**
+     * @brief the depth test will only pass if the clipspace z component is less than the stored depth value
+     */
+    DEPTH_TEST_LESS,
+    /**
+     * @brief the depth test will only pass if the clipspace z component is less or equal than the stored depth value
+     */
+    DEPTH_TEST_LESS_EQUALS,
+    /**
+     * @brief the depth test will only pass if the clipspace z component is greater than the stored depth value
+     */
+    DEPTH_TEST_GREATER,
+    /**
+     * @brief the depth test will only pass if the clipspace z component is greater or equal than the stored depth value
+     */
+    DEPTH_TEST_GREATER_EQUALS,
+    /**
+     * @brief the depth test will only pass if the clipspace z component is equal to the stored depth value
+     */
+    DEPTH_TEST_EQUALS,
+    /**
+     * @brief the depth test will only pass if the clipspace z component is not equal to the stored depth value
+     */
+    DEPTH_TEST_NOT_EQUALS
+} DepthTest;
 
 //check for C++ (only C++ supports classes)
 #if GLGE_CPP
@@ -44,9 +87,13 @@ public:
      * @brief Construct a new Render Material
      * 
      * @param elementSize the size of a single material instance in VRam
+     * @param culling true : back faces will be cullded (clockwise order) | false : back faces won't be culled
+     * @param depthTest an enum dictating how the depth test should be done
+     * @param depthWrite true : the value from the z component of the clip space position will be written to the depth buffer | false : the z component of the clip space is ignored
+     * @param vLayout store information on the layout of the verticies
      * @param inst a reference to the instance the render material will belong to
      */
-    RenderMaterial(uint64_t elementSize, Instance& inst) noexcept;
+    RenderMaterial(uint64_t elementSize, bool culling, DepthTest depthTest, bool depthWrite, RenderVertexLayout* vLayout, Instance& inst) noexcept;
 
     /**
      * @brief Destroy the Render Material
@@ -62,6 +109,29 @@ public:
     }
 
     /**
+     * @brief get if backface culling is enabled
+     * 
+     * @return true : back faces will be culled
+     * @return false : back faces will be drawn
+     */
+    inline bool isCullingEnabled() const noexcept {return m_cullFaces;}
+
+    /**
+     * @brief get the state of the depth test
+     * 
+     * @return DepthTest an enum value dictating the depth testing methode
+     */
+    inline DepthTest getDepthTesting() const noexcept {return m_depthTest;}
+
+    /**
+     * @brief get if depth writing is enabled
+     * 
+     * @return true : the depth value is written to a depth buffer
+     * @return false : the depth value is ignored
+     */
+    inline bool isDepthWriteEnabled() const noexcept {return m_depthWrite;}
+
+    /**
      * @brief Get the Buffer that contains the material instance data in VRam
      * @warning ONLY USE IF YOU KNOW WHAT YOU'RE DOING
      * 
@@ -70,19 +140,25 @@ public:
     inline Buffer& getBuffer() noexcept {return m_materialData;}
 
     /**
-     * @brief Get the Index Buffer
+     * @brief Get the Vertex Buffer of the vertex layout
      * 
-     * @return Buffer& a buffer containing all indices of all meshes bound to the instance. All sub-meshes are zero based. 
+     * @return GraphicMemoryArena* a pointer to the vertex buffer
      */
-    inline Buffer& getIndexBuffer() noexcept {return m_indices;}
+    inline GraphicMemoryArena* getVertexBuffer() const noexcept {return m_vLayout->getVertexBuffer();}
 
     /**
-     * @brief Get the Vertex Buffer
-     * @warning the format of the vertices is unknown. 
+     * @brief Get the Index Buffer of the vertex layout
      * 
-     * @return Buffer& a buffer containing all vertices of all meshes bound to the instance
+     * @return GraphicMemoryArena* a pointer to the index buffer of the vertex layout
      */
-    inline Buffer& getVertexBuffer() noexcept {return m_vertices;}
+    inline GraphicMemoryArena* getIndexBuffer() const noexcept {return m_vLayout->getIndexBuffer();}
+
+    /**
+     * @brief Get the Vertex Layout that is expected by this material
+     * 
+     * @return RenderVertexLayout* a pointer to the expected vertex layout
+     */
+    inline RenderVertexLayout* getVertexLayout() const noexcept {return m_vLayout;}
 
     /**
      * @brief Set the Shader of the material
@@ -127,8 +203,8 @@ protected:
      * @brief add a render mesh to this material and say that it uses this material
      * 
      * @param mesh a pointer to the mesh that uses this material
-     * @return true 
-     * @return false 
+     * @return true : sucsessfully added it
+     * @return false : error - something went wrong
      */
     inline bool registerMesh(RenderMesh* mesh) noexcept
     {
@@ -167,6 +243,53 @@ protected:
     }
 
     /**
+     * @brief manage the indexing data for one mesh
+     */
+    struct MeshPointer
+    {
+        /**
+         * @brief store in how many render meshes the pointer is referenced
+         */
+        uint64_t instances = 0;
+        /**
+         * @brief store a pointer into the vertex data
+         */
+        GraphicMemoryArena::GraphicPointer vertexPtr = {0,0};
+        /**
+         * @brief store a pointer into the index data
+         */
+        GraphicMemoryArena::GraphicPointer indexPtr = {0,0};
+    };
+
+    /**
+     * @brief add an instance of a base mesh to the material for rendering
+     * 
+     * @param mesh a pointer to the default mesh to register
+     * @return const MeshPointer* a read-only pointer to the data
+     */
+    const MeshPointer* addMeshInstance(Mesh* mesh) noexcept;
+
+    /**
+     * @brief remove an instance of a base mesh from the material
+     * 
+     * @param mesh a pointer to the mesh to remove from this material
+     */
+    void removeMeshInstance(Mesh* mesh) noexcept;
+
+    /**
+     * @brief store if back faces should be culled
+     */
+    bool m_cullFaces = true;
+    /**
+     * @brief store the methode used for depth testing
+     */
+    DepthTest m_depthTest = DEPTH_TEST_ALWAYS;
+    /**
+     * @brief store if the fragment depth write is enabled
+     */
+    bool m_depthWrite = true;
+
+    /**
      * @brief store the size of a single material instance in VRam
      */
     uint64_t m_elementSize = 0;
@@ -179,17 +302,17 @@ protected:
      */
     Buffer m_materialData;
     /**
-     * @brief store all vertices for all meshes the material owns, regardless of the structure
+     * @brief store layout information for the verticies of the mesh
      */
-    Buffer m_vertices;
-    /**
-     * @brief store all indices for all meshes the material owns. Every segment is zero-based. 
-     */
-    Buffer m_indices;
+    RenderVertexLayout* m_vLayout = 0;
     /**
      * @brief store all the meshes that use this material
      */
     std::vector<RenderMesh*> m_meshes;
+    /**
+     * @brief store pointer to all meshes that are loaded to the render material
+     */
+    std::unordered_map<Mesh*, MeshPointer> m_storedMeshes;
 
 };
 

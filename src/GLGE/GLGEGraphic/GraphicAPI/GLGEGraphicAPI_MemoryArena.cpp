@@ -268,6 +268,19 @@ void GraphicMemoryArena::update(const GraphicPointer& ptr, void* data) noexcept
 
     //write the data to the CPU side buffer
     memcpy(((uint8_t*)m_data) + ptr.startIdx, data, ptr.size);
+
+    //check if an update for the reagion is queued
+    for (size_t i = 0; i < m_changed.size(); ++i)
+    {
+        //check if the pointers are the same
+        if (ptr == m_changed[i])
+        {
+            //if they are the same, stop - no GPU update needed if an update is pending
+            unlock();
+            return;
+        }
+    }
+
     //store that the memory updated
     m_changed.push_back(ptr);
 

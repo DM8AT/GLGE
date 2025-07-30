@@ -300,3 +300,6 @@ $$\   $$ |$$ |  $$ |$$ |  $$ |        $$ |      $$ |  $$ |$$ |  $$ |  $$ |      
 #define GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI 1
 
 #endif
+
+//add utilities
+#include "GLGEUtil.h"

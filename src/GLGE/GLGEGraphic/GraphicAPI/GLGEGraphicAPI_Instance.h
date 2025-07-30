@@ -144,6 +144,20 @@ public:
      */
     inline Buffer* getImageBuffer() const noexcept {return m_images;}
 
+    /**
+     * @brief Get the Camera Buffer
+     * 
+     * @return Buffer* a buffer contining the GPU data for the cameras
+     */
+    inline Buffer* getCameraBuffer() const noexcept {return m_camera;}
+
+    /**
+     * @brief Get the Object Transform Buffer
+     * 
+     * @return Buffer* a buffer contining the GPU data for the object transformations
+     */
+    inline Buffer* getObjectTransfBuffer() const noexcept {return m_objTransf;}
+
 protected:
 
     /**
@@ -182,6 +196,14 @@ protected:
      * An image is a single layer of an image (as example a single mip-map layer)
      */
     Buffer* m_images;
+    /**
+     * @brief store all camera elements with the respective data
+     */
+    Buffer* m_camera;
+    /**
+     * @brief store a GPU buffer with the transform structure of the object
+     */
+    Buffer* m_objTransf;
     
 };
 

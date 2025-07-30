@@ -36,6 +36,14 @@ extern uint32_t* __glge_all_window_count;
 //store all instances
 extern std::vector<Instance*>* __glge_all_instances;
 
+//check if ImGui is included
+#if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+//store if ImGui is initalized
+extern bool __glge_imgui_inited;
+
+#endif //end of ImGui only section
+
 //include events
 #include "../GLGECore/GLGEEvent.h"
 

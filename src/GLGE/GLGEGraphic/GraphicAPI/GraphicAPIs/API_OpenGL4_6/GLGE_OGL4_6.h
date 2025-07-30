@@ -29,5 +29,7 @@
 #include "GLGE_OGL4_6_Framebuffer.h"
 //include memory arenas
 #include "GLGE_OGL4_6_MemoryArena.h"
+//include the vertex layout
+#include "GLGE_OGL4_6_VertexLayout.h"
 
 #endif

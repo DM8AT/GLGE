@@ -73,22 +73,10 @@ void OGL4_6_MemoryArena::ogl_sizeChange(void* data, uint64_t) noexcept
     //extract the pointer to the object
     OGL4_6_MemoryArena& arena = *((OGL4_6_MemoryArena*)data);
 
-    //construct a new, temporary buffer
-    uint32_t buff;
-    glGenBuffers(1, &buff);
-
-    //store the type of the buffer
-    GLenum type = GL_STREAM_COPY;
-    //if this is a vertex or index buffer, use stream draw
-    if (arena.m_usage == MEMORY_USAGE_VERTEX_BUFFER || arena.m_usage == MEMORY_USAGE_INDEX_BUFFER) {type = GL_STREAM_DRAW;}
-
-    //write the data into it, with the new size
-    glBindBuffer(arena.m_bindingType, buff);
-    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, type);
-
-    //swap this with the old buffer and delete the old one
-    glDeleteBuffers(1, &arena.m_buff);
-    arena.m_buff = buff;
+    //bind the arena
+    glBindBuffer(arena.m_bindingType, arena.m_buff);
+    //store the new data
+    glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, GL_STREAM_DRAW);
 
     //unlock the resizing mutex to allow another resize command
     arena.m_resizeMutex.unlock();
@@ -103,7 +91,7 @@ void OGL4_6_MemoryArena::ogl_contentUpdate(void* data, uint64_t) noexcept
     if (arena.m_changed.size() == 0) {return;}
 
     //pull the data reagion to update
-    const GraphicPointer& ptr = arena.m_changed[0];
+    GraphicPointer ptr = arena.m_changed[0];
     //update the data
     glBindBuffer(arena.m_bindingType, arena.m_buff);
     //map the data to the CPU
@@ -163,9 +151,7 @@ void OGL4_6_MemoryArena::ogl_create(void* data, uint64_t) noexcept
     //bind the buffer to the requested target
     glBindBuffer(arena.m_bindingType, arena.m_buff);
     //store the type of the buffer
-    GLenum type = GL_STREAM_READ;
-    //if this is a vertex or index buffer, use stream draw
-    if (arena.m_usage == MEMORY_USAGE_VERTEX_BUFFER || arena.m_usage == MEMORY_USAGE_INDEX_BUFFER) {type = GL_STREAM_DRAW;}
+    GLenum type = GL_STREAM_DRAW;
     //fill the buffer with the current data. As usage, assume dynamic read
     glBufferData(arena.m_bindingType, arena.m_size, arena.m_data, type);
 }

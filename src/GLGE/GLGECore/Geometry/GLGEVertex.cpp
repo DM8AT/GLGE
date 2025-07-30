@@ -46,7 +46,7 @@ std::ostream& operator<<(std::ostream& os, VertexLayout& l) noexcept
     return os << "} vertexSize: " << l.m_vertexSize << "}";
 }
 
-constexpr bool VertexLayout::operator==(VertexLayout& other) noexcept
+bool VertexLayout::operator==(VertexLayout& other) noexcept
 {
     //quick-check: if the sizes of the vertices don't match, they can't be equal. 
     if (m_vertexSize != other.m_vertexSize) {return false;}

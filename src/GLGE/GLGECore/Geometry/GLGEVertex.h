@@ -84,7 +84,7 @@ public:
      * @param element the element to querry
      * @return const uint64_t& the size of that element
      */
-    inline const uint64_t& getVertexOf(std::string_view& element) noexcept {return m_sizeMap[element];}
+    inline const uint64_t& getSizeOf(std::string_view& element) noexcept {return m_sizeMap[element];}
 
     /**
      * @brief Get all elements that the vertex layout contains
@@ -110,7 +110,16 @@ public:
      * @return true : vertex layouts result in the same structure
      * @return false : the vertex layouts do not result in the same structure
      */
-    constexpr bool operator==(VertexLayout& other) noexcept;
+    bool operator==(VertexLayout& other) noexcept;
+
+    /**
+     * @brief same as operator==, but the output is inverted
+     * 
+     * @param other the other element to compare to
+     * @return true : the element sizes are NOT identical | 
+     * @return false : the element sizes are identical
+     */
+    inline bool operator!=(VertexLayout& other) noexcept {return !(*this == other);}
 
 protected:
 

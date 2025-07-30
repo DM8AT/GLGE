@@ -127,34 +127,56 @@ public:
 
     /**
      * @brief Set the clear color of the window
+     * @warning the index is not sanity-checked
      * 
      * @param r the red component of the clear color
      * @param g the green component of the clear color
      * @param b the blue component of the clear color
      * @param a the alpha component of the clear color
+     * @param index the index of the color attatchment to set the clear value for
      */
-    inline void setClearColor(float r, float g, float b, float a) noexcept {m_clear = Color(r,g,b,a, COLOR_SPACE_RGBA);}
+    inline void setClearColor(float r, float g, float b, float a, uint32_t index) noexcept {m_clear[index] = Color(r,g,b,a, COLOR_SPACE_RGBA);}
 
     /**
      * @brief Set the clear color of the window
+     * @warning the index is not sanity-checked
      * 
      * @param color the color in RGBA for the clear color
+     * @param index the index of the color attatchment to set the clear value for
      */
-    inline void setClearColor(const vec4& color) noexcept {m_clear = Color(color, COLOR_SPACE_RGBA);}
+    inline void setClearColor(const vec4& color, uint32_t index) noexcept {m_clear[index] = Color(color, COLOR_SPACE_RGBA);}
 
     /**
      * @brief Set the clear color of the window
+     * @warning the index is not sanity-checked
      * 
      * @param color the clear color of the window
+     * @param index the index of the color attatchment to set the clear value for
      */
-    inline void setClearColor(const Color& color) noexcept {m_clear = color;}
+    inline void setClearColor(const Color& color, uint32_t index) noexcept {m_clear[index] = color;}
 
     /**
      * @brief Get the clear color of the window
+     * @warning the index is not sanity-checked
      * 
+     * @param index the index of the color attatchment to get the clear value for
      * @return const Color& the clear color of the window
      */
-    inline const Color& getClearColor() const noexcept {return m_clear;}
+    inline const Color& getClearColor(uint32_t index) const noexcept {return m_clear[index];}
+
+    /**
+     * @brief Set the Clear Depth for the framebuffer
+     * 
+     * @param depth the depth to clear to
+     */
+    inline void setClearDepth(float depth) noexcept {m_clearDepth = depth;}
+
+    /**
+     * @brief Get the Clear Depth from the framebuffer
+     * 
+     * @return float the depth to clear to
+     */
+    inline float getClearDepth() const noexcept {return m_clearDepth;}
 
     /**
      * @brief Get the Graphic Framebuffer instance
@@ -182,7 +204,11 @@ protected:
     /**
      * @brief store the own clear color
      */
-    Color m_clear = Color(vec4(0.5,0.5,0.5,1), COLOR_SPACE_RGBA);
+    std::vector<Color> m_clear;
+    /**
+     * @brief store the depth everything is cleard to
+     */
+    float m_clearDepth = 0.f;
 
     /**
      * @brief store the graphic framebuffer

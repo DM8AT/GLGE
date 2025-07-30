@@ -194,10 +194,6 @@ typedef struct s_RenderWorldStageData {
      */
     void* view;
     /**
-     * @brief store the framebuffer that is renderd to
-     */
-    Framebuffer_t* target;
-    /**
      * @brief store if a depth or a color pass is issued
      */
     bool depth;
@@ -210,11 +206,10 @@ typedef struct s_RenderWorldStageData {
      * 
      * @param _world a reference to the world that should be renderd
      * @param _view a reference to an object that has eather a light or a camera attatchment for the rendering
-     * @param _target a reference to a framebuffer to render to
      * @param _depth specify if only depth or depth and color should be renderd
      */
-    s_RenderWorldStageData(World& _world, Object& _view, Framebuffer& _target, bool _depth)
-     : world((void*)(&_world)), view((void*)(&_view)), target((Framebuffer_t*)(&_target)), depth(_depth)
+    s_RenderWorldStageData(World& _world, Object& _view, bool _depth)
+     : world((void*)(&_world)), view((void*)(&_view)), depth(_depth)
     {}
 
     #endif //end of C++ section

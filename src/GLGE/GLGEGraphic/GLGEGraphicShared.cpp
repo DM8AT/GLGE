@@ -24,6 +24,8 @@ uint32_t* __glge_all_window_count = 0;
 //store all instances
 std::vector<Instance*>* __glge_all_instances = 0;
 
+//store if ImGui is initalized
+bool __glge_imgui_inited = false;
 
 
 

@@ -208,4 +208,54 @@ Buffer* Instance::getImageBuffer() const noexcept
     return m_gInstance->getImageBuffer();
 }
 
+Buffer* Instance::getCameraBuffer() const noexcept
+{
+    //return the camera buffer
+    return m_gInstance->getCameraBuffer();
+}
+
+Buffer* Instance::getObjectTransformBuffer() const noexcept
+{
+    //return the object transform buffer
+    return m_gInstance->getObjectTransfBuffer();
+}
+
+void Instance::setMouseCursorShown(bool shown) noexcept
+{
+    //set if the cursor is shown
+    SDL_ShowCursor(shown ? SDL_ENABLE : SDL_DISABLE);
+}
+
+void Instance::captureMouseByWindow(const Window* window) noexcept
+{
+    //store the window that now owns the mouse
+    m_hasMouseCaptured = (Window*)window;
+
+    //check if the window is 0 (releases the mouse)
+    if (window)
+    {
+        //raise the requested window to initalize the mouse capture
+        SDL_RaiseWindow((SDL_Window*)m_hasMouseCaptured->getSDL2Window());
+        //if not, capture the mouse with the window
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+    }
+    else
+    {
+        //release the mouse
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+    }
+}
+
+void Instance::setCapturedCursorVisible(bool visible) const noexcept
+{
+    //set if the cursor is visible
+    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE, visible ? "1" : "0");
+}
+
+void Instance::setCapturedCursorCenter(bool center) const noexcept
+{
+    //set if the window gets centerd
+    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, center ? "1" : "0");
+}
+
 #endif //Graphic section

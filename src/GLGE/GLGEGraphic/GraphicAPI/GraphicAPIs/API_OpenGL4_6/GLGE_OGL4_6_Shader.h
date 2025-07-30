@@ -75,6 +75,13 @@ public:
      */
     void detatchShaderDirect() noexcept;
 
+    /**
+     * @brief Get the shader Program
+     * 
+     * @return uint32_t the OpenGL shader program
+     */
+    inline uint32_t getProgram() const noexcept {return m_program;}
+
 protected:
 
     /**

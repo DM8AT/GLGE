@@ -293,6 +293,11 @@ void Window::setWindowIcon(Texture* icon)
     SDL_SetWindowIcon((SDL_Window*)m_window, (SDL_Surface*)m_icon->getGraphicTexture());
 }
 
+void Window::warpMouseCursor(uvec2 pixel) const noexcept
+{
+    //warp the mouse in the window
+    SDL_WarpMouseInWindow((SDL_Window*)m_window, pixel.x, pixel.y);
+}
 
 
 

@@ -52,6 +52,13 @@
 #include "GLGERenderMaterial.h"
 //include render meshes
 #include "GLGERenderMesh.h"
+//include render vertex layouts
+#include "GLGERenderVertexLayout.h"
+//inlcude object renderer
+#include "GLGEObjectRenderer.h"
+
+//include cameras
+#include "GLGECamera.h"
 
 //check if Dear ImGui should be used. It can sadly only be used in C++
 #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI && GLGE_CPP

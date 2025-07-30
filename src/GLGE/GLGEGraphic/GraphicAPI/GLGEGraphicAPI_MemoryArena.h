@@ -75,11 +75,11 @@ public:
         /**
          * @brief the start index of the reagion
          */
-        uint64_t startIdx;
+        uint64_t startIdx = 0;
         /**
          * @brief the size of the reagion
          */
-        uint64_t size;
+        uint64_t size = 0;
 
         /**
          * @brief check if two graphic pointer point to the same memory reagion
@@ -271,7 +271,7 @@ protected:
     /**
      * @brief store the complete size of the memory arena
      */
-    uint64_t m_size;
+    uint64_t m_size = 0;
     /**
      * @brief store if dynamic resizing is allowed
      */

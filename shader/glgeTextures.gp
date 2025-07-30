@@ -8,6 +8,9 @@
 #ifndef _GLGE_TEXTURES_
 #define _GLGE_TEXTURES_
 
+//enable the bindless texture extension
+#extension GL_ARB_bindless_texture : require
+
 /**
  * store all textures GLGE has loaded
 */

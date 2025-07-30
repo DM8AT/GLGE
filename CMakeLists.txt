@@ -131,6 +131,9 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGEKeyboard.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGERenderMaterial.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGERenderMesh.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGERenderVertexLayout.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGEObjectRenderer.cpp
+    ${GLGE_PATH}/GLGEGraphic/GLGECamera.cpp
     # Shader stuff
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp
@@ -156,6 +159,7 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_RenderPipeline.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Framebuffer.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_MemoryArena.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_VertexLayout.cpp
 
     # Math files
     # Vectors
@@ -220,16 +224,18 @@ target_link_options(GLGE PRIVATE -pthread)
     # add GLGE
     target_link_libraries(TEST_C GLGE)
 
-# C++ - Test:
-    project(TEST_CPP
+# First person example test
+    project(FP_EXAMPLE_CPP
         VERSION 1.0
-        DESCRIPTION "A simple test for GLGE in C++"
+        DESCRIPTION "A simple test a first person camera in C++ with GLGE"
         LANGUAGES CXX)
     # executable for test project
-    add_executable(TEST_CPP
-        src/main.cpp)
+    add_executable(FP_EXAMPLE_CPP
+        src/FirstPersonExample/main.cpp
+        src/FirstPersonExample/CameraController.cpp
+    )
     # define compiler settings
-    target_compile_definitions(TEST_CPP PRIVATE USE_NEW_AUDIO_ENGINE)
-    target_compile_options(TEST_CPP PRIVATE ${COMPILER_OPTIONS})
+    target_compile_definitions(FP_EXAMPLE_CPP PRIVATE USE_NEW_AUDIO_ENGINE)
+    target_compile_options(FP_EXAMPLE_CPP PRIVATE ${COMPILER_OPTIONS})
     # add GLGE
-    target_link_libraries(TEST_CPP GLGE)
+    target_link_libraries(FP_EXAMPLE_CPP GLGE)

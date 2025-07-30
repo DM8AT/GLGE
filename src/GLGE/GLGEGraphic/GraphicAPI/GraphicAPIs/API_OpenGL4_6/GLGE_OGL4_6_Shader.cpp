@@ -62,7 +62,7 @@ void OGL4_6_Shader::attatchShaderDirect() noexcept
     for (auto it = m_shader->getBuffers().begin(); it != m_shader->getBuffers().end(); ++it)
     {
         //directly bind the buffer
-        ((OGL4_6_MemoryArena*)(((Buffer*)it->second.buffer)->getMemoryArena()))->directBind(it->second.unit);
+        ((OGL4_6_MemoryArena*)it->second.buffer)->directBind(it->second.unit);
     }
 
     //attach the shader

@@ -25,6 +25,9 @@
 //include SDL2
 #include <SDL2/SDL.h>
 
+//inlcude the shared graphic data
+#include "../../../GLGEGraphicShared.h"
+
 //check for Dear ImGui usage
 #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
 
@@ -150,8 +153,15 @@ void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
     m_images->getMemoryArena()->setResizable(true);
     ((OGL4_6_MemoryArena*)m_images->getMemoryArena())->setAPI(true);
 
-    //create the empty VAO
-    glGenVertexArrays(1, &m_emptyVAO);
+    //create the camera buffer
+    m_camera = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_camera->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_camera->getMemoryArena())->setAPI(true);
+
+    //create the object buffer
+    m_objTransf = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_objTransf->getMemoryArena()->setResizable(true);
+    ((OGL4_6_MemoryArena*)m_objTransf->getMemoryArena())->setAPI(true);
 
     //check if Dear ImGui should be used
     #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
@@ -181,6 +191,9 @@ void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
         m_instance->log("Failed to initalize OpenGL for ImGui", MESSAGE_TYPE_ERROR);
     }
 
+    //say that ImGui is now initalized
+    __glge_imgui_inited = true;
+
     #endif
 
     //initalization is done
@@ -206,11 +219,18 @@ void OGL4_6_Instance::onDestroy()
     delete m_images;
     m_textures = 0;
     m_images = 0;
-    //delete the VAO
-    glDeleteVertexArrays(1, &m_emptyVAO);
+    //delete the camera buffer
+    delete m_camera;
+    m_camera = 0;
+    //delete the object transform buffer
+    delete m_objTransf;
+    m_objTransf = 0;
     
     //check for ImGui
     #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
+
+    //say that ImGui is no longer initalized
+    __glge_imgui_inited = false;
 
     //close the ImGui context
     ImGui_ImplOpenGL3_Shutdown();

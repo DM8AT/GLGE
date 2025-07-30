@@ -76,7 +76,7 @@ void OGL4_6_Framebuffer::ogl_create(OGL4_6_Framebuffer* fbuff, uint64_t) noexcep
     {
         //if it does, add it
         glNamedFramebufferTexture(fbuff->m_OglFbuff, GL_DEPTH_ATTACHMENT, 
-            ((OGL4_6_Texture*)fbuff->m_fbuff->getDepthAttatchment())->getOglTexture(), 0);
+            ((OGL4_6_Texture*)fbuff->m_fbuff->getDepthAttatchment()->getGraphicTexture())->getOglTexture(), 0);
     }
 
     //check if the framebuffer was created successfully
@@ -100,10 +100,20 @@ void OGL4_6_Framebuffer::ogl_destroy(OGL4_6_Framebuffer* fbuff, uint64_t) noexce
 
 void OGL4_6_Framebuffer::ogl_clear(OGL4_6_Framebuffer* fbuff, uint64_t) noexcept
 {
-    //get the RGB color
-    vec4 col = fbuff->m_fbuff->getClearColor().getInSpace(COLOR_SPACE_RGBA);
-    //clear the framebuffer with the correct color
-    glClearNamedFramebufferfv(fbuff->m_OglFbuff, GL_COLOR, 0, (float*)&col);
+    //iterate over all color attatchments
+    for (size_t i = 0; i < fbuff->m_fbuff->getColorAttatchmentCount(); ++i)
+    {
+        //get the RGB color
+        vec4 col = fbuff->m_fbuff->getClearColor(i).getInSpace(COLOR_SPACE_RGBA);
+        //clear the framebuffer with the correct color
+        glClearNamedFramebufferfv(fbuff->m_OglFbuff, GL_COLOR, i, (float*)&col);
+    }
+    //check if a depth attatchment exists
+    if (fbuff->m_fbuff->getDepthAttatchment())
+    {
+        //clear the depth attatchment
+        glClearNamedFramebufferfi(fbuff->m_OglFbuff, GL_DEPTH_STENCIL, 0, fbuff->m_fbuff->getClearDepth(), 0);
+    }
 }
 
 void OGL4_6_Framebuffer::ogl_resize(OGL4_6_Framebuffer* fbuff, uint64_t nSize) noexcept

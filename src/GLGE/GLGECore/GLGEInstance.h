@@ -64,7 +64,7 @@ public:
     Instance() = delete;
 
     /**
-     * @brief forbid the copy operator, only one instance of teh instance may exist at any time
+     * @brief forbid the copy operator, only one instance of the instance may exist at any time
      */
     void operator=(Instance&) = delete;
 
@@ -244,22 +244,18 @@ public:
     Buffer* getImageBuffer() const noexcept;
 
     /**
-     * @brief Get the Vertex Buffer
-     * @warning the format of a vertex may change and is fully unknown
+     * @brief Get the Camera Buffer
      * 
-     * @return Buffer* a buffer containing all vertices
+     * @return Buffer* a buffer containing references to all instances
      */
-    Buffer* getVertexBuffer() const noexcept;
+    Buffer* getCameraBuffer() const noexcept;
 
     /**
-     * @brief Get the Index Buffer
-     * indices are of type index_t
+     * @brief Get the Object Transform Buffer
      * 
-     * @warning there are multiple meshes stored where each mesh starts with index 0
-     * 
-     * @return Buffer* a buffer containing all indices
+     * @return Buffer* a buffer containing the transforms of all objects. Indexd by the object's identifyer
      */
-    Buffer* getIndexBuffer() const noexcept;
+    Buffer* getObjectTransformBuffer() const noexcept;
 
     /**
      * @brief Get the keyboard of the instance
@@ -291,6 +287,50 @@ public:
      * @return Mouse& a reference to a mouse that stores the change in the mouse data
      */
     inline Mouse& getMouseChange() noexcept {return m_deltaMouse;}
+
+    /**
+     * @brief Set if the mouse cursor is shown or hidden
+     * 
+     * @param shown true : the cursor is shown | false : the cursor is hidden
+     */
+    void setMouseCursorShown(bool shown) noexcept;
+
+    /**
+     * @brief set a window to capture the mouse motion
+     * 
+     * @param window the window to capture the mouse or 0 to release the mouse
+     */
+    void captureMouseByWindow(const Window* window) noexcept;
+
+    /**
+     * @brief get if some window has captured the mouse
+     * 
+     * @return true : the mouse is captured by some window
+     * @return false : the mouse is not captured
+     */
+    inline bool isMouseCaptured() const noexcept {return m_hasMouseCaptured;}
+
+    /**
+     * @brief get wich window has the mouse captured
+     * @warning may be 0
+     * 
+     * @return Window* a pointer to the window or 0 if the mouse is not captured
+     */
+    inline Window* hasMouseCaptured() const noexcept {return m_hasMouseCaptured;}
+
+    /**
+     * @brief Set if the mouse cursor is visible when it is captured
+     * 
+     * @param visible true : the cursor is visible | false : the cursor is hidden
+     */
+    void setCapturedCursorVisible(bool visible) const noexcept;
+
+    /**
+     * @brief Set if the cursor will be constantly centered if it is captured
+     * 
+     * @param center true : the cursor will be captured | false : the cursor is free to move inside the window
+     */
+    void setCapturedCursorCenter(bool center) const noexcept;
 
     //add the mouse layer as a friend class
     friend class MouseEventLayer;
@@ -371,6 +411,11 @@ private:
      * @brief store the SDL limiter
      */
     static Limiter m_sdlLimiter;
+
+    /**
+     * @brief store a pointer to the window that has captured the mouse
+     */
+    Window* m_hasMouseCaptured = 0;
 
     #endif //Graphic only section
 };

@@ -49,7 +49,15 @@ typedef struct s_BufferShaderBinding
      * @param _unit the index of the shader unit to bind to
      * @param _buffer a pointer to the buffer to bind
      */
-    s_BufferShaderBinding(uint32_t _unit, Buffer* _buffer) : unit(_unit), buffer(_buffer) {}
+    s_BufferShaderBinding(uint32_t _unit, Buffer* _buffer) : unit(_unit), buffer(_buffer->getMemoryArena()) {}
+
+    /**
+     * @brief Construct a new information of a mapping from a buffer to a shader binding port
+     * 
+     * @param _unit the unit to bind to
+     * @param _buffer the memory arena to bind to that port
+     */
+    s_BufferShaderBinding(uint32_t _unit, GraphicMemoryArena* _buffer) : unit(_unit), buffer(_buffer) {}
 
     #endif //end of C++ section
 

@@ -161,12 +161,21 @@ void Object::removeAttatchment(ObjectAttatchable* attatchment)
 
 bool Object::onUpdate()
 {
-    //iterate over all attatchments
+    //iterate over all attatchments for the default update function
     for (size_t i = 0; i < m_attatchments.size(); ++i)
     {
         //update the element
         m_attatchments[i]->onUpdate();
     }
+    //iterate over all attatchments for the late update functions
+    for (size_t i = 0; i < m_attatchments.size(); ++i)
+    {
+        //update the element
+        m_attatchments[i]->onLateUpdate();
+    }
+
+    //reset the update flag
+    m_updateFlags = 0x00;
 
     //always return true
     return true;
@@ -240,3 +249,8 @@ void Object::getAllChlidren(std::vector<Object*>& children) noexcept
         it->second->getAllChlidren(children);
     }
 }
+
+//statics
+uint8_t Object::UPDATE_MOVED = 0b1;
+uint8_t Object::UPDATE_ROTATED = 0b10;
+uint8_t Object::UPDATE_SCALED = 0b100;

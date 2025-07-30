@@ -145,7 +145,7 @@ public:
      * 
      * @param pos the new position of the object
      */
-    inline void setPos(const vec3& pos) noexcept {m_transform.pos = pos;}
+    inline void setPos(const vec3& pos) noexcept {m_transform.pos = pos; m_updateFlags |= UPDATE_MOVED;}
 
     /**
      * @brief Get the position of the object
@@ -159,7 +159,7 @@ public:
      * 
      * @param rot the new rotation of the object
      */
-    inline void setRot(const Euler& rot) noexcept {m_transform.rot = rot;}
+    inline void setRot(const Rotation& rot) noexcept {m_transform.rot = rot; m_updateFlags |= UPDATE_ROTATED;}
 
     /**
      * @brief Get the rotation of the object
@@ -173,7 +173,7 @@ public:
      * 
      * @param scale the new scale of the object
      */
-    inline void setScale(const vec3& scale) noexcept {m_transform.scale = scale;}
+    inline void setScale(const vec3& scale) noexcept {m_transform.scale = scale; m_updateFlags |= UPDATE_SCALED;}
 
     /**
      * @brief Get the scale of the object
@@ -187,7 +187,7 @@ public:
      * 
      * @param transform the new transform of the object
      */
-    inline void setTransform(const Transform& transform) noexcept {m_transform = transform;}
+    inline void setTransform(const Transform& transform) noexcept {m_transform = transform; m_updateFlags |= (UPDATE_MOVED | UPDATE_ROTATED | UPDATE_SCALED);}
 
     /**
      * @brief Get the transform of the object
@@ -327,6 +327,30 @@ public:
      */
     void getAllChlidren(std::vector<Object*>& children) noexcept;
 
+    /**
+     * @brief check if the object was moved this tick
+     * 
+     * @return true : the object was moved this tick
+     * @return false : the object was not moved this tick
+     */
+    inline bool didMove() const noexcept {return (m_updateFlags & UPDATE_MOVED) > 0;}
+
+    /**
+     * @brief check if the object was rotated this tick
+     * 
+     * @return true : the object was rotated this tick
+     * @return false : the object was not rotated this tick
+     */
+    inline bool didRotate() const noexcept {return (m_updateFlags & UPDATE_ROTATED) > 0;}
+
+    /**
+     * @brief check if the object was scaled this tick
+     * 
+     * @return true : the object was scaled this tick
+     * @return false : the object was not scaled this tick
+     */
+    inline bool wasScaled() const noexcept {return (m_updateFlags & UPDATE_SCALED) > 0;}
+
 protected:
     
     /**
@@ -341,6 +365,25 @@ protected:
      * @brief store the own transformation
      */
     Transform m_transform;
+
+    /**
+     * @brief store the byte index for the flag to store if the object was moved this tick
+     */
+    static uint8_t UPDATE_MOVED;
+    /**
+     * @brief store the byte index for the flag to store if the object was rotated this tick
+     */
+    static uint8_t UPDATE_ROTATED;
+    /**
+     * @brief store the byte index for the flag to store if the object was scaled this tick
+     */
+    static uint8_t UPDATE_SCALED;
+    /**
+     * @brief store the flags for update
+     * At start, all flags are set to true because nothing is initalized to the inital values
+     */
+    uint8_t m_updateFlags = UPDATE_MOVED | UPDATE_ROTATED | UPDATE_SCALED;
+    
     /**
      * @brief store all object attatchments
      */
@@ -374,8 +417,15 @@ public:
 
     /**
      * @brief update the attatchment
+     * Do transformations of the object here
      */
     virtual void onUpdate() noexcept {}
+
+    /**
+     * @brief a update function that runs after all update functions
+     * Not used for transformations, the update flags should be set correctly
+     */
+    virtual void onLateUpdate() noexcept {}
 
     //state that the object class is a friend
     friend class Object;
@@ -396,6 +446,13 @@ public:
      * @return std::ostream& the filled output stream
      */
     inline friend std::ostream& operator<<(std::ostream& os, const ObjectAttatchable* a) {return os << "objectAttatchable{type: " << a->getTypeName() << "}";}
+
+    /**
+     * @brief Get the Object the attatchable is attatched to or 0 if it is attatched to nothing
+     * 
+     * @return Object* a pointer to the object the attatchment is attatched to or 0 if it isn't attatched to anything
+     */
+    inline Object* getObject() const noexcept {return m_object;}
 
 protected:
 

@@ -175,9 +175,9 @@ public:
     /**
      * @brief Get the identifyer of the texture
      * 
-     * @return uint64_t the identifyer of the texture
+     * @return uint32_t the identifyer of the texture
      */
-    inline uint64_t getIdentifyer() const noexcept {return m_texture->getIdentifyer();}
+    inline uint32_t getIdentifyer() const noexcept {return (uint32_t)m_texture->getIdentifyer();}
 
 protected:
 

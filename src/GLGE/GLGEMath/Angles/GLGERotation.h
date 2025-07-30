@@ -115,7 +115,7 @@ typedef struct s_Rotation
      * @param quat the quaternion that describes the rotation
      */
     inline s_Rotation(const Quaternion& quat) noexcept
-     : m_quat(quat)
+     : m_quat(quat.unitQuaternion())
     {}
 
     /**
@@ -215,6 +215,13 @@ typedef struct s_Rotation
             0, 0, 0, 1
         );
     }
+
+    /**
+     * @brief compute a UVN matrix from the data stored in the 
+     * 
+     * @return mat4 the UVN matrix. Commonly used for camera rotation
+     */
+    mat4 getUVNMatrix() const noexcept;
 
     /**
      * @brief print the rotation to an output stream

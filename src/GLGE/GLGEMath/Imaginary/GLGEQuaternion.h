@@ -166,6 +166,23 @@ typedef struct s_Quaternion
     }
 
     /**
+     * @brief scale the quaternion by a scalar
+     * 
+     * @param scale the scalar to scale the quaternion by
+     * @return s_Quaternion the scaled quaternion
+     */
+    inline s_Quaternion operator*(double scale) const noexcept
+    {
+        //just return the quaternion scaled per element by the scalar
+        return s_Quaternion(
+            w * scale, 
+            i * scale, 
+            j * scale, 
+            k * scale
+        );
+    }
+
+    /**
      * @brief get the inverse (conjugated) quaternion
      * 
      * @return Quaternion the inverted quaternion
@@ -235,6 +252,42 @@ typedef struct s_Quaternion
         out.k = (k*other.w) + (w*other.k) + (i*other.j) - (j*other.i);
         //store the result
         *this = out;
+    }
+
+    /**
+     * @brief scale the quaternion by a scalar
+     * 
+     * @param scale the scalar to scale the quaternion by
+     */
+    inline void operator*=(double scale) noexcept
+    {
+        //just scale the quaternion per element by the scalar
+        w *= scale; 
+        i *= scale; 
+        j *= scale; 
+        k *= scale;
+    }
+
+    /**
+     * @brief calculate the length of the quaternion
+     * 
+     * @return double the "length" of the quaternion
+     */ 
+    inline double length() const noexcept
+    {
+        //just use the pythogorean thearom
+        return sqrt(w*w + i*i + j*j + k*k);
+    }
+
+    /**
+     * @brief calculate the unit quaternion (length = 1) for this quaternion
+     * 
+     * @return s_Quaternion the corresponding unit quaternion
+     */
+    inline s_Quaternion unitQuaternion() const noexcept
+    {
+        //return this scaled down by the length
+        return *this * (1. / length());
     }
 
     #endif //end of C++ functions

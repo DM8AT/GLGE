@@ -71,9 +71,8 @@ void SDL_Main_Thread(Logger* logger)
             //check for ImGui support
             #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
 
-            //check if a context exists
-            //a context is created on initalization of ImGui
-            if (SDL_GL_GetCurrentContext())
+            //check if ImGui is initalized
+            if (__glge_imgui_inited)
             {
                 //handle the event with ImGui
                 ImGui_ImplSDL2_ProcessEvent(&event);

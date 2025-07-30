@@ -129,4 +129,17 @@
  */
 #define GLGE_ALIGN_BYTE(bytes) __attribute__ ((aligned (bytes)))
 
+/**
+ * @brief define a macro to zero out a specific memory reagion
+ */
+#ifndef bzero
+/**
+ * @brief zeros out a specific reagion of memory
+ * 
+ * @param ptr the pointer to zero out
+ * @param size the size of the pointer in bytes
+ */
+#define bzero(ptr, size) memset(ptr, 0, size)
+#endif
+
 #endif

@@ -73,6 +73,11 @@ void Framebuffer::create(Texture** colorAttatchments, uint64_t colorAttatchmentC
     //store the depth attatchment
     m_depthAttatchment = depthAttatchment;
 
+    //resize the vector for the clear colors
+    m_clear.resize(m_colorAttatchments.size());
+    //default all clear values
+    for (size_t i = 0; i < m_clear.size(); ++i) {m_clear[i] = Color(0.5,0.5,0.5,1, COLOR_SPACE_RGBA);}
+
     //switch over the instance's API to create the correct low-level framebuffer
     switch (m_instance->getAPI())
     {
@@ -104,6 +109,11 @@ void Framebuffer::create(uint64_t colorAttatchmentCount, bool alpha, bool hdr, b
         //create the depth attatchment
         m_depthAttatchment = new Texture(TEXTURE_PURPOSE_DEPTH, size, 0, 0, *m_instance);
     }
+
+    //resize the vector for the clear colors
+    m_clear.resize(m_colorAttatchments.size());
+    //default all clear values
+    for (size_t i = 0; i < m_clear.size(); ++i) {m_clear[i] = Color(0.5,0.5,0.5,1, COLOR_SPACE_RGBA);}
 
     //switch over the instance's API to create the correct low-level framebuffer
     switch (m_instance->getAPI())

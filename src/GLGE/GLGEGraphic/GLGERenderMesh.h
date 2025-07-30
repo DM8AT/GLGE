@@ -19,6 +19,8 @@
 #include "../GLGECore/Geometry/GLGEGeometry.h"
 //include render materials to structure the surface of a mesh
 #include "GLGERenderMaterial.h"
+//include render vertex layouts to specify the layout of the verticies
+#include "GLGERenderVertexLayout.h"
 
 //check if this is C++
 #if GLGE_CPP
@@ -26,7 +28,7 @@
 /**
  * @brief store an instance of a mesh that can be renderd
  */
-class RenderMesh final : public ObjectAttatchable
+class RenderMesh final
 {
 public:
 
@@ -42,23 +44,12 @@ public:
      * @param mesh the mesh to use for rendering
      * @param material the material to apply to the mesh
      */
-    RenderMesh(Mesh* mesh, RenderMaterial* material)
-     : m_mesh(mesh),
-       m_material(material)
-    {}
+    RenderMesh(Mesh* mesh, RenderMaterial* material);
 
     /**
      * @brief Destroy the Render Mesh
      */
-    virtual ~RenderMesh() {}
-
-    /**
-     * @brief Get the Type Name
-     * @warning MUST BE OVERLOADED!
-     * 
-     * @return const char* the constant type name
-     */
-    virtual const char* getTypeName() const noexcept override {return "RENDER_MESH";}
+    virtual ~RenderMesh();
 
     /**
      * @brief Set the data of the material reagion this object owns
@@ -89,14 +80,14 @@ public:
      * 
      * @return const GraphicMemoryArena::GraphicPointer& the pointer into the vertex buffer
      */
-    inline const GraphicMemoryArena::GraphicPointer& getVertexPointer() const noexcept {return m_vPtr;}
+    inline const GraphicMemoryArena::GraphicPointer& getVertexPointer() const noexcept {return m_meshPtr->vertexPtr;}
 
     /**
      * @brief Get the pointer into the index data
      * 
      * @return const GraphicMemoryArena::GraphicPointer& the pointer into the index buffer
      */
-    inline const GraphicMemoryArena::GraphicPointer& getIndexPointer() const noexcept {return m_iPtr;}
+    inline const GraphicMemoryArena::GraphicPointer& getIndexPointer() const noexcept {return m_meshPtr->indexPtr;}
 
     /**
      * @brief Get the pointer into the material data
@@ -108,16 +99,6 @@ public:
 protected:
 
     /**
-     * @brief a function that is called when the object is attatched to an object
-     */
-    virtual void onAttatch() noexcept override;
-
-    /**
-     * @brief a function that is called when the object is removed from an object
-     */
-    virtual void onRemove() noexcept override;
-
-    /**
      * @brief store a pointer to the mesh that this renderable mesh will render
      */
     Mesh* m_mesh = 0;
@@ -125,15 +106,10 @@ protected:
      * @brief store the material that will be applied to the mesh
      */
     RenderMaterial* m_material = 0;
-
     /**
-     * @brief store the reagion of the vertex buffer the renderable mesh owns
+     * @brief store a pointer to the pointer into the mesh data of the material
      */
-    GraphicMemoryArena::GraphicPointer m_vPtr = {0,0};
-    /**
-     * @brief store the reagion of the index buffer the renderable mesh owns
-     */
-    GraphicMemoryArena::GraphicPointer m_iPtr = {0,0};
+    const RenderMaterial::MeshPointer* m_meshPtr = 0;
     /**
      * @brief store the reagion of the material data buffer the renderable mesh owns
      */

@@ -22,12 +22,19 @@
 
 //include render meshes for rendering worlds
 #include "../../../GLGERenderMesh.h"
+//render pipelines for data access
+#include "../../../GLGERenderPipeline.h"
 
 //include OpenGL stuff to read from it
 #include "GLGE_OGL4_6_Framebuffer.h"
 #include "GLGE_OGL4_6_Shader.h"
 #include "GLGE_OGL4_6_MemoryArena.h"
 #include "GLGE_OGL4_6_Instance.h"
+#include "GLGE_OGL4_6_VertexLayout.h"
+//a camera is needed for rendering
+#include "../../../GLGECamera.h"
+//object renderers are used to render objects
+#include "../../../GLGEObjectRenderer.h"
 
 //check if ImGui is included
 #if GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI
@@ -216,57 +223,166 @@ void OGL4_6_RenderPipeline::ogl_renderWorld(void* data, uint64_t) noexcept
     world->getAllObjects(objs);
 
     //store all elements to render mapped to the material that they use
-    std::unordered_map<RenderMaterial*, std::vector<RenderMesh*>> toRender;
+    std::unordered_map<RenderMaterial*, std::unordered_map<ObjectRenderer*, std::vector<RenderMesh*>>> toRender;
 
     //iterate over all objects and get the materials
     for (Object* obj : objs)
     {
-        //get all render meshes of the object
+        //get all object renderers of the object
         for (uint64_t i = 0; i <  obj->getAttatchments().size(); ++i)
         {
-            //check if this is a render mesh
-            if (std::string(obj->getAttatchment(i)->getTypeName()) == "RENDER_MESH")
+            //check if this is an object renderer
+            if (std::string(obj->getAttatchment(i)->getTypeName()) == "OBJECT_RENDERER")
             {
-                //get the render mesh
-                RenderMesh* mesh = ((RenderMesh*)obj->getAttatchment(i));
+                //get the object renderer
+                ObjectRenderer* renderer = ((ObjectRenderer*)obj->getAttatchment(i));
 
-                //check if the material allready exists
-                if (toRender.find(mesh->getMaterial()) == toRender.end())
+                //iterate over all used materials
+                for (auto it = renderer->getToRender().begin(); it != renderer->getToRender().end(); ++it)
                 {
-                    //add a new element with the material
-                    toRender[mesh->getMaterial()] = {mesh};
-                }
-                //else, add the element to the list of it's material
-                else
-                {
-                    toRender[mesh->getMaterial()].push_back(mesh);
+                    //check if the material allready exists
+                    if (toRender.find(it->first) == toRender.end())
+                    {
+                        //add a new element with the material
+                        toRender[it->first] = {{renderer, it->second}};
+                    }
+                    //else, add the element to the list of it's material
+                    else
+                    {
+                        toRender[it->first][renderer] = it->second;
+                    }
                 }
             }
         }
     }
 
+    //check if a camera exists
+    if (!dat->view)
+    {
+        //error - a camera is needed
+        world->getInstance()->log("The camera object for rendering a world is not set", MESSAGE_TYPE_ERROR);
+        return;
+    }
+    //get the camera
+    Camera* cam = (Camera*)(((Object*)dat->view)->getFirstOfTypeName("GLGE_CAMERA"));
+    //check if the camera is set
+    if (!cam)
+    {
+        //error, don't draw
+        world->getInstance()->log("The object registerd as a camera for rendering a world has no camera attribute", MESSAGE_TYPE_ERROR);
+        return;
+    }
     //bind the framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, ((OGL4_6_Framebuffer*)(((Framebuffer*)dat->target)->getGraphicFramebuffer()))->getOpenGLFramebuffer());
-
-    //set the vertex array object to prevent errors
-    //changing a VAO is not recomended (performance cost)
-    OGL4_6_Instance* inst = (OGL4_6_Instance*)((Framebuffer*)(dat->target))->getGraphicFramebuffer()->getInstance();
-    glBindVertexArray(inst->getVAO());
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, ((OGL4_6_Framebuffer*)((cam->getTarget()->getGraphicFramebuffer())))->getOpenGLFramebuffer());
 
     //iterate over all materials
     for (auto it = toRender.begin(); it != toRender.end(); ++it)
     {
+        //check if culling is enalbed and set the state apropriatly
+        if (it->first->isCullingEnabled())
+        {
+            //enable culling
+            glEnable(GL_CULL_FACE);
+        }
+        else
+        {
+            //disable culling
+            glDisable(GL_CULL_FACE);
+        }
+
+        //store the depth test state
+        DepthTest test = it->first->getDepthTesting();
+        //check if the depth test is enabled
+        if (test == DEPTH_TEST_NEVER)
+        {
+            //disable depth testing
+            glDisable(GL_DEPTH_TEST);
+        }
+        else
+        {
+            //enable depth testing
+            glEnable(GL_DEPTH_TEST);
+            //select the correct test mode depending on the selected methode
+            switch (test)
+            {
+            case DEPTH_TEST_ALWAYS:
+                glDepthFunc(GL_ALWAYS);
+                break;
+            
+            case DEPTH_TEST_EQUALS:
+                glDepthFunc(GL_EQUAL);
+                break;
+            
+            case DEPTH_TEST_NOT_EQUALS:
+                glDepthFunc(GL_NOTEQUAL);
+                break;
+            
+            case DEPTH_TEST_LESS:
+                glDepthFunc(GL_LESS);
+                break;
+            
+            case DEPTH_TEST_LESS_EQUALS:
+                glDepthFunc(GL_LEQUAL);
+                break;
+            
+            case DEPTH_TEST_GREATER:
+                glDepthFunc(GL_GREATER);
+                break;
+            
+            case DEPTH_TEST_GREATER_EQUALS:
+                glDepthFunc(GL_GEQUAL);
+                break;
+            
+            default:
+                break;
+            }
+        }
+
+        //check if the depth write is enabled
+        if (it->first->isDepthWriteEnabled())
+        {
+            //enable the depth write
+            glDepthMask(GL_TRUE);
+        }
+        else
+        {
+            //disable the depth write
+            glDepthMask(GL_FALSE);
+        }
+
+        //get the VAO for the material and bind it
+        glBindVertexArray(((OGL4_6_VertexLayout*)it->first->getVertexLayout()->getGraphicVertexLayout())->getVAO());
+
+        //bind the VBO and IBO
+        glBindBuffer(GL_ARRAY_BUFFER, ((OGL4_6_MemoryArena*)it->first->getVertexBuffer())->getBuffer());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((OGL4_6_MemoryArena*)it->first->getIndexBuffer())->getBuffer());
+
         //apply the material's shader
         ((OGL4_6_Shader*)it->first->getShader()->getGraphicShader())->attatchShaderDirect();
 
-        //iterate over all meshes that use this material
-        for (uint64_t i = 0; i < it->second.size(); ++i)
+        //get the position of the index of the object uniform
+        int32_t unifPos = glGetUniformLocation(((OGL4_6_Shader*)it->first->getShader()->getGraphicShader())->getProgram(), "glge_ObjectIndex");
+
+        //iterate over all objects that use this material
+        for (auto jt = it->second.begin(); jt != it->second.end(); ++jt)
         {
-            //draw the mesh
-            glDrawArrays(GL_TRIANGLES, it->second[i]->getIndexPointer().startIdx, it->second[i]->getMesh()->getIndices().size());
+            //check if the uniform exists
+            if (unifPos != -1)
+            {
+                //set the uniform to the object's index
+                glUniform1i(unifPos, jt->first->getPointer().startIdx / sizeof(ObjectRenderer::GPUData));
+            }
+
+            //iterate over all meshes that use this material
+            for (uint64_t i = 0; i < jt->second.size(); ++i)
+            {
+                //draw the mesh
+                glDrawElementsBaseVertex(GL_TRIANGLES, jt->second[i]->getIndexPointer().size / sizeof(index_t), GL_UNSIGNED_INT, (void*)(jt->second[i]->getIndexPointer().startIdx), jt->second[i]->getVertexPointer().startIdx / it->first->getVertexLayout()->getLayout().getVertexSize());
+            }
         }
+
+        //remove the material's shader
+        ((OGL4_6_Shader*)it->first->getShader()->getGraphicShader())->detatchShaderDirect();
     }
 }
 
