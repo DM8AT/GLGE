@@ -38,8 +38,14 @@ void launchProgramDet(std::string path)
 //do all the SDL stuff
 void ImGuiFunc(void*, uint64_t)
 {
+    //prepare to make the window fullscreen
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+    ImGui::SetNextWindowPos(ImVec2(0,0));
+
     //start the window for SDL2
-    ImGui::Begin("GLGE Demo Programs");
+    bool open = true;
+    ImGui::Begin("GLGE Demo Programs", &open, 
+        ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
 
     //draw some text what the purpose of the window is
     ImGui::Text("A list of all examples for GLGE");
