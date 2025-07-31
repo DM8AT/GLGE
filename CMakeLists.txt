@@ -32,6 +32,8 @@ set(GLGE_PATH src/GLGE)
 
 # enable / disable Dear ImGui
 set(GLGE_USE_DEAR_IMGUI true)
+# enable / disable Assimp
+set(GLGE_USE_ASSIMP true)
 
 
 #  $$$$$$\  $$$$$$$\  $$$$$$$\        $$$$$$$\                      $$\               
@@ -73,6 +75,17 @@ else()
     set(DEAR_IMGUI_SOURCE )
 
 endif() # end of Dear ImGui file loading
+
+# check for Assimp
+if (GLGE_USE_ASSIMP)
+
+
+# set the path to Assimp
+set(assimp_DIR ${GLGE_PATH}/GLGE3rdParty/assimp)
+# locate the assimp package
+find_package(assimp REQUIRED)
+
+endif() # end of assimp addition
 
 # SDL2 Can not be disabled since it is neccecery for GLGE
 # search SDL2
