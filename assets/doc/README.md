@@ -44,4 +44,4 @@ All asset files must include an element named "GLGE". This element stores import
 All attributes for the GLGE element:
 | Name | Type | Optional | Since | Usage |
 |------|------|----------|-------|-------|
-| version | String with format "%d.%d.%d" | :x: | 0.1.0 | This element stores the version the asset was stored in |
+| version | String with format `"%d.%d.%d"` | :x: | 0.1.0 | This element stores the version the asset was stored in |
