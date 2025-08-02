@@ -20,7 +20,7 @@
     <!-- Buffers contains a list of buffers the shader can access -->
     <buffers>
         <!-- A buffer consists of a name, a binding point and a string to identify what buffer to bind to the shader durring loading -->
-        <buffer name="Textures", binding="0", buffer="GLGE_BUILDIN_INSTANCE_TEXTURES"></buffer>
+        <buffer name="Textures", binding="0", buffer="GLGE_INSTANCE_TEXTURES"></buffer>
 
     </buffers>
 

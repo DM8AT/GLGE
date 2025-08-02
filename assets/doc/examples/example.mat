@@ -1,5 +1,10 @@
 <!-- This file contains an example XML structure for a material. -->
 
+<!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
+<GLGE version="0.1.0">
+    An example for a material asset
+</GLGE>
+
 <!-- 
   @param name the name parameter holds the identifyer for a compound asset. For duplicates a running index is appended. 
  -->
