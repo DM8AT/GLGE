@@ -17,4 +17,18 @@ Compound Asset
       |-------> Render Mesh
 ```
 An asset tree is not limited to one compound asset. A single compound asset can contain an unlimited amound of other compound assets. 
+# Accessing data created during runtime in assets
+Assets can access other assets as well as data that is created during runtime. To access an element that was created during runtime, all that needs to be knwon is the type and name of the element. The name is the name passed to the instance during the object's creation. When the asset is loaded, the element will be pulled from the instance. If the same name is registerd to the instance twice, the first element registerd with that name will be used. If the element can't be found on the instance or the type dosn't match the expected type, an error will be logged and the asset won't be able to access the element. Further handeling depends on what exactly the asset is and what the data to access was. 
+
+Here is an example where a buffer for a shader is created during runtime and the shader is loaded from an asset:
+C++ source code:
+```cpp
+//create the buffer. Take note here that the name is "Data Buffer". This name will be passed as-is to the instance. 
+Buffer buff("Data Buffer", MEMORY_USAGE_UNIFORM, inst);
+```
+Asset file:
+```xml
+<!-- This would be the line in the shader that maps the buffer. Take note here that the name parameter is NOT what determines the buffer to load, but the buffer paramter matches with the buffer's name -->
+<buffer name="Some data", binding="0", buffer="Data Buffer">
+```
 # Storing assets
