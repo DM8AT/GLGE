@@ -20,6 +20,32 @@
 //include instances
 #include "../GLGEInstance.h"
 
+//Object pointers are needed for C++
+#if GLGE_CPP
+class Object;
+#endif
+
+/**
+ * @brief store information about the child of an object
+ */
+typedef struct s_ObjectChildInfo
+{
+    //no object exists for C, so use a void* there
+    #if GLGE_CPP
+    Object* pointer = 0;
+    #else
+    void* pointer;
+    #endif
+
+    //store if the object owns the child (for memory freeing - if the child is referenced else where the object dosn't own it)
+    bool owns
+    //set the C++ default to false
+    #if GLGE_CPP
+     = false
+    #endif
+    ;
+} ObjectChildInfo;
+
 //check for C++
 #if GLGE_CPP
 
@@ -37,8 +63,9 @@ public:
 
     /**
      * @brief Construct a new Object
+     * Explicetly deleted, can't be used uninitalized
      */
-    Object() = default;
+    Object() = delete;
 
     /**
      * @brief Construct a new Object
@@ -49,7 +76,7 @@ public:
      * @param childCount the amount of childs. Must be 0 if children is 0. 
      * @param instance the instance the object will belong to
      */
-    Object(const std::string_view& name, Transform transform, Object** children, uint64_t childCount, Instance& instance);
+    Object(const std::string& name, Transform transform, Object** children, uint64_t childCount, Instance& instance);
 
     /**
      * @brief Destroy the Object
@@ -79,7 +106,7 @@ public:
         //if the position is not valid, return false
         if (pos == m_children.end()) {return false;}
         //else, return if the requested element is stored there
-        return (pos->second == &object);
+        return (pos->second.pointer == &object);
     }
 
     /**
@@ -98,10 +125,11 @@ public:
      * @brief add a child to this object
      * 
      * @param object the child to add
+     * @param owns true : the object will recive the memory ownership of the child and will delete it if it is freed | false : the object won't own the child's memory
      * @return true : the object was added successfully
      * @return false : failed to add the child object
      */
-    bool addChild(Object& object);
+    bool addChild(Object& object, bool owns);
 
     /**
      * @brief remove a child object
@@ -122,7 +150,7 @@ public:
      * 
      * @return const std::unordered_map<std::string_view, Object*> all bound children
      */
-    const std::unordered_map<std::string_view, Object*>& getChildren() const noexcept {return m_children;}
+    const std::unordered_map<std::string_view, ObjectChildInfo>& getChildren() const noexcept {return m_children;}
 
     /**
      * @brief Get the parent of the object
@@ -208,7 +236,7 @@ public:
      * 
      * @return const std::string_view& the name of the object
      */
-    inline const std::string_view& getName() const noexcept {return m_name;}
+    inline const std::string& getName() const noexcept {return m_name;}
 
     /**
      * @brief add a new attatchment to the object
@@ -356,7 +384,7 @@ protected:
     /**
      * @brief store all attatched children. The name serves to identify them. 
      */
-    std::unordered_map<std::string_view, Object*> m_children;
+    std::unordered_map<std::string_view, ObjectChildInfo> m_children;
     /**
      * @brief store a pointer to the parent of 0 if this is a root object
      */

@@ -14,8 +14,8 @@
 //include all APIs
 #include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
-Buffer::Buffer(MemoryUsage usage, Instance& instance)
- : InstAttachableClass(&instance, "buffer")
+Buffer::Buffer(const std::string& name, MemoryUsage usage, Instance& instance)
+ : InstAttachableClass(&instance, ATTACHMENT_TYPE_BUFFER, name)
 {
     //switch over the graphic API
     switch (m_instance->getAPI())
@@ -36,8 +36,8 @@ Buffer::Buffer(MemoryUsage usage, Instance& instance)
     m_arena->onCreate();
 }
 
-Buffer::Buffer(void* data, uint64_t size, MemoryUsage usage, Instance& instance)
- : InstAttachableClass(&instance, "buffer")
+Buffer::Buffer(const std::string& name, void* data, uint64_t size, MemoryUsage usage, Instance& instance)
+ : InstAttachableClass(&instance, ATTACHMENT_TYPE_BUFFER, name)
 {
     //switch over the graphic API
     switch (m_instance->getAPI())

@@ -97,6 +97,20 @@ public:
             std::unordered_map<std::string_view, BufferShaderBinding> buffers, const Instance& instance);
 
     /**
+     * @brief Construct a new shader
+     * 
+     * @param source the source code for the shader
+     * @param file a path to the shader. Used for the #include preprocessor statement. 
+     * @param processor the shader processor to use for compillation
+     * @param textures store an unorderd map that maps names to texture pointers the shader can access
+     * @param buffers store an unorderd map that maps names to buffer binding solutions
+     * @param instance the instance the shader will belong to
+     */
+    Shader(const std::string source, std::string file, ShaderProcessor* processor, 
+            std::unordered_map<std::string_view, Texture*> textures, 
+            std::unordered_map<std::string_view, BufferShaderBinding> buffers, const Instance& instance);
+
+    /**
      * @brief Destroy the Shader
      */
     virtual ~Shader();
@@ -203,6 +217,14 @@ public:
      * @return GraphicShader* a pointer to the graphic shader the shader encapsulates
      */
     inline GraphicShader* getGraphicShader() const noexcept {return m_shader;}
+
+    /**
+     * @brief re-compile the shader from new source code
+     * 
+     * @param sourcecode the new source code for the shader
+     * @param processor the shader processor to compile the code with
+     */
+    void recreate(std::string sourcecode, ShaderProcessor* processor) noexcept;
 
 protected:
 

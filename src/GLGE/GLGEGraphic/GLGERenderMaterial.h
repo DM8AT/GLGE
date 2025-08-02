@@ -86,6 +86,7 @@ public:
     /**
      * @brief Construct a new Render Material
      * 
+     * @param name the name of the render material. Must be uniqe!
      * @param elementSize the size of a single material instance in VRam
      * @param culling true : back faces will be cullded (clockwise order) | false : back faces won't be culled
      * @param depthTest an enum dictating how the depth test should be done
@@ -93,7 +94,7 @@ public:
      * @param vLayout store information on the layout of the verticies
      * @param inst a reference to the instance the render material will belong to
      */
-    RenderMaterial(uint64_t elementSize, bool culling, DepthTest depthTest, bool depthWrite, RenderVertexLayout* vLayout, Instance& inst) noexcept;
+    RenderMaterial(std::string name, uint64_t elementSize, bool culling, DepthTest depthTest, bool depthWrite, RenderVertexLayout* vLayout, Instance& inst) noexcept;
 
     /**
      * @brief Destroy the Render Material

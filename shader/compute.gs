@@ -57,5 +57,6 @@ void main()
     {
         //draw a color from the texture to the image
         imageStore(image2D(glge_Image[writeTo]), i, col);
+        //imageStore(image2D(glge_Image[writeTo]), i, vec4(1,0,0,1));
     }
 }

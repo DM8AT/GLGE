@@ -28,8 +28,6 @@ class Framebuffer : public InstAttachableClass
 {
 public:
 
-    Framebuffer() = default;
-
     /**
      * @brief Construct a new Framebuffer
      * 
@@ -39,7 +37,7 @@ public:
      * @param instance a reference to the instance the framebuffer will belong to
      */
     inline Framebuffer(Texture** colorAttatchments, uint64_t colorAttatchmentCount, Texture* depthAttatchment, Instance& instance)
-     : InstAttachableClass(&instance, "Framebuffer")
+     : InstAttachableClass(&instance, ATTACHMENT_TYPE_FRAMEBUFFER, "Framebuffer")
     {
         //create the framebuffer
         create(colorAttatchments, colorAttatchmentCount, depthAttatchment);
@@ -65,7 +63,7 @@ public:
      * @param instance a reference to the instance the framebuffer will belong to
      */
     inline Framebuffer(uint64_t colorAttatchmentCount, bool alpha, bool hdr, bool depthAttatchment, const uvec2& size, Instance& instance)
-     : InstAttachableClass(&instance, "Framebuffer")
+     : InstAttachableClass(&instance, ATTACHMENT_TYPE_FRAMEBUFFER, "Framebuffer")
     {
         //create the framebuffer
         create(colorAttatchmentCount, alpha, hdr, depthAttatchment, size);

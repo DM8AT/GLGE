@@ -84,7 +84,8 @@ if (GLGE_USE_ASSIMP)
 set(assimp_DIR ${GLGE_PATH}/GLGE3rdParty/assimp)
 # locate the assimp package
 find_package(assimp REQUIRED)
-
+# add the inlcude directory for assimp
+INCLUDE_DIRECTORIES(${GLGE_PATH}/GLGE3rdParty/assimp/lib)
 endif() # end of assimp addition
 
 # SDL2 Can not be disabled since it is neccecery for GLGE
@@ -119,6 +120,7 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGECore/Files/GLGEFile.cpp
     ${GLGE_PATH}/GLGECore/Files/GLGEPath.cpp
     ${GLGE_PATH}/GLGECore/GLGELayers.cpp
+    ${GLGE_PATH}/GLGECore/Color/GLGEColor.cpp
     # Subelement : Geometry
     ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
     ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp
@@ -132,10 +134,12 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGERay.cpp
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGETriangle.cpp
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGECollision.cpp
+    # Subelement : Assets
+    ${GLGE_PATH}/GLGECore/Assets/GLGEAssets.cpp
+    ${GLGE_PATH}/GLGECore/Assets/GLGEAsset_Texture.cpp
 
     # Graphic files
     ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGEColor.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
@@ -147,6 +151,8 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGEGraphic/GLGERenderVertexLayout.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGEObjectRenderer.cpp
     ${GLGE_PATH}/GLGEGraphic/GLGECamera.cpp
+    # Assets
+    ${GLGE_PATH}/GLGEGraphic/Assets/GLGEAsset_Shader.cpp
     # Shader stuff
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
     ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp
@@ -208,6 +214,11 @@ TARGET_LINK_LIBRARIES(GLGE vulkan)
 TARGET_LINK_LIBRARIES(GLGE GL)
 # add GLEW
 TARGET_LINK_LIBRARIES(GLGE GLEW ${LINK_LIBS})
+# check if Assimp should be added
+if (GLGE_USE_ASSIMP)
+    # add the assimp library to the include stream
+    TARGET_LINK_LIBRARIES(GLGE assimp)
+endif()
 # enable threading
 target_compile_options(GLGE PRIVATE -pthread)
 target_link_options(GLGE PRIVATE -pthread)
@@ -269,6 +280,21 @@ target_link_options(GLGE PRIVATE -pthread)
     target_compile_options(UNIT_TEST_CPP PRIVATE ${COMPILER_OPTIONS})
     # add GLGE
     target_link_libraries(UNIT_TEST_CPP GLGE)
+
+# Unit tests
+    project(ASSET_LOADING_CPP
+        VERSION 1.0
+        DESCRIPTION "A simple asset loader made with GLGE"
+        LANGUAGES CXX)
+    # executable for test project
+    add_executable(ASSET_LOADING_CPP
+        src/CPP/AssetLoading/main.cpp
+    )
+    # define compiler settings
+    target_compile_definitions(ASSET_LOADING_CPP PRIVATE USE_NEW_AUDIO_ENGINE)
+    target_compile_options(ASSET_LOADING_CPP PRIVATE ${COMPILER_OPTIONS})
+    # add GLGE
+    target_link_libraries(ASSET_LOADING_CPP GLGE)
 
 # Example hub
     project(EXAMPLE_HUB_CPP

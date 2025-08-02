@@ -68,6 +68,15 @@ public:
     virtual void onDestroy() override;
 
     /**
+     * @brief re-create the texture with entierly new data and potentialy a new size and format
+     * 
+     * @param data the new data for the texture
+     * @param isHDR true : the texture will be in high dynamic range (all components are 32 bit floats) | false : the texture will be in low dynamic range (all components are 8 bit unsigned integers)
+     * @param alpha specify if a alpha channel should exist or not
+     */
+    virtual void recreate(void* data, bool isHDR, bool alpha) noexcept override;
+
+    /**
      * @brief Create a mip map for the texture
      */
     virtual void createMipMap() noexcept override;
@@ -123,6 +132,13 @@ protected:
      * @param dataSize the size of the inputed data
      */
     static void deleteOgl(void* data, uint64_t dataSize);
+
+    /**
+     * @brief re-create the OpenGL texture
+     * 
+     * @param texture a pointer to the texture to re-create
+     */
+    static void recreateOgl(OGL4_6_Texture* texture, uint64_t);
 
     /**
      * @brief change the size of an OpenGL texture

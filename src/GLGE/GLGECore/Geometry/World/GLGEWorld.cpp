@@ -20,8 +20,8 @@
  * @param name the name of the world
  * @param instance the instance the world will belong to
  */
-World::World(Object** objects, uint64_t objectCount, const std::string_view& name, Instance& instance)
- : InstAttachableClass(&instance, name)
+World::World(Object** objects, uint64_t objectCount, const std::string& name, Instance& instance)
+ : InstAttachableClass(&instance, ATTACHMENT_TYPE_WORLD, name)
 {
     //allocate the needed RAM
     m_objects.reserve(objectCount);
@@ -47,7 +47,8 @@ World::World(Object** objects, uint64_t objectCount, const std::string_view& nam
  * @param instance the instance the world will belong to
  * @param fileSuffix the suffix of the file to load from. Default is .gw (GLGE World)
  */
-World::World(const std::string_view fileName, Instance& instance, const std::string_view& fileSuffix)
+World::World(const std::string& fileName, Instance& instance, const std::string_view& fileSuffix)
+ : InstAttachableClass(&instance, ATTACHMENT_TYPE_WORLD, fileName)
 {
     #warning Still need to implement file loading and saving for worlds
 }

@@ -40,20 +40,22 @@ public:
     /**
      * @brief Construct a new Buffer
      * 
+     * @param name the name of the buffer. MUST BE UNIQUE!
      * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    Buffer(MemoryUsage usage, Instance& instance);
+    Buffer(const std::string& name, MemoryUsage usage, Instance& instance);
 
     /**
      * @brief Construct a new Buffer
      * 
+     * @param name the name of the buffer. MUST BE UNIQUE!
      * @param data the inital data for the buffer (set to NULL to fill it with zeros)
      * @param size the size in bytes of the buffer
      * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    Buffer(void* data, uint64_t size, MemoryUsage usage, Instance& instance);
+    Buffer(const std::string& name, void* data, uint64_t size, MemoryUsage usage, Instance& instance);
 
     /**
      * @brief Destroy the Buffer
@@ -130,32 +132,35 @@ public:
     /**
      * @brief Construct a new Structured Buffer
      * 
+     * @param name the name of the buffer. MUST BE UNIQUE!
      * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    StructuredBuffer(MemoryUsage usage, Instance& instance)
-     : Buffer(usage, instance) {}
+    StructuredBuffer(const std::string& name, MemoryUsage usage, Instance& instance)
+     : Buffer(name, usage, instance) {}
 
     /**
      * @brief Construct a new Structured Buffer
      * 
+     * @param name the name of the buffer. MUST BE UNIQUE!
      * @param elements the amount of elements in the array
      * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    StructuredBuffer(uint64_t elements, MemoryUsage usage, Instance& instance)
-     : Buffer(0, elements*sizeof(T), usage, instance) {}
+    StructuredBuffer(const std::string& name, uint64_t elements, MemoryUsage usage, Instance& instance)
+     : Buffer(name, 0, elements*sizeof(T), usage, instance) {}
 
     /**
      * @brief Construct a new Buffer
      * 
+     * @param name the name of the buffer. MUST BE UNIQUE!
      * @param data an array of instances of the T class
      * @param count the amount of instance of the type T in the data array
      * @param usage the way the buffer will be used
      * @param instance a reference to the instance the buffer will belong to
      */
-    StructuredBuffer(T* data, uint64_t count, MemoryUsage usage, Instance& instance)
-     : Buffer(data, count * sizeof(T), usage, instance) {}
+    StructuredBuffer(const std::string& name, T* data, uint64_t count, MemoryUsage usage, Instance& instance)
+     : Buffer(name, data, count * sizeof(T), usage, instance) {}
 
     /**
      * @brief write some element of the structured buffer
@@ -191,10 +196,10 @@ public:
     bool set(const T& element, uint64_t index) noexcept
     {
         //check if the data is in bounds
-        if ((index + 1) * sizeof(T) >= m_arena->getSize()) {return false;}
+        if ((index + 1) * sizeof(T) > m_arena->getSize()) {return false;}
 
         //update the actual element
-        m_arena->update({index*sizeof(T), sizeof(T)}, &element);
+        m_arena->update({index*sizeof(T), sizeof(T)}, (void*)&element);
 
         //succesfully set the element
         return true;

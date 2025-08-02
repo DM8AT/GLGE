@@ -82,6 +82,11 @@ public:
      */
     inline uint32_t getProgram() const noexcept {return m_program;}
 
+    /**
+     * @brief this function is called when the parent shader is re-compiled
+     */
+    virtual void onRecompile() noexcept override;
+
 protected:
 
     /**
@@ -126,6 +131,13 @@ protected:
      * @param cmdDataSize unused
      */
     static void detatchShader(void* cmdData, uint64_t cmdDataSize) noexcept;
+
+    /**
+     * @brief recompile an OpenGL shader
+     * 
+     * @param shader the OpenGL shader to recompile
+     */
+    static void recompileShader(OGL4_6_Shader* shader, uint64_t) noexcept;
 
     /**
      * @brief store the OpenGL shader program

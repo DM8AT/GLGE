@@ -37,11 +37,6 @@ public:
 
     /**
      * @brief Construct a new Graphic Instance
-     */
-    GraphicInstance() = default;
-
-    /**
-     * @brief Construct a new Graphic Instance
      * 
      * @param instance a pointer to the instance the graphic instance belongs to
      */

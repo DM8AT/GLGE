@@ -115,6 +115,11 @@ public:
      */
     virtual void onDetatch(GraphicCommandBuffer*) noexcept {}
 
+    /**
+     * @brief this function is called when the parent shader is re-compiled
+     */
+    virtual void onRecompile() noexcept {}
+
 protected:
 
     /**

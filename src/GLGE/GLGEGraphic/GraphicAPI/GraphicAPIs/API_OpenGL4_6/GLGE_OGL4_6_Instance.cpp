@@ -145,21 +145,21 @@ void OGL4_6_Instance::initalizeGLEW(OGL4_6_Window* window)
     addCommandBuffer(&m_dataBuffer);
 
     //create the texture buffer
-    m_textures = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_textures = new Buffer("GLGE_INSTANCE_TEXTURES", MEMORY_USAGE_READ_WRITE, *m_instance);
     m_textures->getMemoryArena()->setResizable(true);
     ((OGL4_6_MemoryArena*)m_textures->getMemoryArena())->setAPI(true);
     //create the image buffer
-    m_images = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_images = new Buffer("GLGE_INSTANCE_IMAGES", MEMORY_USAGE_READ_WRITE, *m_instance);
     m_images->getMemoryArena()->setResizable(true);
     ((OGL4_6_MemoryArena*)m_images->getMemoryArena())->setAPI(true);
 
     //create the camera buffer
-    m_camera = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_camera = new Buffer("GLGE_INSTANCE_CAMERAS", MEMORY_USAGE_READ_WRITE, *m_instance);
     m_camera->getMemoryArena()->setResizable(true);
     ((OGL4_6_MemoryArena*)m_camera->getMemoryArena())->setAPI(true);
 
     //create the object buffer
-    m_objTransf = new Buffer(MEMORY_USAGE_READ_WRITE, *m_instance);
+    m_objTransf = new Buffer("GLGE_INSTANCE_OBJECT_TRANSFORMS", MEMORY_USAGE_READ_WRITE, *m_instance);
     m_objTransf->getMemoryArena()->setResizable(true);
     ((OGL4_6_MemoryArena*)m_objTransf->getMemoryArena())->setAPI(true);
 

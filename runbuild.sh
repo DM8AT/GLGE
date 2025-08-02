@@ -2,6 +2,22 @@
 
 # print info about the start of the compilation
 echo "[INFO] Started to compile GLGE"
+
+# check for the makefile for Assimp
+if [ -f "src/GLGE/GLGE3rdParty/assimp/Makefile" ]; then
+    # Print some info
+    echo "[INFO] Building Assimp"
+
+    # run the makefile for the library
+    cd "src/GLGE/GLGE3rdParty/assimp"
+    make -j
+    # change back to the main directory
+    cd ../../../../
+
+    # Print that the building is done
+    echo "[INFO] Finished building assimp"
+fi
+
 # check if the build directory exists
 if [ ! -d "build" ]; then
     # if not, create it
@@ -29,11 +45,6 @@ echo ""
 # check if there are command line arguments
 # command line arguments can be used to disable the auto-run of the program
 if [ $# == 0 ]; then
-
-    # run the C test program
-    echo [INFO] Running C Test
-    ./build/TEST_C
-    echo [INFO] Finished C Test
 
     # leave on new line
     echo -e ""

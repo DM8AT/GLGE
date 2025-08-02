@@ -196,6 +196,53 @@ void OGL4_6_Texture::ogl_resize(void* data, uint64_t) noexcept
     free(dat);
 }
 
+void OGL4_6_Texture::recreateOgl(OGL4_6_Texture* texture, uint64_t)
+{
+    //bind the texture to unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture->m_tex);
+    
+    //compute the format
+    //store the selected base format
+    GLenum baseFmt = GL_RGBA;
+    //store the selected format
+    GLenum format = GL_RGBA32F;
+    //extract the format
+    getOglFormats(format, baseFmt, texture->getTexture()->getPurpose(), texture->m_isHDR, texture->m_hasAlpha);
+
+    //make the handle non-resident if it is
+    if (glIsTextureHandleResidentARB(texture->m_handle)) {glMakeTextureHandleNonResidentARB(texture->m_handle);}
+    //texture must be deleted and created new again for the handle to work correctly
+    //first, delete the texture
+    glDeleteTextures(1, &texture->m_tex);
+
+    //create a new OpenGL texture
+    glGenTextures(1, &texture->m_tex);
+    //bind the texture to unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture->m_tex);
+
+    //set the texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    //update the size
+    glTexImage2D(GL_TEXTURE_2D, 0, format, texture->m_texture->getSize().x, texture->m_texture->getSize().y, 0, baseFmt, GL_UNSIGNED_BYTE, texture->m_data);
+
+    //get the new texture handle
+    texture->m_handle = glGetTextureHandleARB(texture->m_tex);
+    //store the texture handle in the data
+    ((OGL4_6_Instance*)texture->m_graphicInstance)->getTextureBuffer()->getMemoryArena()->update(texture->m_ptr, &texture->m_handle);
+
+    //get the new image handle
+    texture->m_image = glGetImageHandleARB(texture->m_tex, 0, GL_FALSE, 0, format);
+    //store the image handle in the data
+    ((OGL4_6_Instance*)texture->m_graphicInstance)->getImageBuffer()->getMemoryArena()->update(texture->m_imgPtr, &texture->m_image);
+
+}
+
 void OGL4_6_Texture::mipMap(void* data, uint64_t)
 {
     //extract the texture
@@ -234,6 +281,23 @@ void OGL4_6_Texture::onDestroy()
     cmdBuff.add(0, (void*)deleteOgl, this, sizeof(this));
     //end the recording
     cmdBuff.end();
+}
+void OGL4_6_Texture::recreate(void* data, bool isHDR, bool alpha) noexcept
+{
+    //store the new hdr and alpha values
+    m_isHDR = isHDR;
+    m_hasAlpha = alpha;
+
+    //copy the data over
+    free(m_data);
+    uint64_t size = m_texture->getSize().x * m_texture->getSize().y * ((m_isHDR ? sizeof(float) : sizeof(uint8_t)) * (m_hasAlpha ? 4 : 3));
+    m_data = (void*)malloc(size);
+    memcpy(m_data, data, size);
+
+    //get the command buffer
+    GraphicCommandBuffer& cmdBuff = ((OGL4_6_Instance*)m_graphicInstance)->getDataBuffer();
+    //queue the mip map function
+    cmdBuff.add(0, (void*)recreateOgl, this, sizeof(this));
 }
 
 void OGL4_6_Texture::createMipMap() noexcept

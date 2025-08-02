@@ -16,7 +16,7 @@
 #include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
 RenderVertexLayout::RenderVertexLayout(Instance& instance)
- : InstAttachableClass(&instance, "RenderVertexLayout")
+ : InstAttachableClass(&instance, ATTACHMENT_TYPE_RENDER_VERTEX_LAYOUT, "RenderVertexLayout")
 {
     //store the layout of a simple vertex
     VertexLayoutElement elements[] = {

@@ -20,7 +20,7 @@
 //include the graphic API
 #include "GraphicAPI/GLGEGraphicAPI.h"
 //include colors
-#include "GLGEColor.h"
+#include "../GLGECore/Color/GLGEColor.h"
 //include textures
 #include "GLGETexture.h"
 //include layers
@@ -91,11 +91,6 @@ public:
 
     /**
      * @brief Construct a new Window
-     */
-    Window() = default;
-
-    /**
-     * @brief Construct a new Window
      * 
      * @param name the name of the window
      * @param size the size of the window in pixels
@@ -103,7 +98,7 @@ public:
      * @param settings the settings for the window
      * @param instance the instance for the window
      */
-    inline Window(std::string_view name, const uvec2& size, const uvec2& pos, const WindowSettings& settings, Instance& instance) noexcept : InstAttachableClass()
+    inline Window(const std::string& name, const uvec2& size, const uvec2& pos, const WindowSettings& settings, Instance& instance) noexcept : InstAttachableClass(&instance, ATTACHMENT_TYPE_WINDOW, name)
     {open(name, size, pos, settings, instance);}
 
     /**

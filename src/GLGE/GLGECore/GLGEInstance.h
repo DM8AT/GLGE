@@ -26,8 +26,72 @@
 //include layers
 #include "GLGELayers.h"
 
+/**
+ * @brief specify what type an instance attachable class is
+ */
+typedef enum e_InstAttachableType
+{
+    /**
+     * @brief specify that the type of the instance attachable is an asset
+     */
+    ATTACHMENT_TYPE_ASSET = 0,
+    /**
+     * @brief specify that the type of the instance attachable is an object
+     */
+    ATTACHMENT_TYPE_OBJECT,
+    /**
+     * @brief specify that the type of the instance attachable is a world
+     */
+    ATTACHMENT_TYPE_WORLD,
+    /**
+     * @brief specify that the type of the instance attachable is a buffer
+     */
+    ATTACHMENT_TYPE_BUFFER,
+    /**
+     * @brief specify that the type of the instance attachable is a framebuffer
+     */
+    ATTACHMENT_TYPE_FRAMEBUFFER,
+    /**
+     * @brief specify that the type of the instance attachable is a render material
+     */
+    ATTACHMENT_TYPE_RENDER_MATERIAL,
+    /**
+     * @brief specify that the type of the instance attachable is a render pipeline
+     */
+    ATTACHMENT_TYPE_RENDER_PIPELINE,
+    /**
+     * @brief specify that the type of the instance attachable is a render vertex layout
+     */
+    ATTACHMENT_TYPE_RENDER_VERTEX_LAYOUT,
+    /**
+     * @brief specify that the type of the instance attachable is a texture
+     */
+    ATTACHMENT_TYPE_TEXTURE,
+    /**
+     * @brief specify that the type of the instance attachable is a window
+     */
+    ATTACHMENT_TYPE_WINDOW,
+    /**
+     * @brief specify that the type of the instance attachable is a graphic instance
+     */
+    ATTACHMENT_TYPE_GRAPHIC_INSTANCE,
+    /**
+     * @brief specify that the type of the instance attachable is a shader
+     */
+    ATTACHMENT_TYPE_SHADER
+} InstAttachableType;
+
 //check if this is C++
 #if GLGE_CPP
+
+/**
+ * @brief print an instance of the instance attachable type enum into an output stream
+ * 
+ * @param os the output stream to print to
+ * @param type the type to print
+ * @return std::ostream& the filled output stream
+ */
+std::ostream& operator<<(std::ostream& os, const InstAttachableType& type) noexcept;
 
 //check if graphics should be included
 #if GLGE_INCLUDE_GRAPHICS
@@ -337,6 +401,14 @@ public:
 
     #endif //Graphic only section
 
+    /**
+     * @brief Get an instance attatchable class pointer to an element by it's name
+     * 
+     * @param name the name of the element to querry
+     * @return InstAttachableClass* a pointer to the instance attatchable that has that name or 0 if the name dosn't exist
+     */
+    InstAttachableClass* getNamed(const std::string& name) const noexcept;
+
 private:
 
     /**
@@ -429,16 +501,18 @@ public:
 
     /**
      * @brief Construct a new instance
+     * Explicetly deleted, can't be used uninitalized
      */
-    InstAttachableClass() = default;
+    InstAttachableClass() = delete;
 
     /**
      * @brief Construct a new instance
      * 
      * @param instance a pointer to the GLGE instance the new instance will belong to
+     * @param type the enum identifyer of the type of the instance attachment
      * @param name the name of the instance attatchable
      */
-    inline InstAttachableClass(Instance* instance, const std::string_view& name) : m_instance(instance), m_name(name) {m_instance->addElement(this);}
+    inline InstAttachableClass(Instance* instance, InstAttachableType type, const std::string& name) : m_instance(instance), m_type(type), m_name(name) {m_instance->addElement(this);}
 
     /**
      * @brief Destroy the instance
@@ -452,7 +526,7 @@ public:
      * @param iac the instance to print
      * @return std::ostream& a reference to the output stream with the new content
      */
-    inline friend std::ostream& operator<<(std::ostream& os, const InstAttachableClass& iac) noexcept {return os << "InstAttachableClass{this: " << &iac << ", name: \"" << iac.m_name << "\", instance: " << iac.m_instance << ", instance name: \"" << iac.m_instance->getName() << "\"}";}
+    inline friend std::ostream& operator<<(std::ostream& os, const InstAttachableClass& iac) noexcept {return os << "InstAttachableClass{this: " << &iac << ", type: " << iac.m_type << ", name: \"" << iac.m_name << "\", instance: " << iac.m_instance << ", instance name: \"" << iac.m_instance->getName() << "\"}";}
 
     /**
      * @brief update the attatched object
@@ -469,6 +543,20 @@ public:
      */
     inline Instance* getInstance() noexcept {return m_instance;}
 
+    /**
+     * @brief Get the Name of the instance attatchable
+     * 
+     * @return const std::string& a constant reference to the name of the instance attatchable
+     */
+    inline const std::string& getName() const noexcept {return m_name;}
+
+    /**
+     * @brief Get the Type of the instance attachable class
+     * 
+     * @return InstAttachableType the type of the instance attachable class
+     */
+    inline InstAttachableType getType() const noexcept {return m_type;}
+
 protected:
 
     /**
@@ -476,9 +564,13 @@ protected:
      */
     Instance* m_instance = 0;
     /**
+     * @brief store the type of the instance attachable class
+     */
+    InstAttachableType m_type;
+    /**
      * @brief store the name of the instance attatchable
      */
-    std::string_view m_name = "";
+    std::string m_name = "";
 
 };
 

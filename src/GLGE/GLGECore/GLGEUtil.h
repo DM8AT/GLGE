@@ -116,7 +116,7 @@
 //check if debugging is enabled
 #if GLGE_ENABLE_DEBUGGING
 //say that debugging is enabled
-#define GLGE_DEBUG_WRAPPER(debug) debug
+#define GLGE_DEBUG_WRAPPER(debug) {debug}
 #else
 //say that debugging is disabled
 #define GLGE_DEBUG_WRAPPER(debug)
@@ -140,6 +140,28 @@
  * @param size the size of the pointer in bytes
  */
 #define bzero(ptr, size) memset(ptr, 0, size)
+#endif
+
+/**
+ * @brief define a wrapper to decide if a graphic core specific element or a replacement should be used
+ */
+#if GLGE_INCLUDE_GRAPHICS
+    //use the graphic core specific element
+    #define GLGE_USE_IF_GRAPHICS_ELSE(graphics, alternative) graphics
+#else
+    //use the alternative element
+    #define GLGE_USE_IF_GRAPHICS_ELSE(graphics, alternative) alternative
+#endif
+
+/**
+ * @brief define a wrapper to decide if a graphic core specific element or nothing should be used
+ */
+#if GLGE_INCLUDE_GRAPHICS
+    //use the graphic core specific element
+    #define GLGE_USE_IF_GRAPHICS(graphics) graphics
+#else
+    //just use nothing
+    #define GLGE_USE_IF_GRAPHICS(graphics)
 #endif
 
 #endif

@@ -30,4 +30,7 @@
 //include geometry
 #include "Geometry/GLGEGeometry.h"
 
+//include the assets
+#include "Assets/GLGEAssets.h"
+
 #endif

@@ -58,7 +58,7 @@ int main()
     Texture tex("assets/textures/cubeTexture.png", false, TEXTURE_PURPOSE_IMAGE, inst);
 
     RenderVertexLayout vLayout(inst);
-    RenderMaterial material(sizeof(MaterialData), true, DEPTH_TEST_LESS, true, &vLayout, inst);
+    RenderMaterial material("renderMaterial", sizeof(MaterialData), true, DEPTH_TEST_LESS, true, &vLayout, inst);
     ShaderProcessor proc;
     proc.loadPackage(Path("shader/glgeTextures.gp"), "GLGETextures");
     Shader shader(Path("shader/default.gs"), &proc, {

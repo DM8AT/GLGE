@@ -18,7 +18,7 @@
 #include "GLGEGraphicShared.h"
 
 RenderPipeline::RenderPipeline(RenderStage* stages, uint64_t stageCount, bool _start, Instance& instance)
- : InstAttachableClass(&instance, "RenderPipeline"), m_stages(stageCount)
+ : InstAttachableClass(&instance, ATTACHMENT_TYPE_RENDER_PIPELINE, "RenderPipeline"), m_stages(stageCount)
 {
     //copy the contents of the render stages to the stages
     memcpy(m_stages.data(), stages, m_stages.size() * sizeof(*m_stages.data()));

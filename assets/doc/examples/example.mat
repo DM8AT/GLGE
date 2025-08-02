@@ -1,0 +1,13 @@
+<!-- This file contains an example XML structure for a material. -->
+
+<!-- 
+  @param name the name parameter holds the identifyer for a compound asset. For duplicates a running index is appended. 
+ -->
+<material name="Example">
+
+    <!-- the file attribute points to a file containing the shader asset -->
+    <shader file="example.shader">
+        <!-- Here may be the shader asset inlined -->
+    </shader>
+
+</material>

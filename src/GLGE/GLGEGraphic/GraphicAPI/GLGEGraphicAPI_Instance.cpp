@@ -64,7 +64,7 @@ bool GraphicInstance::onUpdate() noexcept
     return true;
 }
 
-GraphicInstance::GraphicInstance(Instance* instance) : InstAttachableClass(instance, "GraphicInstance") 
+GraphicInstance::GraphicInstance(Instance* instance) : InstAttachableClass(instance, ATTACHMENT_TYPE_GRAPHIC_INSTANCE, "GraphicInstance") 
 {
     //add the instance
     __glge_all_instances->push_back(m_instance);

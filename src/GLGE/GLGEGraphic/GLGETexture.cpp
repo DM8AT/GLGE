@@ -34,10 +34,13 @@ Texture::~Texture()
     }
 }
 
-void Texture::create(std::string_view file, TexturePurpose purpose, bool alpha)
+void Texture::create(std::filesystem::path file, TexturePurpose purpose, bool alpha)
 {
+    //log a warning - deprecated function
+    m_instance->log("Warning - directly loading a texture from a file. This is a deprecated function. It will be removed in a future update. ", MESSAGE_TYPE_WARNING);
+
     //load the image
-    SDL_Surface* img = IMG_Load(file.data());
+    SDL_Surface* img = IMG_Load(file.c_str());
     //check if the texture was loaded successfully
     if (!img)
     {
@@ -151,6 +154,15 @@ void Texture::create(void* data, TexturePurpose purpose, const uvec2& size, bool
         m_instance->log(stream, MESSAGE_TYPE_FATAL_ERROR);
     }
 }
+
+void Texture::reload(void* newData, const uvec2& newSize, bool newIsHDR, bool newAlpha) noexcept
+{
+    //store the new size
+    m_size = newSize;
+    //pass the function to the graphic texture
+    m_texture->recreate(newData, newIsHDR, newAlpha);
+}
+
 
 Color Texture::getColor(const uvec2& pos)
 {
