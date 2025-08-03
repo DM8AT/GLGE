@@ -224,7 +224,7 @@ public:
      * 
      * @return const char* 
      */
-    virtual const char* getTypeName() const noexcept {return "WorldExtension";}
+    virtual const char* getTypeName() const noexcept {return "GLGE_WORLD_EXTENSION";}
 
     /**
      * @brief say that the world class is a friend
