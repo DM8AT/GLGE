@@ -15,5 +15,7 @@
 
 //include OpenGL 4.6
 #include "API_OpenGL4_6/GLGE_OGL4_6.h"
+//include Software Rasterizer
+#include "API_Software/GLGE_Software.h"
 
 #endif

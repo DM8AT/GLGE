@@ -31,7 +31,7 @@
 //say that the Vulkan 1.2 Ray Tracing api is not defined
 #define GLGE_API_SUPPORTS_API_VULKAN_1_2_RT GLGE_API_UNDEFINED
 //say that the software rasterization api is not defined
-#define GLGE_API_SUPPORTS_API_SOFTWARE GLGE_API_UNDEFINED
+#define GLGE_API_SUPPORTS_API_SOFTWARE GLGE_API_DEFINED
 //say that the software ray tracing api is not defined
 #define GLGE_API_SUPPORTS_API_SOFTWARE_RT GLGE_API_UNDEFINED
 

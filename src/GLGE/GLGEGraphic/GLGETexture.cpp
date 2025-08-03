@@ -75,6 +75,10 @@ void Texture::create(std::string_view file, TexturePurpose purpose, bool alpha)
         //store the new texture
         m_texture = new OGL4_6_Texture(this, conv->pixels, false, alpha, m_instance->getGraphicInstance());
     }
+    else if (m_instance->getAPI() == API_SOFTWARE)
+    {
+        m_texture = new Software_Texture(this, conv->pixels, false, alpha, m_instance->getGraphicInstance());
+    }
     else
     {
         //log the missing texture creation as a fatal error
@@ -111,7 +115,9 @@ void Texture::create(TexturePurpose purpose, const uvec2& size, bool isHDR, bool
         //store the new texture
         m_texture = new OGL4_6_Texture(this, isHDR, alpha, m_instance->getGraphicInstance());
         break;
-    
+    case API_SOFTWARE:
+        m_texture = new Software_Texture(this, isHDR, alpha, m_instance->getGraphicInstance());
+        break;
     default:
     {
         //log the missing texture creation as a fatal error

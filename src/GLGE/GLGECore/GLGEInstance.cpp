@@ -154,13 +154,15 @@ void Instance::initGraphicAPI(Window* window)
         SDL_GL_MakeCurrent((SDL_Window*)window->getSDL2Window(), 0);
         //create a new OpenGL 4.6 instance
         m_gInstance = new OGL4_6_Instance(tmp, this);
-
-        //stop the function
+         //stop the function
         return;
     }
-    
+    else if (m_api == API_SOFTWARE)
+    {
+        m_gInstance = new Software_Instance(this);
+    }
     //check if the API is marked as supported
-    if (GLGE_C_FUNC(getAPISupport(m_api)))
+    else if (GLGE_C_FUNC(getAPISupport(m_api)))
     {
         //if it is supported, log that the API is supported but no instance was implemented (WHAT?)
         m_logger->log("Graphic API is marked as supported, but no instance could be created. Are you working on an implementation?", MESSAGE_TYPE_FATAL_ERROR);

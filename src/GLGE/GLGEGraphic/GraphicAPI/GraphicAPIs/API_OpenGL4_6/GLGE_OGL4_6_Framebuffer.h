@@ -47,11 +47,11 @@ public:
     virtual ~OGL4_6_Framebuffer() {destroy();}
 
     /**
-     * @brief a overloadable hook to create the framebuffer
+     * @brief an overloadable hook to create the framebuffer
      */
     virtual void onCreate() override;
     /**
-     * @brief a overloadable hook to destroy the framebuffer
+     * @brief an overloadable hook to destroy the framebuffer
      */
     virtual void onDestroy() override;
 

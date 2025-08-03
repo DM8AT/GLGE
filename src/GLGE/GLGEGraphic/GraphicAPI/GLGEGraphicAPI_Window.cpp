@@ -18,11 +18,11 @@
 
 void GraphicWindow::create(Window* window, GraphicInstance* instance)
 {
-    //check if the texture is set up
+    //check if the window is set up
     if (m_graphicInstance)
     {
         //log an error
-        m_graphicInstance->getInstance()->log("Can not re-create texture that was never destroyed", MESSAGE_TYPE_ERROR);
+        m_graphicInstance->getInstance()->log("Can not re-create window that was never destroyed", MESSAGE_TYPE_ERROR);
         return;
     }
 
@@ -38,7 +38,7 @@ void GraphicWindow::create(Window* window, GraphicInstance* instance)
 
 void GraphicWindow::destroy()
 {
-    //check if the texture is set up
+    //check if the window is set up
     if (!m_graphicInstance) {return;}
 
     //iterate over all render pipelines that reference this window

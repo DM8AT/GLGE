@@ -136,7 +136,7 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     case API_VULKAN_1_2_RT:
         flags = (SDL_WindowFlags)(flags | SDL_WINDOW_VULKAN);
         break;
-        
+
     //for software, add no flags
     default:
         break;
@@ -170,7 +170,9 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     case API_OPENGL_4_6:
         m_gWindow = new OGL4_6_Window(this, m_instance->getGraphicInstance());
         break;
-    
+    case API_SOFTWARE:
+        m_gWindow = new Software_Window(this, m_instance->getGraphicInstance());
+        break;
     default:
     {
         //log the missing window creation as a fatal error

@@ -24,6 +24,10 @@ Buffer::Buffer(MemoryUsage usage, Instance& instance)
         //create an opengl 4.6 memory arena
         m_arena = new OGL4_6_MemoryArena(0, false, usage, instance);
         break;
+
+    case API_SOFTWARE: //do properly
+        m_arena = new GraphicMemoryArena(0, false, usage, instance);
+        break;
     
     default:
         break;
@@ -45,6 +49,10 @@ Buffer::Buffer(void* data, uint64_t size, MemoryUsage usage, Instance& instance)
     case API_OPENGL_4_6:
         //create an opengl 4.6 memory arena
         m_arena = new OGL4_6_MemoryArena(size, false, usage, instance);
+        break;
+
+    case API_SOFTWARE: //do properly
+        m_arena = new GraphicMemoryArena(0, false, usage, instance);
         break;
     
     default:

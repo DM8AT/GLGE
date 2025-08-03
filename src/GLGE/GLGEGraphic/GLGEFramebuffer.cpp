@@ -84,7 +84,11 @@ void Framebuffer::create(Texture** colorAttatchments, uint64_t colorAttatchmentC
     case API_OPENGL_4_6:
         m_fbuff = new OGL4_6_Framebuffer(this, m_instance);
         break;
-    
+
+    case API_SOFTWARE:
+        m_fbuff = new Software_Framebuffer(this, m_instance);
+        break;
+
     default:
         break;
     }
@@ -120,6 +124,10 @@ void Framebuffer::create(uint64_t colorAttatchmentCount, bool alpha, bool hdr, b
     {
     case API_OPENGL_4_6:
         m_fbuff = new OGL4_6_Framebuffer(this, m_instance);
+        break;
+
+    case API_SOFTWARE:
+        m_fbuff = new Software_Framebuffer(this, m_instance);
         break;
     
     default:

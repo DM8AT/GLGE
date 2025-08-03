@@ -65,6 +65,10 @@ RenderPipeline::RenderPipeline(RenderStage* stages, uint64_t stageCount, bool _s
         m_renderPipeline = new OGL4_6_RenderPipeline(this);
         break;
     
+    case API_SOFTWARE:
+        m_renderPipeline = new Software_RenderPipeline(this);
+        break;
+    
     //default: use the base class
     default:
     {

@@ -160,6 +160,14 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Framebuffer.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_MemoryArena.cpp
         ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_VertexLayout.cpp
+        # Graphic API: Software Rasterizer
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_Software/GLGE_Software_Rasterizer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_Software/GLGE_Software_Instance.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_Software/GLGE_Software_Window.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_Software/GLGE_Software_CommandBuffer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_Software/GLGE_Software_Texture.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_Software/GLGE_Software_RenderPipeline.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_Software/GLGE_Software_Framebuffer.cpp
 
     # Math files
     # Vectors
