@@ -76,6 +76,7 @@ The material asset contains 3 sub-elements:
  - a shader element
  - a vertex layout element
  - a settings element
+ 
 The settings has a few attributes that must be set for the material to be valid
 | Name | Type | Optional | Since | Usage |
 |------|------|----------|-------|-------|
