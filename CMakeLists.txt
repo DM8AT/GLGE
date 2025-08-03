@@ -78,14 +78,10 @@ endif() # end of Dear ImGui file loading
 
 # check for Assimp
 if (GLGE_USE_ASSIMP)
-
-
-# set the path to Assimp
-set(assimp_DIR ${GLGE_PATH}/GLGE3rdParty/assimp)
-# locate the assimp package
-find_package(assimp REQUIRED)
-# add the inlcude directory for assimp
-INCLUDE_DIRECTORIES(${GLGE_PATH}/GLGE3rdParty/assimp/lib)
+    # store the path to the Assimp library
+    set(ASSIMP_LIB ${GLGE_PATH}/GLGE3rdParty/assimp/lib/)
+    # add the library as an include directory
+    include_directories(${GLGE_PATH}/GLGE3rdParty/assimp/lib)
 endif() # end of assimp addition
 
 # SDL2 Can not be disabled since it is neccecery for GLGE

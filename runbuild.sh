@@ -3,10 +3,15 @@
 # print info about the start of the compilation
 echo "[INFO] Started to compile GLGE"
 
-# check for the makefile for Assimp
-if [ -f "src/GLGE/GLGE3rdParty/assimp/Makefile" ]; then
+# check if assimp exists
+if [ -d "src/GLGE/GLGE3rdParty/assimp" ]; then
     # Print some info
     echo "[INFO] Building Assimp"
+
+    # run cmake for assimp
+    cd src/GLGE/GLGE3rdParty/assimp
+    cmake . -DBUILD_SHARED_LIBS=OFF -DASSIMP_INSTALL=OFF
+    cd ../../../../
 
     # run the makefile for the library
     cd "src/GLGE/GLGE3rdParty/assimp"
