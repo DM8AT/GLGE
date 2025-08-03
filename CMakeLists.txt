@@ -80,8 +80,6 @@ endif() # end of Dear ImGui file loading
 if (GLGE_USE_ASSIMP)
     # store the path to the Assimp library
     set(ASSIMP_LIB ${GLGE_PATH}/GLGE3rdParty/assimp/lib/)
-    # add the library as an include directory
-    include_directories(${GLGE_PATH}/GLGE3rdParty/assimp/lib)
 endif() # end of assimp addition
 
 # SDL2 Can not be disabled since it is neccecery for GLGE
@@ -212,6 +210,8 @@ TARGET_LINK_LIBRARIES(GLGE GL)
 TARGET_LINK_LIBRARIES(GLGE GLEW ${LINK_LIBS})
 # check if Assimp should be added
 if (GLGE_USE_ASSIMP)
+    # add the library as an include directory
+    target_link_libraries(GLGE -L${ASSIMP_LIB})
     # add the assimp library to the include stream
     TARGET_LINK_LIBRARIES(GLGE assimp)
 endif()
