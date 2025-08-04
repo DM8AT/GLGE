@@ -23,6 +23,11 @@ if [ -d "src/GLGE/GLGE3rdParty/assimp" ]; then
     echo "[INFO] Finished building assimp"
 fi
 
+# compile pugixml
+cd src/GLGE/GLGE3rdParty/pugixml
+bash build.sh
+cd ../../../../
+
 # check if the build directory exists
 if [ ! -d "build" ]; then
     # if not, create it

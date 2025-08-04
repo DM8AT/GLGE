@@ -32,13 +32,9 @@
 typedef enum e_InstAttachableType
 {
     /**
-     * @brief specify that the type of the instance attachable is an asset
-     */
-    ATTACHMENT_TYPE_ASSET = 0,
-    /**
      * @brief specify that the type of the instance attachable is an object
      */
-    ATTACHMENT_TYPE_OBJECT,
+    ATTACHMENT_TYPE_OBJECT = 0,
     /**
      * @brief specify that the type of the instance attachable is a world
      */
@@ -78,7 +74,11 @@ typedef enum e_InstAttachableType
     /**
      * @brief specify that the type of the instance attachable is a shader
      */
-    ATTACHMENT_TYPE_SHADER
+    ATTACHMENT_TYPE_SHADER,
+    /**
+     * @brief specify that the type of the instance attachable is an asset manager
+     */
+    ATTACHMENT_TYPE_ASSET_MANAGER
 } InstAttachableType;
 
 //check if this is C++

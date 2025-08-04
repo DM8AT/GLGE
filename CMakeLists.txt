@@ -21,6 +21,11 @@ set(LINK_LIBS )
 
 # path to GLGE
 set(GLGE_PATH src/GLGE)
+# add pugixml - it is neccecery for loading assets
+set(PUGIXML_LIB ../${GLGE_PATH}/GLGE3rdParty/pugixml/pugixml_build)
+# store all pathes for GLGE libraries
+set(GLGE_LIBRARY_PATHS ${PUGIXML_LIB})
+
 #  $$$$$$\  $$$$$$$$\ $$$$$$$$\ $$$$$$$$\ $$$$$$\ $$\   $$\  $$$$$$\   $$$$$$\  
 # $$  __$$\ $$  _____|\__$$  __|\__$$  __|\_$$  _|$$$\  $$ |$$  __$$\ $$  __$$\ 
 # $$ /  \__|$$ |         $$ |      $$ |     $$ |  $$$$\ $$ |$$ /  \__|$$ /  \__|
@@ -117,6 +122,9 @@ set(SOURCE_FILES_CPP
     ${GLGE_PATH}/GLGECore/Files/GLGEPath.cpp
     ${GLGE_PATH}/GLGECore/GLGELayers.cpp
     ${GLGE_PATH}/GLGECore/Color/GLGEColor.cpp
+    # Subelement : Assets
+    ${GLGE_PATH}/GLGECore/Assets/GLGEAsset.cpp
+    ${GLGE_PATH}/GLGECore/Assets/GLGEAssetManager.cpp
     # Subelement : Geometry
     ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
     ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp
@@ -206,6 +214,8 @@ add_library(GLGE STATIC ${SOURCE_FILES_CPP})
 # specify compiler settings for default
 target_compile_definitions(GLGE PRIVATE USE_NEW_AUDIO_ENGINE)
 target_compile_options(GLGE PRIVATE ${COMPILER_OPTIONS})
+# add all library pathes
+target_link_libraries(GLGE -L${GLGE_LIBRARY_PATHS})
 # check if the graphics should be included to add graphic specific libraries
 if (GLGE_INCLUDE_GRAPHICS)
     # add SDL2
@@ -216,15 +226,18 @@ if (GLGE_INCLUDE_GRAPHICS)
     TARGET_LINK_LIBRARIES(GLGE GL)
     # add GLEW
     TARGET_LINK_LIBRARIES(GLGE GLEW ${LINK_LIBS})
+
+    # check if Assimp should be added
+    if (GLGE_USE_ASSIMP)
+        # add the library as an include directory
+        target_link_libraries(GLGE -L${ASSIMP_LIB})
+        # add the assimp library to the include stream
+        TARGET_LINK_LIBRARIES(GLGE assimp)
+    endif()
+
 # end of graphic specific libraries
 endif()
-# check if Assimp should be added
-if (GLGE_USE_ASSIMP)
-    # add the library as an include directory
-    target_link_libraries(GLGE -L${ASSIMP_LIB})
-    # add the assimp library to the include stream
-    TARGET_LINK_LIBRARIES(GLGE assimp)
-endif()
+TARGET_LINK_LIBRARIES(GLGE pugixml)
 
 # enable threading
 target_compile_options(GLGE PRIVATE -pthread)

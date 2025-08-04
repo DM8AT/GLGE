@@ -15,11 +15,16 @@
 int main()
 {
     Instance inst("Loader instance", API_OPENGL_4_6);
-    inst.setLogger(new Logger(true));
+    inst.setLogger(new Logger());
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
     settings.resizable = false;
     Window window("Model viewer", 600, 0, settings, inst);
     inst.syncGraphicSetup();
+
+    AssetManager manager("Manager", inst);
+    Asset* asset = 0;
+    manager.loadAsync<Asset>(&asset, "assets/doc/examples/example.empty");
+    manager.waitTillLoaded(&asset);
 
     Framebuffer fbuff(1, true, false, false, window.getSize(), inst);
 

@@ -24,7 +24,6 @@
 
 //store the names for the enum values
 const char* INST_ATTACHABLE_TYPE_NAMES[] = {
-    "ATTACHMENT_TYPE_ASSET",
     "ATTACHMENT_TYPE_OBJECT",
     "ATTACHMENT_TYPE_WORLD",
     "ATTACHMENT_TYPE_BUFFER",
@@ -35,7 +34,8 @@ const char* INST_ATTACHABLE_TYPE_NAMES[] = {
     "ATTACHMENT_TYPE_TEXTURE",
     "ATTACHMENT_TYPE_WINDOW",
     "ATTACHMENT_TYPE_GRAPHIC_INSTANCE",
-    "ATTACHMENT_TYPE_SHADER"
+    "ATTACHMENT_TYPE_SHADER",
+    "ATTACHMENT_TYPE_ASSET_MANAGER"
 };
 
 std::ostream& operator<<(std::ostream& os, const InstAttachableType& type) noexcept

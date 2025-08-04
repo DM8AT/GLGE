@@ -1,0 +1,8 @@
+<!-- Store an example for a simpe, empty asset -->
+
+<!-- an empty asset is the bare bone of what needs to exist - it only has a name -->
+<asset name="EmptyAsset">
+
+    <!-- an empty asset does not contain any elements -->
+
+</asset>

@@ -5,6 +5,6 @@
 [submodule "src/GLGE/GLGE3rdParty/assimp"]
 	path = src/GLGE/GLGE3rdParty/assimp
 	url = https://github.com/assimp/assimp.git
-[submodule "src/GLGE/GLGE3rdParty/pugixml"]
-	path = src/GLGE/GLGE3rdParty/pugixml
+[submodule "src/GLGE/GLGE3rdParty/pugixml/pugixml"]
+	path = src/GLGE/GLGE3rdParty/pugixml/pugixml
 	url = https://github.com/zeux/pugixml.git
