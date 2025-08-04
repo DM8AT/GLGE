@@ -44,8 +44,9 @@ std::ostream& operator<<(std::ostream& os, const InstAttachableType& type) noexc
     return os << INST_ATTACHABLE_TYPE_NAMES[(uint32_t)type];
 }
 
+//only add the SDL limiter if graphics are included
 //define the SDL2 limiter for the instance
-Limiter Instance::m_sdlLimiter = 60;
+GLGE_USE_IF_GRAPHICS(Limiter Instance::m_sdlLimiter = 60;)
 
 /**
  * @brief this is a function for the update thread of an instance

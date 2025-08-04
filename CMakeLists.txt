@@ -34,6 +34,8 @@ set(GLGE_PATH src/GLGE)
 set(GLGE_USE_DEAR_IMGUI true)
 # enable / disable Assimp
 set(GLGE_USE_ASSIMP true)
+# include / exclude graphics
+set(GLGE_INCLUDE_GRAPHICS true)
 
 
 #  $$$$$$\  $$$$$$$\  $$$$$$$\        $$$$$$$\                      $$\               
@@ -128,51 +130,7 @@ set(SOURCE_FILES_CPP
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGERay.cpp
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGETriangle.cpp
         ${GLGE_PATH}/GLGECore/Geometry/Primitives/GLGECollision.cpp
-    # Subelement : Assets
-    ${GLGE_PATH}/GLGECore/Assets/GLGEAssets.cpp
-    ${GLGE_PATH}/GLGECore/Assets/GLGEAsset_Texture.cpp
 
-    # Graphic files
-    ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGERenderPipeline.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGEBuffer.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGEKeyboard.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGERenderMaterial.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGERenderMesh.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGERenderVertexLayout.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGEObjectRenderer.cpp
-    ${GLGE_PATH}/GLGEGraphic/GLGECamera.cpp
-    # Assets
-    ${GLGE_PATH}/GLGEGraphic/Assets/GLGEAsset_Shader.cpp
-    # Shader stuff
-    ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
-    ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp
-        # Shader extensions
-        ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Core/GLGE_MainStatement.cpp
-        ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Core/GLGE_VersionStatement.cpp
-        ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Util/GLGE_IncludeStatement.cpp
-    # Subelement : Graphic API
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Instance.cpp
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Texture.cpp
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Framebuffer.cpp
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Window.cpp
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_CommandBuffer.cpp
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Shader.cpp
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_RenderPipeline.cpp
-    ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_MemoryArena.cpp
-        # Graphic API: OpenGL 4.6
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Instance.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Window.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_CommandBuffer.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Texture.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Shader.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_RenderPipeline.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Framebuffer.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_MemoryArena.cpp
-        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_VertexLayout.cpp
 
     # Math files
     # Vectors
@@ -195,19 +153,71 @@ set(SOURCE_FILES_CPP
         # Dear ImGui
         ${DEAR_IMGUI_SOURCE}
 )
+
+# check if the graphics should be included
+if (GLGE_INCLUDE_GRAPHICS)
+    # add the source files for the graphic core
+    set(SOURCE_FILES_CPP ${SOURCE_FILES_CPP}
+            
+        # Graphic files
+        ${GLGE_PATH}/GLGEGraphic/GLGEWindow.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGEGraphicShared.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGETexture.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGEFramebuffer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGERenderPipeline.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGEBuffer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGEKeyboard.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGERenderMaterial.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGERenderMesh.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGERenderVertexLayout.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGEObjectRenderer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GLGECamera.cpp
+        # Shader stuff
+        ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
+        ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp
+            # Shader extensions
+            ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Core/GLGE_MainStatement.cpp
+            ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Core/GLGE_VersionStatement.cpp
+            ${GLGE_PATH}/GLGEGraphic/Shader/shaderExtensionsCommon/Util/GLGE_IncludeStatement.cpp
+        # Subelement : Graphic API
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Instance.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Texture.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Framebuffer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Window.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_CommandBuffer.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_Shader.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_RenderPipeline.cpp
+        ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GLGEGraphicAPI_MemoryArena.cpp
+            # Graphic API: OpenGL 4.6
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Instance.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Window.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_CommandBuffer.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Texture.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Shader.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_RenderPipeline.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_Framebuffer.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_MemoryArena.cpp
+            ${GLGE_PATH}/GLGEGraphic/GraphicAPI/GraphicAPIs/API_OpenGL4_6/GLGE_OGL4_6_VertexLayout.cpp
+    )
+# end of graphic dependend source code
+endif()
 # add the executables to the library
 add_library(GLGE STATIC ${SOURCE_FILES_CPP})
 # specify compiler settings for default
 target_compile_definitions(GLGE PRIVATE USE_NEW_AUDIO_ENGINE)
 target_compile_options(GLGE PRIVATE ${COMPILER_OPTIONS})
-# add SDL2
-TARGET_LINK_LIBRARIES(GLGE ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
-# add vulkan
-TARGET_LINK_LIBRARIES(GLGE vulkan)
-# add OpenGL
-TARGET_LINK_LIBRARIES(GLGE GL)
-# add GLEW
-TARGET_LINK_LIBRARIES(GLGE GLEW ${LINK_LIBS})
+# check if the graphics should be included to add graphic specific libraries
+if (GLGE_INCLUDE_GRAPHICS)
+    # add SDL2
+    TARGET_LINK_LIBRARIES(GLGE ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
+    # add vulkan
+    TARGET_LINK_LIBRARIES(GLGE vulkan)
+    # add OpenGL
+    TARGET_LINK_LIBRARIES(GLGE GL)
+    # add GLEW
+    TARGET_LINK_LIBRARIES(GLGE GLEW ${LINK_LIBS})
+# end of graphic specific libraries
+endif()
 # check if Assimp should be added
 if (GLGE_USE_ASSIMP)
     # add the library as an include directory
@@ -215,6 +225,7 @@ if (GLGE_USE_ASSIMP)
     # add the assimp library to the include stream
     TARGET_LINK_LIBRARIES(GLGE assimp)
 endif()
+
 # enable threading
 target_compile_options(GLGE PRIVATE -pthread)
 target_link_options(GLGE PRIVATE -pthread)

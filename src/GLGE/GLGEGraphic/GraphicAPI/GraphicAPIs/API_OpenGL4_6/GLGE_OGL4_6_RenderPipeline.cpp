@@ -232,7 +232,7 @@ void OGL4_6_RenderPipeline::ogl_renderWorld(void* data, uint64_t) noexcept
         for (uint64_t i = 0; i <  obj->getAttatchments().size(); ++i)
         {
             //check if this is an object renderer
-            if (std::string(obj->getAttatchment(i)->getTypeName()) == "OBJECT_RENDERER")
+            if (std::string(obj->getAttatchment(i)->getTypeName()) == "GLGE_OBJECT_RENDERER")
             {
                 //get the object renderer
                 ObjectRenderer* renderer = ((ObjectRenderer*)obj->getAttatchment(i));
