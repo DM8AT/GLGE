@@ -18,7 +18,7 @@ AssetManager::~AssetManager()
     m_runReloadThread = false;
     m_reloadThread.join();
     //iterate over all assets and delete them
-    for (auto it = m_assets.begin(); it != m_assets.end(); ++it)
+    for (auto it = m_storage.assets.begin(); it != m_storage.assets.end(); ++it)
     {
         //clean up the assets
         delete it->second;
@@ -34,7 +34,7 @@ void AssetManager::reloadThread(AssetManager* self) noexcept
     while (self->m_runReloadThread)
     {
         //iterate over the assets of the asset manager
-        for (auto it = self->m_assets.begin(); it != self->m_assets.end(); ++it)
+        for (auto it = self->m_storage.assets.begin(); it != self->m_storage.assets.end(); ++it)
         {
             //reload the assets. This will stop if reloading is not needed
             if (it->second) {it->second->reload();}

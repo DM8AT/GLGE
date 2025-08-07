@@ -36,6 +36,9 @@ Asset file:
 <buffer name="Some data", binding="0", buffer="Data Buffer">
 ```
 
+## Asset names
+All assets that can be loaded directly require names. All names within an asset storage must be unique, else the loading of the asset failes. Names may not contain a `/` character. If the name contains this character, it will be replaced by `%`. All UTF-8 characters except for `/` and `\0` (a null byte) are valid characters for the name of an asset. The `/` seperator character and the `%` replace character can be changed by changing the values in the defines `GLGE_ASSET_SUB_ASSET_SEPERATOR` and `GLGE_REPLACE_SUB_ASSET_SEPERATOR_WITH` with custom characters. After that GLGE must be re-compiled for the changes to take effect. 
+
 # Storing assets
 Assets can be stored as files. A stored asset can be encoded in different ways. Here is a table with all ways to store assets, the version the loader was updated the last time and what version they where introduced in:
 | File Type | Introduced in | Latest update |

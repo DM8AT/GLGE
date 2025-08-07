@@ -67,15 +67,15 @@ std::string Asset::getCharacterInfo(std::filesystem::path file, uint64_t charact
     return std::string("Line ") + std::to_string(line+1) + ", character " + std::to_string(character+1) + ":\n" + indent + substr + "\n" + indent + fill;
 }
 
-Asset::Asset(std::filesystem::path path, AssetManager* manager) noexcept
- : m_manager(manager)
+Asset::Asset(std::filesystem::path path, AssetStorage* storage) noexcept
+ : m_storage(storage)
 {
     //debug info
     GLGE_DEBUG_WRAPPER(
         //print some info
         std::stringstream stream;
-        stream << "Loading a new asset from file " << path << " to asset manager named " << m_manager->getName();
-        m_manager->getInstance()->logDebug(stream, MESSAGE_TYPE_DEBUG);
+        stream << "Loading a new asset from file " << path;
+        m_storage->instance->logDebug(stream, MESSAGE_TYPE_DEBUG);
     )
 
     //check if the file exists
@@ -84,7 +84,7 @@ Asset::Asset(std::filesystem::path path, AssetManager* manager) noexcept
         //if it dosn't exist, log an error
         std::stringstream stream;
         stream << "Failed to load an asset from " << path << ", file not found";
-        manager->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        m_storage->instance->log(stream, MESSAGE_TYPE_ERROR);
         return;
     }
 
@@ -109,8 +109,8 @@ void Asset::reload() noexcept
         GLGE_DEBUG_WRAPPER(
             //print some info
             std::stringstream stream;
-            stream << "Re-Loading an existsing asset from file " << m_file << " because the file was updated. The asset belongs to the asset manager named " << m_manager->getName();
-            m_manager->getInstance()->logDebug(stream, MESSAGE_TYPE_DEBUG);
+            stream << "Re-Loading an existsing asset from file " << m_file << " because the file was updated.";
+            m_storage->instance->logDebug(stream, MESSAGE_TYPE_DEBUG);
         )
 
         //re-load the contents
@@ -135,7 +135,7 @@ void Asset::loadContents() noexcept
         stream << "Failed to load the asset file " << m_file << " because a parsing error occoured. \nError: \n    "
                << res.description() << "\nAt:\n" << getCharacterInfo(m_file, res.offset, "    ");
         //log the error
-        m_manager->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        m_storage->instance->log(stream, MESSAGE_TYPE_ERROR);
         //stop the functoin 
         return;
     }
@@ -150,7 +150,7 @@ void Asset::loadContents() noexcept
         //error - asset element required
         std::stringstream stream;
         stream << "Failed to load the asset file " << m_file << " because no top-level element named asset was found";
-        m_manager->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        m_storage->instance->log(stream, MESSAGE_TYPE_ERROR);
         return;
     }
     //get the name of the asset
@@ -161,9 +161,13 @@ void Asset::loadContents() noexcept
         //error - a name is required for an asset
         std::stringstream stream;
         stream << "Failed to load the asset file " << m_file << " because the asset element does not contain a name";
-        m_manager->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        m_storage->instance->log(stream, MESSAGE_TYPE_ERROR);
         return;
     }
-    //store the asset's name
-    m_name = name.value();
+    //get the asset name
+    std::string nameStr = name.value();
+    //replace all occourences of a slash with a % (percent) to allow access to compound assets
+    for (auto pos = nameStr.find_first_of(GLGE_ASSET_SUB_ASSET_SEPERATOR); pos != std::string::npos; pos = nameStr.find_first_of(GLGE_ASSET_SUB_ASSET_SEPERATOR)) {nameStr.replace(pos, 1, GLGE_REPLACE_SUB_ASSET_SEPERATOR_WITH);}
+    //store the name
+    m_name = nameStr;
 }

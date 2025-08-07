@@ -15,12 +15,16 @@
 
 //include the settings
 #include "../GLGESettings.h"
+//include asset storages
+#include "GLGEAssetStorage.h"
 
 //check for C++ to create a class
 #if GLGE_CPP
 
 //asset manager will be defined later - prevent circular dependencies
 class AssetManager;
+//instances will be defined together with asset managers
+class Instance;
 
 /**
  * @brief an abstract class to store the base for every asset
@@ -40,9 +44,9 @@ public:
      * @brief Construct a new Asset
      * 
      * @param path the filesystem path to load the asset from
-     * @param manager the manager the asset belongs to
+     * @param storage a pointer to the asset storage the asset will be stored in
      */
-    Asset(std::filesystem::path path, AssetManager* manager) noexcept;
+    Asset(std::filesystem::path path, AssetStorage* storage) noexcept;
 
     /**
      * @brief Destroy the Asset
@@ -61,12 +65,27 @@ public:
      */
     inline const std::string& getName() const noexcept {return m_name;}
 
+    /**
+     * @brief Get the Type Name of the asset
+     * @warning Even if this function is not virtual, sub-classes MUST have a function with this name
+     * 
+     * @return const char* the constant name of the asset
+     */
+    static const char* getTypeNameStatic() noexcept {return "GLGE_EMPTY_ASSET";}
+
+    /**
+     * @brief Get the Type Name of the asset (but overloadable)
+     * 
+     * @return const char* the type name of the asset
+     */
+    virtual const char* getTypeName() const noexcept {return getTypeNameStatic();}
+
 protected:
 
     /**
-     * @brief store a pointer to the asset manager the asset belongs to
+     * @brief store a pointer to the asset storage the asset belongs to
      */
-    AssetManager* m_manager = 0;
+    AssetStorage* m_storage = 0;
 
     /**
      * @brief load the contents from the own file

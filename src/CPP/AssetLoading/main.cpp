@@ -25,6 +25,10 @@ int main()
     Asset* asset = 0;
     manager.loadAsync<Asset>(&asset, "assets/doc/examples/example.empty");
     manager.waitTillLoaded(&asset);
+    std::cout << asset->getName() << "\n";
+    asset = manager.getAssetNamed<Asset>("EmptyAsset/");
+    if (asset) {std::cout << asset->getName() << "\n";}
+    else {std::cout << "Failed to find the asset\n";}
 
     Framebuffer fbuff(1, true, false, false, window.getSize(), inst);
 

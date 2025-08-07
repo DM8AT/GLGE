@@ -13,6 +13,8 @@
 #ifndef _GLGE_ASSET_MANAGER_
 #define _GLGE_ASSET_MANAGER_
 
+//include the asset storages
+#include "GLGEAssetStorage.h"
 //include assets - they should be managed here
 #include "GLGEAsset.h"
 //include instances - the asset manager is an instance attachable
@@ -81,6 +83,7 @@ public:
      */
     AssetManager(std::string name, Instance& instance)
      : InstAttachableClass(&instance, ATTACHMENT_TYPE_ASSET_MANAGER, name),
+       m_storage({{}, &instance}),
        m_reloadThread(reloadThread, this)
     {}
 
@@ -105,17 +108,17 @@ public:
         static_assert(std::is_base_of<Asset, T>::value, "T must be derived from Asset to be loaded to an asset manager");
 
         //create the new asset
-        T* asset = new T(file, args..., this);
+        T* asset = new T(file, args..., &m_storage);
         //extract the name to check if it is valid
         const std::string& name = asset->getName();
 
         //check if the name is NOT contained in the asset map
-        auto pos = m_assets.find(name);
+        auto pos = m_storage.assets.find(name);
         //check if the position is at the end (not found)
-        if (pos == m_assets.end())
+        if (pos == m_storage.assets.end())
         {
             //the asset can be stored safly
-            m_assets[name] = asset;
+            m_storage.assets[name] = asset;
             //return the new asset
             return asset;
         }
@@ -182,12 +185,76 @@ public:
      */
     inline Limiter& getReloadLimiter() noexcept {return m_reloadLimiter;}
 
+    /**
+     * @brief Get a stored asset by it's name
+     * 
+     * @tparam T the type of the asset to querry
+     * @param name the name or path to the asset
+     * @return T* a pointer to the asset or 0 if it wasn't found
+     */
+    template <typename T> T* getAssetNamed(const std::string& name)
+    {
+        //T is only defined for classes that inherite from Asset
+        static_assert(std::is_base_of<Asset, T>::value, "T must be derived from Asset to be querried from an asset manager");
+
+        //store the querry name
+        std::string querry = name;
+        //store the querry to pass down
+        std::string pass = "";
+        //find the first occourance of a seperator character
+        auto pos = name.find_first_of(GLGE_ASSET_SUB_ASSET_SEPERATOR);
+        //check if it was found
+        if (pos != std::string::npos)
+        {
+            //set the querry name to the first part of the string
+            querry = name.substr(0, pos);
+            //store the passdown name
+            pass = name.substr(pos+1, name.size()-pos);
+        }
+
+        //search the querry element
+        auto querriedPos = m_storage.assets.find(querry);
+        //if the element was not found, stop
+        if (querriedPos == m_storage.assets.end())
+        {
+            //print an error that the asset was not found
+            std::stringstream stream;
+            stream << "Failed to find the requested asset with name / path \"" << name << "\" from asset manager named " << m_name;
+            m_instance->log(stream, MESSAGE_TYPE_ERROR);
+            //return 0 to mark that the element was not found
+            return 0;
+        }
+
+        //check if the pass element is empty
+        if (pass == "")
+        {
+            //if it is empty, return the element imdeiatly
+            return (T*)querriedPos->second;
+        }
+
+        //else, check if the element supports sub-assets
+        if (querriedPos->second->supportsSubAssets())
+        {
+            //querry the sub-asset and return it
+            return (T*)querriedPos->second->getSubAsset(pass);
+        }
+        else
+        {
+            //else, failed to querry the element
+            //print an error that the asset was not found
+            std::stringstream stream;
+            stream << "Failed to find the requested asset with path \"" << "\" from asset manager named " << m_name << " because an asset on the path didn't support sub-assets";
+            m_instance->log(stream, MESSAGE_TYPE_ERROR);
+            //return 0 to mark that the element was not found
+            return 0;
+        }
+    }
+
 protected:
 
-    /**
-     * @brief store a mapping from the asset's name to the asset
-     */
-    std::unordered_map<std::string, Asset*> m_assets;
+    //store the asset storage
+    AssetStorage m_storage;
+
     /**
      * @brief a mutex to stop multiple threads from acesing the load store thread vector at onve
      */
