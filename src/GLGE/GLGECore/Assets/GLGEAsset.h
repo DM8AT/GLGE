@@ -43,10 +43,21 @@ public:
     /**
      * @brief Construct a new Asset
      * 
+     * @param path the path to the file to load the asset from
+     * @param storage the storage component the asset is stored in
+     */
+    Asset(std::filesystem::path path, AssetStorage* storage)
+     : m_file(path), m_storage(storage)
+    {}
+
+    /**
+     * @brief Construct a new Asset
+     * 
      * @param path the filesystem path to load the asset from
      * @param storage a pointer to the asset storage the asset will be stored in
+     * @param just a bool identifyer, it is ignored
      */
-    Asset(std::filesystem::path path, AssetStorage* storage) noexcept;
+    Asset(std::filesystem::path path, AssetStorage* storage, bool) noexcept;
 
     /**
      * @brief Destroy the Asset
@@ -83,11 +94,6 @@ public:
 protected:
 
     /**
-     * @brief store a pointer to the asset storage the asset belongs to
-     */
-    AssetStorage* m_storage = 0;
-
-    /**
      * @brief load the contents from the own file
      */
     void loadContents() noexcept;
@@ -103,9 +109,34 @@ protected:
     static std::string getCharacterInfo(std::filesystem::path file, uint64_t character, const std::string& indent) noexcept;
 
     /**
+     * @brief decode a GLGE version from a string
+     * 
+     * @param string the string to decode the GLGE version from
+     * @param version a refernece to a 32 bit integer to store the version into
+     * @return true : successfully loaded the version to the integer
+     * @return false : failed to decode the GLGE version, sets the integer to 0
+     */
+    static bool getGLGEVersionFromString(const std::string& string, uint32_t& version) noexcept;
+
+    /**
+     * @brief check if a xml asset file is from a GLGE version that uses this loader
+     * 
+     * @param xmlDocument the document to load from
+     * @param file the path to the file to load from, used for debugging
+     * @param instance a pointer to ANY set up instance
+     * @return true : the version works
+     * @return false : the version MAY work
+     */
+    static bool hasAcceptableGLGEVersion(void* xmlDocument, const std::filesystem::path& file, Instance* instance) noexcept;
+
+    /**
      * @brief store the file to re-load from
      */
     std::filesystem::path m_file = "";
+    /**
+     * @brief store a pointer to the asset storage the asset belongs to
+     */
+    AssetStorage* m_storage = 0;
     /**
      * @brief store the last write time of the file
      */

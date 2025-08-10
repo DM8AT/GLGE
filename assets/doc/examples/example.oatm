@@ -1,5 +1,8 @@
 <!-- store an example hon how an object attachable is stored -->
 
+<!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
+<GLGE version="0.1.0">An example for a simple object attachable asset</GLGE>
+
 <!-- every object attachable requires a type name instead of an object name. The type name must match the one used in the actual class -->
 <objectAttachment type="GLGE_CAMERA">
 

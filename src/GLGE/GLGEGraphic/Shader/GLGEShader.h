@@ -229,13 +229,13 @@ public:
 protected:
 
     /**
-     * @brief store the absolute path to the file
-     */
-    std::string m_file = "";
-    /**
      * @brief store the unprocessed GLGE shader source code
      */
     std::string m_glgeSource;
+    /**
+     * @brief store the absolute path to the file
+     */
+    std::string m_file = "";
     /**
      * @brief store all the shader stages
      */

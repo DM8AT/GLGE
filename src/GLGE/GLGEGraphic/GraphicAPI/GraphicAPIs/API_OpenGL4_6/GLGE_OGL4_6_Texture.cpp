@@ -236,11 +236,14 @@ void OGL4_6_Texture::recreateOgl(OGL4_6_Texture* texture, uint64_t)
     //store the texture handle in the data
     ((OGL4_6_Instance*)texture->m_graphicInstance)->getTextureBuffer()->getMemoryArena()->update(texture->m_ptr, &texture->m_handle);
 
-    //get the new image handle
-    texture->m_image = glGetImageHandleARB(texture->m_tex, 0, GL_FALSE, 0, format);
-    //store the image handle in the data
-    ((OGL4_6_Instance*)texture->m_graphicInstance)->getImageBuffer()->getMemoryArena()->update(texture->m_imgPtr, &texture->m_image);
-
+    //check if the format is a valid format for the image handle
+    if (format == GL_RGBA32F || format == GL_RGBA8)
+    {
+        //get the new image handle
+        texture->m_image = glGetImageHandleARB(texture->m_tex, 0, GL_FALSE, 0, format);
+        //store the image handle in the data
+        ((OGL4_6_Instance*)texture->m_graphicInstance)->getImageBuffer()->getMemoryArena()->update(texture->m_imgPtr, &texture->m_image);
+    }
 }
 
 void OGL4_6_Texture::mipMap(void* data, uint64_t)

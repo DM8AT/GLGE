@@ -1,9 +1,7 @@
 <!-- An object is something that has a 3D position, potentially includes children and may have a parrent -->
 
 <!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
-<GLGE version="0.1.0">
-    An example for an object asset
-</GLGE>
+<GLGE version="0.1.0">An example for an object asset</GLGE>
 
 <!-- 
     @param name the name the object will register with. It must be fully unique. 

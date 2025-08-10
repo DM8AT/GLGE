@@ -180,6 +180,8 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_PATH}/GLGEGraphic/GLGERenderVertexLayout.cpp
         ${GLGE_PATH}/GLGEGraphic/GLGEObjectRenderer.cpp
         ${GLGE_PATH}/GLGEGraphic/GLGECamera.cpp
+        # Assets
+        ${GLGE_PATH}/GLGEGraphic/Assets/GLGEAssetTexture.cpp
         # Shader stuff
         ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
         ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp

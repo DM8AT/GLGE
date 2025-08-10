@@ -15,20 +15,15 @@
 int main()
 {
     Instance inst("Loader instance", API_OPENGL_4_6);
-    inst.setLogger(new Logger());
+    inst.setLogger(new Logger(true));
     WindowSettings settings = WINDOW_SETTINGS_DEFAULT;
     settings.resizable = false;
     Window window("Model viewer", 600, 0, settings, inst);
     inst.syncGraphicSetup();
 
     AssetManager manager("Manager", inst);
-    Asset* asset = 0;
-    manager.loadAsync<Asset>(&asset, "assets/doc/examples/example.empty");
-    manager.waitTillLoaded(&asset);
-    std::cout << asset->getName() << "\n";
-    asset = manager.getAssetNamed<Asset>("EmptyAsset/");
-    if (asset) {std::cout << asset->getName() << "\n";}
-    else {std::cout << "Failed to find the asset\n";}
+    AssetTexture* tex = manager.load<AssetTexture>("assets/doc/examples/example.tex", TEXTURE_PURPOSE_IMAGE);
+    std::cout << tex->getName() << "\n";
 
     Framebuffer fbuff(1, true, false, false, window.getSize(), inst);
 

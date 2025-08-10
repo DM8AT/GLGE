@@ -1,9 +1,7 @@
 <!-- This file contains an example on how the vertex layout asset works -->
 
 <!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
-<GLGE version="0.1.0">
-    An example for a simple vertex layout. The layout is that of SimpleVertex. 
-</GLGE>
+<GLGE version="0.1.0">An example for a simple vertex layout. The layout is that of SimpleVertex. </GLGE>
 
 <!-- 
     @param name the name that the vertex layout should be registerd as. Must be unique. 

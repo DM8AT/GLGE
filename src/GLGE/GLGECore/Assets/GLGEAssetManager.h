@@ -232,22 +232,13 @@ public:
             return (T*)querriedPos->second;
         }
 
-        //else, check if the element supports sub-assets
-        if (querriedPos->second->supportsSubAssets())
-        {
-            //querry the sub-asset and return it
-            return (T*)querriedPos->second->getSubAsset(pass);
-        }
-        else
-        {
-            //else, failed to querry the element
-            //print an error that the asset was not found
-            std::stringstream stream;
-            stream << "Failed to find the requested asset with path \"" << "\" from asset manager named " << m_name << " because an asset on the path didn't support sub-assets";
-            m_instance->log(stream, MESSAGE_TYPE_ERROR);
-            //return 0 to mark that the element was not found
-            return 0;
-        }
+        //else, failed to querry the element
+        //print an error that the asset was not found
+        std::stringstream stream;
+        stream << "Failed to find the requested asset with path \"" << "\" from asset manager named " << m_name << " because an asset on the path didn't support sub-assets";
+        m_instance->log(stream, MESSAGE_TYPE_ERROR);
+        //return 0 to mark that the element was not found
+        return 0;
     }
 
 protected:

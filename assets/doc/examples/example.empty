@@ -1,5 +1,8 @@
 <!-- Store an example for a simpe, empty asset -->
 
+<!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
+<GLGE version="0.1.0">An example for a simple texture asset</GLGE>
+
 <!-- an empty asset is the bare bone of what needs to exist - it only has a name -->
 <asset name="EmptyAsset">
 
