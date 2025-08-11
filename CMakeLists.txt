@@ -182,6 +182,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_PATH}/GLGEGraphic/GLGECamera.cpp
         # Assets
         ${GLGE_PATH}/GLGEGraphic/Assets/GLGEAssetTexture.cpp
+        ${GLGE_PATH}/GLGEGraphic/Assets/GLGEAssetShader.cpp
         # Shader stuff
         ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShader.cpp
         ${GLGE_PATH}/GLGEGraphic/Shader/GLGEShaderProcessor.cpp

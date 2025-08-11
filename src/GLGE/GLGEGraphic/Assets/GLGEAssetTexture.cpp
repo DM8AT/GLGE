@@ -82,6 +82,17 @@ AssetTexture::AssetTexture(std::filesystem::path path, TexturePurpose purpose, A
     loadContent();
 }
 
+AssetTexture::~AssetTexture() noexcept
+{
+    //check if the texture exists
+    if (m_texture)
+    {
+        //delete the texture
+        delete m_texture;
+        m_texture = 0;
+    }
+}
+
 void AssetTexture::reload() noexcept
 {
     //if the file is empty, stop
@@ -112,6 +123,20 @@ void AssetTexture::reload() noexcept
 
 void AssetTexture::loadContent()
 {
+    //check if the file exists
+    if (!std::filesystem::is_regular_file(m_file))
+    {
+        //error - file not found
+        std::stringstream stream;
+        stream << "Failed to load the asset texture file " << m_file << " because the file was not found";
+        //log the error
+        m_storage->instance->log(stream, MESSAGE_TYPE_ERROR);
+        //stop the functoin 
+        return;
+    }
+    //mark that the file is now loaded
+    m_lastWrite = std::filesystem::last_write_time(m_file);
+
     //load the file with the xml parser
     pugi::xml_document doc;
     pugi::xml_parse_result res = doc.load_file(m_file.c_str());
@@ -290,6 +315,4 @@ void AssetTexture::loadContent()
     //clean up
     SDL_FreeSurface(formated);
     SDL_FreeSurface(surf);
-    //mark that the file is now loaded
-    m_lastWrite = std::filesystem::last_write_time(m_file);
 }

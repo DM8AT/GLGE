@@ -46,7 +46,7 @@ public:
     /**
      * @brief Destroy the Asset Texture
      */
-    ~AssetTexture() {}
+    ~AssetTexture() noexcept;
 
     /**
      * @brief re-load the asset from the disk
@@ -80,14 +80,21 @@ public:
      * 
      * @return Texture* a pointer to the texture object
      */
-    operator Texture*() const noexcept {return m_texture;}
+    inline operator Texture*() const noexcept {return m_texture;}
 
     /**
      * @brief use the texture asset like a texture reference
      * 
      * @return Texture& a reference to the texture
      */
-    operator Texture&() noexcept {return *m_texture;}
+    inline operator Texture&() noexcept {return *m_texture;}
+
+    /**
+     * @brief use the texture asset like a constant texture reference
+     * 
+     * @return const Texture& a constant reference to the loaded texture
+     */
+    inline operator const Texture&() const noexcept {return *m_texture;}
 
 protected:
 

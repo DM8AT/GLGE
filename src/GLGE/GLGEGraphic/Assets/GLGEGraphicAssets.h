@@ -15,5 +15,7 @@
 
 //include the texture asset
 #include "GLGEAssetTexture.h"
+//include the shader asset
+#include "GLGEAssetShader.h"
 
 #endif
