@@ -35,10 +35,20 @@ fi
 # install OpenGL using apt
 apt install -y libgl-dev libglew-dev
 
-# check if the SDL2 install was successfull
+# check if the OpenGL/GLEW install was successfull
 if [ $? -ne 0 ]; then
     # if not, print an error and stop
     echo "[ERROR] Failed to install OpenGL / GLEW libraries"
+    exit 1
+fi
+
+# install Vulkan using apt
+apt install -y libvulkan-dev vulkan-validationlayers
+
+# check if the Vulkan install was successfull
+if [ $? -ne 0 ]; then
+    # if not, print an error and stop
+    echo "[ERROR] Failed to install Vulkan libraries"
     exit 1
 fi
 
