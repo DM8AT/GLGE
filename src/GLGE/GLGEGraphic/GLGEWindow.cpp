@@ -38,8 +38,6 @@ void Window::open(std::string_view name, const uvec2& size, const uvec2& pos, co
     m_pos = pos;
     m_instance = &instance;
     m_settings = settings;
-    //add this window to the instance
-    m_instance->addElement(this);
     //add the default layer stack to the window
     m_layerStack.addLayer(new WindowEventLayer(this));
 

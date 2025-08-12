@@ -126,6 +126,15 @@ public:
     virtual void create(Texture* texture, bool isHDR, bool alpha, GraphicInstance* instance);
 
     /**
+     * @brief re-create the texture with entierly new data and potentialy a new size and format
+     * 
+     * @param data the new data for the texture
+     * @param isHDR true : the texture will be in high dynamic range (all components are 32 bit floats) | false : the texture will be in low dynamic range (all components are 8 bit unsigned integers)
+     * @param alpha specify if a alpha channel should exist or not
+     */
+    virtual void recreate(void*, bool, bool) noexcept {}
+
+    /**
      * @brief destroy the texture
      */
     virtual void destroy();

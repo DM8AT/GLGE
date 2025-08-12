@@ -1,0 +1,33 @@
+<!-- This file contains an example XML structure for a material. -->
+
+<!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
+<GLGE version="0.1.0">An example for a material asset</GLGE>
+
+<!-- 
+  @param name the name parameter holds the identifyer for a compound asset. For duplicates a running index is appended. 
+ -->
+<material name="Example">
+
+    <!-- A material needs a shader to be able to draw correctly -->
+    <!-- the file attribute points to a file containing the shader asset -->
+    <shader file="assets/doc/examples/example.shader">
+        <!-- The shader asset can be inlined here -->
+    </shader>
+
+    <!-- A material needs information on the vertex layout to be able to pass vertex data correctly to the shader as well as drawing the correct amound of indices -->
+    <!-- the file attribute points to the file containing the vertex layout asset -->
+    <vertexLayout file="assets/doc/examples/example.vl">
+        <!-- The vertex layout can be inlnied here -->
+    </vertexLayout>
+
+    <!-- The settings store general information about a shader -->
+    <!-- Culling stores if backface culling is enabled for the material -->
+    <!-- depth test stores the mode with wich the material should do depth tests -->
+    <!-- depth write stores weather the z value should be stored in the depth buffer or if it should be discarded -->
+    <settings
+        culling="True",
+        depthTest="DEPTH_TEST_LESS",
+        depthWrite="True"
+    ></settings>
+
+</material>

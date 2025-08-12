@@ -82,6 +82,17 @@ void OGL4_6_Shader::detatchShaderDirect() noexcept
     }
 }
 
+
+void OGL4_6_Shader::onRecompile() noexcept
+{
+    //get the command buffer
+    GraphicCommandBuffer* cmdBuff = m_shader->getInstance()->getGraphicInstance()->getBuffers()[0];
+    cmdBuff->add(0, (void*)destroyShader, this, sizeof(this));
+    cmdBuff->add(0, (void*)compileShader, this, sizeof(this));
+    //queue the re-compillation
+    //m_shader->getInstance()->getGraphicInstance()->getBuffers()[0]->add(0, (void*)recompileShader, this, sizeof(this));
+}
+
 bool OGL4_6_Shader::compileSubProgram(ShaderType type, uint32_t& shader) noexcept
 {
     //store the finalized string
@@ -229,9 +240,13 @@ void OGL4_6_Shader::compileShader(void* cmdData, uint64_t) noexcept
     //link the program
     glLinkProgram(self->m_program);
 
-    //delete all shader
-    for (uint64_t i = 0; i < shaders.size(); ++i) {glDeleteShader(shaders[i]);}
-
+    //remove and delete the shader - they are no longer needed
+    for (size_t i = 0; i < shaders.size(); ++i)
+    {
+        glDetachShader(self->m_program, shaders[i]);
+        glDeleteShader(shaders[i]);
+    }
+    
     //check the link status
     int32_t status = 0;
     glGetProgramiv(self->m_program, GL_LINK_STATUS, &status);
@@ -279,4 +294,72 @@ void OGL4_6_Shader::detatchShader(void* data, uint64_t) noexcept
 
     //directly detatch the shader
     shader->detatchShaderDirect();
+}
+
+
+void OGL4_6_Shader::recompileShader(OGL4_6_Shader* self, uint64_t) noexcept
+{
+    //store all shader
+    std::vector<uint32_t> shaders;
+    shaders.reserve(self->getShader()->getShaderStages().size());
+
+    //store if the shader compiled
+    bool success = true;
+    //iterate over all stages
+    for (auto it = self->getShader()->getShaderStages().begin(); it != self->getShader()->getShaderStages().end(); ++it)
+    {
+        //store the new shader
+        uint32_t shader = 0;
+        //compile the sub shader
+        if (!self->compileSubProgram(it->first, shader))
+        {
+            //if the compillation failed, note it
+            success = false;
+            //stop
+            break;
+        }
+        //add the shader
+        shaders.push_back(shader);
+    }
+
+    //check if the compillation failed
+    if (!success)
+    {
+        //iterate over all shader
+        for (uint64_t i = 0; i < shaders.size(); ++i)
+        {
+            //delete the shader
+            glDeleteShader(shaders[i]);
+        }
+        //log the error
+        self->getShader()->getInstance()->log("Failed to compile shader - Sub shader failed to compile", MESSAGE_TYPE_ERROR);
+        return;
+    }
+
+    //link the program
+    glLinkProgram(self->m_program);
+
+    //remove and delete the shader - they are no longer needed
+    for (uint32_t shader : shaders)
+    {
+        glDetachShader(self->m_program, shader);
+        glDeleteShader(shader);
+    }
+
+    //check the link status
+    int32_t status = 0;
+    glGetProgramiv(self->m_program, GL_LINK_STATUS, &status);
+    //check the status
+    if (!status)
+    {
+        //get and store the linking error
+        GLchar buff[1024];
+        glGetProgramInfoLog(self->m_program, 1024, 0, buff);
+        //log the error
+        std::stringstream stream;
+        stream << "Failed to link the shader. Error:\n" << buff;
+        self->getShader()->getInstance()->log(stream, MESSAGE_TYPE_ERROR);
+        //stop the function
+        return;
+    }
 }

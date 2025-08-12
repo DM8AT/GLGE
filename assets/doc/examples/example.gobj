@@ -1,0 +1,22 @@
+<!-- An object is something that has a 3D position, potentially includes children and may have a parrent -->
+
+<!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
+<GLGE version="0.1.0">An example for an object asset</GLGE>
+
+<!-- 
+    @param name the name the object will register with. It must be fully unique. 
+ -->
+<object name="ExampleObject">
+
+    <!-- An object MAY contain a transform element. If no transform is present, the default values will be used. -->
+    <!-- The transform below stores the default values, but for educational purposes it is still present -->
+    <transform>
+        <!-- store the position. All vector elements are stored seperatly to make reading easier -->
+        <pos x="0" y="0" z="0"></pos>
+        <!-- store the rotation. The rotation is around the indicated axis in degrees. -->
+        <rotation x="0" y="0" z="0"></rotation>
+        <!-- store the scaling. Instead of uniform scaling with the scale attribute, per-axis scaling values are also supported -->
+        <scale scale="1"></scale>
+    </transform>
+
+</object>

@@ -20,7 +20,7 @@
 //include instances
 #include "../GLGECore/GLGEInstance.h"
 //include colors
-#include "GLGEColor.h"
+#include "../GLGECore/Color/GLGEColor.h"
 
 //check if this is C++
 #if GLGE_CPP
@@ -34,18 +34,13 @@ public:
 
     /**
      * @brief Construct a new Texture
-     */
-    Texture() = default;
-
-    /**
-     * @brief Construct a new Texture
      * 
      * @param file the file for the texture
      * @param alpha store if a alpha channel should be used
      * @param purpose state the purpose of the texture
      * @param instance the instance the texture will belong to
      */
-    Texture(std::string_view file, bool alpha, TexturePurpose purpose, Instance& instance) : InstAttachableClass(&instance, file) {create(file, purpose, alpha);}
+    Texture(std::filesystem::path file, bool alpha, TexturePurpose purpose, Instance& instance) : InstAttachableClass(&instance, ATTACHMENT_TYPE_TEXTURE, file) {create(file, purpose, alpha);}
 
     /**
      * @brief Construct a new blank Texture
@@ -57,7 +52,7 @@ public:
      * @param alpha specify if a alpha channel should exist or not
      * @param instance the instance the texture will belong to
      */
-    Texture(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance& instance) : InstAttachableClass(&instance, "dynamic_texture") {create(purpose, size, isHDR, alpha);}
+    Texture(TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance& instance) : InstAttachableClass(&instance, ATTACHMENT_TYPE_TEXTURE, "dynamic_texture") {create(purpose, size, isHDR, alpha);}
 
     /**
      * @brief Construct a new Texture
@@ -69,7 +64,7 @@ public:
      * @param alpha spezify if four or three texture channels exist
      * @param instance a reference to the instance
      */
-    Texture(void* data, TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance& instance) : InstAttachableClass(&instance, "data_texture") {create(data, purpose, size, isHDR, alpha);}
+    Texture(void* data, TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha, Instance& instance) : InstAttachableClass(&instance, ATTACHMENT_TYPE_TEXTURE, "data_texture") {create(data, purpose, size, isHDR, alpha);}
 
     /**
      * @brief Destroy the Texture
@@ -83,7 +78,7 @@ public:
      * @param purpose the purpose of the texture
      * @param alpha store if a alpha channel should be used
      */
-    void create(std::string_view file, TexturePurpose purpose, bool alpha);
+    void create(std::filesystem::path file, TexturePurpose purpose, bool alpha);
 
     /**
      * @brief set the texture to a blank texture
@@ -106,6 +101,16 @@ public:
      * @param alpha spezify if four or three texture channels exist
      */
     void create(void* data, TexturePurpose purpose, const uvec2& size, bool isHDR, bool alpha);
+
+    /**
+     * @brief change the whole texture with some new data
+     * 
+     * @param newData the new content data for the texture
+     * @param newSize the new size of the texture
+     * @param newIsHDR a new identifyer to say if the texture is HDR
+     * @param newAlpha new info for the alpha component
+     */
+    void reload(void* newData, const uvec2& newSize, bool newIsHDR, bool newAlpha) noexcept;
 
     /**
      * @brief Get the size of the texture

@@ -33,6 +33,8 @@ public:
 
     /**
      * @brief this creates a layout for a SimpleVertex
+     * 
+     * @param instance a reference to the instance the render vertex layout will belong to
      */
     RenderVertexLayout(Instance& instance);
 

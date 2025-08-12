@@ -57,6 +57,8 @@ void ImGuiFunc(void*, uint64_t)
         if (ImGui::Button("Start first person demo")) {launchProgramDet("build/FP_EXAMPLE_CPP");}
         //button to start the C++ unit tests
         if (ImGui::Button("Start unit tests")) {launchProgramDet("build/UNIT_TEST_CPP");}
+        //button to start the C++ asset loading test
+        if (ImGui::Button("Start asset loader")) {launchProgramDet("build/ASSET_LOADING_CPP");}
     }
 
     //end the window

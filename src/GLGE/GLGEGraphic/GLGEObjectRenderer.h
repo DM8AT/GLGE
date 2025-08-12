@@ -99,7 +99,7 @@ public:
      * 
      * @return const char* the type name of the object renderer
      */
-    inline virtual const char* getTypeName() const noexcept override {return "OBJECT_RENDERER";}
+    inline virtual const char* getTypeName() const noexcept override {return "GLGE_OBJECT_RENDERER";}
 
     /**
      * @brief Get all data that this object requests to render

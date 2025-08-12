@@ -22,18 +22,18 @@
 Shader::Shader(const Path& file, ShaderProcessor* processor,
             std::unordered_map<std::string_view, Texture*> textures, 
             std::unordered_map<std::string_view, BufferShaderBinding> buffers, const Instance& instance)
- : InstAttachableClass((Instance*)&instance, file.getRawPath())
+ : InstAttachableClass((Instance*)&instance, ATTACHMENT_TYPE_SHADER, file.getRawPath())
 {
-    //calculate the path in the native format
-    m_file = file.getPath(PATH_LAYOUT_NATIVE);
+    //log a warning - deprecated function
+    m_instance->log("Warning - directly loading a shader from a file. This is a deprecated function. It will be removed in a future update. ", MESSAGE_TYPE_WARNING);
 
     //check if the file exists
-    if (!File::exists(m_file))
+    if (!File::exists(file.getPath(PATH_LAYOUT_NATIVE)))
     {
         //create an output stream
         std::stringstream stream;
         //fill the stream
-        stream << "Failed to load file \"" << m_file << "\" as a shader";
+        stream << "Failed to load file \"" << file << "\" as a shader";
         //stop the function and throw an error
         m_instance->log(stream, MESSAGE_TYPE_ERROR);
         //stop the function
@@ -41,7 +41,7 @@ Shader::Shader(const Path& file, ShaderProcessor* processor,
     }
 
     //load the file
-    File f(m_file, false);
+    File f(file, false);
     //store the file contents
     m_glgeSource = std::string(f.content().data);
 
@@ -51,6 +51,37 @@ Shader::Shader(const Path& file, ShaderProcessor* processor,
     //store the inputed textures and buffers
     m_textures = textures;
     m_buffers = buffers;
+
+    //switch over the selected graphic API
+    switch (m_instance->getAPI())
+    {
+    case API_OPENGL_4_6:
+        m_shader = new OGL4_6_Shader(this, m_instance->getGraphicInstance());
+        break;
+    
+    default:
+        break;
+    }
+
+    //create the shader
+    m_shader->onCreate();
+}
+
+
+Shader::Shader(const std::string source, std::string file, ShaderProcessor* processor, 
+        std::unordered_map<std::string_view, Texture*> textures, 
+        std::unordered_map<std::string_view, BufferShaderBinding> buffers, const Instance& instance)
+     : InstAttachableClass((Instance*)&instance, ATTACHMENT_TYPE_SHADER, "ShaderFromSource"),
+       //store the source code
+       m_glgeSource(source),
+       //store the file
+       m_file(file),
+       //store the inputs
+       m_textures(textures),
+       m_buffers(buffers)
+{
+    //process the GLGE source code to convert it to GLSL source code
+    processor->processShader(*this);
 
     //switch over the selected graphic API
     switch (m_instance->getAPI())
@@ -77,6 +108,17 @@ Shader::~Shader()
     //delete the shader
     delete m_shader;
     m_shader = 0;
+}
+
+void Shader::recreate(std::string sourcecode, ShaderProcessor* processor) noexcept
+{
+    //store the new sourcecode
+    m_glgeSource = sourcecode;
+    //process the GLGE source code to convert it to GLSL source code
+    processor->processShader(*this);
+
+    //recompile the shader
+    m_shader->onRecompile();
 }
 
 void Shader::prepareForStage(std::string& src, ShaderType stage) noexcept

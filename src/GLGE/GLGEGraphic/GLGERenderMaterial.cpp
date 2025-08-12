@@ -15,9 +15,9 @@
 //include the graphic APIs
 #include "GraphicAPI/GraphicAPIs/GLGE_AllAPIs.h"
 
-RenderMaterial::RenderMaterial(uint64_t elementSize, bool culling, DepthTest depthTest, bool depthWrite, RenderVertexLayout* vertexLayout, Instance& inst) noexcept
+RenderMaterial::RenderMaterial(std::string name, uint64_t elementSize, bool culling, DepthTest depthTest, bool depthWrite, RenderVertexLayout* vertexLayout, Instance& inst) noexcept
    //register the render material to the instance
-  : InstAttachableClass(&inst, "Render Material"),
+  : InstAttachableClass(&inst, ATTACHMENT_TYPE_RENDER_MATERIAL, name),
    //store the culling parameter
    m_cullFaces(culling),
    //store the depth parameters
@@ -26,7 +26,7 @@ RenderMaterial::RenderMaterial(uint64_t elementSize, bool culling, DepthTest dep
    //store the size of a single element
    m_elementSize(elementSize),
    //create the buffer for the material data
-   m_materialData(MEMORY_USAGE_READ_WRITE, inst),
+   m_materialData(name + "::buffer", MEMORY_USAGE_READ_WRITE, inst),
    //store the expected vertex layout
    m_vLayout(vertexLayout)
 {

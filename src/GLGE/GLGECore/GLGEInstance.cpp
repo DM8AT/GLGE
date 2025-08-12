@@ -22,8 +22,31 @@
 #include "../GLGEGraphic/GLGEGraphicShared.h"
 #endif //Graphic section
 
+//store the names for the enum values
+const char* INST_ATTACHABLE_TYPE_NAMES[] = {
+    "ATTACHMENT_TYPE_OBJECT",
+    "ATTACHMENT_TYPE_WORLD",
+    "ATTACHMENT_TYPE_BUFFER",
+    "ATTACHMENT_TYPE_FRAMEBUFFER",
+    "ATTACHMENT_TYPE_RENDER_MATERIAL",
+    "ATTACHMENT_TYPE_RENDER_PIPELINE",
+    "ATTACHMENT_TYPE_RENDER_VERTEX_LAYOUT",
+    "ATTACHMENT_TYPE_TEXTURE",
+    "ATTACHMENT_TYPE_WINDOW",
+    "ATTACHMENT_TYPE_GRAPHIC_INSTANCE",
+    "ATTACHMENT_TYPE_SHADER",
+    "ATTACHMENT_TYPE_ASSET_MANAGER"
+};
+
+std::ostream& operator<<(std::ostream& os, const InstAttachableType& type) noexcept
+{
+    //print the requested element to the output
+    return os << INST_ATTACHABLE_TYPE_NAMES[(uint32_t)type];
+}
+
+//only add the SDL limiter if graphics are included
 //define the SDL2 limiter for the instance
-Limiter Instance::m_sdlLimiter = 60;
+GLGE_USE_IF_GRAPHICS(Limiter Instance::m_sdlLimiter = 60;)
 
 /**
  * @brief this is a function for the update thread of an instance
@@ -102,7 +125,8 @@ void Instance::addElement(InstAttachableClass* element) noexcept
     //print a debug info
     GLGE_DEBUG_WRAPPER(
         std::stringstream stream;
-        stream << "Adding instance of a class that inherits from InstAttachableClass to instance named \"" << m_name << "\": " << *element;
+        stream << "Adding Instance attatchable of type " << INST_ATTACHABLE_TYPE_NAMES[(uint32_t)element->getType()] << 
+                  " named \"" + element->getName() << "\" to instance named \"" << m_name << "\": " << *element;
         logDebug(stream, MESSAGE_TYPE_DEBUG);
     )
     //add the instance
@@ -114,7 +138,8 @@ void Instance::removeElement(InstAttachableClass* element) noexcept
     //print a debug info
     GLGE_DEBUG_WRAPPER(
         std::stringstream stream;
-        stream << "Removing instance of class that inherits from InstAttachableClass from instance named \"" << m_name << "\"";
+        stream << "Removing Instance attatchable of type " << INST_ATTACHABLE_TYPE_NAMES[(uint32_t)element->getType()] << 
+                  " named \"" << element->getName() << "\" from instance named \"" << m_name << "\"";
         logDebug(stream, MESSAGE_TYPE_DEBUG);
     )
     //search the pointer
@@ -254,3 +279,16 @@ void Instance::setCapturedCursorCenter(bool center) const noexcept
 }
 
 #endif //Graphic section
+
+InstAttachableClass* Instance::getNamed(const std::string& name) const noexcept
+{
+    //iterate over all instance attatchables and check if they have the name
+    for (size_t i = 0; i < m_elements.size(); ++i)
+    {
+        //return the current element if it has the requested name
+        if (m_elements[i]->getName() == name)
+        {return m_elements[i];}
+    }
+    //if the element was not found, return 0
+    return 0;
+}

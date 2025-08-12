@@ -12,8 +12,8 @@
 //include objects
 #include "GLGEObject.h"
 
-Object::Object(const std::string_view& name, Transform transform, Object** children, uint64_t childCount, Instance& instance)
- : InstAttachableClass(&instance, name), m_transform(transform)
+Object::Object(const std::string& name, Transform transform, Object** children, uint64_t childCount, Instance& instance)
+ : InstAttachableClass(&instance, ATTACHMENT_TYPE_OBJECT, name), m_transform(transform)
 {
     //check if children are available
     if (children)
@@ -24,8 +24,8 @@ Object::Object(const std::string_view& name, Transform transform, Object** child
         //iterate over all children
         for (uint64_t i = 0; i < childCount; ++i)
         {
-            //add the child
-            m_children[children[i]->m_name] = children[i];
+            //add the child. The object won't own it. 
+            m_children[children[i]->m_name] = {children[i], false};
             //remove the child from its old parent
             if (children[i]->m_parent) {children[i]->m_parent->removeChild(*(children[i]));}
             //set the parent of the child
@@ -39,8 +39,20 @@ Object::~Object()
     //iterate over all attatchments
     while (m_attatchments.size() > 0)
     {
-        //remove the element
-        removeAttatchment(m_attatchments[0]);
+        //remove the elements
+        delete m_attatchments[0];
+    }
+    //iterate over all children to check if they should be freed
+    for (auto it = m_children.begin(); it != m_children.end(); ++it)
+    {
+        //check if the child is ownd
+        if (it->second.owns)
+        {
+            //if it is owned, delete it
+            delete it->second.pointer;
+        }
+        //else, move it up to the next parent (or root, but it is the same logic)
+        else {it->second.pointer->m_parent = m_parent;}
     }
 }
 
@@ -50,13 +62,13 @@ bool Object::canBeChild(const Object& object)
     for (auto it = m_children.begin(); it != m_children.end(); ++it)
     {
         //cehck if this is the object
-        if (it->second == &object)
+        if (it->second.pointer == &object)
         {
             //return that it can't be added
             return false;
         }
         //check if the child could be added to them
-        if (!it->second->canBeChild(object))
+        if (!it->second.pointer->canBeChild(object))
         {
             //if it can't be there, return false
             return false;
@@ -66,7 +78,7 @@ bool Object::canBeChild(const Object& object)
     return true;
 }
 
-bool Object::addChild(Object& object)
+bool Object::addChild(Object& object, bool owns)
 {
     //check if the child can be added
     if (!canBeChild(object))
@@ -82,7 +94,7 @@ bool Object::addChild(Object& object)
     }
 
     //store the new child
-    m_children[object.m_name] = &object;
+    m_children[object.m_name] = {&object, owns};
     //set the parent
     object.m_parent = this;
 
@@ -95,11 +107,17 @@ void Object::removeChild(Object& child)
     //find the child object
     const auto& pos = m_children.find(child.m_name);
     //stop if the element is not the correct one
-    if (pos->second != &child) {return;}
+    if (pos->second.pointer != &child) {return;}
     //return if the child was not found
     if (pos == m_children.end()) {return;}
     //else, set the parent of the chiled to 0
-    pos->second->m_parent = 0;
+    pos->second.pointer->m_parent = 0;
+    //check if the object owns the child to delete it
+    if (pos->second.owns)
+    {
+        //delete the child
+        delete pos->second.pointer;
+    }
     //remove the element
     m_children.erase(pos);
 }
@@ -111,7 +129,13 @@ void Object::removeChildNamed(const std::string_view& name)
     //return if the child was not found
     if (pos == m_children.end()) {return;}
     //else, set the parent of the chiled to 0
-    pos->second->m_parent = 0;
+    pos->second.pointer->m_parent = 0;
+    //check if the object owns the child to delete it
+    if (pos->second.owns)
+    {
+        //delete the child
+        delete pos->second.pointer;
+    }
     //remove the element
     m_children.erase(pos);
 }
@@ -126,7 +150,7 @@ std::ostream& operator<<(std::ostream& os, const Object& o)
     for (auto it = o.m_children.begin(); it != o.m_children.end(); ++it)
     {
         //print the child
-        os << *it->second << "\n";
+        os << *it->second.pointer << "\n";
     }
     //print the ending and return
     return os << "}";
@@ -244,9 +268,9 @@ void Object::getAllChlidren(std::vector<Object*>& children) noexcept
     for (auto it = m_children.begin(); it != m_children.end(); ++it)
     {
         //add the child
-        children.push_back(it->second);
+        children.push_back(it->second.pointer);
         //call the function on the child to add its children
-        it->second->getAllChlidren(children);
+        it->second.pointer->getAllChlidren(children);
     }
 }
 

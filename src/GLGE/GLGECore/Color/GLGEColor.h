@@ -14,11 +14,9 @@
 #define _GLGE_COLOR_
 
 //include the settings
-#include "../GLGECore/GLGESettings.h"
-//include utilities
-#include "../GLGECore/GLGEUtil.h"
+#include "../GLGESettings.h"
 //include vectors
-#include "../GLGEMath/Vectors/GLGEVectors.h"
+#include "../../GLGEMath/Vectors/GLGEFloatVec.h"
 
 /**
  * @brief define the color space of the color

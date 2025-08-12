@@ -1,0 +1,18 @@
+<!-- This file contains an example on how the vertex layout asset works -->
+
+<!-- The GLGE component stores informatoin about the version of the loader that the file was saved with as well as an optional comment -->
+<GLGE version="0.1.0">An example for a simple vertex layout. The layout is that of SimpleVertex. </GLGE>
+
+<!-- 
+    @param name the name that the vertex layout should be registerd as. Must be unique. 
+ -->
+<vertexLayout name="SimpleVertex">
+
+    <!-- the name attribute is the name for the vertex element and the type specifies the name of a build-in vector, matrix or float or integer type -->
+    <element name="pos", type="vec3"></element>
+    <!-- the name attribute is the name for the vertex element and the byte size stores the size of the element in bytes -->
+    <element name="tex", byteSize="12"></element>
+    <!-- the name attribute is the name for the vertex element, size is the size in bytes and elements stores the amount of elements to account for. This can be used for matricies, vectors and arrays of data. -->
+    <element name="normal", size="4", elements="3"></element>
+
+</vertexLayout>

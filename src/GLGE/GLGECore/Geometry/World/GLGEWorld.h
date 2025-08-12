@@ -39,8 +39,9 @@ public:
 
     /**
      * @brief Construct a new World
+     * Explicetly deleted, can't be used uninitalized
      */
-    World() = default;
+    World() = delete;
 
     /**
      * @brief Construct a new World
@@ -50,7 +51,7 @@ public:
      * @param name the name of the world
      * @param instance the instance the world will belong to
      */
-    World(Object** objects, uint64_t objectCount, const std::string_view& name, Instance& instance);
+    World(Object** objects, uint64_t objectCount, const std::string& name, Instance& instance);
 
     /**
      * @brief Construct a new World
@@ -59,7 +60,7 @@ public:
      * @param instance the instance the world will belong to
      * @param fileSuffix the suffix of the file to load from. Default is .gw (GLGE World)
      */
-    World(const std::string_view fileName, Instance& instance, const std::string_view& fileSuffix = ".gw");
+    World(const std::string& fileName, Instance& instance, const std::string_view& fileSuffix = ".gw");
 
     /**
      * @brief check if the object can be added
@@ -223,7 +224,7 @@ public:
      * 
      * @return const char* 
      */
-    virtual const char* getTypeName() const noexcept {return "WorldExtension";}
+    virtual const char* getTypeName() const noexcept {return "GLGE_WORLD_EXTENSION";}
 
     /**
      * @brief say that the world class is a friend
