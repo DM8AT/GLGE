@@ -9,6 +9,12 @@ if [ ! -d "pugixml_build" ]; then
     mkdir pugixml_build
 fi 
 
+# check if pugixml exists (it SHOULD)
+if [ ! -d "pugixml" ]; then
+    # clone pugixml
+    git clone https://github.com/zeux/pugixml.git
+fi
+
 # go into the pugixml building directory
 cd pugixml_build
 echo $PATH
