@@ -36,7 +36,7 @@ World::World(Object** objects, uint64_t objectCount, const std::string& name, In
             return;
         }
         //store the object
-        m_objects[objects[i]->getName()] = objects[i];
+        m_objects.emplace(objects[i]->getName(), objects[i]);
     }
 }
 

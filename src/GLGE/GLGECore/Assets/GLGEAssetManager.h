@@ -258,7 +258,7 @@ protected:
     /**
      * @brief store the maximum iteration rate of the reload thread
      */
-    Limiter m_reloadLimiter = 1;
+    Limiter m_reloadLimiter = 10;
     /**
      * @brief store the function for the reload thread of an asset manager
      * 
