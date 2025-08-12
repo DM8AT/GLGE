@@ -11,6 +11,14 @@ if [ -d "src/GLGE/GLGE3rdParty/assimp" ]; then
     # run cmake for assimp
     cd src/GLGE/GLGE3rdParty/assimp
     cmake . -DBUILD_SHARED_LIBS=OFF -DASSIMP_INSTALL=OFF
+    
+    # check if the compile was successfull
+    if [ $? -ne 0 ]; then
+        # if not, print an error and stop
+        echo "[ERROR] Failed to compile GLGE because assimp could not be compiled"
+        exit 1
+    fi
+
     cd ../../../../
 
     # run the makefile for the library
@@ -26,6 +34,14 @@ fi
 # compile pugixml
 cd src/GLGE/GLGE3rdParty/pugixml
 bash build.sh
+
+# check if the compile was successfull
+if [ $? -ne 0 ]; then
+    # if not, print an error and stop
+    echo "[ERROR] Failed to compile GLGE because pugixml could not be compiled"
+    exit 1
+fi
+
 cd ../../../../
 
 # check if the build directory exists

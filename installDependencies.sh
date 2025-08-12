@@ -15,5 +15,12 @@ fi
 # install the dependencies using apt
 apt install -y libsdl2-dev libsdl2-image-dev libgl-dev libglew-dev libvulkan-dev vulkan-validationlayers
 
+# check if the apt was successfull
+if [ $? -ne 0 ]; then
+    # if not, print an error and stop
+    echo "[ERROR] Failed to install all needed dependencies"
+    exit 1
+fi
+
 # print a message that the install is finished
 echo "[INFO] Finished the installation of all dependencies"
