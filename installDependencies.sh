@@ -12,6 +12,16 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+# update everything to prepare for install
+apt update
+
+# check if the update was successfull
+if [ $? -ne 0 ]; then
+    # if not, print an error and stop
+    echo "[ERROR] Failed to update libraries to install"
+    exit 1
+fi
+
 # install SDL2 and SDL2 image using apt
 apt install -y libsdl2-dev libsdl2-image-dev
 
