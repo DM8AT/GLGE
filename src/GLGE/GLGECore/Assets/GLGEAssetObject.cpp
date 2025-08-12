@@ -26,6 +26,17 @@ AssetObject::AssetObject(std::filesystem::path path, Object** children, uint64_t
     loadObject();
 }
 
+AssetObject::~AssetObject() noexcept
+{
+    //if the object exists, delete it
+    if (m_object)
+    {
+        //zero the object
+        delete m_object;
+        m_object = 0;
+    }
+}
+
 void AssetObject::reload() noexcept
 {
     //if the file is empty, stop

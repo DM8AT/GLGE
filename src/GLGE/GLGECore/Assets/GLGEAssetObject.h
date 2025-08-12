@@ -46,6 +46,11 @@ public:
     AssetObject(std::filesystem::path path, Object** children, uint64_t childCount, AssetStorage* storage);
 
     /**
+     * @brief Destroy the Asset Object
+     */
+    ~AssetObject() noexcept;
+
+    /**
      * @brief re-load the asset from the disk
      */
     virtual void reload() noexcept override;
