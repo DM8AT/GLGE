@@ -125,6 +125,7 @@ set(SOURCE_FILES_CPP
     # Subelement : Assets
     ${GLGE_PATH}/GLGECore/Assets/GLGEAsset.cpp
     ${GLGE_PATH}/GLGECore/Assets/GLGEAssetManager.cpp
+    ${GLGE_PATH}/GLGECore/Assets/GLGEAssetObject.cpp
     # Subelement : Geometry
     ${GLGE_PATH}/GLGECore/Geometry/GLGEVertex.cpp
     ${GLGE_PATH}/GLGECore/Geometry/GLGEObject.cpp

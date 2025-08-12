@@ -15,6 +15,8 @@
 
 //include asset managers and simple assets
 #include "GLGEAssetManager.h"
+//include the object asset
+#include "GLGEAssetObject.h"
 
 //check if graphics are included
 #if GLGE_INCLUDE_GRAPHICS

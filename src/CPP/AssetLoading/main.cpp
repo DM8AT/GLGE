@@ -27,6 +27,8 @@ int main()
     proc.loadPackage(Path("shader/glgeTextures.gp"), "GLGETextures");
     AssetShader* shader = manager.load<AssetShader>("assets/doc/examples/example.shader", &proc);
     std::cout << shader->getName() << "\n";
+    AssetObject* obj = manager.load<AssetObject>("assets/doc/examples/example.gobj", nullptr,0);
+    std::cout << obj->getName() << ", " << obj->getObject()->getPos() << "\n";
 
     Framebuffer fbuff(1, true, false, false, window.getSize(), inst);
 

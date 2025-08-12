@@ -12,24 +12,11 @@
     <!-- The transform below stores the default values, but for educational purposes it is still present -->
     <transform>
         <!-- store the position. All vector elements are stored seperatly to make reading easier -->
-        <pos x="0", y="0", z="0"></pos>
+        <pos x="0" y="0" z="0"></pos>
         <!-- store the rotation. The rotation is around the indicated axis in degrees. -->
-        <rotation x="0", y="0", z="0"></rotation>
+        <rotation x="0" y="0" z="0"></rotation>
         <!-- store the scaling. Instead of uniform scaling with the scale attribute, per-axis scaling values are also supported -->
         <scale scale="1"></scale>
     </transform>
-
-    <!-- the children element is entierly optional. If it does not exist, the object has no children (on load) -->
-    <children>
-        <!-- The children element can also be empty or it may contain other object, both in place and from other files -->
-    </children>
-
-    <!-- each object CAN have a list of object attachments. If the element does not exist, there will be no attachments -->
-    <objectAttachments>
-
-        <!-- object attachments can be seperated into files or be stored in place -->
-        <objectAttachment file="assets/doc/examples/example.oatm"></objectAttachment>
-
-    </objectAttachments>
 
 </object>
