@@ -12,13 +12,23 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# install the dependencies using apt
-apt install -y libsdl2-dev libsdl2-image-dev libgl-dev libglew-dev libvulkan-dev vulkan-validationlayers
+# install SDL2 and SDL2 image using apt
+apt install -y libsdl2-dev libsdl2-image-dev
 
-# check if the apt was successfull
+# check if the SDL2 install was successfull
 if [ $? -ne 0 ]; then
     # if not, print an error and stop
-    echo "[ERROR] Failed to install all needed dependencies"
+    echo "[ERROR] Failed to install SDL2 libraries"
+    exit 1
+fi
+
+# install OpenGL using apt
+apt install -y libgl-dev libglew-dev
+
+# check if the SDL2 install was successfull
+if [ $? -ne 0 ]; then
+    # if not, print an error and stop
+    echo "[ERROR] Failed to install OpenGL / GLEW libraries"
     exit 1
 fi
 
