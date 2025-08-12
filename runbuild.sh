@@ -8,16 +8,17 @@ if [ -d "src/GLGE/GLGE3rdParty/assimp" ]; then
     # Print some info
     echo "[INFO] Building Assimp"
 
-    # run cmake for assimp
-    cd src/GLGE/GLGE3rdParty/assimp
-    cmake . -DBUILD_SHARED_LIBS=OFF -DASSIMP_INSTALL=OFF
-    
-    # check if the compile was successfull
-    if [ $? -ne 0 ]; then
-        # if not, print an error and stop
-        echo "[ERROR] Failed to compile GLGE because assimp could not be compiled"
-        exit 1
-    fi
+# unused
+#    # run cmake for assimp
+#    cd src/GLGE/GLGE3rdParty/assimp
+#    cmake . -DBUILD_SHARED_LIBS=OFF -DASSIMP_INSTALL=OFF
+#    
+#    # check if the compile was successfull
+#    if [ $? -ne 0 ]; then
+#        # if not, print an error and stop
+#        echo "[ERROR] Failed to compile GLGE because assimp could not be compiled"
+#        exit 1
+#    fi
 
     cd ../../../../
 
