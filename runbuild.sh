@@ -3,12 +3,12 @@
 # print info about the start of the compilation
 echo "[INFO] Started to compile GLGE"
 
-# check if assimp exists
-if [ -d "src/GLGE/GLGE3rdParty/assimp" ]; then
-    # Print some info
-    echo "[INFO] Building Assimp"
-
 # unused
+# check if assimp exists
+#if [ -d "src/GLGE/GLGE3rdParty/assimp" ]; then
+#    # Print some info
+#    echo "[INFO] Building Assimp"
+#
 #    # run cmake for assimp
 #    cd src/GLGE/GLGE3rdParty/assimp
 #    cmake . -DBUILD_SHARED_LIBS=OFF -DASSIMP_INSTALL=OFF
@@ -19,18 +19,18 @@ if [ -d "src/GLGE/GLGE3rdParty/assimp" ]; then
 #        echo "[ERROR] Failed to compile GLGE because assimp could not be compiled"
 #        exit 1
 #    fi
-
-    cd ../../../../
-
-    # run the makefile for the library
-    cd "src/GLGE/GLGE3rdParty/assimp"
-    make -j
-    # change back to the main directory
-    cd ../../../../
-
-    # Print that the building is done
-    echo "[INFO] Finished building assimp"
-fi
+#
+#    cd ../../../../
+#
+#    # run the makefile for the library
+#    cd "src/GLGE/GLGE3rdParty/assimp"
+#    make -j
+#    # change back to the main directory
+#    cd ../../../../
+#
+#    # Print that the building is done
+#    echo "[INFO] Finished building assimp"
+#fi
 
 # compile pugixml
 cd src/GLGE/GLGE3rdParty/pugixml
