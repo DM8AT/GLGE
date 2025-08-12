@@ -15,6 +15,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
+          fetch-depth: 0
           submodules: recursive
     - name: install_dependencies
       run: sudo ./installDependencies.sh
