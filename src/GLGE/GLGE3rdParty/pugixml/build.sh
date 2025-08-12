@@ -11,6 +11,8 @@ fi
 
 # check if pugixml exists (it SHOULD)
 if [ ! -d "pugixml" ]; then
+    # print debug info
+    echo "[INFO] Cloning pugixml..."
     # clone pugixml
     git clone https://github.com/zeux/pugixml.git
 fi
