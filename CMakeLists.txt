@@ -38,7 +38,7 @@ set(GLGE_LIBRARY_PATHS ${PUGIXML_LIB})
 # enable / disable Dear ImGui
 set(GLGE_USE_DEAR_IMGUI true)
 # enable / disable Assimp
-set(GLGE_USE_ASSIMP true)
+set(GLGE_USE_ASSIMP false)
 # include / exclude graphics
 set(GLGE_INCLUDE_GRAPHICS true)
 
