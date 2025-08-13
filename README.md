@@ -67,14 +67,5 @@ Some settings in GLGE can be changed in a settings file that is located at `GLGE
 | Stores the amount of samples for the limiter to take and use for smoothing | GLGE_LIMITER_IPS_SAMPLES | :white_check_mark: | 32 | :white_check_mark: |
 | Define if bindings for the 3rd party library `ImGUI` should be included | GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI | :white_check_mark: | 1 / true | :white_check_mark: |
 
-## First steps
-The first thing that is needed to use most of the GLGE library is an instance. The instance is the object that owns the memory for GLGE. Because instances are just classes, there can be multiple instances at once. Communication between instances is not impossible, but highly discourage. An instance needs a name and a graphic API to be constructed (even if no graphic core is included - it still is needed). The simplest instance is created as follows:
-```cpp
-Instance instance("instance", API_NONE);
-```
-This instance can be used for GLGE, but because `API_NONE` is selected, it can't be used for any graphic functionality. For the usage in graphics, another API needs to be selected. 
-
-By default an instance does not contain any logging functionality. Because of that it is highly suggested to add an instance of any logger to the instance directly after creation. This is done as follows:
-```cpp
-instance.setLogger(new Logger());
-```
+## Documentation
+GLGE is documented using the github wiki. Currently, the documentation is being build up and expended, so it is expected to be not complete. If you find that something is missing in the documentation, please open an issue and mention it. 
