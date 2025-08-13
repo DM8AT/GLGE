@@ -66,6 +66,3 @@ Some settings in GLGE can be changed in a settings file that is located at `GLGE
 | Specifies if the graphic section if GLGE is included | GLGE_INCLUDE_GRAPHICS | :white_check_mark: | 1 / true | :white_check_mark: |
 | Stores the amount of samples for the limiter to take and use for smoothing | GLGE_LIMITER_IPS_SAMPLES | :white_check_mark: | 32 | :white_check_mark: |
 | Define if bindings for the 3rd party library `ImGUI` should be included | GLGE_3RD_PARTY_INCLUDE_DEAR_IMGUI | :white_check_mark: | 1 / true | :white_check_mark: |
-
-## Documentation
-GLGE is documented using the github wiki. Currently, the documentation is being build up and expended, so it is expected to be not complete. If you find that something is missing in the documentation, please open an issue and mention it. 
