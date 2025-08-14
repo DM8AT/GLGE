@@ -49,6 +49,11 @@ public:
     {onCreate();}
 
     /**
+     * @brief Destroy the OpenGL instance
+     */
+    virtual ~OGL4_6_Instance() {}
+
+    /**
      * @brief run the rendering for the OpenGL 4.6 instance
      */
     void onRender() override;

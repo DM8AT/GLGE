@@ -283,7 +283,7 @@ void AssetTexture::loadContent()
 
     //load the data from RAM using SDL2_image
     //first, initalize all supported formats
-    IMG_Init(IMG_INIT_PNG | IMG_INIT_AVIF | IMG_INIT_JPG | IMG_INIT_JXL | IMG_INIT_TIF | IMG_INIT_WEBP);
+    IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_TIF | IMG_INIT_WEBP);
     //then, create a surface from the data stored in RAM
     SDL_Surface* surf = IMG_Load_RW(SDL_RWFromMem(rawData.data(), rawData.size()), 1);
     //check if the load was successfull

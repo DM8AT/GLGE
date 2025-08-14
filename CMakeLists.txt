@@ -8,12 +8,12 @@
 #  \______/ \________|   \__|    \______/ \__|      
 
 # default setup for CMake
-cmake_minimum_required(VERSION 3.2...3.31)
+cmake_minimum_required(VERSION 3.10)
 # define C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 # store the compiler options
-set(COMPILER_OPTIONS -Wall -Wextra -Wpedantic -Wno-unused-function -ggdb )
+set(COMPILER_OPTIONS -Wall -Wextra -Wpedantic -Wno-unused-function)# -ggdb)
 # Copy to compiler and link libraries for more debug info
 # -fsanitize=address
 # store some libraries for linking
@@ -62,7 +62,6 @@ if (GLGE_USE_DEAR_IMGUI)
     set(DEAR_IMGUI_SOURCE
             # add all generic header files
             ${GLGE_PATH}/GLGE3rdParty/imgui/imgui.cpp
-            ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_demo.cpp
             ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_draw.cpp
             ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_tables.cpp
             ${GLGE_PATH}/GLGE3rdParty/imgui/imgui_widgets.cpp
@@ -72,10 +71,6 @@ if (GLGE_USE_DEAR_IMGUI)
             ${GLGE_PATH}/GLGE3rdParty/imgui/backends/imgui_impl_opengl3.cpp
             ${GLGE_PATH}/GLGE3rdParty/imgui/backends/imgui_impl_sdl2.cpp
         )
-    
-    # add the include directory for Dear ImGui
-    include_directories(${GLGE_PATH}/GLGE3rdParty/imgui)
-
 else()
 
     # else load emtpy as the source files
@@ -110,6 +105,8 @@ project(GLGE
     VERSION 0.1
     DESCRIPTION "A 3D game engine designed in C++ for C and C++"
     LANGUAGES CXX)
+# make the project independend from the location
+# set_property(TARGET ${objs} PROPERTY POSITION_INDEPENDENT_CODE 1)
 # list of all source files in GLGE
 set(SOURCE_FILES_CPP
     # Core files
@@ -219,33 +216,38 @@ add_library(GLGE STATIC ${SOURCE_FILES_CPP})
 target_compile_definitions(GLGE PRIVATE USE_NEW_AUDIO_ENGINE)
 target_compile_options(GLGE PRIVATE ${COMPILER_OPTIONS})
 # add all library pathes
-target_link_libraries(GLGE -L${GLGE_LIBRARY_PATHS})
+target_link_libraries(GLGE PRIVATE -L${GLGE_LIBRARY_PATHS})
+# check for imgui to add the include directory for imgui
+if (GLGE_USE_DEAR_IMGUI)
+    # set the include directory
+    target_include_directories(GLGE PRIVATE ${GLGE_PATH}/GLGE3rdParty/imgui)
+endif()
 # check if the graphics should be included to add graphic specific libraries
 if (GLGE_INCLUDE_GRAPHICS)
     # add SDL2
-    TARGET_LINK_LIBRARIES(GLGE ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES})
+    TARGET_LINK_LIBRARIES(GLGE PRIVATE SDL2 SDL2_image)
     # add vulkan
-    TARGET_LINK_LIBRARIES(GLGE vulkan)
+    TARGET_LINK_LIBRARIES(GLGE PRIVATE vulkan)
     # add OpenGL
-    TARGET_LINK_LIBRARIES(GLGE GL)
+    TARGET_LINK_LIBRARIES(GLGE PRIVATE GL)
     # add GLEW
-    TARGET_LINK_LIBRARIES(GLGE GLEW ${LINK_LIBS})
+    TARGET_LINK_LIBRARIES(GLGE PRIVATE GLEW ${LINK_LIBS})
 
     # check if Assimp should be added
     if (GLGE_USE_ASSIMP)
         # add the library as an include directory
-        target_link_libraries(GLGE -L${ASSIMP_LIB})
+        target_link_libraries(GLGE PRIVATE -L${ASSIMP_LIB})
         # add the assimp library to the include stream
-        TARGET_LINK_LIBRARIES(GLGE assimp)
+        TARGET_LINK_LIBRARIES(GLGE PRIVATE assimp)
     endif()
 
 # end of graphic specific libraries
 endif()
-TARGET_LINK_LIBRARIES(GLGE pugixml)
+TARGET_LINK_LIBRARIES(GLGE PUBLIC pugixml)
 
 # enable threading
-target_compile_options(GLGE PRIVATE -pthread)
-target_link_options(GLGE PRIVATE -pthread)
+target_compile_options(GLGE PUBLIC -pthread)
+target_link_options(GLGE PUBLIC -pthread)
 
 # $$$$$$$$\                    $$\               
 # \__$$  __|                   $$ |              

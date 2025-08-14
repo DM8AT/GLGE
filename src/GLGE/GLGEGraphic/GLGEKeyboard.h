@@ -14,9 +14,9 @@
 #define _GLGE_KEYBOARD_
 
 //include the settings
-#include "../../GLGECore/GLGESettings.h"
+#include "../GLGECore/GLGESettings.h"
 //include layers, layer stacks and events
-#include "../../GLGECore/GLGELayers.h"
+#include "../GLGECore/GLGELayers.h"
 
 /**
  * @brief store information about the pressed keys

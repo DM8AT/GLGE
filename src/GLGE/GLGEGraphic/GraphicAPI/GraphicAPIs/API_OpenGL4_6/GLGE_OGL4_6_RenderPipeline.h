@@ -42,6 +42,11 @@ public:
     OGL4_6_RenderPipeline(RenderPipeline* renderPipeline) : GraphicRenderPipeline(renderPipeline) {}
 
     /**
+     * @brief Destroy the ogl4 6 renderpipeline
+     */
+    virtual ~OGL4_6_RenderPipeline() {}
+
+    /**
      * @brief this function is called when the render pipeline is created
      */
     virtual void onAttatch() noexcept override;
