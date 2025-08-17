@@ -26,11 +26,16 @@ Texture::~Texture()
     //this is checked by testing if a GPU Texture exists
     if (m_purpose == TEXTURE_PURPOSE_CPU_ONLY)
     {
-
+        //free the SDL surface
+        SDL_FreeSurface((SDL_Surface*)m_texture);
+        m_texture = 0;
     }
     else
     {
-
+        //else, delete the graphic texture
+        m_texture->destroy();
+        delete m_texture;
+        m_texture = 0;
     }
 }
 
