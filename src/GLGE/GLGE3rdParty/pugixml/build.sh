@@ -19,7 +19,6 @@ fi
 
 # go into the pugixml building directory
 cd pugixml_build
-echo $PATH
 # there, run cmake from the pugixml directory
 cmake ../pugixml
 # then, build the library

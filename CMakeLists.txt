@@ -9,11 +9,13 @@
 
 # default setup for CMake
 cmake_minimum_required(VERSION 3.10)
+
+if (false)
 # define C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 # store the compiler options
-set(COMPILER_OPTIONS -Wall -Wextra -Wpedantic -Wno-unused-function)# -ggdb)
+set(COMPILER_OPTIONS -Wall -Wextra -Wpedantic -Wno-unused-function -ggdb)
 # Copy to compiler and link libraries for more debug info
 # -fsanitize=address
 # store some libraries for linking
@@ -105,8 +107,6 @@ project(GLGE
     VERSION 0.1
     DESCRIPTION "A 3D game engine designed in C++ for C and C++"
     LANGUAGES CXX)
-# make the project independend from the location
-# set_property(TARGET ${objs} PROPERTY POSITION_INDEPENDENT_CODE 1)
 # list of all source files in GLGE
 set(SOURCE_FILES_CPP
     # Core files
@@ -248,6 +248,10 @@ TARGET_LINK_LIBRARIES(GLGE PUBLIC pugixml)
 # enable threading
 target_compile_options(GLGE PUBLIC -pthread)
 target_link_options(GLGE PUBLIC -pthread)
+
+endif()
+
+add_subdirectory(src/GLGE)
 
 # $$$$$$$$\                    $$\               
 # \__$$  __|                   $$ |              
