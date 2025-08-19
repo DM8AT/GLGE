@@ -221,7 +221,7 @@ if (GLGE_INCLUDE_GRAPHICS)
     INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
     # add SDL2
     find_package(SDL2 REQUIRED)
-    find_package(SDL_image REQUIRED)
+    find_package(SDL2_image REQUIRED)
     TARGET_LINK_LIBRARIES(GLGE PUBLIC SDL2 SDL2_image)
     # add vulkan
     find_package(Vulkan REQUIRED)

@@ -96,6 +96,8 @@ void GraphicTexture::destroy()
     //call the destroy hook
     onDestroy();
 
+    //remove from the texture
+    m_texture->m_texture = 0;
     //remove from the instance
     m_graphicInstance->removeElement(this);
     m_graphicInstance = 0;
