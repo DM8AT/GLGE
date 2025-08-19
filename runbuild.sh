@@ -12,7 +12,7 @@ fi
 cd build
 
 # initalize CMake
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake ..
 cd ..
 # compile the code
 cmake --build build -j
