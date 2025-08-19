@@ -13,7 +13,7 @@
 #include "GLGEAssetObject.h"
 
 //include pugixml for XML stuff
-#include "../../GLGE3rdParty/pugixml/pugixml/src/pugixml.hpp"
+#include "../../GLGE3rdParty/pugixml/src/pugixml.hpp"
 
 AssetObject::AssetObject(std::filesystem::path path, Object** children, uint64_t childCount, AssetStorage* storage)
    //initalize the asset

@@ -48,7 +48,7 @@ option(GLGE_INCLUDE_GRAPHICS "Specify if the section responsible for graphics fo
 #                                                                            \______/ 
 
 # add pugixml
-add_subdirectory(GLGE3rdParty/pugixml/pugixml)
+add_subdirectory(GLGE3rdParty/pugixml)
 
 # add assimp
 if (GLGE_USE_ASSIMP)

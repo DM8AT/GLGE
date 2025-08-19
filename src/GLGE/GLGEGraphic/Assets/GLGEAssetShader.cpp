@@ -13,7 +13,7 @@
 #include "GLGEAssetShader.h"
 
 //include pugixml for XML stuff
-#include "../../GLGE3rdParty/pugixml/pugixml/src/pugixml.hpp"
+#include "../../GLGE3rdParty/pugixml/src/pugixml.hpp"
 
 AssetShader::AssetShader(std::filesystem::path path, ShaderProcessor* processor, AssetStorage* storage)
    //initalize the actual asset

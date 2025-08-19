@@ -15,7 +15,7 @@
 #include "GLGEAssetManager.h"
 
 //include pugixml for XML stuff
-#include "../../GLGE3rdParty/pugixml/pugixml/src/pugixml.hpp"
+#include "../../GLGE3rdParty/pugixml/src/pugixml.hpp"
 
 std::string Asset::getCharacterInfo(std::filesystem::path file, uint64_t characterId, const std::string& indent) noexcept
 {

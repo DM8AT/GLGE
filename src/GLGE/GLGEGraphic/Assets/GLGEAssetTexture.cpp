@@ -13,7 +13,7 @@
 #include "GLGEAssetTexture.h"
 
 //include pugixml for XML stuff
-#include "../../GLGE3rdParty/pugixml/pugixml/src/pugixml.hpp"
+#include "../../GLGE3rdParty/pugixml/src/pugixml.hpp"
 //include SDL image for loading image files
 #include <SDL2/SDL_image.h>
 
