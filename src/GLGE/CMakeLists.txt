@@ -52,6 +52,11 @@ add_subdirectory(GLGE3rdParty/pugixml)
 
 # add assimp
 if (GLGE_USE_ASSIMP)
+    # disable the test compiling
+    OPTION ( ASSIMP_BUILD_TESTS
+        "If the test suite for Assimp is built in addition to the library."
+        OFF
+    )
     add_subdirectory(GLGE3rdParty/assimp)
 endif()
 
