@@ -1,0 +1,150 @@
+#version 450 core
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+//Output image (bind this as GL_WRITE_ONLY)
+layout (binding = 0, rgba16f) uniform writeonly image2D imgOutput;
+layout (binding = 1) uniform sampler2D depthIn;
+const int samples = 1;
+
+layout (set = 0, binding = 2, std140) uniform cam_buffer {
+    float x;
+    float y;
+    float z;
+    uint quat_i_j;
+    uint quat_k_w;
+    float fov;
+    float near;
+    float far;
+    mat4 proj;
+} cam;
+
+const vec3 forward = vec3(0,0,-1);
+const vec3 up      = vec3(0,1,0);
+const vec3 right   = vec3(1,0,0);
+
+const vec3 lightCol = vec3(1); // vec3(0.7,0.8,0.4);
+const float lightStr = 3.f;
+const vec3 lightDir = normalize(vec3(0.2,1,-0.3));
+
+const vec3 color = vec3(1,0,0); // vec3(0.9,0.2,0.3);
+
+vec4 decodeQuat(uint i_j, uint k_w) {
+    //decompress and return the quaternions as a vector
+    return vec4(
+        (float((i_j & 0xffff) & 0xffff) / float(0xffff)) * 2.f - 1.f,
+        (float((i_j >> 16)    & 0xffff) / float(0xffff)) * 2.f - 1.f,
+        (float((k_w & 0xffff) & 0xffff) / float(0xffff)) * 2.f - 1.f,
+        (float((k_w >> 16)    & 0xffff) / float(0xffff)) * 2.f - 1.f
+    );
+}
+
+mat3 quatToMat3(vec4 q) {
+    float x = q.x, y = q.y, z = q.z, w = q.w;
+
+    return mat3(
+        1.0 - 2.0*y*y - 2.0*z*z,
+        2.0*x*y + 2.0*w*z,
+        2.0*x*z - 2.0*w*y,
+
+        2.0*x*y - 2.0*w*z,
+        1.0 - 2.0*x*x - 2.0*z*z,
+        2.0*y*z + 2.0*w*x,
+
+        2.0*x*z + 2.0*w*y,
+        2.0*y*z - 2.0*w*x,
+        1.0 - 2.0*x*x - 2.0*y*y
+    );
+}
+
+//Sphere definition
+const vec3 sphereCenter = vec3(-2.5, 0.0, -1.0);
+const float sphereRadius = 1.f;
+
+//Intersection returns t, or -1.0 if none
+float intersectSphere(vec3 ro, vec3 rd) {
+    vec3 oc = ro - sphereCenter;
+    float b = dot(oc, rd);
+    float c = dot(oc, oc) - sphereRadius * sphereRadius;
+    float h = b*b - c;
+    if (h < 0.0) return -1.0;
+    return -b - sqrt(h);
+}
+
+// Returns a 2D offset in pixel units for sample 'i' out of 'samples'
+// Output range ~[-0.5, 0.5] (centered on the pixel)
+vec2 sampleOffset(int i) {
+    float invN = 1.0 / samples;
+
+    // Use Hammersley-like sequence (radical inverse base 2)
+    // Simple bit-reversal function for x coordinate
+    uint bits = uint(i);
+    bits = (bits << 16) | (bits >> 16);
+    bits = ((bits & 0x55555555u) << 1) | ((bits & 0xAAAAAAAAu) >> 1);
+    bits = ((bits & 0x33333333u) << 2) | ((bits & 0xCCCCCCCCu) >> 2);
+    bits = ((bits & 0x0F0F0F0Fu) << 4) | ((bits & 0xF0F0F0F0u) >> 4);
+    bits = ((bits & 0x00FF00FFu) << 8) | ((bits & 0xFF00FF00u) >> 8);
+    float x = float(bits) * 2.3283064365386963e-10; // 1/2^32
+
+    // Uniformly distributed y coordinate
+    float y = (float(i) + 0.5) * invN;
+
+    // Center around 0, scale to pixel size units [-0.5, 0.5]
+    return vec2(x - 0.5, y - 0.5);
+}
+
+float LinearizeDepth(float depth, float near, float far) {
+    float z = depth * 2.0 - 1.0;
+    float lin = (2.0 * near * far) / (far + near - z * (far - near));
+    return lin;
+}
+
+void main() {
+    //Load the camera
+    vec3 camPos  = vec3(cam.x, cam.y, cam.z);
+    vec4 camQuat = decodeQuat(cam.quat_i_j, cam.quat_k_w);
+    mat3 camRot  = quatToMat3(camQuat);
+    vec3 camDir  = camRot * forward;
+    vec3 camUp   = camRot * up;
+    vec3 camRight= camRot * right;
+    float fov    = cam.fov;
+
+    ivec2 size = imageSize(imgOutput);
+    ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+
+    if (pixel.x >= size.x || pixel.y >= size.y)
+    {return;}
+
+    //NDC coordinates in [-1, 1]
+    float px = ((pixel.x + 0.5) / size.x) * 2.0 - 1.0;
+    float py = ((pixel.y + 0.5) / size.y) * 2.0 - 1.0;
+
+    //Compute ray direction
+    float aspect = float(size.x) / float(size.y);
+    float scale = tan(fov * 0.5);
+
+    vec3 rd = normalize(
+        camDir +
+        px * aspect * scale * camRight +
+        py * scale * camUp
+    );
+
+    //Trace
+    float depth = intersectSphere(camPos, rd);
+
+    //read the depth buffer depth
+    float d = texelFetch(depthIn, pixel, 0).r;
+    float ld = LinearizeDepth(d, cam.near, cam.far) / dot(rd, camDir);
+
+    if (depth > 0.f) {
+        if (ld > depth) {
+            //Simple shading: normal-based coloring
+            vec3 hit = camPos + rd * depth;
+            vec3 n = normalize(hit - sphereCenter);
+            float lambertian = dot(lightDir, n)*0.5 + 0.5;
+            vec3 combColor = color * lambertian * lightCol * lightStr;
+            imageStore(imgOutput, pixel, vec4(combColor, 1.f));
+            ld = depth;
+        }
+    }
+}

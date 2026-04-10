@@ -1,0 +1,86 @@
+#version 450
+
+//-----------------------------------------------------------
+//Bindings
+//-----------------------------------------------------------
+layout (binding = 0) uniform sampler2D imgInput;
+layout (binding = 1, rgba8) writeonly  uniform image2D imgOutput;
+
+//-----------------------------------------------------------
+//Parameters
+//-----------------------------------------------------------
+layout (binding = 2) uniform param_buff {
+    float gamma;       // e.g., 2.2
+    float localScale;  // e.g., 0.18 (Reinhard key)
+    float epsilon;     // avoid division issues, e.g., 1e-4
+    float exposure;
+} params;
+
+// -----------------------------------------------------------
+// Helper Functions
+// -----------------------------------------------------------
+
+// Luminance using Rec.709
+float luminance(vec3 c) 
+{return dot(c, vec3(0.2126, 0.7152, 0.0722));}
+
+// Simple local tone map
+vec3 reinhardLocal(vec3 color) 
+{return color / (color + vec3(1));}
+
+// -----------------------------------------------------------
+// Hable / Uncharted 2 Filmic Tonemap
+// -----------------------------------------------------------
+// Matches the curve described by John Hable
+//    http://filmicworlds.com/blog/
+// -----------------------------------------------------------
+vec3 uncharted2Tonemap(vec3 x)
+{
+    // Curve constants
+    const float A = 0.22;
+    const float B = 0.30;
+    const float C = 0.10;
+    const float D = 0.20;
+    const float E = 0.01;
+    const float F = 0.30;
+
+    return ((x*(A*x+B)) / (x*(C*x+D) + E)) - F;
+}
+
+vec3 tonemapUncharted2(vec3 color)
+{
+    color *= params.exposure;
+
+    vec3 curr  = uncharted2Tonemap(color);
+    const vec3 white = uncharted2Tonemap(vec3(11.2));  // white point normalization
+
+    return curr / white;
+}
+
+
+// Gamma
+vec3 applyGamma(vec3 c) {
+    return pow(c, vec3(params.gamma));
+}
+
+// -----------------------------------------------------------
+// Main
+// -----------------------------------------------------------
+layout (local_size_x = 16, local_size_y = 16) in;
+void main() {
+    ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size  = imageSize(imgOutput);
+
+    if (coord.x >= size.x || coord.y >= size.y)
+        return;
+
+    vec4 hdr = texture(imgInput, vec2(coord) / vec2(size));
+    vec3 color = hdr.rgb;
+
+    vec3 mapped = tonemapUncharted2(color);
+
+    // Gamma correction
+    mapped = applyGamma(mapped);
+
+    imageStore(imgOutput, coord, vec4(mapped, 1.0));
+}
