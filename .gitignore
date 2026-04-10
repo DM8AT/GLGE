@@ -2,3 +2,5 @@
 build*
 # Ignore my doc setup (just doxygen utility, doxyfile will upload)
 document*
+# Ignore VS code settings
+.vscode
