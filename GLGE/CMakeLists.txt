@@ -48,7 +48,7 @@ option(GLGE_GRAPHIC_ALLOW_ENGINE_COMMAND_OVERRIDE
 project(${GLGE_PROJ_NAME})
 
 # Shared libraries are currently not supported
-set(BUILD_SHARED_LIBS OFF);
+set(BUILD_SHARED_LIBS OFF)
 
 ###### DEPENDENCIES
 
