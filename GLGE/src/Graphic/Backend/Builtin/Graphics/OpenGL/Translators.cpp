@@ -48,6 +48,9 @@ bool swapWindow(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const G
     //store a helper function that is called when the swap is invoked
     static void (*helper)(GLGE::Graphic::Window*) = [](GLGE::Graphic::Window* window) {
         GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::swapWindow::swapWindow");
+        //Some drivers want this
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //do actual swap
         window->getVideoWindow()->onSwapWindow();
     };
     //extract the actual arguments

@@ -818,6 +818,17 @@ void* GLGE::Graphic::Backend::Video::SDL3::Instance::onContextCreate(GLGE::Graph
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, getAPIVersion().getMajor());
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, getAPIVersion().getMinor());
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, (getAPIVersion().getPatch() == 1) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : SDL_GL_CONTEXT_PROFILE_CORE);
+        //explicitly enable double buffering
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        //request depth buffer
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        //setup default framebuffer attributes
+        SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, 0);
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
         //request acceleration
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);

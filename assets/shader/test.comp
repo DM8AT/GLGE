@@ -27,7 +27,7 @@ const vec3 lightCol = vec3(1); // vec3(0.7,0.8,0.4);
 const float lightStr = 3.f;
 const vec3 lightDir = normalize(vec3(0.2,1,-0.3));
 
-const vec3 color = vec3(1,0,0); // vec3(0.9,0.2,0.3);
+const vec3 color = vec3(238, 69, 61)/vec3(255);
 
 vec4 decodeQuat(uint i_j, uint k_w) {
     //decompress and return the quaternions as a vector

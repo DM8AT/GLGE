@@ -11,7 +11,7 @@ const float lightStr = 3.f;
 const vec3 lightDir = normalize(vec3(0.2,1,-0.3));
 
 const float shininess = 32.0;
-const vec3 color = vec3(1,0,0); // vec3(0.9,0.2,0.3);
+const vec3 color = vec3(238, 69, 61)/vec3(255);
 
 layout (set = 0, binding = 0, std140) uniform cam_buffer {
     float x;

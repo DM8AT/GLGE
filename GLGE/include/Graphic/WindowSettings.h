@@ -367,7 +367,7 @@ namespace GLGE::Graphic {
          * 
          * @return `true` HDR mode is active
          */
-        constexpr inline bool hdr() const noexcept
+        constexpr inline bool is_hdr() const noexcept
         {return get(HDR);}
         /**
          * @brief set if the window uses HDR mode

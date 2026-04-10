@@ -2,9 +2,9 @@
 #include "GLGE.h"
 
 struct Params {
-    float gamma;       // e.g., 2.2
-    float localScale;  // e.g., 0.18 (Reinhard key)
-    float epsilon;     // avoid division issues, e.g., 1e-4
+    float gamma;      // e.g., 2.2
+    float localScale; // e.g., 0.18 (Reinhard key)
+    float epsilon;    // avoid division issues, e.g., 1e-4
     float exposure;
 };
 
