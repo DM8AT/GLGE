@@ -113,10 +113,10 @@ int main() {
                                                                                         );
     GLGE::Graphic::Renderer renderer(world, &camera, HDR_Target);
 
-    GLGE::Graphic::Shader shader({std::pair{"Compute", "assets/shader/test.comp.spv"}});
+    GLGE::Graphic::Shader rt_comp({std::pair{"Compute", "assets/shader/rt_sphere.comp.spv"}});
     GLGE::Graphic::SampledTexture sampledDepth(depthBuff, sampler);
-    GLGE::Graphic::ResourceSet set(shader.getSet(0), std::pair{"imgOutput", &colBuff}, std::pair{"depthIn", &sampledDepth}, std::pair{"cam", renderer.getCameraBuffer()});
-    shader.setResources(0, &set);
+    GLGE::Graphic::ResourceSet set(rt_comp.getSet(0), std::pair{"imgOutput", &colBuff}, std::pair{"depthIn", &sampledDepth}, std::pair{"cam", renderer.getCameraBuffer()});
+    rt_comp.setResources(0, &set);
 
     GLGE::Graphic::Shader meshShader {
         std::pair{"Vertex", "assets/shader/simple.vert.spv"},
@@ -150,7 +150,7 @@ int main() {
     auto pipe = GLGE::Graphic::RenderPipeline::create(
         std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_Target, GLGE::u8(0), GLGE::vec4(0.18,0.18,0.18,1), GLGE::f32(1), GLGE::u32(0))},
         std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
-        std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &shader, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
+        std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
         std::pair{"Finalize", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &finalize, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
         std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0))},
         std::pair{"Swap", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_SWAP_WINDOW, &win)}
