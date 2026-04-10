@@ -81,7 +81,9 @@
 #include <sched.h>
 #elif defined(_WIN32)
 //exclude min / max defines
-#define NOMINMAX
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif
 #include <windows.h>
 #elif defined(__APPLE__)
 #include <pthread.h>
@@ -2104,7 +2106,7 @@ protected:
         int rc = pthread_setaffinity_np(t.native_handle(), sizeof(cpu_set_t), &cpuset);
         if (rc != 0) perror("pthread_setaffinity_np");
 
-    #elif defined(_WIN32)
+    #elif defined(_WIN32) && defined(_MSC_VER)
         DWORD_PTR mask = 1ULL << coreIndex;
         HANDLE handle = (HANDLE)t.native_handle();
         DWORD_PTR result = SetThreadAffinityMask(handle, mask);

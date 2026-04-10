@@ -225,10 +225,10 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::update() {
         }
         //store the settings
         data.fov = glm::radians(cam->FOV);
-        data.near = cam->near;
-        data.far  = cam->far;
+        data.proj_near = cam->near;
+        data.proj_far  = cam->far;
         //compute the projection matrix
-        data.projection = glm::perspective(data.fov, aspect, data.near, data.far);
+        data.projection = glm::perspective(data.fov, aspect, data.proj_near, data.proj_far);
 
         //get the position (this can be Transform, Transform2D or none)
         Transform* transf = m_world->get<Transform>(*m_camera);

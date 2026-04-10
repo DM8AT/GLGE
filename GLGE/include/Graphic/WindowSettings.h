@@ -39,27 +39,27 @@ namespace GLGE::Graphic {
          */
         constexpr WindowSettings() noexcept
             : m_flags(
-                  (false ? FULLSCREEN       : 0) |
-                  (false ? HIDDEN           : 0) |
-                  (false ? BORDERLESS       : 0) |
-                  (true  ? RESIZABLE        : 0) |
-                  (false ? MINIMIZED        : 0) |
-                  (false ? MAXIMIZED        : 0) |
-                  (false ? MOUSE_GRABBED    : 0) |
-                  (true  ? INPUT_FOCUS      : 0) |
-                  (true  ? MOUSE_FOCUS      : 0) |
-                  (false ? MODAL            : 0) |
-                  (true  ? HIGH_DPI         : 0) |
-                  (false ? MOUSE_CAPTURE    : 0) |
-                  (false ? ALWAYS_ON_TOP    : 0) |
-                  (false ? UTILITY          : 0) |
-                  (false ? TOOLTIP          : 0) |
-                  (false ? POPUP_MENU       : 0) |
-                  (false ? KEYBOARD_GRABBED : 0) |
-                  (false ? TRANSPARENT      : 0) |
-                  (false ? CAN_NOT_FOCUS    : 0) |
-                  (false ? RELATIVE         : 0) |
-                  (false ? HDR              : 0))
+                  (false ? FULLSCREEN             : 0) |
+                  (false ? HIDDEN                 : 0) |
+                  (false ? BORDERLESS             : 0) |
+                  (true  ? RESIZABLE              : 0) |
+                  (false ? MINIMIZED              : 0) |
+                  (false ? MAXIMIZED              : 0) |
+                  (false ? MOUSE_GRABBED          : 0) |
+                  (true  ? INPUT_FOCUS            : 0) |
+                  (true  ? MOUSE_FOCUS            : 0) |
+                  (false ? MODAL                  : 0) |
+                  (true  ? HIGH_DPI               : 0) |
+                  (false ? MOUSE_CAPTURE          : 0) |
+                  (false ? ALWAYS_ON_TOP          : 0) |
+                  (false ? UTILITY                : 0) |
+                  (false ? TOOLTIP                : 0) |
+                  (false ? POPUP_MENU             : 0) |
+                  (false ? KEYBOARD_GRABBED       : 0) |
+                  (false ? TRANSPARENT_BACKGROUND : 0) |
+                  (false ? CAN_NOT_FOCUS          : 0) |
+                  (false ? RELATIVE_MOUSE_MODE    : 0) |
+                  (false ? HDR                    : 0))
         {}
 
         /**
@@ -323,14 +323,14 @@ namespace GLGE::Graphic {
          * @return `true` the window has transparent framebuffer
          */
         constexpr inline bool transparent() const noexcept
-        {return get(TRANSPARENT);}
+        {return get(TRANSPARENT_BACKGROUND);}
         /**
          * @brief set if the window should use a transparent framebuffer
          * 
          * @param v `true` to enable transparency, `false` otherwise
          */
         constexpr inline void transparent(bool v) noexcept
-        {set(TRANSPARENT, v);}
+        {set(TRANSPARENT_BACKGROUND, v);}
 
         /**
          * @brief get if the window cannot be focused
@@ -353,14 +353,14 @@ namespace GLGE::Graphic {
          * @return `true` the window uses relative mouse mode
          */
         constexpr inline bool relative() const noexcept
-        {return get(RELATIVE);}
+        {return get(RELATIVE_MOUSE_MODE);}
         /**
          * @brief set if the window uses relative mouse mode
          * 
          * @param v `true` to enable relative mode, `false` otherwise
          */
         constexpr inline void relative(bool v) noexcept
-        {set(RELATIVE, v);}
+        {set(RELATIVE_MOUSE_MODE, v);}
 
         /**
          * @brief get if the window uses HDR mode
@@ -416,87 +416,87 @@ namespace GLGE::Graphic {
         /**
          * @brief flag for fullscreen mode 
          */
-        inline constexpr static u32 FULLSCREEN       = 1u << 0;
+        inline constexpr static u32 FULLSCREEN             = 1u << 0;
         /**
          * @brief flag for window hidden state 
          */
-        inline constexpr static u32 HIDDEN           = 1u << 1;
+        inline constexpr static u32 HIDDEN                 = 1u << 1;
         /**
          * @brief flag for borderless window mode 
          */
-        inline constexpr static u32 BORDERLESS       = 1u << 2;
+        inline constexpr static u32 BORDERLESS             = 1u << 2;
         /**
          * @brief flag for resizable window 
          */
-        inline constexpr static u32 RESIZABLE        = 1u << 3;
+        inline constexpr static u32 RESIZABLE              = 1u << 3;
         /**
          * @brief flag for minimized window 
          */
-        inline constexpr static u32 MINIMIZED        = 1u << 4;
+        inline constexpr static u32 MINIMIZED              = 1u << 4;
         /**
          * @brief flag for maximized window 
          */
-        inline constexpr static u32 MAXIMIZED        = 1u << 5;
+        inline constexpr static u32 MAXIMIZED              = 1u << 5;
         /**
          * @brief flag for mouse being grabbed 
          */
-        inline constexpr static u32 MOUSE_GRABBED    = 1u << 6;
+        inline constexpr static u32 MOUSE_GRABBED          = 1u << 6;
         /**
          * @brief flag for keyboard input focus 
          */
-        inline constexpr static u32 INPUT_FOCUS      = 1u << 7;
+        inline constexpr static u32 INPUT_FOCUS            = 1u << 7;
         /**
          * @brief flag for mouse input focus 
          */
-        inline constexpr static u32 MOUSE_FOCUS      = 1u << 8;
+        inline constexpr static u32 MOUSE_FOCUS            = 1u << 8;
         /**
          * @brief flag for modal window state 
          */
-        inline constexpr static u32 MODAL            = 1u << 9;
+        inline constexpr static u32 MODAL                  = 1u << 9;
         /**
          * @brief flag for high DPI mode 
          */
-        inline constexpr static u32 HIGH_DPI         = 1u << 10;
+        inline constexpr static u32 HIGH_DPI               = 1u << 10;
         /**
          * @brief flag for mouse capture 
          */
-        inline constexpr static u32 MOUSE_CAPTURE    = 1u << 11;
+        inline constexpr static u32 MOUSE_CAPTURE          = 1u << 11;
         /**
          * @brief flag for always-on-top state 
          */
-        inline constexpr static u32 ALWAYS_ON_TOP    = 1u << 12;
+        inline constexpr static u32 ALWAYS_ON_TOP          = 1u << 12;
         /**
          * @brief flag for utility window type 
          */
-        inline constexpr static u32 UTILITY          = 1u << 13;
+        inline constexpr static u32 UTILITY                = 1u << 13;
         /**
          * @brief flag for tooltip window type 
          */
-        inline constexpr static u32 TOOLTIP          = 1u << 14;
+        inline constexpr static u32 TOOLTIP                = 1u << 14;
         /**
          * @brief flag for popup menu window type 
          */
-        inline constexpr static u32 POPUP_MENU       = 1u << 15;
+        inline constexpr static u32 POPUP_MENU             = 1u << 15;
         /**
          * @brief flag for keyboard input capture 
          */
-        inline constexpr static u32 KEYBOARD_GRABBED = 1u << 16;
+        inline constexpr static u32 KEYBOARD_GRABBED       = 1u << 16;
         /**
          * @brief flag for transparent framebuffer 
          */
-        inline constexpr static u32 TRANSPARENT      = 1u << 17;
+        inline constexpr static u32 TRANSPARENT_BACKGROUND = 1u << 17;
         /**
          * @brief flag for non-focusable window 
          */
-        inline constexpr static u32 CAN_NOT_FOCUS    = 1u << 18;
+        inline constexpr static u32 CAN_NOT_FOCUS          = 1u << 18;
         /**
          * @brief flag for relative mouse mode 
          */
-        inline constexpr static u32 RELATIVE         = 1u << 19;
+        inline constexpr static u32 RELATIVE_MOUSE_MODE    = 1u << 19;
         /**
          * @brief flag for HDR mode 
          */
-        inline constexpr static u32 HDR              = 1u << 20;
+        inline constexpr static u32 HDR                    = 1u << 20;
 
         /**
          * @brief store all settings in a single bitmask

@@ -113,11 +113,11 @@ namespace GLGE::Graphic::Backend::Graphic {
             /**
              * @brief store the distance of the near clipping plane in world units
              */
-            f32 near;
+            f32 proj_near;
             /**
              * @brief store the distance of the far clipping plane in world units
              */
-            f32 far;
+            f32 proj_far;
             /**
              * @brief store the camera projection matrix
              */

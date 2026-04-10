@@ -114,7 +114,7 @@ void GLGE::Graphic::Asset::ImageCPU::import_from(const std::filesystem::path& fi
         //hdr loads as floats
         ivec2 size;
         int channels;
-        float* data = stbi_loadf(file.c_str(), &size.x, &size.y, &channels, 0);
+        float* data = stbi_loadf(reinterpret_cast<const char*>(file.u8string().c_str()), &size.x, &size.y, &channels, 0);
 
         //construct the image format
         GLGE::Graphic::PixelFormat form = (channels == 1) ? GLGE::Graphic::PIXEL_FORMAT_R_32_FLOAT : 
@@ -129,7 +129,7 @@ void GLGE::Graphic::Asset::ImageCPU::import_from(const std::filesystem::path& fi
         //all other data is loaded with the same function
         ivec2 size;
         int channels;
-        void* data = stbi_load(file.c_str(), &size.x, &size.y, &channels, 4);
+        void* data = stbi_load(reinterpret_cast<const char*>(file.u8string().c_str()), &size.x, &size.y, &channels, 4);
         //format fixed as RGBA8_UNORM
         //load the data to the local image
         m_img = GLGE::Graphic::ImageCPU(data, GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM, uvec2{size.x, size.y});
@@ -158,7 +158,7 @@ void GLGE::Graphic::Asset::ImageCPU::export_as(const std::filesystem::path& file
             //convert to an acceptable format
             GLGE::Graphic::ImageCPU img = m_img.toFormat(GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
             //store the image
-            stbi_write_png(file.c_str(), img.getSize().x, img.getSize().y, 4, img.getRaw(), 0);
+            stbi_write_png(reinterpret_cast<const char*>(file.u8string().c_str()), img.getSize().x, img.getSize().y, 4, img.getRaw(), 0);
         }
         break;
     //export as JPG
@@ -166,7 +166,7 @@ void GLGE::Graphic::Asset::ImageCPU::export_as(const std::filesystem::path& file
             //convert to an acceptable format
             GLGE::Graphic::ImageCPU img = m_img.toFormat(GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
             //store the image
-            stbi_write_jpg(file.c_str(), img.getSize().x, img.getSize().y, 4, img.getRaw(), 0);
+            stbi_write_jpg(reinterpret_cast<const char*>(file.u8string().c_str()), img.getSize().x, img.getSize().y, 4, img.getRaw(), 0);
         }
         break;
     //export as tga
@@ -174,7 +174,7 @@ void GLGE::Graphic::Asset::ImageCPU::export_as(const std::filesystem::path& file
             //convert to an acceptable format
             GLGE::Graphic::ImageCPU img = m_img.toFormat(GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
             //store the image
-            stbi_write_tga(file.c_str(), img.getSize().x, img.getSize().y, 4, img.getRaw());
+            stbi_write_tga(reinterpret_cast<const char*>(file.u8string().c_str()), img.getSize().x, img.getSize().y, 4, img.getRaw());
         }
         break;
     //export as bitmap
@@ -182,7 +182,7 @@ void GLGE::Graphic::Asset::ImageCPU::export_as(const std::filesystem::path& file
             //convert to an acceptable format
             GLGE::Graphic::ImageCPU img = m_img.toFormat(GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
             //store the image
-            stbi_write_bmp(file.c_str(), img.getSize().x, img.getSize().y, 4, img.getRaw());
+            stbi_write_bmp(reinterpret_cast<const char*>(file.u8string().c_str()), img.getSize().x, img.getSize().y, 4, img.getRaw());
         }
         break;
     //export as hdr
@@ -190,7 +190,7 @@ void GLGE::Graphic::Asset::ImageCPU::export_as(const std::filesystem::path& file
             //convert to an acceptable format (always use RGBA_32_FLOAT)
             GLGE::Graphic::ImageCPU img = m_img.toFormat(GLGE::Graphic::PIXEL_FORMAT_RGBA_32_FLOAT);
             //store the image
-            stbi_write_hdr(file.c_str(), img.getSize().x, img.getSize().y, 4, (const float*)img.getRaw());
+            stbi_write_hdr(reinterpret_cast<const char*>(file.u8string().c_str()), img.getSize().x, img.getSize().y, 4, (const float*)img.getRaw());
         }
         break;
     

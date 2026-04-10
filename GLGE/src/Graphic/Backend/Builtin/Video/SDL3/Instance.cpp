@@ -394,6 +394,11 @@ GLGE::Graphic::Backend::Video::SDL3::Instance::Instance(GLGE::Graphic::Instance*
         GLGE::Instance::staticUpdateSubscribe(&mainUpdate);
     }
 
+    //register the keyboard to the instance
+    getInstance()->getInstance()->registerKeyboard(GLGE::Keyboard("GRAPHIC_VIDEO_SDL3_BUILTIN_DEFAULT"));
+    //register the mapping
+    m_keyboardMap.insert_or_assign(static_cast<SDL_KeyboardID>(0), getInstance()->getInstance()->getKeyboards().size()-1);
+
     //load all the keyboards
     int keyboardCount = 0;
     SDL_KeyboardID* keyboards = SDL_GetKeyboards(&keyboardCount);

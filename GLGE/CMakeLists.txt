@@ -202,6 +202,9 @@ target_include_directories(${GLGE_CORE_NAME} PUBLIC
     $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/tracy>
 )
 
+# add glm
+target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm)
+
 # compiler-specific release flags
 if(MSVC)
     # MSVC (Visual Studio Compiler) release flags
