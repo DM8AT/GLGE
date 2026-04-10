@@ -38,11 +38,11 @@ namespace Component {
         /**
          * @brief store the near clipping plane of the camera in world units, the valid range is (0; far)
          */
-        float near;
+        float clip_near;
         /**
          * @brief store the far clipping plane of the camera in world units, the valid range is (near; inf)
          */
-        float far;
+        float clip_far;
 
         /**
          * @brief store the euler angles of the camera rotation

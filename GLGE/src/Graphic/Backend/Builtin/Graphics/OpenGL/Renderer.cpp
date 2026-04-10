@@ -225,8 +225,8 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::update() {
         }
         //store the settings
         data.fov = glm::radians(cam->FOV);
-        data.proj_near = cam->near;
-        data.proj_far  = cam->far;
+        data.proj_near = cam->clip_near;
+        data.proj_far  = cam->clip_far;
         //compute the projection matrix
         data.projection = glm::perspective(data.fov, aspect, data.proj_near, data.proj_far);
 
