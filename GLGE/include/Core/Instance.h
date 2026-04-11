@@ -404,19 +404,27 @@ namespace GLGE {
         void start();
 
         /**
-         * @brief tick the instance
-         */
-        void update();
-
-        /**
          * @brief prepare the instance to stop the looping
          */
         void shutdown();
 
         /**
-         * @brief an update function for the instance that must be called from the main thread
+         * @brief a function to say that a tick of the main function is starting
          */
-        void mainUpdate();
+        void startMainTick();
+
+        /**
+         * @brief a function to say that a tick of the main function is starting
+         */
+        void endMainTick();
+
+        /**
+         * @brief access the rate limiter of the main tick
+         * 
+         * @return `RateLimit&` a modifiable reference to the rate limiter
+         */
+        inline RateLimit& mainLimiter() noexcept
+        {return m_mainLimiter;}
 
         /**
          * @brief push a new task to the internal task queue
@@ -768,6 +776,16 @@ namespace GLGE {
     private:
 
         /**
+         * @brief an update function for the instance that must be called from the main thread
+         */
+        void mainUpdate();
+
+        /**
+         * @brief tick the instance
+         */
+        void update();
+
+        /**
          * @brief the function that runs on the update thread
          */
         void updateThread();
@@ -821,6 +839,10 @@ namespace GLGE {
          * @brief store the rate limiter for the update thread
          */
         RateLimit m_updateLimiter;
+        /**
+         * @brief store the rate limiter for the main tick
+         */
+        RateLimit m_mainLimiter;
 
         /**
          * @brief store all the assets used by this instance

@@ -28,10 +28,7 @@ GLGE::Graphic::Backend::Graphic::OpenGL::VertexLayout::VertexLayout(const Vertex
     #endif
 
     //fill in the attributes
-    for (size_t i = 0; i < MAX_ATTRIBUTE_COUNT; ++i) {
-        //if unused, skip
-        if (!(m_inUse & (1 << i))) {continue;}
-
+    for (size_t i = 0; i < m_attributeCount; ++i) {
         //get the attribute
         auto& attrib = m_attributes[i];
         //enable the slot

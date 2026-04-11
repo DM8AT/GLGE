@@ -311,6 +311,28 @@ void Instance::shutdown() {
     }
 }
 
+void Instance::startMainTick() {
+    //mark the start of a new frame
+    GLGE_PROFILER_FRAME_MARKER_START(m_name.data());
+
+    //notify the rate limiter
+    m_mainLimiter.startTick();
+
+    //run the main update
+    mainUpdate();
+
+    //run the static update
+    GLGE::Instance::staticUpdate();
+}
+
+void Instance::endMainTick() {
+    //notify the rate limiter
+    m_mainLimiter.endTick();
+
+    //mark the end of the tick
+    GLGE_PROFILER_FRAME_MARKER_END(m_name.data());
+}
+
 void Instance::mainUpdate() {
     GLGE_PROFILER_SCOPE();
 

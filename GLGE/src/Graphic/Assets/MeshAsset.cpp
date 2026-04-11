@@ -50,6 +50,28 @@ static const constexpr GLGE::u8 VERSION_MAJOR = 1;
 static const constexpr GLGE::u8 VERSION_MINOR = 0;
 static const constexpr GLGE::u8 VERSION_PATCH = 0;
 
+/**
+ * @brief define the structure for the imported vertices
+ * 
+ * This structure is defined by the import type (assimp) as it has a fixed format
+ */
+struct Vertex {
+    GLGE::vec3 pos {0,0,0};
+    GLGE::vec2 uv_0 {0,0};
+    GLGE::vec3 normal {0,0,0};
+    GLGE::vec3 tangent {0,0,0};
+    GLGE::vec4 color_0 {0,0,0,0};
+};
+
+//define the default vertex format
+static const GLGE::Graphic::VertexAttribute defaultAttributes[] = {
+    GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Position, GLGE::Graphic::VertexAttribute::Format::vec3, offsetof(Vertex, pos),     0),
+    GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::UV_0,     GLGE::Graphic::VertexAttribute::Format::vec2, offsetof(Vertex, uv_0),    1),
+    GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Normal,   GLGE::Graphic::VertexAttribute::Format::vec3, offsetof(Vertex, normal),  2),
+    GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Tangent,  GLGE::Graphic::VertexAttribute::Format::vec3, offsetof(Vertex, tangent), 3),
+    GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Color_0,  GLGE::Graphic::VertexAttribute::Format::vec4, offsetof(Vertex, color_0), 4),
+};
+
 GLGE::u64 GLGE::Graphic::Asset::Mesh::load(const std::vector<u8>& data) {
     //confirm the magic number (first for bytes are "MESH")
     if (data.size() < 4) {throw Exception("Failed to load GLGE mesh file - Invalid format", "GLGE::Graphic::Asset::Mesh::load");}
@@ -163,7 +185,7 @@ GLGE::u64 GLGE::Graphic::Asset::Mesh::load(const std::vector<u8>& data) {
     }
 
     //store the mesh
-    m_mesh.set(vertices.data(), vertSize, vertices.size()/vertSize, reinterpret_cast<u32*>(indices.data()), (indices.size()/idxSize), LODs.data(), LODs.size());
+    m_mesh.set(vertices.data(), vertSize, vertices.size()/vertSize, reinterpret_cast<u32*>(indices.data()), (indices.size()/idxSize), LODs.data(), LODs.size(), defaultAttributes, sizeof(defaultAttributes)/sizeof(*defaultAttributes));
 
     //return how much was read
     return read;
@@ -254,19 +276,6 @@ void GLGE::Graphic::Asset::Mesh::store(std::vector<u8>& out) {
     size_t beg = out.size();
     out.insert(out.end(), data.begin(), data.end());
 }
-
-/**
- * @brief define the structure for the imported vertices
- * 
- * This structure is defined by the import type (assimp) as it has a fixed format
- */
-struct Vertex {
-    GLGE::vec3 pos {0,0,0};
-    GLGE::vec2 uv_0 {0,0};
-    GLGE::vec3 normal {0,0,0};
-    GLGE::vec3 tangent {0,0,0};
-    GLGE::vec4 color_0 {0,0,0,0};
-};
 
 void GLGE::Graphic::Asset::Mesh::import_from(const std::filesystem::path& file, u32 format) {
     //check if the file exists
@@ -371,7 +380,7 @@ void GLGE::Graphic::Asset::Mesh::import_from(const std::filesystem::path& file, 
             }
         };
         //construct the final mesh
-        m_mesh.set(vertices.data(), sizeof(Vertex), vertices.size(), indices.data(), indices.size(), &info, 1);
+        m_mesh.set(vertices.data(), sizeof(Vertex), vertices.size(), indices.data(), indices.size(), &info, 1, defaultAttributes, sizeof(defaultAttributes)/sizeof(*defaultAttributes));
     }
 }
 

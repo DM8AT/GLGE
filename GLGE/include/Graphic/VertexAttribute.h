@@ -98,7 +98,7 @@ namespace GLGE::Graphic {
             /**
              * @brief the data is a signed 32 bit integer
              */
-            Int,
+            Int = 0,
             /**
              * @brief the data is an unsigned 32 bit integer
              */
@@ -170,7 +170,7 @@ namespace GLGE::Graphic {
             /**
              * @brief the data is a 4D vector of normalized signed 8 bit integer (-128 = -1, 127 = 1)
              */
-            snorm_u8x4,
+            snorm_u8x4
         };
 
         /**
@@ -229,6 +229,26 @@ namespace GLGE::Graphic {
          */
         inline bool valid() const noexcept
         {return !((m_binding == UINT8_MAX) && (m_offset == SIZE_MAX));}
+
+        /**
+         * @brief Get the Size Of a Format
+         * 
+         * @param form the format to get the size for
+         * @return `u64` the byte size of the format
+         */
+        inline static u64 getSizeOfFormat(Format form) noexcept {
+            //for each format store the corresponding size
+            static u64 sizes[] = {
+                4,  4,  4, //normal types
+                8, 12, 16, //float vectors
+                8, 12, 16, //integer vectors
+                8, 12, 16, //unsigned integer vectors
+                1,  2,  4, //packed unorm vectors
+                1,  2,  4  //packed snorm vectors
+            };
+            //use a cast to integer + list lookup to determine the size
+            return sizes[static_cast<u8>(form)];
+        }
 
     protected:
 

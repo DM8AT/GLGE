@@ -17,6 +17,9 @@
 //add references
 #include "Core/Reference.h"
 
+//add vertex attributes
+#include "Graphic/VertexAttribute.h"
+
 //use the backend namespace
 namespace GLGE::Graphic::Backend::Graphic {
 
@@ -86,10 +89,12 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param indexCount the amount of indices in the list
          * @param lod a pointer to the level of detail info array
          * @param LODCount store the amount of level of detail info sets
+         * @param attributes a pointer to a continues array of attributes the mesh should use
+         * @param attributeCount the amount of vertex attributes of the mesh
          * 
          * @return `u64` the mesh ID that can be used to quarry general mesh metadata from the mesh metadata buffer
          */
-        virtual u64 allocate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount) = 0;
+        virtual u64 allocate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount) = 0;
 
         /**
          * @brief get the amount of LODs for a specific mesh
@@ -178,6 +183,23 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @return `const LODInfo::Section&` a constant reference to the whole vertex section
          */
         virtual const LODInfo::Section& getVertexSection(u64 meshId) const = 0;
+
+        /**
+         * @brief Get the vertex attribute count
+         * 
+         * @param meshId the ID of the mesh to get the attribute count from
+         * @return `u64` the amount of vertex attributes the mesh uses
+         */
+        virtual u64 getVertexAttributeCount(u64 meshId) const = 0;
+
+        /**
+         * @brief Get a specific vertex attribute from a mesh
+         * 
+         * @param meshId the mesh ID of the mesh to get the attribute from
+         * @param attributeId the index of the attribute to quarry
+         * @return `VertexAttribute` the vertex attribute of the mesh at the ID
+         */
+        virtual VertexAttribute getVertexAttribute(u64 meshId, u64 attributeId) const = 0;
 
         /**
          * @brief destroy a specific mesh

@@ -43,10 +43,12 @@ namespace GLGE::Graphic {
          * @param indexCount the amount of indices in the list
          * @param lod a pointer to the level of detail info array
          * @param LODCount store the amount of level of detail info sets
+         * @param attributes a pointer to a continues array of attributes the mesh should use
+         * @param attributeCount the amount of vertex attributes of the mesh
          */
-        Mesh(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount)
+        Mesh(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount)
          : BaseClass(), m_pool(getInstance()->getExtension<GLGE::Graphic::Instance>()->getMeshPool()), 
-           m_id(m_pool->allocate(vertices, vertexSize, vertexCount, indices, indexCount, lod, LODCount))
+           m_id(m_pool->allocate(vertices, vertexSize, vertexCount, indices, indexCount, lod, LODCount, attributes, attributeCount))
         {}
 
         /**
@@ -65,9 +67,11 @@ namespace GLGE::Graphic {
          * @param indexCount the amount of indices in the list
          * @param lod a pointer to the level of detail info array
          * @param LODCount store the amount of level of detail info sets
+         * @param attributes a pointer to a continues array of attributes the mesh should use
+         * @param attributeCount the amount of vertex attributes of the mesh
          */
-        void recreate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount) 
-        {if (m_id != UINT64_MAX){destroy();} m_id = m_pool->allocate(vertices, vertexSize, vertexCount, indices, indexCount, lod, LODCount);}
+        void recreate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount) 
+        {if (m_id != UINT64_MAX){destroy();} m_id = m_pool->allocate(vertices, vertexSize, vertexCount, indices, indexCount, lod, LODCount, attributes, attributeCount);}
 
         /**
          * @brief destroy the stored mesh
@@ -175,6 +179,23 @@ namespace GLGE::Graphic {
          */
         inline const LODInfo::Section& getVertexSection() const noexcept
         {return m_pool->getVertexSection(m_id);}
+
+        /**
+         * @brief Get the amount of vertex attributes in use
+         * 
+         * @return `u64` the amount of vertex attributes in use
+         */
+        inline u64 getVertexAttributeCount() const noexcept
+        {return m_pool->getVertexAttributeCount(m_id);}
+
+        /**
+         * @brief Get the vertex attribute
+         * 
+         * @param attribute the index of the attribute to get
+         * @return `VertexAttribute` the vertex attribute at the index
+         */
+        inline VertexAttribute getVertexAttribute(u64 attribute) const noexcept
+        {return m_pool->getVertexAttribute(m_id, attribute);}
 
     protected:
 

@@ -13,7 +13,7 @@ struct FirstPersonController {GLGE::u8 filler;};
 void updateFirstPersonController(GLGE::Transform& transform, GLGE::Graphic::Component::Camera& camera, FirstPersonController) {
     GLGE::Instance* inst = GLGE::Instance::getCurrentInstance();
 
-    const float speed = 0.1;
+    float speed = 0.0125 * inst->mainLimiter().getCurrentDeltaTime();
     //compute forward, right and up vector
     GLGE::Quaternion quat(camera.eulerAngles);
     GLGE::vec3 forward = quat * GLGE::vec3(0,0,-speed);
@@ -33,7 +33,7 @@ void updateFirstPersonController(GLGE::Transform& transform, GLGE::Graphic::Comp
     if (inst->getKeyboard().pressed()[GLGE::Key::LeftShift])
     {transform.pos -= up;}
 
-    const float rotSpeed = glm::radians(1.f);
+    float rotSpeed = glm::radians(0.125) * inst->mainLimiter().getCurrentDeltaTime();
     if (inst->getKeyboard().pressed()[GLGE::Key::ArrowLeft])
     {camera.eulerAngles.y += rotSpeed;}
     if (inst->getKeyboard().pressed()[GLGE::Key::ArrowRight])
@@ -62,6 +62,7 @@ int main() {
     std::cout << "Using video backend " << gInst.getVideoBackendName() << "\n";
 
     GLGE::Instance inst("Hello World!", GLGE::Version(0, 1, 0), std::pair{"Graphics", &gInst});
+    inst.mainLimiter().setLimit(144);
 
     GLGE::Graphic::Window win("Hello from SDL3", {600, 600});
     win.setVSyncMode(GLGE::Graphic::VSYNC_ENABLED);
@@ -162,27 +163,31 @@ int main() {
     inst.registerKeyboard(GLGE::Keyboard("Hi"));
 
     while (!win.isClosingRequested()) {
-        GLGE_PROFILER_FRAME_MARKER_START("");
+        //start the tick
+        inst.startMainTick();
 
-        inst.mainUpdate();
-
+        //handle resizing
         if (win.getResolution().x != colBuff.getSize().x || win.getResolution().y != colBuff.getSize().y) {
             fbuff.resize(win.getResolution());
             ldrFbuff.resize(win.getResolution());
             *pipe.getCommand("Compute")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
             *pipe.getCommand("Finalize")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
 
+            //re-record the pipeline to make it aware of the changes
             pipe.record();
         }
 
-        GLGE::Instance::staticUpdate();
+        //play back the pipeline (to render a frame)
         pipe.play();
+        //apply some crude animation
         world.each<GLGE::Transform, GLGE::Graphic::Component::Camera, FirstPersonController>(updateFirstPersonController);
         world.get<GLGE::Transform>(suzanne)->pos.y = glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);
         world.get<GLGE::Transform>(suzanne2)->pos.y = 1.f - glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);
+        //update the renderer (update transformation state)
         renderer.update();
 
-        GLGE_PROFILER_FRAME_MARKER_END("");
+        //end the tick
+        inst.endMainTick();
     }
 
     inst.shutdown();

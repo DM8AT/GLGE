@@ -44,11 +44,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param pool a reference to the mesh pool the layout attaches to
          */
         VertexLayout(const VertexAttribute* ptr, size_t size, size_t stride, Reference<GLGE::Graphic::Backend::Graphic::MeshPool> pool) 
-         : m_stride(stride), m_pool(pool)
+         : m_stride(stride), m_pool(pool), m_attributeCount(size)
         {
             //copy over the data
             for (size_t i = 0; i < size; ++i)
-            {m_attributes[i] = ptr[i]; m_inUse |= (1 << i);}
+            {m_attributes[i] = ptr[i];}
         }
 
         /**
@@ -60,13 +60,13 @@ namespace GLGE::Graphic::Backend::Graphic {
         {return m_attributes[index];}
 
         /**
-         * @brief Get the bit mask that says which elements are in use
+         * @brief Get the amount of used attributes
          * 
-         * @return `u16` the bitmask that says what elements are in use
+         * @return `u64` the amount of attributes in use
          */
-        u16 getUseMask() const noexcept
-        {return m_inUse;}
-
+        u64 getAttributeCount() const noexcept
+        {return m_attributeCount;}
+        
         /**
          * @brief bind the VAO
          * 
@@ -85,9 +85,9 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         VertexAttribute m_attributes[MAX_ATTRIBUTE_COUNT];
         /**
-         * @brief store a bitmask for all attributes in use
+         * @brief store the amount of used attributes
          */
-        u16 m_inUse = 0x0000;
+        u64 m_attributeCount = 0;
         /**
          * @brief store a reference to the mesh pool to use
          */

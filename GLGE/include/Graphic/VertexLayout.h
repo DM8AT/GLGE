@@ -74,6 +74,22 @@ namespace GLGE::Graphic {
         inline Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> getLayout() const noexcept
         {return m_layout;}
 
+        /**
+         * @brief use the vertex layout like a vertex attribute array
+         * 
+         * @return `const VertexAttribute*` a constant pointer to the front of the attribute array
+         */
+        inline operator const VertexAttribute*() const
+        {return &m_layout->getAttribute(0);}
+
+        /**
+         * @brief use the vertex layout like a count
+         * 
+         * @return `u64` the amount of attributes in use
+         */
+        inline operator u64() const
+        {return m_layout->getAttributeCount();}
+
     protected:
 
         /**

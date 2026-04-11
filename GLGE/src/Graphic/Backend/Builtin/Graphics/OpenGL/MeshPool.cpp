@@ -222,7 +222,7 @@ GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::~MeshPool() {
 }
 
 
-GLGE::u64 GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::allocate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount) {
+GLGE::u64 GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::allocate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount) {
     //get the new entity ID
     u64 id = UINT64_MAX;
     //check if free list entries exist and get the next ID correctly
@@ -240,6 +240,22 @@ GLGE::u64 GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::allocate(const void
     MetaData& meta = m_slots[id].data.data;
     for (size_t i = 0; i < LODCount; ++i) 
     {meta.lod[i] = lod[i];}
+
+    //sanity check the attribute size
+    if (attributeCount > VertexLayout::MAX_ATTRIBUTE_COUNT)
+    {throw Exception("Specified too many attributes for a single vertex", "GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::allocate");}
+
+    //validate that the size is sane (the inputted vertex size must be at least the sum of all specified attributes)
+    u64 attrSize = 0;
+    for (u64 i = 0; i < attributeCount; ++i) 
+    {attrSize += VertexAttribute::getSizeOfFormat(attributes[i].getFormat());}
+    if (attrSize > vertexSize)
+    {throw Exception("The sum of all attributes is too large for the specified vertex size", "GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::allocate");}
+
+    //store the vertex attributes
+    for (u64 i = 0; i < attributeCount; ++i) 
+    {meta.attributes[i] = attributes[i];}
+    meta.attributeCount = attributeCount;
 
     //compute required bytes
     size_t vertexBytes = vertexSize  * vertexCount;
@@ -312,7 +328,6 @@ GLGE::u8 GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::getIndexTypeSize(u64
     return m_slots[meshId].data.data.index.size;
 }
 
-
 const GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo::Section& GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::getIndexSection(u64 meshId) const {
     //return the section
     return m_slots[meshId].data.data.index;
@@ -322,3 +337,9 @@ const GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo::Section& GLGE::Graphic
     //return the section
     return m_slots[meshId].data.data.vertex;
 }
+
+GLGE::u64 GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::getVertexAttributeCount(u64 meshId) const 
+{return m_slots[meshId].data.data.attributeCount;}
+
+GLGE::Graphic::VertexAttribute GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::getVertexAttribute(u64 meshId, u64 attributeId) const 
+{return m_slots[meshId].data.data.attributes[attributeId];}
