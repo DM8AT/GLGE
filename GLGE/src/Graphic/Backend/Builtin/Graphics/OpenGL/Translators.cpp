@@ -50,6 +50,8 @@ bool swapWindow(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const G
         GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::swapWindow::swapWindow");
         //Some drivers want this
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //set the viewport
+        glViewport(0, 0, window->getResolution().x, window->getResolution().y);
         //do actual swap
         window->getVideoWindow()->onSwapWindow();
     };
@@ -197,6 +199,8 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
         glUseProgram(shader->getProgram());
         //invoke the compute shader
         glDispatchCompute(invocations.x, invocations.y, invocations.z);
+        //wait for the compute shader to be done
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
     };
 
     //extract the actual arguments

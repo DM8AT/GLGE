@@ -140,7 +140,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     {glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, start, count, 0);};
 
     //a static helper function to bind the render target
-    static void (*target_select)(u32, u32, GLGE::Graphic::Backend::Video::Window*, void*) = [](u32 target, u32 targetCount, GLGE::Graphic::Backend::Video::Window* win, void* context) {
+    static void (*target_select)(u32, u32, uvec2, GLGE::Graphic::Backend::Video::Window*, void*) = [](u32 target, u32 targetCount, uvec2 resolution, GLGE::Graphic::Backend::Video::Window* win, void* context) {
         if (target == 0) 
         {win->onMakeCurrent(context);}
         else {
@@ -149,6 +149,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
             glNamedFramebufferDrawBuffers(target, targetCount, bufs);
         }
         glBindFramebuffer(GL_FRAMEBUFFER, target);
+        glViewport(0, 0, resolution.x, resolution.y);
     };
 
     //a static helper function to bind a draw indirect buffer
@@ -158,6 +159,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     //get the target
     u32 target = 0;
     u32 targetCount = 1;
+    uvec2 resolution;
     GLGE::Graphic::Backend::Video::Window* window = nullptr;
     void* context = nullptr;
     switch (m_target.getType()) {
@@ -165,10 +167,12 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
             auto win = reinterpret_cast<GLGE::Graphic::Window*>(m_target.getTarget());
             window = win->getVideoWindow();
             context = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Instance*>(win->getGraphicInstance()->getGraphicBackendInstance().get())->getContext();
+            resolution = win->getResolution();
         } break;
     case GLGE::Graphic::RenderTarget::FRAMEBUFFER:
         target = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(m_target.getTarget())->getBackend().get())->getHandle();
         targetCount = reinterpret_cast<GLGE::Graphic::Framebuffer*>(m_target.getTarget())->getBackend()->getColorAttachmentCount();
+        resolution = reinterpret_cast<GLGE::Graphic::Framebuffer*>(m_target.getTarget())->getBackend()->getColorAttachment(0)->getSize();
         break;
     
     default:
@@ -177,7 +181,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     }
     
     //record the target selection
-    cmdBuff.addCommand(target_select, target, targetCount, window, context);
+    cmdBuff.addCommand(target_select, target, targetCount, resolution, window, context);
     //prepare the drawing
     cmdBuff.addCommand(prepare_draw, m_cmdBuffer);
 
