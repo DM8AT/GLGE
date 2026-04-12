@@ -179,8 +179,9 @@ static GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo::Section __allocateSec
     glDeleteBuffers(1, &staging);
     //if an old buffer exists, delete it
     if (lastBuffer) {glDeleteBuffers(1, &lastBuffer);}
-    //update buffer storage
+    //update buffer storage and orphan the last buffer
     lastBuffer = bufferObject;
+    glNamedBufferData(lastBuffer, 0, nullptr, GL_STATIC_DRAW);
     bufferObject = buff;
 
     //in debug update the old buffer name

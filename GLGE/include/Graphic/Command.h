@@ -56,6 +56,8 @@ namespace GLGE::Graphic {
          * @param from_idx `u8` the index of the image to copy from (only used if viable for render target)
          * @param to the render target to copy to
          * @param to_idx `u8` the index of the image to copy to (only used if viable for render target)
+         * @param copyDepth `true` to copy the depth / depth stencil attachment, `false` to discard it
+         * @param copyStencil `true` to copy the specific stencil attachment, `false` to discard it
          */
         COMMAND_COPY = 3,
 

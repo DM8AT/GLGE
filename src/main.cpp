@@ -91,6 +91,10 @@ int main() {
     GLGE::Graphic::Image depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT);
     GLGE::Graphic::Framebuffer fbuff({&colBuff}, {&depthBuff});
 
+    GLGE::Graphic::Image multiSample_colBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT, 16);
+    GLGE::Graphic::Image multiSample_depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT, 16);
+    GLGE::Graphic::Framebuffer multiSample_fbuff({&multiSample_colBuff}, {&multiSample_depthBuff});
+
     GLGE::Graphic::Image ldrOut(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
     GLGE::Graphic::Framebuffer ldrFbuff({&ldrOut});
 
@@ -105,6 +109,7 @@ int main() {
     GLGE::Graphic::RenderTarget window(&win);
     GLGE::Graphic::RenderTarget LDR_Target(&ldrFbuff);
     GLGE::Graphic::RenderTarget HDR_Target(&fbuff);
+    GLGE::Graphic::RenderTarget HDR_MultiSampleTarget(&multiSample_fbuff);
 
     GLGE::World world("Scene 1");
     GLGE::Object camera = world.create<GLGE::Graphic::Component::Camera, GLGE::Transform, FirstPersonController>("Camera", 
@@ -112,7 +117,7 @@ int main() {
                                                                                             GLGE::Transform{GLGE::vec3(-2,-2,4), GLGE::Quaternion(GLGE::vec3(0,0,0)), GLGE::vec3(1,1,1)},
                                                                                             FirstPersonController{0}
                                                                                         );
-    GLGE::Graphic::Renderer renderer(world, &camera, HDR_Target);
+    GLGE::Graphic::Renderer renderer(world, &camera, HDR_MultiSampleTarget);
 
     GLGE::Graphic::Shader rt_comp({std::pair{"Compute", "assets/shader/rt_sphere.comp.spv"}});
     GLGE::Graphic::SampledTexture sampledDepth(depthBuff, sampler);
@@ -149,11 +154,12 @@ int main() {
                                                                                             );
 
     auto pipe = GLGE::Graphic::RenderPipeline::create(
-        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_Target, GLGE::u8(0), GLGE::vec4(0.18,0.18,0.18,1), GLGE::f32(1), GLGE::u32(0))},
+        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_MultiSampleTarget, GLGE::u8(0), GLGE::vec4(0.18,0.18,0.18,1), GLGE::f32(1), GLGE::u32(0))},
         std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
+        std::pair{"Flatten multi sample", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), HDR_Target, GLGE::u8(0), true, false)},
         std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
         std::pair{"Finalize", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &finalize, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
-        std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0))},
+        std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0), false, false)},
         std::pair{"Swap", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_SWAP_WINDOW, &win)}
     );
     pipe.record();
@@ -168,6 +174,7 @@ int main() {
 
         //handle resizing
         if (win.getResolution().x != colBuff.getSize().x || win.getResolution().y != colBuff.getSize().y) {
+            multiSample_fbuff.resize(win.getResolution());
             fbuff.resize(win.getResolution());
             ldrFbuff.resize(win.getResolution());
             *pipe.getCommand("Compute")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
