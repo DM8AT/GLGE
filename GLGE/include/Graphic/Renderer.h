@@ -76,6 +76,30 @@ namespace GLGE::Graphic {
         inline GLGE::Graphic::Buffer* getTransformBuffer() const noexcept
         {return m_renderer->getTransformBuffer();}
 
+        /**
+         * @brief Get the buffer that stores all the point lights
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of all point lights
+         */
+        inline GLGE::Graphic::Buffer* getPointLightBuffer() const noexcept
+        {return m_renderer->getPointLightBuffer();}
+
+        /**
+         * @brief Get the buffer that stores all the spot lights
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of all spot lights
+         */
+        inline GLGE::Graphic::Buffer* getSpotLightBuffer() const noexcept
+        {return m_renderer->getSpotLightBuffer();}
+
+        /**
+         * @brief Get the buffer that stores all the directional lights
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of all directional lights
+         */
+        inline GLGE::Graphic::Buffer* getDirectionalLightBuffer() const noexcept
+        {return m_renderer->getDirectionalLightBuffer();}
+
     protected:
 
         /**

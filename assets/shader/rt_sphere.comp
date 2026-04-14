@@ -4,10 +4,11 @@ layout(local_size_x = 16, local_size_y = 16) in;
 
 //Output image (bind this as GL_WRITE_ONLY)
 layout (binding = 0, rgba16f) uniform writeonly image2D imgOutput;
-layout (binding = 1) uniform sampler2D depthIn;
+layout (binding = 1) uniform sampler2D imgIn;
+layout (binding = 2) uniform sampler2D depthIn;
 const int samples = 1;
 
-layout (set = 0, binding = 2, std140) uniform cam_buffer {
+layout (set = 0, binding = 3, std140) uniform cam_buffer {
     float x;
     float y;
     float z;
@@ -28,6 +29,127 @@ const float lightStr = 3.f;
 const vec3 lightDir = normalize(vec3(0.2,1,-0.3));
 
 const vec3 color = vec3(238, 69, 61)/vec3(255);
+
+struct PointLightData {
+    float x;
+    float y;
+    float z;
+    float radius;
+    uint color;
+    float intensity;
+    float fallof_linear;
+    float fallof_quadratic;
+    float cullDistance;
+};
+
+layout (set = 0, binding = 4) readonly buffer buffer_pointLights {PointLightData lights[];} pointLights;
+
+struct SpotLightData {
+    float x;
+    float y;
+    float z;
+    float dir_x;
+    float dir_y;
+    float dir_z;
+    uint color;
+    float intensity;
+    float fallof_linear;
+    float fallof_quadratic;
+    float cos_cone_inner;
+    float cos_cone_outer;
+    float cullDistance;
+};
+
+layout (set = 0, binding = 5) readonly buffer buffer_spotLights {SpotLightData lights[];} spotLights;
+
+struct DirectionalLightData {
+    float dir_x;
+    float dir_y;
+    float dir_z;
+    uint color;
+    float intensity;
+};
+
+layout (set = 0, binding = 6) readonly buffer buffer_directionalLights {DirectionalLightData lights[];} directionalLights;
+
+vec3 pointLightColor(vec3 camDir, vec3 camPos, vec3 fragPos, vec3 fragNormal) {
+    //store the light sum
+    vec3 total = vec3(0);
+    //iterate over all point lights
+    int lightCount = pointLights.lights.length();
+    for (int i = 0; i < lightCount; ++i) {
+        //get the light distance
+        float dist = distance(fragPos, vec3(pointLights.lights[i].x, pointLights.lights[i].y, pointLights.lights[i].z));
+        //potentially cull
+        if (dist >= pointLights.lights[i].cullDistance) {continue;}
+        //get the light direction
+        vec3 lightDir = normalize(vec3(pointLights.lights[i].x, pointLights.lights[i].y, pointLights.lights[i].z) - fragPos);
+        //compute the light intensity
+        //get the light color
+        const float normalizer = 1.f / 255.f;
+        vec3 lightCol = vec3((pointLights.lights[i].color & (0xFFu<<24))>>24, (pointLights.lights[i].color & (0xFFu<<16))>>16, (pointLights.lights[i].color & (0xFFu<<8))>>8) * normalizer;
+        //compute the intensity
+        float intensity = pointLights.lights[i].intensity / (pointLights.lights[i].fallof_linear * dist + pointLights.lights[i].fallof_quadratic * dist*dist);
+        float lambertian = clamp(dot(fragNormal, lightDir), 0.f, 1.f);
+        //add to the total
+        total += lightCol*intensity*lambertian;
+    }
+    //return the sum
+    return total;
+}
+
+vec3 spotLightColor(vec3 camDir, vec3 camPos, vec3 fragPos, vec3 fragNormal) {
+    //store the light sum
+    vec3 total = vec3(0);
+    //iterate over all point lights
+    int lightCount = spotLights.lights.length();
+    for (int i = 0; i < lightCount; ++i) {
+        //get the light distance
+        float dist = distance(fragPos, vec3(spotLights.lights[i].x, spotLights.lights[i].y, spotLights.lights[i].z));
+        //potentially cull
+        if (dist >= spotLights.lights[i].cullDistance) {continue;}
+        //get the light direction
+        vec3 lightDir = normalize(vec3(spotLights.lights[i].x, spotLights.lights[i].y, spotLights.lights[i].z) - fragPos);
+        //get the light color
+        const float normalizer = 1.f / 255.f;
+        vec3 lightCol = vec3((spotLights.lights[i].color & (0xFFu<<24))>>24, (spotLights.lights[i].color & (0xFFu<<16))>>16, (spotLights.lights[i].color & (0xFFu<<8))>>8) * normalizer;
+
+        //compute the light intensity for the distance (same as the point light)
+        float intensity_distance = spotLights.lights[i].intensity / (spotLights.lights[i].fallof_linear * dist + spotLights.lights[i].fallof_quadratic * dist*dist);
+        //compute the light intensity using the angle
+        float theta = dot(-vec3(spotLights.lights[i].dir_x, spotLights.lights[i].dir_y, spotLights.lights[i].dir_z), lightDir);
+        float intensity_angle = clamp((theta - spotLights.lights[i].cos_cone_outer) / (spotLights.lights[i].cos_cone_inner - spotLights.lights[i].cos_cone_outer), 0.f, 1.f);
+        //compute the lambertian
+        float lambertian = clamp(dot(fragNormal, lightDir), 0.f, 1.f);
+        //sum to the total
+        total += lightCol * intensity_distance * intensity_angle * lambertian;
+    }
+    //return the sum
+    return total;
+}
+
+vec3 directionalLightColor(vec3 camDir, vec3 camPos, vec3 fragPos, vec3 fragNormal) {
+    //store the light sum
+    vec3 total = vec3(0);
+    //iterate over all point lights
+    int lightCount = directionalLights.lights.length();
+    for (int i = 0; i < lightCount; ++i) {
+        //compute the incoming direction
+        vec3 dir = vec3(directionalLights.lights[i].dir_x, directionalLights.lights[i].dir_y, directionalLights.lights[i].dir_z);
+        float intensity = directionalLights.lights[i].intensity;
+        float lambertian = clamp(dot(fragNormal, dir), 0.f, 1.f);
+        //get the light color
+        const float normalizer = 1.f / 255.f;
+        vec3 lightCol = vec3((directionalLights.lights[i].color & (0xFFu<<24))>>24, (directionalLights.lights[i].color & (0xFFu<<16))>>16, (directionalLights.lights[i].color & (0xFFu<<8))>>8) * normalizer;
+        //add to the light total
+        total += lightCol * intensity * lambertian;
+    }
+    //return the sum
+    return total;
+}
+
+vec3 getLightColor(vec3 camDir, vec3 camPos, vec3 fragPos, vec3 fragNormal) 
+{return pointLightColor(camDir, camPos, fragPos, fragNormal) + spotLightColor(camDir, camPos, fragPos, fragNormal) + directionalLightColor(camDir, camPos, fragPos, fragNormal);}
 
 vec4 decodeQuat(uint i_j, uint k_w) {
     //decompress and return the quaternions as a vector
@@ -99,6 +221,29 @@ float LinearizeDepth(float depth, float near, float far) {
     return lin;
 }
 
+struct HitInfo {
+    bool hit;
+    float depth;
+    vec3 color;
+};
+
+HitInfo trace(vec3 camPos, vec3 camDir, vec3 rd, ivec2 pixel, float currDepth) {
+    //run the ray trace
+    float depth = intersectSphere(camPos, rd);
+
+    if (depth > 0.f) {
+        if (currDepth > depth) {
+            //Simple shading: normal-based coloring
+            vec3 hit = camPos + rd * depth;
+            vec3 n = normalize(hit - sphereCenter);
+            vec3 combColor = color * getLightColor(vec3(0), vec3(0), hit, n);
+            return HitInfo(true, depth, combColor);
+        }
+    }
+
+    return HitInfo(false, currDepth, vec3(0));
+}
+
 void main() {
     //Load the camera
     vec3 camPos  = vec3(cam.x, cam.y, cam.z);
@@ -129,22 +274,24 @@ void main() {
         py * scale * camUp
     );
 
-    //Trace
-    float depth = intersectSphere(camPos, rd);
-
+    //sample the current base image
+    vec3 curr = texelFetch(imgIn, pixel, 0).rgb;
     //read the depth buffer depth
     float d = texelFetch(depthIn, pixel, 0).r;
     float ld = LinearizeDepth(d, cam.near, cam.far) / dot(rd, camDir);
 
-    if (depth > 0.f) {
-        if (ld > depth) {
-            //Simple shading: normal-based coloring
-            vec3 hit = camPos + rd * depth;
-            vec3 n = normalize(hit - sphereCenter);
-            float lambertian = dot(lightDir, n)*0.5 + 0.5;
-            vec3 combColor = color * lambertian * lightCol * lightStr;
-            imageStore(imgOutput, pixel, vec4(combColor, 1.f));
-            ld = depth;
+    //Trace
+    const int iterations = 1;
+    vec3 color = vec3(0);
+    for (int i = 0; i < iterations; ++i) {
+        HitInfo hit = trace(camPos, camDir, rd, pixel, ld);
+        if (hit.hit) {
+            color += hit.color;
+        } else {
+            color += curr;
         }
     }
+    color /= vec3(iterations);
+
+    imageStore(imgOutput, pixel, vec4(color, 1.f));
 }

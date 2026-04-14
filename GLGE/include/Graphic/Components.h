@@ -72,6 +72,94 @@ namespace Component {
         bool enabled;
     };
 
+    /**
+     * @brief store all data needed for a single point light
+     */
+    struct PointLight {
+        //the position is quarried from the transform
+
+        /**
+         * @brief store the radius of the point light source
+         */
+        float radius = 0.f;
+        /**
+         * @brief store the RGB color of the light
+         */
+        vec3 color{1,1,1};
+        /**
+         * @brief store the intensity of the light
+         */
+        float intensity = 1;
+        /**
+         * @brief store the linear fallof coefficient
+         */
+        float fallof_linear = 1.f;
+        /**
+         * @brief store the quadratic fallof coefficient
+         */
+        float fallof_quadratic = 0.f;
+        /**
+         * @brief store the flags
+         */
+        u32 flags = 0;
+    };
+
+    /**
+     * @brief store all data needed for a single spot light
+     */
+    struct SpotLight {
+        //Position and direction are quarried from the transform
+
+        /**
+         * @brief store the color of the spot light
+         */
+        vec3 color;
+        /**
+         * @brief store the intensity of the light
+         */
+        float intensity;
+        /**
+         * @brief store the linear fallof coefficient
+         */
+        float fallof_linear;
+        /**
+         * @brief store the quadratic fallof coefficient
+         */
+        float fallof_quadratic;
+        /**
+         * @brief store the inner cone angle (angle of the cone with maximal intensity)
+         */
+        float cone_inner;
+        /**
+         * @brief store the outer cone angle (angle of the cone where the intensity hits zero)
+         */
+        float cone_outer;
+        /**
+         * @brief store the flags of the spot light
+         */
+        u32 flags;
+    };
+
+    /**
+     * @brief store all data needed for a single directional light
+     */
+    struct DirectionalLight {
+        //the direction is quarried from a transform
+
+        /**
+         * @brief store the color of the spot light
+         */
+        vec3 color;
+        /**
+         * @brief store the intensity of the light
+         */
+        float intensity;
+        /**
+         * @brief store the flags of the directional light
+         */
+        u32 flags;
+    };
+
 }
 
 }

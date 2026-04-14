@@ -73,6 +73,7 @@ int main() {
 
     GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> suzanne_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Suzanne.glb", GLGE::Graphic::Asset::Mesh::ASSIMP);
     GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> cube_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Cube.fbx", GLGE::Graphic::Asset::Mesh::ASSIMP);
+    GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> plane_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Plane.fbx", GLGE::Graphic::Asset::Mesh::ASSIMP);
 
     GLGE::Graphic::VertexLayout layout {{
         GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Position, GLGE::Graphic::VertexAttribute::Format::vec3, 0,  0),
@@ -112,49 +113,103 @@ int main() {
     GLGE::Graphic::RenderTarget HDR_MultiSampleTarget(&multiSample_fbuff);
 
     GLGE::World world("Scene 1");
-    GLGE::Object camera = world.create<GLGE::Graphic::Component::Camera, GLGE::Transform, FirstPersonController>("Camera", 
-                                                                                            GLGE::Graphic::Component::Camera{90,0.1,1000, GLGE::vec3(0,0,0)}, 
-                                                                                            GLGE::Transform{GLGE::vec3(-2,-2,4), GLGE::Quaternion(GLGE::vec3(0,0,0)), GLGE::vec3(1,1,1)},
-                                                                                            FirstPersonController{0}
-                                                                                        );
+    GLGE::Object camera = world.create<GLGE::Graphic::Component::Camera, GLGE::Transform, FirstPersonController>(
+        "Camera", 
+        GLGE::Graphic::Component::Camera{90,0.1,1000, GLGE::vec3(0,0,0)}, 
+        GLGE::Transform{GLGE::vec3(-2,0,4), GLGE::Quaternion(GLGE::vec3(0,0,0)), GLGE::vec3(1,1,1)},
+        FirstPersonController{0}
+    );
     GLGE::Graphic::Renderer renderer(world, &camera, HDR_MultiSampleTarget);
 
     GLGE::Graphic::Shader rt_comp({std::pair{"Compute", "assets/shader/rt_sphere.comp.spv"}});
     GLGE::Graphic::SampledTexture sampledDepth(depthBuff, sampler);
-    GLGE::Graphic::ResourceSet set(rt_comp.getSet(0), std::pair{"imgOutput", &colBuff}, std::pair{"depthIn", &sampledDepth}, std::pair{"cam", renderer.getCameraBuffer()});
+    GLGE::Graphic::SampledTexture sampledImg(colBuff, sampler);
+    GLGE::Graphic::ResourceSet set(rt_comp.getSet(0), std::pair{"imgOutput", &colBuff}, std::pair{"depthIn", &sampledDepth}, std::pair{"imgIn", &sampledImg}, std::pair{"cam", renderer.getCameraBuffer()}, 
+        std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}
+    );
     rt_comp.setResources(0, &set);
 
     GLGE::Graphic::Shader meshShader {
         std::pair{"Vertex", "assets/shader/simple.vert.spv"},
         std::pair{"Fragment", "assets/shader/simple.frag.spv"}
     };
-    GLGE::Graphic::ResourceSet renderSet(meshShader.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()});
+    GLGE::Graphic::ResourceSet renderSet(meshShader.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()}, 
+        std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}
+    );
     meshShader.setResources(0, &renderSet);
 
-    GLGE::Graphic::Shader fancyMeshShader {
-        std::pair{"Vertex", "assets/shader/simple.vert.spv"},
-        std::pair{"Fragment", "assets/shader/fancy.frag.spv"},
-    };
-    fancyMeshShader.setResources(0, &renderSet);
-
     GLGE::Graphic::Material mat(meshShader, layout, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
-    GLGE::Graphic::Material fancyMat(fancyMeshShader, layout, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
+    GLGE::Graphic::Material fancyMat(meshShader, layout, GLGE::Graphic::Material::CullMode::OFF, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
 
-    GLGE::Object suzanne = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>("Suzanne", 
-                                                                                                GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &mat, true}, 
-                                                                                                GLGE::Transform{{0,0,0}, {{glm::radians(45.f),glm::radians(45.f),0}}, {1,1,1}}
-                                                                                            );
-    GLGE::Object suzanne2 = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>("Suzanne 2", 
-                                                                                                GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &fancyMat, true}, 
-                                                                                                GLGE::Transform{{0,0,0}, {{0,0,0}}, {1,1,1}}
-                                                                                            );
-    GLGE::Object cube = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>("Cube", 
-                                                                                                GLGE::Graphic::Component::Renderable{&cube_mesh.reference()->mesh(), &mat, true}, 
-                                                                                                GLGE::Transform{{-5,-1,-2}, {{0,0,0}}, {1,1,1}}
-                                                                                            );
+    GLGE::Object suzanne = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
+        "Suzanne", 
+        GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &mat, true}, 
+        GLGE::Transform{{0,0,0}, {{glm::radians(45.f),glm::radians(45.f),0}}, {1,1,1}}
+    );
+    GLGE::Object suzanne2 = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
+        "Suzanne 2", 
+        GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &fancyMat, true}, 
+        GLGE::Transform{{0,0,0}, {{0,0,0}}, {1,1,1}}
+    );
+    GLGE::Object cube = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
+        "Cube", 
+        GLGE::Graphic::Component::Renderable{&cube_mesh.reference()->mesh(), &mat, true}, 
+        GLGE::Transform{{-5,-1,-2}, {{0,0,0}}, {1,1,1}}
+    );
+    GLGE::Object plane = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
+        "Plane", 
+        GLGE::Graphic::Component::Renderable{&plane_mesh.reference()->mesh(), &mat, true}, 
+        GLGE::Transform{{0,-2,0}, {{glm::radians<float>(-90),0,0}}, {100,100,1}}
+    );
+    GLGE::Object light = world.create<GLGE::Graphic::Component::PointLight, GLGE::Transform>(
+        "Light",
+        GLGE::Graphic::Component::PointLight{
+            .radius = 1.f,
+            .color = GLGE::vec3(0.2,0.4,0.9),
+            .intensity = 10,
+            .fallof_linear = 0.f,
+            .fallof_quadratic = 1.f,
+            .flags = 0
+        },
+        GLGE::Transform{
+            .pos = {-0.75,0,1},
+            .rot = GLGE::vec3{0,0,0},
+            .scale = {1,1,1}
+        }
+    );
+    GLGE::Object spot = world.create<GLGE::Graphic::Component::SpotLight, GLGE::Transform>(
+        "Spotlight", 
+        GLGE::Graphic::Component::SpotLight{
+            .color = GLGE::vec3(0,1,0),
+            .intensity = 160,
+            .fallof_linear = 0.f,
+            .fallof_quadratic = 1.f,
+            .cone_inner = glm::radians<float>(33.33),
+            .cone_outer = glm::radians<float>(45.f),
+            .flags = 0
+        },
+        GLGE::Transform{
+            .pos = {0,0,-3},
+            .rot = GLGE::vec3{glm::radians(160.f),glm::radians(-20.f),0},
+            .scale = {1,1,1}
+        }
+    );
+    GLGE::Object skylight = world.create<GLGE::Graphic::Component::DirectionalLight, GLGE::Transform>(
+        "Skylight",
+        GLGE::Graphic::Component::DirectionalLight {
+            .color = GLGE::vec3(1),
+            .intensity = 1.2,
+            .flags = 0
+        }, 
+        GLGE::Transform {
+            .pos {0,0,0},
+            .rot = GLGE::vec3{glm::radians(-12.5f), 0, glm::radians(20.f)},
+            .scale {1,1,1}
+        }
+    );
 
     auto pipe = GLGE::Graphic::RenderPipeline::create(
-        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_MultiSampleTarget, GLGE::u8(0), GLGE::vec4(0.18,0.18,0.18,1), GLGE::f32(1), GLGE::u32(0))},
+        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_MultiSampleTarget, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
         std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
         std::pair{"Flatten multi sample", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), HDR_Target, GLGE::u8(0), true, false)},
         std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
@@ -190,6 +245,7 @@ int main() {
         world.each<GLGE::Transform, GLGE::Graphic::Component::Camera, FirstPersonController>(updateFirstPersonController);
         world.get<GLGE::Transform>(suzanne)->pos.y = glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);
         world.get<GLGE::Transform>(suzanne2)->pos.y = 1.f - glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);
+        world.get<GLGE::Graphic::Component::PointLight>(light)->intensity = (glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9 / 2.333) * 0.5 + 0.5) * 50;
         //update the renderer (update transformation state)
         renderer.update();
 

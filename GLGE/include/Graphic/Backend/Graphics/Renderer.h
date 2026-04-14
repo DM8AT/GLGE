@@ -82,6 +82,130 @@ namespace GLGE::Graphic::Backend::Graphic {
         inline GLGE::Graphic::Buffer* getTransformBuffer() const noexcept
         {return m_transformBuffer;}
 
+        /**
+         * @brief Get the buffer that stores all the point lights
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of all point lights
+         */
+        inline GLGE::Graphic::Buffer* getPointLightBuffer() const noexcept
+        {return m_pointLightBuffer;}
+
+        /**
+         * @brief Get the buffer that stores all the spot lights
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of all spot lights
+         */
+        inline GLGE::Graphic::Buffer* getSpotLightBuffer() const noexcept
+        {return m_spotLightBuffer;}
+
+        /**
+         * @brief Get the buffer that stores all the directional lights
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of all directional lights
+         */
+        inline GLGE::Graphic::Buffer* getDirectionalLightBuffer() const noexcept
+        {return m_dirLightBuffer;}
+
+        /**
+         * @brief store the GPU point light data layout
+         * 
+         * Compatable with std430 when accessing pos as float x,y,z;
+         */
+        struct PointLightData {
+            /**
+             * @brief store the 3D position of the light
+             */
+            vec3 pos;
+            /**
+             * @brief store the spherical radius of the point light source
+             */
+            float radius;
+            /**
+             * @brief store the 11R11G10B-255 UNorm color of the light source
+             */
+            u32 color;
+            /**
+             * @brief store the intensity of the color
+             */
+            float intensity;
+            /**
+             * @brief store the linear fallof coefficient
+             */
+            float fallof_linear;
+            /**
+             * @brief store the quadratic fallof coefficient
+             */
+            float fallof_quadratic;
+            /**
+             * @brief store the cull distance of the light source
+             */
+            float cullDistance;
+        };
+
+        /**
+         * @brief store the GPU spot light data layout
+         * 
+         * Compatable with std430 when accessing vec3s as float x,y,z;
+         */
+        struct SpotLightData {
+            /**
+             * @brief store the 3D position of the light
+             */
+            vec3 pos;
+            /**
+             * @brief store the 3D direction vector of the light
+             */
+            vec3 dir;
+            /**
+             * @brief store the 11R11G10B-255 UNorm color of the light source
+             */
+            u32 color;
+            /**
+             * @brief store the intensity of the light source
+             */
+            float intensity;
+            /**
+             * @brief store the linear fallof coefficient
+             */
+            float fallof_linear;
+            /**
+             * @brief store the quadratic fallof coefficient
+             */
+            float fallof_quadratic;
+            /**
+             * @brief store the cosine of the inner cone angle
+             */
+            float cos_cone_inner;
+            /**
+             * @brief store the cosine of the outer cone angle
+             */
+            float cos_cone_outer;
+            /**
+             * @brief store the culling distance
+             */
+            float cullDistance;
+        };
+
+        /**
+         * @brief store the GPU directional light data layout
+         * 
+         * Compatable with std430 when accessing vec3s as float x,y,z;
+         */
+        struct DirectionalLightData {
+            /**
+             * @brief store the direction vector of the directional light
+             */
+            vec3 dir;
+            /**
+             * @brief store the 11R11G10B-255 UNorm color of the light source
+             */
+            u32 color;
+            /**
+             * @brief store the intensity of the light source
+             */
+            float intensity;
+        };
+
     protected:
 
         /**
@@ -168,9 +292,35 @@ namespace GLGE::Graphic::Backend::Graphic {
         GLGE::Graphic::Buffer* m_transformBuffer = nullptr;
 
         /**
+         * @brief store the buffer for all the point lights
+         */
+        GLGE::Graphic::Buffer* m_pointLightBuffer = nullptr;
+        /**
+         * @brief store the buffer for all the spot lights
+         */
+        GLGE::Graphic::Buffer* m_spotLightBuffer  = nullptr;
+        /**
+         * @brief store the buffer for all the directional lights
+         */
+        GLGE::Graphic::Buffer* m_dirLightBuffer   = nullptr;
+
+        /**
          * @brief store all known objects to render
          */
         std::vector<Object> m_entities;
+
+        /**
+         * @brief store all the point lights
+         */
+        std::vector<Object> m_pointLights;
+        /**
+         * @brief store all the spot lights
+         */
+        std::vector<Object> m_spotLights;
+        /**
+         * @brief store all the directional lights
+         */
+        std::vector<Object> m_directionalLights;
         
         /**
          * @brief store a pointer to the world to use for rendering

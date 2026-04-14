@@ -76,8 +76,14 @@ static constexpr GLGE::u64 __compressQuaternion(const GLGE::Quaternion& quaterni
 GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::Renderer(World& world, Object* camera, RenderTarget target) 
  : GLGE::Graphic::Backend::Graphic::Renderer(world, camera, target)
 {
+    //transformation information
     m_cameraBuffer = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::UNIFORM, nullptr, sizeof(CameraData), GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
     m_transformBuffer = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(TransformData), GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
+
+    //light information
+    m_pointLightBuffer = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(PointLightData),       GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
+    m_spotLightBuffer  = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(SpotLightData),        GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
+    m_dirLightBuffer   = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(DirectionalLightData), GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
 }
 
 GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::~Renderer() 
@@ -88,6 +94,9 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::~Renderer()
     //clean up the buffers
     delete m_cameraBuffer; m_cameraBuffer = nullptr;
     delete m_transformBuffer; m_transformBuffer = nullptr;
+    delete m_pointLightBuffer; m_pointLightBuffer = nullptr;
+    delete m_spotLightBuffer; m_spotLightBuffer = nullptr;
+    delete m_dirLightBuffer; m_dirLightBuffer = nullptr;
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cmdBuff) {
@@ -198,6 +207,22 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
         //advance the pointer
         ptr += meshes.size();
     }
+
+
+    //gather up all the light sources
+    m_pointLights.clear();
+    m_spotLights.clear();
+    m_directionalLights.clear();
+    auto pointLightAddr       = [this](const Tiny::ECS::Entity& entity, const Component::PointLight&)      {this->m_pointLights.emplace_back(entity);};
+    auto spotLightAddr        = [this](const Tiny::ECS::Entity& entity, const Component::SpotLight&)       {this->m_spotLights.emplace_back(entity);};
+    auto directionalLightAddr = [this](const Tiny::ECS::Entity& entity, const Component::DirectionalLight&){this->m_directionalLights.emplace_back(entity);};
+    m_world->each<Component::PointLight>      (pointLightAddr);
+    m_world->each<Component::SpotLight>       (spotLightAddr);
+    m_world->each<Component::DirectionalLight>(directionalLightAddr);
+    //create the light buffers
+    m_pointLightBuffer->resize(sizeof(PointLightData)*((m_pointLights.size() == 0) ? 1 : m_pointLights.size()), false);
+    m_spotLightBuffer->resize(sizeof(SpotLightData)*((m_spotLights.size() == 0) ? 1 : m_spotLights.size()), false);
+    m_dirLightBuffer->resize(sizeof(DirectionalLightData)*((m_directionalLights.size() == 0) ? 1 : m_directionalLights.size()), false);
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::update() {
@@ -322,5 +347,173 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::update() {
 
         //write the data
         m_transformBuffer->write(&data, sizeof(data), sizeof(TransformData) * i);
+
+    }
+
+    //convert a color to a packed color
+    auto col = [](const vec3& color) -> u32 {return ((static_cast<u32>(glm::min(color.r, 1.f)*0xff) & 0xff)<<24) | 
+                                                    ((static_cast<u32>(glm::min(color.g, 1.f)*0xff) & 0xff)<<16) | 
+                                                    ((static_cast<u32>(glm::min(color.b, 1.f)*0xff) & 0xff)<< 8);};
+
+    //start at maximum to instantly wrap around to the minimum
+    size_t lightId = SIZE_MAX;
+    //the minimum intensity before culling
+    const constexpr float e = 1E-4;
+    //iterate over all point lights
+    for (const auto& obj : m_pointLights) {
+        //next light
+        ++lightId;
+
+        //store the GPU data
+        PointLightData data;
+
+        //extract the point light data
+        Component::PointLight* light = m_world->get<Component::PointLight>(obj);
+
+        //only continue of point light data exists
+        if (!light) {continue;}
+
+        //store the light data
+        data.color = col(light->color);
+        data.intensity = light->intensity;
+        data.radius = light->radius;
+        data.fallof_linear = light->fallof_linear;
+        data.fallof_quadratic = light->fallof_quadratic;
+        //compute the culling distance
+        /*
+        Intensity computation: Intensity(Distance) = Intensity / (1 + fallof_linear * Distance + fallof_quadratic * Distance*Distance)
+        Final intensity should be less than some epsilon (it will never be zero, but after some distance it is too little to matter)
+        Let's assume epsilon = e
+        Then we should compute the minimum safe culling distance:
+        e = Intensity / (fallof_linear * Distance + fallof_quadratic * Distance*Distance)
+        Let's solve for Distance (and use the positive evaluation since the distance is never negative):
+        Distance = (sqrt(4 * Intensity * e * fallof_quadratic + e^2 * fallof_linear^2) - e * fallof_linear) / (2 * e * fallof_quadratic)
+        */
+        float cullDistance = (glm::sqrt(4.f * light->intensity * e * light->fallof_quadratic + e*e * light->fallof_linear*light->fallof_linear) - e * light->fallof_linear) / (2 * e * light->fallof_quadratic);
+        //store the cull distance
+        data.cullDistance = cullDistance;
+
+        //fill in the position
+        Transform* transf = m_world->get<Transform>(obj);
+        if (transf) {
+            //copy the position
+            data.pos = transf->pos;
+        } else {
+            //try to use a transform 2D
+            Transform2D* transf2d = m_world->get<Transform2D>(obj);
+            if (transf2d) {
+                //copy and upcast
+                data.pos = vec3(transf2d->pos, 0);
+            } else {
+                //zero the position
+                data.pos = vec3{0,0,0};
+            }
+        }
+
+        //upload the data
+        m_pointLightBuffer->write(&data, sizeof(data), sizeof(data)*lightId);
+    }
+    //iterate over all spot lights
+    lightId = SIZE_MAX;
+    for (const auto& obj : m_spotLights) {
+        //next light
+        ++lightId;
+
+        //store the GPU data
+        SpotLightData data;
+
+        //extract the spot light data
+        Component::SpotLight* light = m_world->get<Component::SpotLight>(obj);
+
+        //only continue of spot light data exists
+        if (!light) {continue;}
+
+        //store the light data
+        data.color = col(light->color);
+        data.intensity = light->intensity;
+        data.fallof_linear = light->fallof_linear;
+        data.fallof_quadratic = light->fallof_quadratic;
+        //store the cosines of the angles
+        data.cos_cone_inner = glm::cos(light->cone_inner);
+        data.cos_cone_outer = glm::cos(light->cone_outer);
+
+        //compute the culling distance
+        /*
+        Intensity computation: Intensity(Distance) = Intensity / (1 + fallof_linear * Distance + fallof_quadratic * Distance*Distance)
+        Final intensity should be less than some epsilon (it will never be zero, but after some distance it is too little to matter)
+        Let's assume epsilon = e
+        Then we should compute the minimum safe culling distance:
+        e = Intensity / (fallof_linear * Distance + fallof_quadratic * Distance*Distance)
+        Let's solve for Distance (and use the positive evaluation since the distance is never negative):
+        Distance = (sqrt(4 * Intensity * e * fallof_quadratic + e^2 * fallof_linear^2) - e * fallof_linear) / (2 * e * fallof_quadratic)
+        */
+        float cullDistance = (glm::sqrt(4.f * light->intensity * e * light->fallof_quadratic + e*e * light->fallof_linear*light->fallof_linear) - e * light->fallof_linear) / (2 * e * light->fallof_quadratic);
+        //store the cull distance
+        data.cullDistance = cullDistance;
+
+        //fill in the position
+        Transform* transf = m_world->get<Transform>(obj);
+        if (transf) {
+            //copy the position
+            data.pos = transf->pos;
+            //compute the direction vector
+            data.dir = vec3(0,0,-1) * transf->rot;
+        } else {
+            //try to use a transform 2D
+            Transform2D* transf2d = m_world->get<Transform2D>(obj);
+            if (transf2d) {
+                //copy and upcast
+                data.pos = vec3(transf2d->pos, 0);
+                //store the direction vector
+                data.dir = vec3(1,0,0) * Quaternion(vec3(0,0,transf2d->angle));
+            } else {
+                //zero the position
+                data.pos = vec3{0,0,0};
+                //just use the forward vector
+                data.dir = vec3(0,0,-1);
+            }
+        }
+
+        //upload the data
+        m_spotLightBuffer->write(&data, sizeof(data), sizeof(data)*lightId);
+    }
+    //iterate over all directional lights
+    lightId = SIZE_MAX;
+    for (const auto& obj : m_directionalLights) {
+        //next light
+        ++lightId;
+
+        //store the GPU data
+        DirectionalLightData data;
+
+        //extract the directional light data
+        Component::DirectionalLight* light = m_world->get<Component::DirectionalLight>(obj);
+
+        //only continue of directional light data exists
+        if (!light) {continue;}
+
+        //store the light data
+        data.color = col(light->color);
+        data.intensity = light->intensity;
+
+        //fill in the position
+        Transform* transf = m_world->get<Transform>(obj);
+        if (transf) {
+            //compute the direction vector
+            data.dir = vec3(0,1,0) * transf->rot;
+        } else {
+            //try to use a transform 2D
+            Transform2D* transf2d = m_world->get<Transform2D>(obj);
+            if (transf2d) {
+                //store the direction vector
+                data.dir = vec3(0,1,0) * Quaternion(vec3(0,0,transf2d->angle));
+            } else {
+                //just use the down vector
+                data.dir = vec3(0,1,0);
+            }
+        }
+
+        //upload the light data
+        m_dirLightBuffer->write(&data, sizeof(data), sizeof(data) * lightId);
     }
 }
