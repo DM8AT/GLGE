@@ -50,13 +50,6 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          */
         virtual void update() override;
 
-    protected:
-
-        /**
-         * @brief store the OpenGL indirect draw command buffer
-         */
-        u32 m_cmdBuffer = 0;
-
     };
 
 }

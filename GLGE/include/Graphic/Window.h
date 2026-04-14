@@ -201,6 +201,20 @@ namespace GLGE::Graphic {
          */
         VSync getVSyncMode() const noexcept;
 
+        /**
+         * @brief Set the minimum size
+         * 
+         * @param size the new minimum size of the window
+         */
+        void setMinimumSize(const uvec2& size) noexcept;
+
+        /**
+         * @brief Set the maximum size
+         * 
+         * @param size the new maximum size of the window
+         */
+        void setMaximumSize(const uvec2& size) noexcept;
+
     private:
 
         /**

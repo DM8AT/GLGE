@@ -121,6 +121,11 @@ int main() {
     );
     GLGE::Graphic::Renderer renderer(world, &camera, HDR_MultiSampleTarget);
 
+    GLGE::Graphic::Shader cull({std::pair{"Compute", "assets/shader/culling.comp.spv"}});
+    GLGE::Graphic::ResourceSet cullSet(cull.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()},
+                                       std::pair{"commandBuffer", renderer.getIndirectDrawBuffer()});
+    cull.setResources(0, &cullSet);
+
     GLGE::Graphic::Shader rt_comp({std::pair{"Compute", "assets/shader/rt_sphere.comp.spv"}});
     GLGE::Graphic::SampledTexture sampledDepth(depthBuff, sampler);
     GLGE::Graphic::SampledTexture sampledImg(colBuff, sampler);
@@ -139,7 +144,6 @@ int main() {
     meshShader.setResources(0, &renderSet);
 
     GLGE::Graphic::Material mat(meshShader, layout, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
-    GLGE::Graphic::Material fancyMat(meshShader, layout, GLGE::Graphic::Material::CullMode::OFF, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
 
     GLGE::Object suzanne = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Suzanne", 
@@ -148,7 +152,7 @@ int main() {
     );
     GLGE::Object suzanne2 = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Suzanne 2", 
-        GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &fancyMat, true}, 
+        GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &mat, true}, 
         GLGE::Transform{{0,0,0}, {{0,0,0}}, {1,1,1}}
     );
     GLGE::Object cube = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
@@ -210,6 +214,7 @@ int main() {
 
     auto pipe = GLGE::Graphic::RenderPipeline::create(
         std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_MultiSampleTarget, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
+        std::pair{"Cull", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &cull, GLGE::uvec3(1))},
         std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
         std::pair{"Flatten multi sample", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), HDR_Target, GLGE::u8(0), true, false)},
         std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
@@ -217,6 +222,8 @@ int main() {
         std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0), false, false)},
         std::pair{"Swap", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_SWAP_WINDOW, &win)}
     );
+    pipe.record();
+    *pipe.getCommand("Cull")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(renderer.getObjectCount()/256.f), 1, 1);
     pipe.record();
 
     inst.start();
@@ -234,6 +241,8 @@ int main() {
             *pipe.getCommand("Finalize")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
 
             //re-record the pipeline to make it aware of the changes
+            pipe.record();
+            *pipe.getCommand("Cull")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(renderer.getObjectCount()/256.f), 1, 1);
             pipe.record();
         }
 

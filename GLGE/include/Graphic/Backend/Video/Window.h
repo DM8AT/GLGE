@@ -165,6 +165,20 @@ namespace GLGE::Graphic::Backend::Video {
         virtual void onSwapWindow() = 0;
 
         /**
+         * @brief set the minimal size of the window
+         * 
+         * @param size the minimal size of the window
+         */
+        virtual void onSetMinimumSize(const uvec2& size) = 0;
+
+        /**
+         * @brief set the maximum size of the window
+         * 
+         * @param size the maximal size of the window
+         */
+        virtual void onSetMaximumSize(const uvec2& size) = 0;
+
+        /**
          * @brief Get the frontend window the backend belongs to
          * 
          * @return `GLGE::Graphic::Window*` a pointer to the frontend window

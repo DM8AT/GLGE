@@ -100,6 +100,22 @@ namespace GLGE::Graphic {
         inline GLGE::Graphic::Buffer* getDirectionalLightBuffer() const noexcept
         {return m_renderer->getDirectionalLightBuffer();}
 
+        /**
+         * @brief Get the buffer that stores all the indirect draw data
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of the indirect draw data
+         */
+        inline GLGE::Graphic::Buffer* getIndirectDrawBuffer() const noexcept
+        {return m_renderer->getIndirectDrawBuffer();}
+
+        /**
+         * @brief Get the amount of objects that are drawn
+         * 
+         * @return `u64` the amount of objects that are drawn each tick
+         */
+        inline u64 getObjectCount() const noexcept
+        {return m_renderer->getObjectCount();}
+
     protected:
 
         /**

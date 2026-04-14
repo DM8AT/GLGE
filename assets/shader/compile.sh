@@ -11,6 +11,8 @@ glslc simple.vert -o simple.vert.spv
 ret=$(($ret + $?))
 glslc simple.frag -o simple.frag.spv
 ret=$(($ret + $?))
+glslc culling.comp -o culling.comp.spv
+ret=$(($ret + $?))
 
 # return the sum of failures
 exit $ret

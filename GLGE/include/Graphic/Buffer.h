@@ -179,6 +179,14 @@ namespace GLGE::Graphic {
         inline void set(M T::* member, const M& value, size_t offset = 0)
         {write(&value, sizeof(M), reinterpret_cast<size_t>(&(reinterpret_cast<T const volatile*>(0)->*member)) + offset);}
 
+        /**
+         * @brief Get the Backend Reference
+         * 
+         * @return `Reference<GLGE::Graphic::Backend::Graphic::Buffer>` a reference to the backend buffer
+         */
+        inline Reference<GLGE::Graphic::Backend::Graphic::Buffer> getBackendReference() const noexcept
+        {return m_backend;}
+
     protected:
 
         /**

@@ -388,3 +388,17 @@ void Window::onSwapWindow() {
             break;
     }
 }
+
+void Window::onSetMinimumSize(const uvec2& size) {
+    GLGE_PROFILER_SCOPE();
+
+    //set the minimum size
+    SDL_SetWindowMinimumSize(reinterpret_cast<SDL_Window*>(m_win), size.x, size.y);
+}
+
+void Window::onSetMaximumSize(const uvec2& size) {
+    GLGE_PROFILER_SCOPE();
+
+    //set the maximum size
+    SDL_SetWindowMaximumSize(reinterpret_cast<SDL_Window*>(m_win), size.x, size.y);
+}

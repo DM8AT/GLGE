@@ -72,10 +72,10 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Buffer::Buffer(Type type, const void* i
                 m_flags = flags;
             } break;
         case Usage::GPU_ONLY: {
-                //setup the buffer to prevent CPU side updates and fully prevent mapping
-                glNamedBufferStorage(m_handle, m_size, initial, 0);
+                //setup the buffer to prevent CPU side updates and fully prevent mapping (this uses dynamic GPU storage)
+                glNamedBufferStorage(m_handle, m_size, initial, GL_DYNAMIC_STORAGE_BIT);
                 //store the flags
-                m_flags = 0;
+                m_flags = GL_DYNAMIC_STORAGE_BIT;
             } break;
 
         default:
@@ -199,7 +199,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Buffer::resize(size_t size, bool p
         //if mapping is requested, map the buffer
         void* newMap = nullptr;
         if (m_flags & GL_MAP_PERSISTENT_BIT)
-        {newMap = glMapNamedBufferRange(newBuff, 0, size, m_flags | ((m_usage == Usage::CPU_GPU) ? GL_MAP_FLUSH_EXPLICIT_BIT : 0));}
+        {newMap = glMapNamedBufferRange(newBuff, 0, size, m_flags | ((m_usage == Usage::CPU_GPU) ? GL_MAP_FLUSH_EXPLICIT_BIT : ((m_usage == Usage::GPU_ONLY) ? GL_DYNAMIC_STORAGE_BIT : 0)));}
         //if the preserving is requested, preserve the data
         if (preserve) 
         {memcpy(newMap, m_data, glm::min(size, m_size));}

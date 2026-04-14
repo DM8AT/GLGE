@@ -71,3 +71,9 @@ bool Window::setVSyncMode(VSync vsync)
 
 VSync Window::getVSyncMode() const noexcept
 {return m_gWin->getVSync();}
+
+void Window::setMinimumSize(const uvec2& size) noexcept
+{m_vWin->onSetMinimumSize(size);}
+
+void Window::setMaximumSize(const uvec2& size) noexcept
+{m_vWin->onSetMaximumSize(size);}

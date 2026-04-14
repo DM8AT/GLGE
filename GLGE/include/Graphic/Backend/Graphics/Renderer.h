@@ -107,6 +107,22 @@ namespace GLGE::Graphic::Backend::Graphic {
         {return m_dirLightBuffer;}
 
         /**
+         * @brief Get the buffer that stores all the indirect draw data
+         * 
+         * @return `GLGE::Graphic::Buffer*` a pointer to the buffer of the indirect draw data
+         */
+        inline GLGE::Graphic::Buffer* getIndirectDrawBuffer() const noexcept
+        {return m_drawBuffer;}
+
+        /**
+         * @brief Get the amount of objects that are drawn
+         * 
+         * @return `u64` the amount of objects that are drawn each tick
+         */
+        inline u64 getObjectCount() const noexcept
+        {return m_entities.size();}
+
+        /**
          * @brief store the GPU point light data layout
          * 
          * Compatable with std430 when accessing pos as float x,y,z;
@@ -303,6 +319,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief store the buffer for all the directional lights
          */
         GLGE::Graphic::Buffer* m_dirLightBuffer   = nullptr;
+
+        /**
+         * @brief store a pointer to the draw buffer
+         */
+        GLGE::Graphic::Buffer* m_drawBuffer = nullptr;
 
         /**
          * @brief store all known objects to render

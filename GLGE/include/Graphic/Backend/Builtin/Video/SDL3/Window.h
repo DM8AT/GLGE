@@ -156,6 +156,20 @@ namespace GLGE::Graphic::Backend::Video::SDL3 {
         virtual void onSwapWindow() override;
 
         /**
+         * @brief set the minimal size of the window
+         * 
+         * @param size the minimal size of the window
+         */
+        virtual void onSetMinimumSize(const uvec2& size) override;
+
+        /**
+         * @brief set the maximum size of the window
+         * 
+         * @param size the maximal size of the window
+         */
+        virtual void onSetMaximumSize(const uvec2& size) override;
+
+        /**
          * @brief get the SDL window the window controls
          * 
          * @return `void*` a pointer to the SDL window

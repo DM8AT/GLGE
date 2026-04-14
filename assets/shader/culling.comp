@@ -1,0 +1,84 @@
+#version 460 core
+
+layout (set = 0, binding = 0, std140) uniform cam_buffer {
+    float x;
+    float y;
+    float z;
+    uint quat_i_j;
+    uint quat_k_w;
+    float fov;
+    float near;
+    float far;
+    mat4 proj;
+} cam;
+
+struct TransformData {
+    float x;
+    float y;
+    float z;
+    uint quat_i_j;
+    uint quat_k_w;
+    float sx;
+    float sy;
+    float sz;
+};
+
+layout (set = 0, binding = 1, std430) readonly buffer transf_buffer {
+    TransformData transf[];
+} transforms;
+
+struct DrawElementsIndirectCommand {
+    uint count;
+    uint instanceCount;
+    uint firstIndex;
+    int baseVertex;
+    uint baseInstance;
+};
+
+layout (set = 0, binding = 2, std430) writeonly buffer cmd_buffer {
+    DrawElementsIndirectCommand draws[];
+} commandBuffer;
+
+vec4 decodeQuat(uint i_j, uint k_w) {
+    //decompress and return the quaternions as a vector
+    return vec4(
+        (float((i_j & 0xffff) & 0xffff) / float(0xffff)) * 2.f - 1.f,
+        (float((i_j >> 16)    & 0xffff) / float(0xffff)) * 2.f - 1.f,
+        (float((k_w & 0xffff) & 0xffff) / float(0xffff)) * 2.f - 1.f,
+        (float((k_w >> 16)    & 0xffff) / float(0xffff)) * 2.f - 1.f
+    );
+}
+
+mat3 quatToMat3(vec4 q) {
+    float x = q.x, y = q.y, z = q.z, w = q.w;
+
+    return mat3(
+        1.0 - 2.0*y*y - 2.0*z*z,
+        2.0*x*y + 2.0*w*z,
+        2.0*x*z - 2.0*w*y,
+
+        2.0*x*y - 2.0*w*z,
+        1.0 - 2.0*x*x - 2.0*z*z,
+        2.0*y*z + 2.0*w*x,
+
+        2.0*x*z + 2.0*w*y,
+        2.0*y*z - 2.0*w*x,
+        1.0 - 2.0*x*x - 2.0*y*y
+    );
+}
+
+layout (local_size_x = 256) in;
+void main() {
+    //if the ID is out of range, stop
+    if (gl_GlobalInvocationID.x > transforms.transf.length()) {return;}
+    
+    //compute the distance between the camera and the object
+    vec3 camPos = vec3(cam.x, cam.y, cam.z);
+    vec3 pos = vec3(transforms.transf[gl_GlobalInvocationID.x].x, transforms.transf[gl_GlobalInvocationID.x].y, transforms.transf[gl_GlobalInvocationID.x].z);
+
+    //if the length is too big (> 1E3) discard the object
+    if (distance(camPos, pos) > 1E3)
+    {commandBuffer.draws[gl_GlobalInvocationID.x].instanceCount = 0;}
+    else
+    {commandBuffer.draws[gl_GlobalInvocationID.x].instanceCount = 1;}
+}

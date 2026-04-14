@@ -84,19 +84,19 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::Renderer(World& world, Object
     m_pointLightBuffer = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(PointLightData),       GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
     m_spotLightBuffer  = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(SpotLightData),        GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
     m_dirLightBuffer   = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(DirectionalLightData), GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
+
+    //draw buffer
+    m_drawBuffer       = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::STORAGE, nullptr, sizeof(DrawElementsIndirectCommand), GLGE::Graphic::Buffer::Usage::GPU_ONLY);
 }
 
-GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::~Renderer() 
-{
-    //if a command buffer exists, delete it
-    if (m_cmdBuffer) 
-    {glDeleteBuffers(1, &m_cmdBuffer);}
+GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::~Renderer() {
     //clean up the buffers
     delete m_cameraBuffer; m_cameraBuffer = nullptr;
     delete m_transformBuffer; m_transformBuffer = nullptr;
     delete m_pointLightBuffer; m_pointLightBuffer = nullptr;
     delete m_spotLightBuffer; m_spotLightBuffer = nullptr;
     delete m_dirLightBuffer; m_dirLightBuffer = nullptr;
+    delete m_drawBuffer; m_drawBuffer = nullptr;
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cmdBuff) {
@@ -137,10 +137,9 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
         }
     }
     //re-create the corresponding GPU buffer
-    if (m_cmdBuffer) 
-    {glDeleteBuffers(1, &m_cmdBuffer);}
-    glCreateBuffers(1, &m_cmdBuffer);
-    glNamedBufferStorage(m_cmdBuffer, drawCommands.size()*sizeof(*drawCommands.data()), drawCommands.data(), 0);
+    m_drawBuffer->resize(drawCommands.size()*sizeof(*drawCommands.data()));
+    glNamedBufferSubData(reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Buffer*>(m_drawBuffer->getBackendReference().get())->getHandle(), 0, 
+                         drawCommands.size()*sizeof(*drawCommands.data()), drawCommands.data());
     //resize the transform buffer
     m_transformBuffer->resize(sizeof(TransformData) * total);
 
@@ -192,7 +191,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     //record the target selection
     cmdBuff.addCommand(target_select, target, targetCount, resolution, window, context);
     //prepare the drawing
-    cmdBuff.addCommand(prepare_draw, m_cmdBuffer);
+    cmdBuff.addCommand(prepare_draw, reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Buffer*>(m_drawBuffer->getBackendReference().get())->getHandle());
 
     //store a pointer on the start of the draw list
     DrawElementsIndirectCommand* ptr = 0;
