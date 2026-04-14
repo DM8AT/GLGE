@@ -108,6 +108,9 @@ void Instance::onRegisterWindow(GLGE::Graphic::Backend::Graphic::Window* window)
             m_extensionInfo.anisotropic.supported = false;
             m_extensionInfo.anisotropic.maxAnisotropy = 1;
         }
+
+        //setup multi sample extensions
+        glGetIntegerv(GL_MAX_SAMPLES, &m_extensionInfo.multiSample.maxSampleCount);
         
         //enable depth testing
         glEnable(GL_DEPTH_TEST);

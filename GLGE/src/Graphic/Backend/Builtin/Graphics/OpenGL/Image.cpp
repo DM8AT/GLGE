@@ -21,6 +21,16 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Image::Image(const uvec2& size, PixelFo
  : GLGE::Graphic::Backend::Graphic::Image(size, format, samples)
 {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Image::Image");
+    //potential sample limit
+    i32 maxSamples = 0;
+    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+    if (samples > maxSamples) {
+        //warning in debug
+        #if GLGE_DEBUG
+        std::cerr << "[GLGE GRAPHIC] Warning: Tried to create an image with more samples than allowed. Maximum sample count is " << maxSamples << ".\n";
+        #endif
+        m_samples = maxSamples;
+    }
     //create the image
     if (m_samples == 1) 
     {glCreateTextures(GL_TEXTURE_2D, 1, &m_handle);} 

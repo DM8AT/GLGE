@@ -48,9 +48,22 @@ namespace Graphic {
             float maxAnisotropy = 1;
         };
         /**
+         * @brief store information about the multi sampling extension
+         */
+        struct MultiSample {
+            /**
+             * @brief store the maximum amount of allowed samples per pixel
+             */
+            i32 maxSampleCount = 1;
+        };
+        /**
          * @brief store information about the anisotropic extension
          */
         Anisotropic anisotropic;
+        /**
+         * @brief store information about the multi sample extension
+         */
+        MultiSample multiSample;
     };
 
     /**
