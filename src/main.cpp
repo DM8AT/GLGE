@@ -221,8 +221,6 @@ int main() {
 
     inst.start();
 
-    inst.registerKeyboard(GLGE::Keyboard("Hi"));
-
     while (!win.isClosingRequested()) {
         //start the tick
         inst.startMainTick();
