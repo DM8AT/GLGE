@@ -11,6 +11,9 @@
 //include the OpenGL window
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Window.h"
 
+//add the OpenGL contract
+#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+
 //add OpenGL
 #include "glad/glad.h"
 
@@ -44,7 +47,7 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     GLGE_PROFILER_SCOPE();
 
     //make this the current window
-    getWindow()->getVideoWindow()->onMakeCurrent(getWindow()->getGraphicInstance()->getGraphicBackendInstance()->getContext());
+    getWindow()->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(getWindow()->getVideoWindow());
     //early out if nothing changed
     if (res.x == m_resolution.x && res.y == m_resolution.y)
     {return;}
@@ -52,14 +55,14 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     //set the viewport
     glViewport(0, 0, res.x, res.y);
     //swap the window
-    getWindow()->getVideoWindow()->onSwapWindow();
+    getWindow()->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->swap(getWindow()->getVideoWindow());
     //store the new rendering resolution
     m_resolution = res;
 }
 
 bool Window::onVSyncSet(VSync vsync) {
     //use the windowing engine to set the vsync mode
-    bool s = getWindow()->getVideoWindow()->onSetVSync(vsync, getWindow()->getGraphicInstance()->getGraphicBackendInstance()->getContext());
+    bool s = getWindow()->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->setVsync(vsync);
     m_vsync = s ? vsync : VSYNC_ENABLED;
     return s;
 }

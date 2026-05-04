@@ -78,21 +78,6 @@ namespace SDL3 {
          */
         virtual void onWindowRemove(GLGE::Graphic::Backend::Video::Window* window) override;
 
-        /**
-         * @brief create a new context for a specific graphic API
-         * 
-         * @param window a pointer to a window to base the context on
-         * @return void* a new OPAQUE handle for the context
-         */
-        virtual void* onContextCreate(GLGE::Graphic::Backend::Video::Window* window) override;
-
-        /**
-         * @brief destroy a context of a specific graphic API
-         * 
-         * @param context a pointer to the OPAQUE context handle to destroy
-         */
-        virtual void onContextDestroy(void* context) override;
-
     protected:
 
         /**

@@ -82,6 +82,14 @@ namespace Graphic {
         {return m_gDesc->getName();}
 
         /**
+         * @brief Get the Graphic Backend version
+         * 
+         * @return `GLGE::Version` the version of the graphic backend
+         */
+        inline GLGE::Version getGraphicBackendVersion() const noexcept
+        {return m_gDesc->getVersion();}
+
+        /**
          * @brief Get the name of the video backend
          * 
          * @return `const char*` the name of the video backend as a human readable string

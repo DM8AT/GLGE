@@ -17,6 +17,9 @@
 //include the instances
 #include "Graphic/Instance.h"
 
+//add contracts
+#include "APIContracts/Contracts.h"
+
 //use the backend namespace
 namespace GLGE::Graphic {
 /**
@@ -103,19 +106,22 @@ namespace Video {
         virtual void onWindowRemove(GLGE::Graphic::Backend::Video::Window* window) = 0;
 
         /**
-         * @brief create a new context for a specific graphic API
+         * @brief Get the Contract
          * 
-         * @param window a pointer to a window to base the context on
-         * @return void* a new OPAQUE handle for the context. For some combinations this MAY return null, even if it is valid because some APIs are supported but don't require a context. 
+         * @tparam T the type of contract to quarry
+         * @return `T*` a pointer to the contract
          */
-        virtual void* onContextCreate(GLGE::Graphic::Backend::Video::Window* window) = 0;
+        template <typename T>
+        requires std::is_base_of_v<Contracts::BaseContract, T>
+        T* getContract() const noexcept
+        {return reinterpret_cast<T*>(m_contract);}
+
+    protected:
 
         /**
-         * @brief destroy a context of a specific graphic API
-         * 
-         * @param context a pointer to the OPAQUE context handle to destroy
+         * @brief store a pointer to the contract the instance owns
          */
-        virtual void onContextDestroy(void* context) = 0;
+        Contracts::BaseContract* m_contract = nullptr;
 
     private:
 

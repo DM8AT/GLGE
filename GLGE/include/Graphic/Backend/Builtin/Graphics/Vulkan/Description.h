@@ -1,16 +1,16 @@
 /**
  * @file Description.h
  * @author DM8AT
- * @brief define the backend description for the builtin OpenGL 4.6 backend
+ * @brief define the backend description for the builtin vulkan backend
  * @version 0.1
- * @date 2025-12-23
+ * @date 2026-04-14
  * 
- * @copyright Copyright (c) 2025
+ * @copyright Copyright (c) 2026
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_DESCRIPTION_
-#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_DESCRIPTION_
+#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_DESCRIPTION_
+#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_DESCRIPTION_
 
 //include the backend description
 #include "Graphic/Backend/Graphics/BackendDescription.h"
@@ -27,20 +27,20 @@ namespace Builtin {
 namespace Graphics {
 
     /**
-     * @brief the descriptor class for the OpenGL 4.6 backend
+     * @brief the descriptor class for the vulkan backend
      */
-    class OpenGL : public GLGE::Graphic::Backend::Graphic::Description {
+    class Vulkan : public GLGE::Graphic::Backend::Graphic::Description {
     public:
 
         /**
          * @brief Construct a new Open GL descriptor instance
          */
-        OpenGL();
+        Vulkan();
 
         /**
          * @brief Destroy the Open GL descriptor instance
          */
-        virtual ~OpenGL() {}
+        virtual ~Vulkan() {}
         
         /**
          * @brief Get the Name of the backend

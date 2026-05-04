@@ -77,7 +77,7 @@ void gl_example1() {
     std::cout << "Using graphic backend " << gInst.getGraphicBackendName() << "\n";
     std::cout << "Using video backend " << gInst.getVideoBackendName() << "\n";
 
-    GLGE::Instance inst("Hello World!", GLGE::Version(0, 1, 0), std::pair{"Graphics", &gInst});
+    GLGE::Instance inst("OpenGL Instance", GLGE::Version(0, 1, 0), std::pair{"Graphics", &gInst});
     inst.mainLimiter().setLimit(144);
 
     GLGE::Graphic::Window win("Hello from SDL3", {600, 600});

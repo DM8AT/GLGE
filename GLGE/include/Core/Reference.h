@@ -75,7 +75,7 @@ namespace GLGE {
          */
         void release_ref() noexcept {
             //decrement the count with conditional delete
-            if (m_referenceCount.fetch_add(1, std::memory_order_acq_rel) == 1)
+            if (m_referenceCount.fetch_sub(1, std::memory_order_acq_rel) == 1)
             {delete this;}
         }
 

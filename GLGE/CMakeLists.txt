@@ -35,7 +35,7 @@ option(GLGE_GRAPHICS_INCLUDE_OPENGL
 # an option to include the builtin Vulkan backend
 option(GLGE_GRAPHICS_INCLUDE_VULKAN
     "Enable if the builtin Vulkan backend should be included"
-    OFF
+    ON
 )
 
 # an option to make command overriding possible
@@ -237,6 +237,9 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Description.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Instance.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Window.cpp
+        # SDL Contracts
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.cpp
 
         # Video backend
         ${GLGE_SRC_DIR}/Graphic/Backend/Video/Window.cpp
@@ -304,7 +307,9 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_GRAPHIC_SOURCE}
 
             # Builtin::Vulkan
-            #${GLGE_SRC_DIR}/Graphic/Backend/Vulkan/Description.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Description.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Window.cpp
         )
     endif()
 

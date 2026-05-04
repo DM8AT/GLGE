@@ -70,6 +70,9 @@ OpenGL::OpenGL()
 const char* OpenGL::getName() const noexcept
 {return "GLGE_GRAPHIC_OPENGL_4_6_BUILTIN";}
 
+GLGE::Version OpenGL::getVersion() const noexcept
+{return GLGE::Version(0,1,0);}
+
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Instance> OpenGL::createInstance( GLGE::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Instance>(new GLGE::Graphic::Backend::Graphic::OpenGL::Instance(instance), false);}
 
@@ -95,7 +98,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> OpenGL::createFram
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer(colorAttachmentCount, colorAttachments, depthAttachmentCount, depthAttachments, stencilAttachmentCount, stencilAttachments, combinedDepthStencil), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet> OpenGL::createResourceSet([[maybe_unused]]GLGE::Graphic::ResourceSet* set)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet>(new GLGE::Graphic::Backend::Graphic::OpenGL::ResourceSet(set));}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet>(new GLGE::Graphic::Backend::Graphic::OpenGL::ResourceSet(set), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader> OpenGL::createShader([[maybe_unused]] GLGE::Graphic::Shader* frontend)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader>(new GLGE::Graphic::Backend::Graphic::OpenGL::Shader(frontend), false);}

@@ -27,6 +27,9 @@
 //include the description
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Description.h"
 
+//add the OpenGL contract
+#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+
 //use the OpenGL backend namespace
 using namespace GLGE::Graphic::Backend::Graphic::OpenGL;
 
@@ -83,7 +86,8 @@ void Instance::onRegisterWindow(GLGE::Graphic::Backend::Graphic::Window* window)
         //first, fetch the graphic instance
         GLGE::Graphic::Instance* inst = window->getWindow()->getGraphicInstance();
         //then, create the context using the settings from the graphic instance
-        m_context = inst->getVideoBackendInstance()->onContextCreate(window->getWindow()->getVideoWindow());
+        auto* contract = inst->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>();
+        contract->createContext(window->getWindow()->getVideoWindow());
 
         //now, initialize OpenGL using glad
 
@@ -134,6 +138,6 @@ void Instance::onRemoveWindow(GLGE::Graphic::Backend::Graphic::Window* window) {
         //first, fetch the graphic instance
         GLGE::Graphic::Instance* inst = window->getWindow()->getGraphicInstance();
         //then destroy the context
-        window->getWindow()->getGraphicInstance()->getVideoBackendInstance()->onContextDestroy(m_context);
+        window->getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->destroyContext();
     }
 }

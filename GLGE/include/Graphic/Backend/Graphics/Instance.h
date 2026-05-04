@@ -119,14 +119,6 @@ namespace Graphic {
         {return m_supportsHDR;}
 
         /**
-         * @brief Get the API Context used by the graphic instance
-         * 
-         * @return void* an opaque handle to the API context
-         */
-        inline void* getContext() const noexcept
-        {return m_context;}
-
-        /**
          * @brief Get the Extension Info
          * 
          * @return `const ExtensionInfo&` a constant reference to the extension info
@@ -144,14 +136,6 @@ namespace Graphic {
          * @brief store if the instance supports HDR
          */
         bool m_supportsHDR = false;
-        /**
-         * @brief the graphic API context created by the video backend
-         * 
-         * @warning This is an OPAQUE handle. DO NOT assume any layout. 
-         * 
-         * Some backends do not require a context. Then, nullptr is stored. 
-         */
-        void* m_context = nullptr;
 
         /**
          * @brief store information about the extensions

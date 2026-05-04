@@ -1,16 +1,16 @@
 /**
  * @file Window.h
  * @author DM8AT
- * @brief define an overload for the window backend for OpenGL
+ * @brief define an overload for the window backend for Vulkan
  * @version 0.1
- * @date 2025-12-27
+ * @date 2026-05-04
  * 
- * @copyright Copyright (c) 2025
+ * @copyright Copyright (c) 2026
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_WINDOW_
-#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_WINDOW_
+#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_WINDOW_
+#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_WINDOW_
 
 //add window backends
 #include "Graphic/Backend/Graphics/Window.h"
@@ -18,13 +18,10 @@
 #include "Core/Event.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
-
-    //instances are defined elsewhere
-    class Instance;
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
-     * @brief implement the backend window for OpenGL
+     * @brief the window backend class for Vulkan
      */
     class Window : public GLGE::Graphic::Backend::Graphic::Window {
     public:

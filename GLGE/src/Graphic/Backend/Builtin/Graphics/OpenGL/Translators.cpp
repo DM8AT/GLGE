@@ -38,6 +38,9 @@
 //add renderers
 #include "Graphic/Renderer.h"
 
+//add the OpenGL contract
+#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+
 //work in the implementation namespace
 
 namespace Impl {
@@ -53,7 +56,7 @@ bool swapWindow(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const G
         //set the viewport
         glViewport(0, 0, window->getResolution().x, window->getResolution().y);
         //do actual swap
-        window->getVideoWindow()->onSwapWindow();
+        window->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->swap(window->getVideoWindow());
     };
     //extract the actual arguments
     const auto& [win] = handle.getArguments<GLGE::Graphic::Window*>();
@@ -71,7 +74,7 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear");
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear::makeCurrent");
-                window->getVideoWindow()->onMakeCurrent(window->getGraphicInstance()->getGraphicBackendInstance()->getContext());
+                window->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(window->getVideoWindow());
             }
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear::colorClearPass");
@@ -117,7 +120,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             //first, ensure that the correct window is bound
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::makeCurrent");
-                win->getVideoWindow()->onMakeCurrent(win->getGraphicInstance()->getGraphicBackendInstance()->getContext());
+                win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());
             }
             //then, copy the actual data
             {
@@ -150,7 +153,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             //first, ensure that the correct window is bound
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::makeCurrent");
-                win->getVideoWindow()->onMakeCurrent(win->getGraphicInstance()->getGraphicBackendInstance()->getContext());
+                win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());
             }
             //then, copy the actual data
             {
@@ -230,7 +233,7 @@ bool drawSimpleMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, con
         //bind the correct buffer type
         if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
             GLGE::Graphic::Window* win = reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget());
-            win->getVideoWindow()->onMakeCurrent(win->getGraphicInstance()->getGraphicBackendInstance()->getContext());
+            win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         } else {
             auto* fbuff = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend().get());

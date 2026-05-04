@@ -62,6 +62,7 @@
 
 //include the builtin descriptions
 #include "Backend/Builtin/Graphics/OpenGL/Description.h"
+#include "Backend/Builtin/Graphics/Vulkan/Description.h"
 #include "Backend/Builtin/Video/SDL3/Description.h"
 
 //add materials

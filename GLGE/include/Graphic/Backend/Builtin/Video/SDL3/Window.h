@@ -126,36 +126,6 @@ namespace GLGE::Graphic::Backend::Video::SDL3 {
         virtual void onHDRStateChanged(bool hdr) override;
 
         /**
-         * @brief a function to bind this window to a context
-         * 
-         * This function is required by some backends (e.g. OpenGL) for context management. 
-         * It is not required for all backends and can safely be ignored. 
-         * 
-         * @param context the opaque context handle
-         */
-        virtual void onMakeCurrent(void* context) override;
-
-        /**
-         * @brief set the vsync state for the window
-         * 
-         * This function is required by some backends (e.g. OpenGL). 
-         * It is not required for all backends and can safely be ignored. 
-         * 
-         * @param vsync the desired VSync mode
-         * @param context the context the window belongs to
-         * @return `true` if the vsync mode was set successfully, `false` if it failed and defaulted to `VSYNC_DISABLED`
-         */
-        virtual bool onSetVSync(VSync vsync, void* context) override;
-
-        /**
-         * @brief a function to swap the window
-         * 
-         * This function is only required by some backends (e.g. OpenGL). 
-         * It is not required for all backends and can safely be ignored. 
-         */
-        virtual void onSwapWindow() override;
-
-        /**
          * @brief set the minimal size of the window
          * 
          * @param size the minimal size of the window

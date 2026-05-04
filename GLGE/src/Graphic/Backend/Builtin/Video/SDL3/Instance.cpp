@@ -22,6 +22,11 @@
 //add profiling
 #include "Core/Profiler.h"
 
+//add the OpenGL contract
+#include "Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.h"
+//add the Vulkan contract
+#include "Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.h"
+
 //use the normal GLGE namespace
 using namespace GLGE::Graphic;
 
@@ -419,6 +424,21 @@ GLGE::Graphic::Backend::Video::SDL3::Instance::Instance(GLGE::Graphic::Instance*
     std::unique_lock lock(msl_instanceLock);
     //add the instance to the instance list
     msl_instances.push_back(instance);
+
+    //check which contract to load (this requires a switch case over all supported types)
+    switch (getInstance()->getGraphicDescription()->getAPI())
+    {
+    case GLGE::Graphic::GraphicAPI::OPEN_GL:
+        m_contract = new GLGE::Graphic::Backend::Video::SDL3::Contracts::OpenGL(this);
+        break;
+    case GLGE::Graphic::GraphicAPI::VULKAN:
+        m_contract = new GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan(this);
+        break;
+    
+    default:
+        throw GLGE::Exception("Tried to create an SDL3 video backend in combination with an incompatible graphic backend", "GLGE::Graphic::Backend::Video::SDL3::Instance::Instance");
+        break;
+    }
 }
 
 GLGE::Graphic::Backend::Video::SDL3::Instance::~Instance() {
@@ -806,79 +826,4 @@ void GLGE::Graphic::Backend::Video::SDL3::Instance::onWindowRemove(GLGE::Graphic
     u32 id = SDL_GetWindowID(win);
     //remove the window entry
     msl_windows.erase(id);
-}
-
-void* GLGE::Graphic::Backend::Video::SDL3::Instance::onContextCreate(GLGE::Graphic::Backend::Video::Window* window) {
-    GLGE_PROFILER_SCOPE();
-
-    //switch over the API
-    switch (getAPI()) {
-    case GLGE::Graphic::GraphicAPI::OPEN_GL: {
-        //set the version correctly
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, getAPIVersion().getMajor());
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, getAPIVersion().getMinor());
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, (getAPIVersion().getPatch() == 1) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY : SDL_GL_CONTEXT_PROFILE_CORE);
-        //explicitly enable double buffering
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        //request depth buffer
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        //setup default framebuffer attributes
-        SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, 0);
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
-        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-
-        //request acceleration
-        SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-
-        //create and return the context
-        SDL_GLContext context = SDL_GL_CreateContext((SDL_Window*)((GLGE::Graphic::Backend::Video::SDL3::Window*)window)->getSDLWindow());
-
-        return context;
-    }
-    break;
-    case GLGE::Graphic::GraphicAPI::OPEN_GL_ES: {
-        //set the version correctly
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, getAPIVersion().getMajor());
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, getAPIVersion().getMinor());
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,  SDL_GL_CONTEXT_PROFILE_ES);
-        //create and return the context
-        return SDL_GL_CreateContext((SDL_Window*)((GLGE::Graphic::Backend::Video::SDL3::Window*)window)->getSDLWindow());
-    }
-    break;
-    case GLGE::Graphic::GraphicAPI::VULKAN: {
-        //just do nothing, but it is supported but does not require an instance
-        return nullptr;
-    }
-    break;
-    
-    default: {
-        //throw an exception
-        throw GLGE::Exception("Found an unsupported API while trying to create a new context", "GLGE::Graphic::Backend::Video::SDL3::Instance::onContextCreate");
-        //and return null
-        return nullptr;
-    }
-    break;
-    }
-}
-
-void GLGE::Graphic::Backend::Video::SDL3::Instance::onContextDestroy(void* context) {
-    GLGE_PROFILER_SCOPE();
-
-    //switch over the API to correctly destroy the context
-    switch (getAPI()) {
-    case GLGE::Graphic::GraphicAPI::OPEN_GL:
-    case GLGE::Graphic::GraphicAPI::OPEN_GL_ES: {
-        //destroy the OpenGL context
-        SDL_GL_MakeCurrent(SDL_GL_GetCurrentWindow(), nullptr);
-        SDL_GL_DestroyContext((SDL_GLContext)context);
-    }
-    break;
-    
-    default:
-        //some APIs never required a context
-        break;
-    }
 }

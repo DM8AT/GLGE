@@ -74,6 +74,13 @@ namespace GLGE::Graphic::Backend::Graphic {
         virtual const char* getName() const noexcept = 0;
 
         /**
+         * @brief Get the version of the backend implementation
+         * 
+         * @return `GLGE::Version` the version of the backend in use
+         */
+        virtual GLGE::Version getVersion() const noexcept = 0;
+
+        /**
          * @brief Create a Instance
          * 
          * @param instance a pointer to the instance to create the backend instance for
