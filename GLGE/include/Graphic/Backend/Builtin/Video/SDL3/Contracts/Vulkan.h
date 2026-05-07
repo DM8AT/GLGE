@@ -56,6 +56,24 @@ namespace GLGE::Graphic::Backend::Video::SDL3::Contracts {
          */
         virtual void getRequiredDeviceExtensions(std::vector<const char*>& extensions) override;
 
+        /**
+         * @brief Create the Window Surface
+         * 
+         * @param instance the vulkan instance to operate on
+         * @param surface a pointer to an Vulkan surface to fill out
+         * @param window the window to get the surface from
+         */
+        virtual void createWindowSurface(void* instance, void** surface, GLGE::Graphic::Backend::Video::Window* window) override;
+
+        /**
+         * @brief destroy the window surface
+         * 
+         * @param instance the vulkan instance to operate on
+         * @param surface the surface to destroy
+         * @param window the window the surface belonged to
+         */
+        virtual void destroyWindowSurface(void* instance, void* surface, GLGE::Graphic::Backend::Video::Window* window) override;
+
     };
 
 }

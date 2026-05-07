@@ -72,7 +72,119 @@ namespace Vulkan {
          */
         virtual void onRemoveWindow(GLGE::Graphic::Backend::Graphic::Window* window) override;
 
+        /**
+         * @brief Get the vulkan instance
+         * 
+         * @return `void*` the vulkan instance
+         */
+        inline void* getInstance() const noexcept
+        {return m_instance;}
+
+        /**
+         * @brief Get the vulkan device
+         * 
+         * @return `void*` the vulkan device
+         */
+        inline void* getDevice() const noexcept
+        {return m_device;}
+
+        /**
+         * @brief Get the Physical Device
+         * 
+         * @return `void*` the physical device
+         */
+        inline void* getPhysicalDevice() const noexcept
+        {return m_physicalDevice;}
+
     protected:
+
+        /**
+         * @brief store a structure that defines what a queue is
+         */
+        struct Queue {
+            /**
+             * @brief store the index of the queue family of the queue
+             */
+            u32 familyIdx;
+            /**
+             * @brief store the queue
+             */
+            void* queue;
+        };
+
+        /**
+         * @brief store a reference to a queue
+         */
+        struct QueueReference {
+            /**
+             * @brief store a lock for a mutex
+             */
+            std::unique_lock<std::mutex> lock;
+            /**
+             * @brief store the actual vulkan queue
+             */
+            void* queue;
+
+            /**
+             * @brief Construct a new Queue Reference
+             * 
+             * @param mtx a reference to the mutex
+             * @param _queue the actual vulkan queue
+             */
+            QueueReference(std::mutex& mtx, void* _queue)
+             : lock(mtx), queue(_queue)
+            {}
+
+            /**
+             * @brief Construct a new Queue Reference
+             * 
+             * Move constructor
+             */
+            QueueReference(QueueReference&&) = default;
+
+            /**
+             * @brief Destroy the Queue Reference
+             */
+            ~QueueReference() = default;
+        };
+
+        /**
+         * @brief store a pool of multiple queues that can be submitted to from multiple sources
+         */
+        struct QueuePool {
+            /**
+             * @brief store the index of the queue family
+             */
+            u32 familyIdx;
+            /**
+             * @brief store the index of the queue to pull
+             */
+            std::atomic_uint32_t idx;
+            /**
+             * @brief store the amount of existing queues
+             */
+            u32 queueCount;
+            /**
+             * @brief store all the actual queues
+             */
+            std::pair<void*, std::mutex>* queues;
+
+            /**
+             * @brief get a queue that is safe to operate on
+             * 
+             * @return `QueueReference` a reference to the queue
+             */
+            QueueReference acquire() {
+                u32 i = idx.fetch_add(1, std::memory_order_acq_rel) % queueCount;
+                return std::move(QueueReference(queues[i].second, queues[i].first));
+            }
+
+            /**
+             * @brief Destroy the Queue Pool
+             */
+            ~QueuePool()
+            {delete[] queues;}
+        };
 
         /**
          * @brief store the amount of known windows
@@ -87,6 +199,23 @@ namespace Vulkan {
          * @brief store the selected physical device
          */
         void* m_physicalDevice = nullptr;
+        /**
+         * @brief store the vulkan device
+         */
+        void* m_device = nullptr;
+
+        /**
+         * @brief store the graphics queue
+         */
+        Queue m_graphicsQueue;
+        /**
+         * @brief store the transfer queues
+         */
+        QueuePool m_transferQueue;
+        /**
+         * @brief store the compute queues
+         */
+        QueuePool m_computeQueue;
 
     };
 

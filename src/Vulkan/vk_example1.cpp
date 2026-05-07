@@ -39,7 +39,8 @@ void vk_example1() {
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
 
-    while (!win.isClosingRequested()) {
+    //while (!win.isClosingRequested()) {
+    {
         //start the tick
         inst.startMainTick();
 

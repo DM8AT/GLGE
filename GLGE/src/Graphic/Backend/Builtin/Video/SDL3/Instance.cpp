@@ -444,6 +444,10 @@ GLGE::Graphic::Backend::Video::SDL3::Instance::Instance(GLGE::Graphic::Instance*
 GLGE::Graphic::Backend::Video::SDL3::Instance::~Instance() {
     GLGE_PROFILER_SCOPE();
 
+    //clear any existing contract
+    delete m_contract;
+    m_contract = nullptr;
+
     //atomically decrement the instance counter
     //if it was 1 (now 0) clean up
     if (msl_instanceCount.fetch_sub(1, std::memory_order_acq_rel) == 1) {

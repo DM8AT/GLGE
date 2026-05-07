@@ -68,6 +68,23 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual bool onVSyncSet(VSync vsync) override;
 
+        /**
+         * @brief swap the window
+         */
+        void swap();
+
+    protected:
+
+        /**
+         * @brief store the vulkan surface
+         */
+        void* m_surface = nullptr;
+
+        /**
+         * @brief store the vulkan swapchain
+         */
+        void* m_swapchain = nullptr;
+
     };
 
 }

@@ -14,6 +14,12 @@
 //add SDL3 vulkan
 #include "SDL3/SDL_vulkan.h"
 
+//add vulkan
+#include "vulkan/vulkan.h"
+
+//add SDL windows
+#include "Graphic/Backend/Builtin/Video/SDL3/Window.h"
+
 void GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan::getRequiredInstanceExtensions(std::vector<const char*>& extensions) {
     //get the required extensions
     u32 count = 0;
@@ -23,5 +29,24 @@ void GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan::getRequiredInstance
 }
 
 void GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan::getRequiredDeviceExtensions(std::vector<const char*>& extensions) {
-    //none required
+    //swapchain is required
+    extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan::createWindowSurface(void* instance, void** surface, GLGE::Graphic::Backend::Video::Window* window) {
+    SDL_Vulkan_CreateSurface(
+        reinterpret_cast<SDL_Window*>(reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Window*>(window)->getSDLWindow()), 
+        reinterpret_cast<VkInstance>(instance), 
+        nullptr, 
+        reinterpret_cast<VkSurfaceKHR*>(surface)
+    );
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan::destroyWindowSurface(void* instance, void* surface, GLGE::Graphic::Backend::Video::Window* window) {
+    SDL_Vulkan_DestroySurface(
+        reinterpret_cast<VkInstance>(instance), 
+        reinterpret_cast<VkSurfaceKHR>(surface), 
+        nullptr
+    );
+    vkDestroySurfaceKHR(reinterpret_cast<VkInstance>(instance), reinterpret_cast<VkSurfaceKHR>(surface), nullptr);
 }
