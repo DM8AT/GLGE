@@ -68,11 +68,6 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual bool onVSyncSet(VSync vsync) override;
 
-        /**
-         * @brief swap the window
-         */
-        void swap();
-
     protected:
 
         /**
@@ -84,6 +79,15 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief store the vulkan swapchain
          */
         void* m_swapchain = nullptr;
+
+        /**
+         * @brief store the images of the swapchain
+         */
+        std::vector<void*> m_imgs;
+        /**
+         * @brief store views to the swapchain images
+         */
+        std::vector<void*> m_imgViews;
 
     };
 
