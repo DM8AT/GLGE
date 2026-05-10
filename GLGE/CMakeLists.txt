@@ -289,6 +289,7 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/VertexLayout.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Material.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.cpp
             # Builtin::OpenGL::GLAD
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/glad/src/glad.c
             # Builtin::OpenGL::Translator
@@ -310,6 +311,8 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Description.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Window.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Translator.cpp
         )
     endif()
 

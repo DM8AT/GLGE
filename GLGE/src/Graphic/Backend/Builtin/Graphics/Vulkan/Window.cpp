@@ -31,6 +31,8 @@ using namespace GLGE::Graphic::Backend::Graphic::Vulkan;
 Window::Window(GLGE::Graphic::Window* window) 
  : GLGE::Graphic::Backend::Graphic::Window(window)
 {
+    //setup the window
+    onWindowSetup();
 }
 
 Window::~Window() {
@@ -49,6 +51,8 @@ Window::~Window() {
     getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->destroyWindowSurface(
         inst->getInstance(), m_surface, getWindow()->getVideoWindow()
     );
+    //make sure the surface is gone
+    vkDestroySurfaceKHR(reinterpret_cast<VkInstance>(inst->getInstance()), reinterpret_cast<VkSurfaceKHR>(m_surface), nullptr);
 }
 
 void Window::onWindowSetup() {
@@ -95,6 +99,7 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
 
     //store the choosen image format
     VkFormat choosenFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    m_format = static_cast<i32>(choosenFormat);
     VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
     //create the swapchain
@@ -107,7 +112,7 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     swapCreate.imageExtent.width = res.x;
     swapCreate.imageExtent.height = res.y;
     swapCreate.imageArrayLayers = 1;
-    swapCreate.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapCreate.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     swapCreate.presentMode = VK_PRESENT_MODE_FIFO_KHR;
     swapCreate.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     swapCreate.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -144,6 +149,109 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
         m_imgViews.push_back(reinterpret_cast<void*>(view));
     }
     
+    //use a temporary command pool and command buffer to set the layout of the images correctly
+    VkCommandPool tempPool;
+    VkCommandPoolCreateInfo tmpPoolCreate {};
+    tmpPoolCreate.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    tmpPoolCreate.queueFamilyIndex = inst->getGraphicsQueue().familyIdx;
+    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(inst->getDevice()), &tmpPoolCreate, nullptr, &tempPool) != VK_SUCCESS)
+    {throw Exception("Failed to create a temporary command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Window");}
+    //get a temporary command buffer
+    VkCommandBufferAllocateInfo cmdBuffAlloc {};
+    cmdBuffAlloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    cmdBuffAlloc.commandBufferCount = 1;
+    cmdBuffAlloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    cmdBuffAlloc.commandPool = tempPool;
+    VkCommandBuffer cmdBuff;
+    vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(inst->getDevice()), &cmdBuffAlloc, &cmdBuff);
+
+    //create a dummy render pass to just clear the windows
+    VkAttachmentDescription attachDescr {};
+    attachDescr.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachDescr.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    attachDescr.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachDescr.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachDescr.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachDescr.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachDescr.format = choosenFormat;
+    attachDescr.samples = VK_SAMPLE_COUNT_1_BIT;
+    VkAttachmentReference attachRef {};
+    attachRef.attachment = 0;
+    attachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkSubpassDescription subpass {};
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &attachRef;
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    VkRenderPassCreateInfo renPassCreate {};
+    renPassCreate.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renPassCreate.attachmentCount = 1;
+    renPassCreate.pAttachments = &attachDescr;
+    renPassCreate.subpassCount = 1;
+    renPassCreate.pSubpasses = &subpass;
+    VkRenderPass initPass;
+    if (vkCreateRenderPass(reinterpret_cast<VkDevice>(inst->getDevice()), &renPassCreate, nullptr, &initPass) != VK_SUCCESS)
+    {throw Exception("Failed to create the dummy render pass", "GLGE::Graphic::Backend::Graphic::Vulkan::Window");}
+
+    //create a framebuffer for the render pass per image view
+    std::vector<VkFramebuffer> fbuffs;
+    fbuffs.reserve(m_imgViews.size());
+    for (const auto& imgView : m_imgViews) {
+        VkImageView view = reinterpret_cast<VkImageView>(imgView);
+        VkFramebufferCreateInfo fbuffCreate {};
+        fbuffCreate.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        fbuffCreate.attachmentCount = 1;
+        fbuffCreate.height = res.y;
+        fbuffCreate.width = res.x;
+        fbuffCreate.pAttachments = &view;
+        fbuffCreate.layers = 1;
+        fbuffCreate.renderPass = initPass;
+        VkFramebuffer fbuff;
+        if (vkCreateFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), &fbuffCreate, nullptr, &fbuff) != VK_SUCCESS) 
+        {throw Exception("Failed to create a dummy framebuffer", "GLGE::Graphic::Backend::Graphic::Vulkan::Window");}
+        fbuffs.push_back(fbuff);
+    }
+
+    //record the command buffer
+    VkCommandBufferBeginInfo cmdBuffBeg {};
+    cmdBuffBeg.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    vkBeginCommandBuffer(cmdBuff, &cmdBuffBeg);
+
+    //run a dummy render pass for each image
+    for (const auto& fbuff : fbuffs) {
+        VkClearValue clearCol {};
+        clearCol.color = {{0.f, 0.f, 0.f, 0.f}};
+        
+        VkRenderPassBeginInfo renPassBeg {};
+        renPassBeg.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renPassBeg.framebuffer = fbuff;
+        renPassBeg.renderArea.offset = {0,0};
+        renPassBeg.renderArea.extent = {res.x, res.y};
+        renPassBeg.clearValueCount = 1;
+        renPassBeg.pClearValues = &clearCol;
+        renPassBeg.renderPass = initPass;
+        vkCmdBeginRenderPass(cmdBuff, &renPassBeg, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdEndRenderPass(cmdBuff);
+    }
+
+    //finalize the command buffer
+    vkEndCommandBuffer(cmdBuff);
+
+    //submit to the graphics queue
+    VkSubmitInfo subInfo {};
+    subInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    subInfo.commandBufferCount = 1;
+    subInfo.pCommandBuffers = &cmdBuff;
+    vkQueueSubmit(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue), 1, &subInfo, VK_NULL_HANDLE);
+
+    //TODO: Better
+    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue));
+
+    //clean up
+    vkDestroyCommandPool(reinterpret_cast<VkDevice>(inst->getDevice()), tempPool, nullptr);
+    for (const auto& fbuff : fbuffs)
+    {vkDestroyFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), fbuff, nullptr);}
+    vkDestroyRenderPass(reinterpret_cast<VkDevice>(inst->getDevice()), initPass, nullptr);
+
     //store the new rendering resolution
     m_resolution = res;
 }

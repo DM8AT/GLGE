@@ -43,28 +43,7 @@
 
 //work in the implementation namespace
 
-namespace Impl {
-
-bool swapWindow(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::swapWindow");
-
-    //store a helper function that is called when the swap is invoked
-    static void (*helper)(GLGE::Graphic::Window*) = [](GLGE::Graphic::Window* window) {
-        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::swapWindow::swapWindow");
-        //Some drivers want this
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //set the viewport
-        glViewport(0, 0, window->getResolution().x, window->getResolution().y);
-        //do actual swap
-        window->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->swap(window->getVideoWindow());
-    };
-    //extract the actual arguments
-    const auto& [win] = handle.getArguments<GLGE::Graphic::Window*>();
-    //queue the actual command
-    cmdBuff.addCommand(helper, (GLGE::Graphic::Window*)win);
-    //success
-    return true;
-}
+namespace OglImpl {
 
 bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear");

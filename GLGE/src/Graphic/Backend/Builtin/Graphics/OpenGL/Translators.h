@@ -16,16 +16,7 @@
 #include "Graphic/Graphic.h"
 
 //use a namespace for implementations
-namespace Impl {
-
-    /**
-     * @brief swap a specific window
-     * 
-     * @param cmdBuff the command buffer to record the function into
-     * @param handle the handle that holds the required data for the function
-     * @return `true` if the swap was recorded successfully, `false` otherwise
-     */
-    bool swapWindow(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle);
+namespace OglImpl {
 
     /**
      * @brief clear a render target with a specific color

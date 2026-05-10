@@ -68,6 +68,46 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual bool onVSyncSet(VSync vsync) override;
 
+        /**
+         * @brief Get the surface
+         * 
+         * @return `void*` the vulkan surface
+         */
+        inline void* getSurface() const noexcept
+        {return m_surface;}
+
+        /**
+         * @brief Get the swapchain
+         * 
+         * @return `void*` the vulkan swapchain
+         */
+        inline void* getSwapchain() const noexcept
+        {return m_swapchain;}
+
+        /**
+         * @brief Get all the images from the swapchain
+         * 
+         * @return `const std::vector<void*>&` a constant reference to the vector of images
+         */
+        inline const std::vector<void*>& getImages() const noexcept
+        {return m_imgs;}
+
+        /**
+         * @brief Get the image views from the swapchain
+         * 
+         * @return `const std::vector<void*>&` a constant reference to the vector of image views
+         */
+        inline const std::vector<void*>& getImageViews() const noexcept
+        {return m_imgViews;}
+
+        /**
+         * @brief Get the format
+         * 
+         * @return `i32` the image format enum value
+         */
+        inline i32 getFormat() const noexcept
+        {return m_format;}
+
     protected:
 
         /**
@@ -88,6 +128,11 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief store views to the swapchain images
          */
         std::vector<void*> m_imgViews;
+
+        /**
+         * @brief store the selected image format
+         */
+        i32 m_format = 0;
 
     };
 

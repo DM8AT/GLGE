@@ -39,10 +39,21 @@ void vk_example1() {
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
 
-    //while (!win.isClosingRequested()) {
-    {
+    GLGE::Graphic::RenderTarget window(&win);
+
+    auto pipe = GLGE::Graphic::RenderPipeline::create(&win, 
+        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))}
+    );
+    pipe.record();
+
+    while (!win.isClosingRequested()) {
         //start the tick
         inst.startMainTick();
+
+        pipe.record();
+
+        //draw
+        pipe.play();
 
         //end the tick
         inst.endMainTick();

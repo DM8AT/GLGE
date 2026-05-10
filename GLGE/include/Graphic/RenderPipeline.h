@@ -36,6 +36,11 @@
 namespace GLGE::Graphic {
 
     /**
+     * @brief windows are defined somewhere else
+     */
+    class Window;
+
+    /**
      * @brief a class that describes how rendering should happen
      * 
      * This class has a list of abstract commands it issues to the graphic backend. The graphic backend is then responsible to translate the
@@ -60,12 +65,13 @@ namespace GLGE::Graphic {
          * @brief create a render pipeline from a list of commands
          * 
          * @tparam Commands the types for the commands
+         * @param window a pointer to the ONLY window the render pipeline may operate on
          * @param cmds the actual command instances to store
          * @return `RenderPipeline` the render pipeline that uses the inputted commands
          */
         template <typename... Commands>
         requires (GLGE::Graphic::is_command_v<Commands> && ...)
-        static RenderPipeline create(std::pair<const char*, Commands>... cmds) {
+        static RenderPipeline create(GLGE::Graphic::Window* window, std::pair<const char*, Commands>... cmds) {
             //compute the exact size needed for the storage
             constexpr size_t s = (sizeof(cmds.second.payload) + ... + 0);
             //store a pool for the data
@@ -83,7 +89,7 @@ namespace GLGE::Graphic {
             //store all the names
             ((names.push_back(cmds.first)), ...);
             //iterate over the 
-            return RenderPipeline(types, handles, names, pool);
+            return RenderPipeline(window, types, handles, names, pool);
         }
 
         /**
@@ -126,6 +132,14 @@ namespace GLGE::Graphic {
         inline Backend::Graphic::CommandHandle* getCommand(const std::string_view& name)
         {return (m_nameMap.contains(name)) ? &m_handles[m_nameMap[name]] : nullptr;}
 
+        /**
+         * @brief Get the Window bound to the pipeline
+         * 
+         * @return `GLGE::Graphic::Window*` a pointer to the window or `nullptr` if no window is bound
+         */
+        inline GLGE::Graphic::Window* getWindow() const noexcept
+        {return m_window;}
+
     private:
 
         /**
@@ -158,12 +172,14 @@ namespace GLGE::Graphic {
         /**
          * @brief Construct a new Render Pipeline
          * 
+         * @param window a pointer to the only window the render pipeline may operate on
          * @param types a list of the types of the commands
          * @param handles a vector that contains the handles for the commands
          * @param names a vector that contains names for all the stages
          * @param storage the raw argument storage
          */
-        RenderPipeline(const std::vector<CommandType>& types, const std::vector<Backend::Graphic::CommandHandle>& handles, const std::vector<std::string_view>& names, u8* storage);
+        RenderPipeline(GLGE::Graphic::Window* window, const std::vector<CommandType>& types, const std::vector<Backend::Graphic::CommandHandle>& handles, 
+                       const std::vector<std::string_view>& names, u8* storage);
 
         /**
          * @brief store the graphic instance
@@ -196,6 +212,10 @@ namespace GLGE::Graphic {
          */
         u8* m_pool = nullptr;
 
+        /**
+         * @brief store the bound window
+         */
+        GLGE::Graphic::Window* m_window = nullptr;
 
     };
 

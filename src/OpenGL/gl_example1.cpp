@@ -228,15 +228,14 @@ void gl_example1() {
         }
     );
 
-    auto pipe = GLGE::Graphic::RenderPipeline::create(
+    auto pipe = GLGE::Graphic::RenderPipeline::create(&win, 
         std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_MultiSampleTarget, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
         std::pair{"Cull", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &cull, GLGE::uvec3(1))},
         std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
         std::pair{"Flatten multi sample", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), HDR_Target, GLGE::u8(0), true, false)},
         std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
         std::pair{"Finalize", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &finalize, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
-        std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0), false, false)},
-        std::pair{"Swap", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_SWAP_WINDOW, &win)}
+        std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0), false, false)}
     );
     pipe.record();
     *pipe.getCommand("Cull")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(renderer.getObjectCount()/256.f), 1, 1);

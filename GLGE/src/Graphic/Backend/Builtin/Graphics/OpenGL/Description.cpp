@@ -49,6 +49,8 @@
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
 //add renderers
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.h"
+//add command buffers
+#include "Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.h"
 
 //add GLAD
 #include "glad/glad.h"
@@ -58,12 +60,11 @@ using namespace GLGE::Graphic::Builtin::Graphics;
 
 OpenGL::OpenGL() 
  : Description(GLGE::Graphic::Backend::Graphic::CommandTable({
-        std::pair{GLGE::Graphic::COMMAND_SWAP_WINDOW, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Window*>(Impl::swapWindow)},
-        std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(Impl::clear)},
-        std::pair{GLGE::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8>(Impl::copy)},
-        std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(Impl::dispatchCompute)},
-        std::pair{GLGE::Graphic::COMMAND_DRAW_MESH, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Mesh*, GLGE::Graphic::Material*, GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::u32>(Impl::drawSimpleMesh)},
-        std::pair{GLGE::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(Impl::drawWorld)}
+        std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(OglImpl::clear)},
+        std::pair{GLGE::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8>(OglImpl::copy)},
+        std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(OglImpl::dispatchCompute)},
+        std::pair{GLGE::Graphic::COMMAND_DRAW_MESH, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Mesh*, GLGE::Graphic::Material*, GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::u32>(OglImpl::drawSimpleMesh)},
+        std::pair{GLGE::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(OglImpl::drawWorld)}
     }))
 {}
 
@@ -80,7 +81,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window> OpenGL::createWindow(GL
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window>(new GLGE::Graphic::Backend::Graphic::OpenGL::Window(window), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> OpenGL::createCommandBuffer([[maybe_unused]]GLGE::Graphic::RenderPipeline* renderPipeline)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::CommandBuffer(), false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::OpenGL::CommandBuffer(renderPipeline), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> OpenGL::createSampler([[maybe_unused]] const GLGE::Graphic::SamplerCPU& sampler, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(new GLGE::Graphic::Backend::Graphic::OpenGL::Sampler(sampler, instance), false);}

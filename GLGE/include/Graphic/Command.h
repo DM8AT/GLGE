@@ -30,13 +30,6 @@ namespace GLGE::Graphic {
         COMMAND_UNKNOWN = 0,
 
         /**
-         * @brief swap the front and back buffer of a window
-         * 
-         * @param window a pointer to the window to swap
-         */
-        COMMAND_SWAP_WINDOW = 1,
-
-        /**
          * @brief clear a render target with a solid color, a potential depth and a potential stencil value
          * 
          * @param target the render target to clear

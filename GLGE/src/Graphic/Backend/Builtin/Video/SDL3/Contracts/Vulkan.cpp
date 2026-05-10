@@ -48,5 +48,4 @@ void GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan::destroyWindowSurfac
         reinterpret_cast<VkSurfaceKHR>(surface), 
         nullptr
     );
-    vkDestroySurfaceKHR(reinterpret_cast<VkInstance>(instance), reinterpret_cast<VkSurfaceKHR>(surface), nullptr);
 }

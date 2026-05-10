@@ -15,6 +15,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add windows
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
+//add command buffers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -25,8 +27,12 @@ using namespace GLGE::Graphic::Builtin::Graphics;
 //add vulkan
 #include <vulkan/vulkan.h>
 
+//add translation functions
+#include "Translator.h"
+
 Vulkan::Vulkan() 
  : Description(GLGE::Graphic::Backend::Graphic::CommandTable({
+        std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(VkImpl::clear)}
     }))
 {initialize();}
 
@@ -43,7 +49,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window> Vulkan::createWindow(GL
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window>(new GLGE::Graphic::Backend::Graphic::Vulkan::Window(window), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCommandBuffer([[maybe_unused]]GLGE::Graphic::RenderPipeline* renderPipeline)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(nullptr, false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer(renderPipeline), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> Vulkan::createSampler([[maybe_unused]] const GLGE::Graphic::SamplerCPU& sampler, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(nullptr, false);}

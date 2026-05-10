@@ -16,9 +16,9 @@
 //use the namespace
 using namespace GLGE::Graphic;
 
-RenderPipeline::RenderPipeline(const std::vector<CommandType>& types, const std::vector<Backend::Graphic::CommandHandle>& handles, 
+RenderPipeline::RenderPipeline(GLGE::Graphic::Window* window, const std::vector<CommandType>& types, const std::vector<Backend::Graphic::CommandHandle>& handles, 
                                const std::vector<std::string_view>& names, u8* storage) 
- : m_types(types), m_handles(handles), m_names(names), m_pool(storage)
+ : m_window(window), m_types(types), m_handles(handles), m_names(names), m_pool(storage)
 {
     //get the graphic instance
     m_inst = getInstance()->getExtension<GLGE::Graphic::Instance>();
@@ -48,6 +48,9 @@ void RenderPipeline::record(bool allowThreading) {
     //if the command buffer is recorded, clear it
     if (m_cmdBuff->isRecorded())
     {m_cmdBuff->clear();}
+
+    //signal the beginning of the recording
+    m_cmdBuff->onBegin();
 
     //Iterate over all commands
     for (size_t i = 0; i < m_names.size(); ++i) {

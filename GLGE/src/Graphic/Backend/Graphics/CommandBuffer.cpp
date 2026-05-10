@@ -19,7 +19,8 @@
 //use the library namespace
 using namespace GLGE::Graphic::Backend::Graphic;
 
-CommandBuffer::CommandBuffer()
+CommandBuffer::CommandBuffer(GLGE::Graphic::RenderPipeline* pipeline)
+ : m_renderPipeline(pipeline)
 {m_buffer.reserve(1024);}
 
 void CommandBuffer::playback() {

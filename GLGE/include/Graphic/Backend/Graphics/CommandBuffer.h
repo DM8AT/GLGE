@@ -20,6 +20,13 @@
 //add references
 #include "Core/Reference.h"
 
+namespace GLGE::Graphic {
+    /**
+     * @brief render pipelines are defined somewhere else
+     */
+    class RenderPipeline;
+}
+
 //use the library namespace
 namespace GLGE::Graphic::Backend::Graphic {
 
@@ -40,7 +47,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * All command buffers are initialized in an empty state
          */
-        CommandBuffer();
+        CommandBuffer(GLGE::Graphic::RenderPipeline* renderPipeline);
 
         /**
          * @brief Destroy the Command Buffer
@@ -117,6 +124,11 @@ namespace GLGE::Graphic::Backend::Graphic {
         void clear();
 
         /**
+         * @brief a function used to say that a recording should start
+         */
+        virtual void onBegin() {}
+
+        /**
          * @brief finalize the recorded command buffer
          */
         virtual void finalize() final;
@@ -150,6 +162,14 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief play back all CPU functions stored in the command buffer
          */
         void playback();
+
+        /**
+         * @brief Get the Render Pipeline
+         * 
+         * @return `GLGE::Graphic::RenderPipeline*` a pointer to the render pipeline
+         */
+        inline GLGE::Graphic::RenderPipeline* getRenderPipeline() const noexcept
+        {return m_renderPipeline;}
 
     private:
 
@@ -213,6 +233,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          */
         std::vector<u8> m_buffer;
+
+        /**
+         * @brief store a pointer to the render pipeline
+         */
+        GLGE::Graphic::RenderPipeline* m_renderPipeline = nullptr;
 
     };
 
