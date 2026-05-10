@@ -45,16 +45,14 @@ void vk_example1() {
         std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))}
     );
     pipe.record();
-    GLGE::uvec2 oldSize = win.getSize();
 
     while (!win.isClosingRequested()) {
         //start the tick
         inst.startMainTick();
 
         //handle resizing
-        if (win.getResolution().x != oldSize.x || win.getResolution().y != oldSize.y) {
+        if (win.didResize()) {
             pipe.record();
-            oldSize = win.getResolution();
         }
 
         //draw

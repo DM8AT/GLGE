@@ -113,9 +113,19 @@ namespace GLGE {
         virtual void onUpdate() = 0;
 
         /**
+         * @brief a function that is called every tick from the main thread
+         */
+        virtual void onMainUpdate() {}
+
+        /**
          * @brief the actual function that is called on update
          */
         virtual void update() final;
+
+        /**
+         * @brief the actual function that is called during a main tick update
+         */
+        virtual void mainUpdate() final; 
 
         /**
          * @brief a function that is called when the `shutdown` function of the instance is called or when the instance is being deleted - 

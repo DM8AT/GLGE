@@ -53,6 +53,11 @@ namespace GLGE::Graphic {
         ~Window();
 
         /**
+         * @brief tick the window
+         */
+        void update();
+
+        /**
          * @brief Get the Graphic Instance the window belongs to
          * 
          * @return `GLGE::Graphic::Instance*` a pointer to the graphic instance the window belongs to
@@ -214,6 +219,14 @@ namespace GLGE::Graphic {
          * @param size the new maximum size of the window
          */
         void setMaximumSize(const uvec2& size) noexcept;
+
+        /**
+         * @brief check if the window did resize
+         * 
+         * @return `true` if the window resized, `false` if it didn't
+         */
+        inline bool didResize() const noexcept
+        {return m_gWin->didResize();}
 
     private:
 

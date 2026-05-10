@@ -32,6 +32,11 @@ namespace GLGE {
 namespace Graphic {
 
     /**
+     * @brief windows are defined later
+     */
+    class Window;
+
+    /**
      * @brief a graphic instance extends the GLGE instance
      */
     class Instance : public GLGE::InstanceExtension {
@@ -106,7 +111,12 @@ namespace Graphic {
         /**
          * @brief a function that is called every time the GLGE instance is updated
          */
-        virtual void onUpdate() override;
+        virtual void onUpdate() override {}
+
+        /**
+         * @brief a function that is called every tick from the main thread
+         */
+        virtual void onMainUpdate() override;
 
         /**
          * @brief a function that is called when the GLGE instance shuts down
@@ -241,9 +251,17 @@ namespace Graphic {
         Reference<Backend::Graphic::MeshPool> m_meshPool;
 
         /**
+         * @brief store all the windows
+         */
+        std::vector<Window*> m_windows;
+
+        /**
          * @brief store the currently bound graphic instance
          */
         inline static thread_local GLGE::Graphic::Instance* msl_instance = nullptr;
+
+        //windows are friends
+        friend class Window;
 
     };
 

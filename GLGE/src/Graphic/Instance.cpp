@@ -10,6 +10,8 @@
  */
 //include the instance
 #include "Graphic/Instance.h"
+//add windows
+#include "Graphic/Window.h"
 
 //use the libraries namespace
 using namespace GLGE::Graphic;
@@ -44,7 +46,10 @@ Instance::~Instance() {
     m_vInst = nullptr;
 }
 
-void Instance::onUpdate() {
+void Instance::onMainUpdate() {
+    //update all windows
+    for (const auto& win : m_windows)
+    {win->update();}
     //update the video instance
     m_vInst->onUpdate();
 }

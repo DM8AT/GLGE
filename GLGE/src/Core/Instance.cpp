@@ -65,6 +65,25 @@ void InstanceExtension::update() {
     }
 }
 
+void InstanceExtension::mainUpdate() {
+    GLGE_PROFILER_SCOPE();
+    
+    {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::InstanceExtension::mainUpdate - onMainUpdate");
+
+        //call the update binding
+        onMainUpdate();
+    }
+
+    {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::InstanceExtension::mainUpdate - recursion");
+
+        //iterate over all extensions and update them
+        for (auto& [name, ext] : m_extensions)
+        {ext->mainUpdate();}
+    }
+}
+
 void InstanceExtension::shutdown() {
     GLGE_PROFILER_SCOPE();
     
@@ -341,6 +360,13 @@ void Instance::mainUpdate() {
     if (!isMainThread())
     {throw Exception("The main update function can only be called from the main thread", "Instance::mainUpdate");}
     #endif
+
+    {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Instance::mainUpdate - extension main update");
+
+        for (auto& [name, ext] : m_extensions)
+        {ext->mainUpdate();}
+    }
 
     {
         GLGE_PROFILER_SCOPE_NAMED("GLGE::Instance::mainUpdate - flushing local task queue");

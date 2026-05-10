@@ -67,8 +67,14 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     if (res.x == m_resolution.x && res.y == m_resolution.y)
     {return;}
 
+    //resized
+    m_resized = true;
+
     //get the instance
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get());
+
+    //the queue must be idle before the window can delete the images
+    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue));
 
     //if image views exist, destroy them
     for (auto* views : m_imgViews) 

@@ -52,6 +52,11 @@ namespace GLGE::Graphic::Backend::Graphic {
         virtual void onWindowSetup() = 0;
 
         /**
+         * @brief tick the graphic window
+         */
+        virtual void onUpdate() {m_resized = false;}
+
+        /**
          * @brief a function that is called when the size of the window was changed
          * 
          * @param size the new size
@@ -107,6 +112,14 @@ namespace GLGE::Graphic::Backend::Graphic {
         inline VSync getVSync() const noexcept
         {return m_vsync;}
 
+        /**
+         * @brief get if the window was resized
+         * 
+         * @return `true` if the window was resized, `false` if the window was not resized
+         */
+        inline bool didResize() const noexcept
+        {return m_resized;}
+
     protected:
 
         /**
@@ -123,6 +136,10 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief store the current VSync state
          */
         VSync m_vsync = VSYNC_ENABLED;
+        /**
+         * @brief store if the window was resized
+         */
+        bool m_resized = true;
 
     private:
 

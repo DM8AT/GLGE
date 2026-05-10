@@ -37,6 +37,7 @@ Window::Window(const std::string& name, const uvec2& size, const WindowSettings&
     m_gWin = m_inst->m_gDesc->createWindow(this);
     //register the window
     m_inst->getGraphicBackendInstance()->onRegisterWindow(m_gWin.get());
+    m_inst->m_windows.push_back(this);
 }
 
 Window::~Window() {
@@ -44,9 +45,18 @@ Window::~Window() {
 
     //remove the window from the instance
     m_inst->getGraphicBackendInstance()->onRemoveWindow(m_gWin.get());
+    for (size_t i = 0; i < m_inst->m_windows.size(); ++i) {
+        if (m_inst->m_windows[i] == this)
+        {m_inst->m_windows.erase(m_inst->m_windows.begin() + i); break;}
+    }
     //clean up the window
     delete m_vWin;
     m_vWin = nullptr;
+}
+
+void Window::update() {
+    //tick the graphic window
+    m_gWin->onUpdate();
 }
 
 void Window::notifyResolutionChange(const uvec2& newSize, const uvec2& newUsableSize, float pixelScale, const uvec2& resolution) {
