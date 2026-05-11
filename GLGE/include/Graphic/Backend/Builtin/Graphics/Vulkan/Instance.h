@@ -19,6 +19,8 @@
 #include "Core/Common.h"
 //add atomics
 #include <atomic>
+//add a mutex
+#include <mutex>
 
 //backend windows are defined elsewhere
 namespace GLGE::Graphic::Backend::Graphic {class Window;}
