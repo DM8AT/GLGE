@@ -18,27 +18,6 @@
 #ifndef _GLGE_CORE_PROFILER_
 #define _GLGE_CORE_PROFILER_
 
-//if the profiler was not defined, define it automatically
-#ifndef GLGE_PROFILER_ENABLE
-    //in debug mode, enable the profiler. 
-    //Else, assume a release build and disable the profiler
-    #if GLGE_DEBUG
-        /**
-         * @brief a flag to determine if the profiler will actually be included in builds
-         * 
-         * 1 if the profiler will be included, 0 if not
-         */
-        #define GLGE_PROFILER_ENABLE 1
-    #else 
-        /**
-         * @brief a flag to determine if the profiler will actually be included in builds
-         * 
-         * 1 if the profiler will be included, 0 if not
-         */
-        #define GLGE_PROFILER_ENABLE 0
-    #endif
-#endif
-
 //only continue if the profiler is enabled
 #if GLGE_PROFILER_ENABLE
 

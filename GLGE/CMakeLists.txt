@@ -44,6 +44,9 @@ option(GLGE_GRAPHIC_ALLOW_ENGINE_COMMAND_OVERRIDE
     OFF
 )
 
+# Tracy profiling option
+option(GLGE_ENABLE_TRACY "Enable Tracy profiler integration" ON)
+
 # define the project
 project(${GLGE_PROJ_NAME})
 
@@ -68,6 +71,8 @@ if (NOT GLM_FOUND)
     )
     FetchContent_MakeAvailable(GLM)
 endif()
+
+# only download tracy in debug if tracy is enabled
 
 # Tracy is required for the core
 # first, check if the OS has tracy installed
@@ -211,19 +216,33 @@ set_target_properties(${GLGE_CORE_NAME} PROPERTIES
     CXX_STANDARD_REQUIRED ON
 )
 
-# Compile TracyClient.cpp only in Debug
-target_sources(GLGE_CORE PRIVATE
-    $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/TracyClient.cpp>
-)
-# Define TRACY_ENABLE only in Debug
-target_compile_definitions(GLGE_CORE PUBLIC
-    $<$<CONFIG:Debug>:TRACY_ENABLE>
-)
+# check for tracy integration
+if (GLGE_ENABLE_TRACY )
 
-# add the required libraries to the core
-target_include_directories(${GLGE_CORE_NAME} PUBLIC
-    $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/tracy>
-)
+    # Compile TracyClient.cpp only in Debug
+    target_sources(GLGE_CORE PRIVATE
+        $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/TracyClient.cpp>
+    )
+    # Define TRACY_ENABLE only in Debug
+    target_compile_definitions(GLGE_CORE PUBLIC
+        $<$<CONFIG:Debug>:TRACY_ENABLE GLGE_PROFILER_ENABLE=1>
+    )
+
+    # add the required libraries to the core
+    target_include_directories(${GLGE_CORE_NAME} PUBLIC
+        $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/tracy>
+    )
+
+    # add libraries for tracy if on windows
+    target_link_libraries(GLGE_CORE PUBLIC
+        $<$<AND:$<PLATFORM_ID:Windows>,$<CONFIG:Debug>>:
+            ws2_32
+            dbghelp
+            secur32
+        >
+    )
+
+endif()
 
 # add glm
 target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm)
