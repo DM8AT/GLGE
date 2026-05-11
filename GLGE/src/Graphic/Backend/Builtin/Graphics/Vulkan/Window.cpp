@@ -74,7 +74,7 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get());
 
     //the queue must be idle before the window can delete the images
-    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue));
+    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
 
     //if image views exist, destroy them
     for (auto* views : m_imgViews) 
@@ -247,10 +247,13 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     subInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     subInfo.commandBufferCount = 1;
     subInfo.pCommandBuffers = &cmdBuff;
-    vkQueueSubmit(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue), 1, &subInfo, VK_NULL_HANDLE);
+    {
+        auto queueRef = inst->getGraphicsQueue().acquire();
+        vkQueueSubmit(reinterpret_cast<VkQueue>(queueRef.queue), 1, &subInfo, VK_NULL_HANDLE);
+    }
 
     //TODO: Better
-    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue));
+    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
 
     //clean up
     vkDestroyCommandPool(reinterpret_cast<VkDevice>(inst->getDevice()), tempPool, nullptr);

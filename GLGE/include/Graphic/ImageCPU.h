@@ -162,6 +162,14 @@ namespace GLGE::Graphic {
         {return m_format;}
 
         /**
+         * @brief Get the size of a single texel
+         * 
+         * @return `u64` the byte size of a single pixel
+         */
+        inline u64 getTexelSize() const noexcept
+        {return m_bytesPerPixel;}
+
+        /**
          * @brief check if the image holds valid data
          * 
          * @return `true` if the image holds valid data, `false` otherwise

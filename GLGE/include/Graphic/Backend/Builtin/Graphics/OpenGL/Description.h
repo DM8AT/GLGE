@@ -103,10 +103,11 @@ namespace Graphics {
          * 
          * @param size the size of the image in pixels
          * @param format the pixel format of the image
-         * @param samples the amount of samples per pixel
-         * @return `Reference<GLGE::Graphic::Backend::Graphic::Image>` a pointer to the new image
+         * @param samples the amount of samples per pixelpixel
+         * @param instance a pointer to the graphic backend instance the image will belong to
+         * @return `Reference<GLGE::Graphic::Backend::Graphic::Image>` a reference to the new image
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Image> createImage([[maybe_unused]] const uvec2& size, [[maybe_unused]] PixelFormat format, [[maybe_unused]] u8 samples) override;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Image> createImage([[maybe_unused]] const uvec2& size, [[maybe_unused]] PixelFormat format, [[maybe_unused]] u8 samples, GLGE::Graphic::Backend::Graphic::Instance* instance) override;
 
         /**
          * @brief Construct a new Framebuffer

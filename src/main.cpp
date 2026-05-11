@@ -35,7 +35,7 @@ int main() {
     }
     //ask for an example to select
     std::cout << "\nPlease enter the number of the example to run:\n";
-    uint32_t example = UINT32_MAX;
+    uint32_t example = 1;
     std::cin >> example;
     //sanity check
     if (example > (sizeof(functionMap)/sizeof(*functionMap))) {

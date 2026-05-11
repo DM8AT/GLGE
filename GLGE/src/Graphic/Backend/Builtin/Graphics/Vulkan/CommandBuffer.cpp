@@ -79,7 +79,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::~CommandBuffer() {
     //delete synchronization
     for (size_t i = 0; i < m_syncObjs.size(); ++i) {
         vkWaitForFences(reinterpret_cast<VkDevice>(inst->getDevice()), 1, reinterpret_cast<const VkFence*>(&m_syncObjs[i].m_fence_inFlight), VK_TRUE, UINT64_MAX);
-        vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue));
+        vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
         vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(m_syncObjs[i].m_semaphore_imgAvailable), nullptr);
         vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(m_syncObjs[i].m_semaphore_renderDone), nullptr);
         vkDestroyFence(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkFence>(m_syncObjs[i].m_fence_inFlight), nullptr);
@@ -95,7 +95,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin() {
     auto* win = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(getRenderPipeline()->getWindow()->getGraphicWindow().get());
 
     //wait for the old render to be done
-    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue));
+    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
 
     //begin the command buffer recording
     VkCommandBufferBeginInfo cmdBuffBeg {};
@@ -178,7 +178,10 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onPlay() {
     subInfo.pSignalSemaphores = reinterpret_cast<VkSemaphore*>(&m_syncObjs[m_frameIdx].m_semaphore_renderDone);
     subInfo.pWaitDstStageMask = &waitStages;
     //submit to the queue
-    vkQueueSubmit(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue), 1, &subInfo, reinterpret_cast<VkFence>(m_syncObjs[m_frameIdx].m_fence_inFlight));
+    {
+        auto queueRef = inst->getGraphicsQueue().acquire();
+        vkQueueSubmit(reinterpret_cast<VkQueue>(queueRef.queue), 1, &subInfo, reinterpret_cast<VkFence>(m_syncObjs[m_frameIdx].m_fence_inFlight));
+    }
 
     //if a window exists, present
     if (getRenderPipeline()->getWindow()) {
@@ -193,7 +196,10 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onPlay() {
         present.pSwapchains = &swapchain;
         present.pImageIndices = &buff;
 
-        vkQueuePresentKHR(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queue), &present);
+        {
+            auto queueRef = inst->getGraphicsQueue().acquire();
+            vkQueuePresentKHR(reinterpret_cast<VkQueue>(queueRef.queue), &present);
+        }
     }
 
     //step the frame

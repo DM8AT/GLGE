@@ -37,20 +37,6 @@ namespace Vulkan {
     public:
 
         /**
-         * @brief store a structure that defines what a queue is
-         */
-        struct Queue {
-            /**
-             * @brief store the index of the queue family of the queue
-             */
-            u32 familyIdx;
-            /**
-             * @brief store the queue
-             */
-            void* queue;
-        };
-
-        /**
          * @brief store a reference to a queue
          */
         struct QueueReference {
@@ -98,6 +84,10 @@ namespace Vulkan {
              * @brief store the index of the queue to pull
              */
             std::atomic_uint32_t idx;
+            /**
+             * @brief store the single use command pool
+             */
+            void* singleUsePool;
             /**
              * @brief store the amount of existing queues
              */
@@ -187,7 +177,7 @@ namespace Vulkan {
         /**
          * @brief get the graphics queue
          */
-        Queue& getGraphicsQueue() noexcept
+        QueuePool& getGraphicsQueue() noexcept
         {return m_graphicsQueue;}
 
         /**
@@ -201,6 +191,22 @@ namespace Vulkan {
          */
         QueuePool& getComputeQueue() noexcept
         {return m_computeQueue;}
+
+        /**
+         * @brief Get the VMA allocator
+         * 
+         * @return `void*` the VMA allocator instance
+         */
+        void* getAllocator() const noexcept
+        {return m_allocator;}
+
+        /**
+         * @brief Get the max sample count enum value
+         * 
+         * @return `i32` the max sample count enum value
+         */
+        i32 getMaxSampleCount() const noexcept
+        {return m_maxSampleCount;}
 
     protected:
 
@@ -223,9 +229,14 @@ namespace Vulkan {
         void* m_device = nullptr;
 
         /**
+         * @brief store the VMA allocator
+         */
+        void* m_allocator = nullptr;
+
+        /**
          * @brief store the graphics queue
          */
-        Queue m_graphicsQueue;
+        QueuePool m_graphicsQueue;
         /**
          * @brief store the transfer queues
          */
@@ -234,6 +245,13 @@ namespace Vulkan {
          * @brief store the compute queues
          */
         QueuePool m_computeQueue;
+
+        /**
+         * @brief store the maximal samples for framebuffer attachments
+         * 
+         * This is the minimum of the depth and color sample count
+         */
+        i32 m_maxSampleCount = 0;
 
     };
 

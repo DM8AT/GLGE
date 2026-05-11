@@ -17,8 +17,8 @@
 
 #include <SDL3/SDL.h>
 
-GLGE::Graphic::Backend::Graphic::OpenGL::Image::Image(const uvec2& size, PixelFormat format, u8 samples) 
- : GLGE::Graphic::Backend::Graphic::Image(size, format, samples)
+GLGE::Graphic::Backend::Graphic::OpenGL::Image::Image(const uvec2& size, PixelFormat format, u8 samples, GLGE::Graphic::Backend::Graphic::Instance* instance) 
+ : GLGE::Graphic::Backend::Graphic::Image(size, format, samples, instance)
 {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Image::Image");
     //potential sample limit

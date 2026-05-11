@@ -89,8 +89,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> OpenGL::createSampler(
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture> OpenGL::createTexture([[maybe_unused]] const GLGE::uvec2& size, [[maybe_unused]] GLGE::u16 mipCount, [[maybe_unused]] GLGE::Graphic::PixelFormat format)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture>(new GLGE::Graphic::Backend::Graphic::OpenGL::Texture(size, mipCount, format), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Image> OpenGL::createImage([[maybe_unused]] const GLGE::uvec2& size, [[maybe_unused]] GLGE::Graphic::PixelFormat format, [[maybe_unused]] GLGE::u8 samples)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Image>(new GLGE::Graphic::Backend::Graphic::OpenGL::Image(size, format, samples), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Image> OpenGL::createImage([[maybe_unused]] const GLGE::uvec2& size, [[maybe_unused]] GLGE::Graphic::PixelFormat format, [[maybe_unused]] GLGE::u8 samples, GLGE::Graphic::Backend::Graphic::Instance* instance)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Image>(new GLGE::Graphic::Backend::Graphic::OpenGL::Image(size, format, samples, instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> OpenGL::createFramebuffer([[maybe_unused]] u8 colorAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* colorAttachments, 
                                                                                         [[maybe_unused]] u8 depthAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* depthAttachments, 

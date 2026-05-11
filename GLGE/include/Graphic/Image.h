@@ -41,7 +41,7 @@ namespace GLGE::Graphic {
          * @param samples the amount of samples for the image
          */
         Image(const uvec2& size, PixelFormat format, u8 samples = 1)
-         : BaseClass(), Resource(), m_image(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createImage(size, format, samples))
+         : BaseClass(), Resource(), m_image(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createImage(size, format, samples, getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
         {m_image->clear();}
 
         /**

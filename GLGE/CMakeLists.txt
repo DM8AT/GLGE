@@ -151,6 +151,26 @@ if (GLGE_INCLUDE_GRAPHICS)
             set(GLGE_GRAPHICS_INCLUDE_VULKAN OFF)
             message(STATUS "Deselected Vulkan. GLGE Graphics will not include the Vulkan backend. ")
         endif()
+
+        #### VMA
+        # Try to find system-installed VMA
+        find_path(VMA_INCLUDE_DIR NAMES vk_mem_alloc.h)
+
+        # If not found, fetch it
+        if(NOT VMA_INCLUDE_DIR)
+            message(STATUS "VMA not found - fetching from GitHub")
+            include(FetchContent)
+            FetchContent_Declare(
+                VMA
+                GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+                GIT_TAG v3.1.0
+            )
+            FetchContent_MakeAvailable(VMA)
+
+            # FetchContent exposes VMA source dir here
+            set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
+        endif()
+
     endif()
 endif()
 
@@ -312,6 +332,7 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Window.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Image.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Translator.cpp
         )
     endif()
@@ -325,6 +346,7 @@ if (GLGE_INCLUDE_GRAPHICS)
     # if vulkan was requested link the vulkan SDK
     if (GLGE_GRAPHICS_INCLUDE_VULKAN)
         target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE Vulkan::Vulkan)
+        target_include_directories(${GLGE_GRAPHIC_NAME} PRIVATE ${VMA_INCLUDE_DIR})
     endif()
 
     # add the internal include directories

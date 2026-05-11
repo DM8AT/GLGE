@@ -35,6 +35,20 @@ void vk_example1() {
     GLGE::Graphic::Window win("Hello from SDL3", {600, 600});
     win.setVSyncMode(GLGE::Graphic::VSYNC_ENABLED);
 
+    auto imgData = inst.assets().load<GLGE::Graphic::Asset::ImageCPU>("assets/textures/grass.png", GLGE::Graphic::Asset::ImageCPU::PNG);
+    auto othData = inst.assets().load<GLGE::Graphic::Asset::ImageCPU>("assets/textures/cubeTexture.png", GLGE::Graphic::Asset::ImageCPU::PNG);
+    GLGE::Graphic::Image img(*imgData.reference());
+    img.write(*othData.reference(), {32,32});
+
+    GLGE::Graphic::Image oth({600, 600}, GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
+    oth.resizeAndClear({1200, 1200});
+
+    GLGE::Graphic::ImageCPU newImg;
+    img.read(newImg);
+    GLGE::Graphic::Asset::ImageCPU cpuImgAsset;
+    cpuImgAsset.image() = newImg;
+    cpuImgAsset.export_as("img.png", GLGE::Graphic::Asset::ImageCPU::PNG);
+
     std::cout << "Selected GPU: "           << gInst.getGPUName()          << "\n";
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";

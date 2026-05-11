@@ -1,9 +1,9 @@
 /**
  * @file Image.h
- * @author DM8AT
- * @brief define the overload of the image API for OpenGL
+ * @author your name (you@domain.com)
+ * @brief 
  * @version 0.1
- * @date 2026-03-13
+ * @date 2026-05-10
  * 
  * @copyright Copyright (c) 2026
  * 
@@ -16,7 +16,7 @@
 #include "Graphic/Backend/Graphics/Image.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
      * @brief the API overload for OpenGL images
@@ -30,7 +30,7 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * @param size the size of the image in pixels
          * @param format the format of the image
          * @param samples the amount of samples per pixel
-         * @param instance a pointer to the graphic instance the image will belong to
+         * @param instance a pointer to the graphic instance the image belongs to
          */
         Image(const uvec2& size, PixelFormat format, u8 samples, GLGE::Graphic::Backend::Graphic::Instance* instance);
 
@@ -86,14 +86,6 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
 
         /**
-         * @brief Get the handle of the image
-         * 
-         * @return `u32` the image handle
-         */
-        inline u32 getHandle() const noexcept
-        {return m_handle;}
-
-        /**
          * @brief register a new framebuffer
          * 
          * @param fbuff a pointer to the framebuffer backend
@@ -107,26 +99,52 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          */
         virtual void removeFramebuffer(GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff) override;
 
+        /**
+         * @brief Get the actual image
+         * 
+         * @return `void*` the image vulkan handle
+         */
+        inline void* getImage() const noexcept
+        {return m_image;}
+
+        /**
+         * @brief Get the image view
+         * 
+         * @return `void*` the vulkan image view
+         */
+        inline void* getView() const noexcept
+        {return m_view;}
+
     protected:
 
         /**
-         * @brief store a counter for name generation
+         * @brief store the vulkan image
          */
-        inline static u32 ms_nameCounter = 0;
+        void* m_image = nullptr;
 
         /**
-         * @brief store the internal format
+         * @brief store the VMA allocation
          */
-        u32 m_internalFormat = 0;
+        void* m_allocation = nullptr;
 
         /**
-         * @brief store the image handle
+         * @brief store a view into the image
          */
-        u32 m_handle = 0;
+        void* m_view = nullptr;
+
         /**
-         * @brief store the name enumerator
+         * @brief store the vulkan format
          */
-        u32 m_name = ++ms_nameCounter;
+        i32 m_vkFormat = 0;
+        /**
+         * @brief store the image aspect flags
+         */
+        i32 m_aspectFlags = 0;
+
+        /**
+         * @brief store the current image layout
+         */
+        i32 m_layout = 0;
 
     };
 

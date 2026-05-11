@@ -16,6 +16,8 @@
 #include "Core/Reference.h"
 //add CPU images
 #include "Graphic/ImageCPU.h"
+//add instances
+#include "Instance.h"
 
 //add the resource base
 #include "Graphic/Resource.h"
@@ -38,9 +40,10 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param size the size of the image
          * @param format the format of the image
          * @param samples the amount of samples per pixels
+         * @param instance a pointer to the instance the image belongs to
          */
-        Image(const uvec2& size, PixelFormat format, u8 samples)
-         : Referable(), m_size(size), m_format(format), m_samples(samples)
+        Image(const uvec2& size, PixelFormat format, u8 samples, GLGE::Graphic::Backend::Graphic::Instance* instance)
+         : Referable(), m_size(size), m_format(format), m_samples(samples), m_instance(instance)
         {}
 
         /**
@@ -151,6 +154,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief store the size in pixels of the image
          */
         uvec2 m_size;
+
+        /**
+         * @brief store the graphic instance the image belongs to
+         */
+        GLGE::Graphic::Backend::Graphic::Instance* m_instance = nullptr;
 
     };
 

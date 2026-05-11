@@ -27,6 +27,10 @@
 //add normal maps for maps with iterators
 #include <map>
 
+//implement vma
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
 //use the vulkan backend namespace
 using namespace GLGE::Graphic::Backend::Graphic::Vulkan;
 
@@ -348,7 +352,9 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     //get the queues
     //graphics
     m_graphicsQueue.familyIdx = graphicsFamily;
-    vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), graphicsFamily, graphicsQueueIdx, reinterpret_cast<VkQueue*>(&m_graphicsQueue.queue));
+    m_graphicsQueue.queueCount = 1;
+    m_graphicsQueue.queues = new std::pair<void*, std::mutex>[1];
+    vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), graphicsFamily, graphicsQueueIdx, reinterpret_cast<VkQueue*>(&m_graphicsQueue.queues[0]));
     //transfer
     m_transferQueue.familyIdx = transferFamily;
     m_transferQueue.queueCount = transferQueueCount;
@@ -361,9 +367,47 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     m_computeQueue.queues = new std::pair<void*, std::mutex>[computeQueueCount];
     for (size_t i = 0; i < computeQueueCount; ++i) 
     {vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), m_computeQueue.familyIdx, computeQueueIdx + i, reinterpret_cast<VkQueue*>(&m_computeQueue.queues[i]));}
+
+    //create single-use command pools
+    VkCommandPoolCreateInfo cmdPoolCreate {};
+    cmdPoolCreate.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    cmdPoolCreate.queueFamilyIndex = m_graphicsQueue.familyIdx;
+    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_graphicsQueue.singleUsePool)) != VK_SUCCESS)
+    {throw Exception("Failed to create the graphics single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    cmdPoolCreate.queueFamilyIndex = m_transferQueue.familyIdx;
+    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_transferQueue.singleUsePool)) != VK_SUCCESS)
+    {throw Exception("Failed to create the transfer single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    cmdPoolCreate.queueFamilyIndex = m_computeQueue.familyIdx;
+    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_computeQueue.singleUsePool)) != VK_SUCCESS)
+    {throw Exception("Failed to create the compute single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+
+    //create the VMA allocator
+    VmaAllocatorCreateInfo vmaAllocCreate {};
+    vmaAllocCreate.physicalDevice = reinterpret_cast<VkPhysicalDevice>(m_physicalDevice);
+    vmaAllocCreate.device = reinterpret_cast<VkDevice>(m_device);
+    vmaAllocCreate.instance = reinterpret_cast<VkInstance>(m_instance);
+    vmaAllocCreate.vulkanApiVersion = appInfo.apiVersion;
+    vmaCreateAllocator(&vmaAllocCreate, reinterpret_cast<VmaAllocator*>(&m_allocator));
+
+    //load the device limits
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &props);
+    
+    //store the limits
+    m_maxSampleCount = glm::min<i32>(static_cast<i32>(props.limits.framebufferColorSampleCounts), static_cast<i32>(props.limits.framebufferDepthSampleCounts));
+    m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(props.limits.framebufferStencilSampleCounts));
+    m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(VK_SAMPLE_COUNT_64_BIT));
 }
 
 Instance::~Instance() {
+    //destroy the memory allocator
+    vmaDestroyAllocator(reinterpret_cast<VmaAllocator>(m_allocator));
+
+    //destroy the command pools
+    vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_graphicsQueue.singleUsePool), nullptr);
+    vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_transferQueue.singleUsePool), nullptr);
+    vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_computeQueue.singleUsePool),  nullptr);
+
     //destroy the vulkan device
     vkDestroyDevice(reinterpret_cast<VkDevice>(m_device), nullptr);
     //destroy the vulkan instance
