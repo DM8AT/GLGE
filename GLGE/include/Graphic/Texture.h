@@ -43,7 +43,7 @@ namespace GLGE::Graphic {
          * @param format the format of the texture
          */
         Texture(const uvec2& size, u16 mipCount, PixelFormat format)
-         : BaseClass(), m_texture(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createTexture(size, mipCount, format))
+         : BaseClass(), m_texture(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createTexture(size, mipCount, format, getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
         {}
 
         /**
@@ -54,7 +54,8 @@ namespace GLGE::Graphic {
         Texture(const TextureCPU& texture)
          : BaseClass(), m_texture(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createTexture(texture[0].getSize(), 
                                                                                                                                  texture.getMipCount(), 
-                                                                                                                                 texture[0].getFormat()))
+                                                                                                                                 texture[0].getFormat(),
+                                                                                                                                 getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
         {m_texture->update(texture);}
 
         /**

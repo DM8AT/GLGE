@@ -16,6 +16,8 @@
 #include "Core/Reference.h"
 //textures need a CPU texture for data
 #include "Graphic/TextureCPU.h"
+//add instances
+#include "Instance.h"
 
 //add the resource base
 #include "Graphic/Resource.h"
@@ -35,9 +37,10 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param size the size in pixels of the texture
          * @param mipCount the amount of mip levels the texture has (0 = automatic)
          * @param format the pixel format of the texture
+         * @param instance a pointer to the instance the texture belongs to
          */
-        Texture(const uvec2& size, u16 mipCount, PixelFormat format)
-         : m_size(size), m_format(format)
+        Texture(const uvec2& size, u16 mipCount, PixelFormat format, GLGE::Graphic::Backend::Graphic::Instance* instance)
+         : m_instance(instance), m_size(size), m_format(format)
         {
             //store the valid max mip count
             u8 maxMips = glm::floor(glm::min<f32>(glm::log2(f32(size.x)), glm::log2(f32(size.y)))) + 1;
@@ -99,6 +102,10 @@ namespace GLGE::Graphic::Backend::Graphic {
 
     protected:
 
+        /**
+         * @brief store the instance the texture belongs to
+         */
+        GLGE::Graphic::Backend::Graphic::Instance* m_instance = nullptr;
         /**
          * @brief store the size of the texture
          */

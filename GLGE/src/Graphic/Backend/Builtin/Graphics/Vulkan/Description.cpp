@@ -19,6 +19,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 //add images
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+//add textures
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -56,8 +58,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCo
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> Vulkan::createSampler([[maybe_unused]] const GLGE::Graphic::SamplerCPU& sampler, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(nullptr, false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture> Vulkan::createTexture([[maybe_unused]] const GLGE::uvec2& size, [[maybe_unused]] GLGE::u16 mipCount, [[maybe_unused]] GLGE::Graphic::PixelFormat format)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture>(nullptr, false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture> Vulkan::createTexture([[maybe_unused]] const GLGE::uvec2& size, [[maybe_unused]] GLGE::u16 mipCount, [[maybe_unused]] GLGE::Graphic::PixelFormat format, GLGE::Graphic::Backend::Graphic::Instance* instance)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture>(new GLGE::Graphic::Backend::Graphic::Vulkan::Texture(size, mipCount, format, instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Image> Vulkan::createImage([[maybe_unused]] const GLGE::uvec2& size, [[maybe_unused]] GLGE::Graphic::PixelFormat format, [[maybe_unused]] GLGE::u8 samples, GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Image>(new GLGE::Graphic::Backend::Graphic::Vulkan::Image(size, format, samples, instance), false);}

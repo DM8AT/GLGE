@@ -21,9 +21,6 @@
 //add the shared stuff
 #include "Shared.h"
 
-//for sets
-#include <unordered_set>
-
 GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFormat format, u8 samples, GLGE::Graphic::Backend::Graphic::Instance* instance) 
  : GLGE::Graphic::Backend::Graphic::Image(size, format, samples, instance)
 {
@@ -68,12 +65,27 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
         (format.order == GLGE::Graphic::PixelFormat::Order::STENCIL) ? VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_COLOR_BIT);
     //store the layout
     m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_UNDEFINED);
+
+    //create image view
+    VkImageViewCreateInfo imgViewCreate{};
+    imgViewCreate.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imgViewCreate.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imgViewCreate.format = static_cast<VkFormat>(m_vkFormat);
+    imgViewCreate.image = reinterpret_cast<VkImage>(m_image);
+    imgViewCreate.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+    imgViewCreate.subresourceRange.baseMipLevel = 0;
+    imgViewCreate.subresourceRange.levelCount = 1;
+    imgViewCreate.subresourceRange.baseArrayLayer = 0;
+    imgViewCreate.subresourceRange.layerCount = 1;
+    if (vkCreateImageView(reinterpret_cast<VkDevice>(inst->getDevice()), &imgViewCreate, nullptr, reinterpret_cast<VkImageView*>(&m_view)) != VK_SUCCESS) 
+    {throw Exception("Failed to create Vulkan texture view", "GLGE::Graphic::Backend::Graphic::Vulkan::Texture::Texture");}
 }
 
 GLGE::Graphic::Backend::Graphic::Vulkan::Image::~Image() {
     //get the instance
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
     //clean up the image
+    vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_view), nullptr);
     vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_image), reinterpret_cast<VmaAllocation>(m_allocation));
 }
 
@@ -98,7 +110,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::write(const ImageCPU& image
         __transitionImage(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), 
                         reinterpret_cast<VkImage>(m_image), inst->getGraphicsQueue().familyIdx, inst->getTransferQueue().familyIdx, 
                         wasUndefined ? VK_IMAGE_LAYOUT_UNDEFINED : static_cast<VkImageLayout>(m_layout), static_cast<VkImageLayout>(m_layout), 
-                        static_cast<VkImageAspectFlags>(m_aspectFlags));
+                        static_cast<VkImageAspectFlags>(m_aspectFlags), 0);
     }
     
     //get memory requirements
@@ -171,7 +183,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::write(const ImageCPU& image
         //ready the image to work on the transfer queue
         __transitionImage(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), 
                         reinterpret_cast<VkImage>(m_image), inst->getTransferQueue().familyIdx, inst->getGraphicsQueue().familyIdx, static_cast<VkImageLayout>(m_layout), static_cast<VkImageLayout>(m_layout), 
-                        static_cast<VkImageAspectFlags>(m_aspectFlags));
+                        static_cast<VkImageAspectFlags>(m_aspectFlags), 0);
     }
 
     //clean up
@@ -184,6 +196,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
 
     //clean up
     if (m_image) {
+        vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_view), nullptr);
         vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_image), reinterpret_cast<VmaAllocation>(m_allocation));
     }
 
@@ -218,6 +231,20 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
          != VK_SUCCESS)
     {throw Exception("Failed to create an image", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
 
+    //create image view
+    VkImageViewCreateInfo imgViewCreate{};
+    imgViewCreate.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imgViewCreate.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imgViewCreate.format = static_cast<VkFormat>(m_vkFormat);
+    imgViewCreate.image = reinterpret_cast<VkImage>(m_image);
+    imgViewCreate.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+    imgViewCreate.subresourceRange.baseMipLevel = 0;
+    imgViewCreate.subresourceRange.levelCount = 1;
+    imgViewCreate.subresourceRange.baseArrayLayer = 0;
+    imgViewCreate.subresourceRange.layerCount = 1;
+    if (vkCreateImageView(reinterpret_cast<VkDevice>(inst->getDevice()), &imgViewCreate, nullptr, reinterpret_cast<VkImageView*>(&m_view)) != VK_SUCCESS) 
+    {throw Exception("Failed to create Vulkan texture view", "GLGE::Graphic::Backend::Graphic::Vulkan::Texture::Texture");}
+
     //clear
     clear();
 }
@@ -233,7 +260,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::read(ImageCPU& out) const {
         __transitionImage(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), 
                         reinterpret_cast<VkImage>(m_image), inst->getGraphicsQueue().familyIdx, inst->getTransferQueue().familyIdx, 
                         static_cast<VkImageLayout>(m_layout), static_cast<VkImageLayout>(m_layout), 
-                        static_cast<VkImageAspectFlags>(m_aspectFlags));
+                        static_cast<VkImageAspectFlags>(m_aspectFlags), 0);
     }
     
     //compute the byte size
@@ -300,7 +327,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::read(ImageCPU& out) const {
         //ready the image to work on the transfer queue
         __transitionImage(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), 
                         reinterpret_cast<VkImage>(m_image), inst->getTransferQueue().familyIdx, inst->getGraphicsQueue().familyIdx, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, static_cast<VkImageLayout>(m_layout), 
-                        static_cast<VkImageAspectFlags>(m_aspectFlags));
+                        static_cast<VkImageAspectFlags>(m_aspectFlags), 0);
     }
 
     //prepare the CPU image

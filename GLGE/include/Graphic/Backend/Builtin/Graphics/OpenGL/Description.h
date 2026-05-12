@@ -94,9 +94,10 @@ namespace Graphics {
          * @param size the size of the texture in pixels
          * @param mipCount the amount of mip levels the texture has
          * @param format the pixel format of the texture
+         * @param instance a pointer to the instance the texture belongs to
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Texture>` a pointer to the new texture
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Texture> createTexture([[maybe_unused]] const uvec2& size, [[maybe_unused]] u16 mipCount, [[maybe_unused]] PixelFormat format) override;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Texture> createTexture([[maybe_unused]] const uvec2& size, [[maybe_unused]] u16 mipCount, [[maybe_unused]] PixelFormat format, GLGE::Graphic::Backend::Graphic::Instance* instance) override;
 
         /**
          * @brief Create an Image

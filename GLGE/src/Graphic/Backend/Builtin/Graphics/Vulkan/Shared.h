@@ -24,7 +24,7 @@
 //add exceptions
 #include "Core/Exception.h"
 
-VkFormat __pixelFormat_to_VkFormat(const GLGE::Graphic::PixelFormat& format) {
+inline static VkFormat __pixelFormat_to_VkFormat(const GLGE::Graphic::PixelFormat& format) {
     //check for depth formats
     if (format.order == GLGE::Graphic::PixelFormat::Order::DEPTH) {
         switch (format.r_Bitcount) {
@@ -137,7 +137,7 @@ VkFormat __pixelFormat_to_VkFormat(const GLGE::Graphic::PixelFormat& format) {
     return VK_FORMAT_UNDEFINED;
 }
 
-VkSampleCountFlagBits __get_vulkan_sample_count(GLGE::u8 samples) {
+inline static VkSampleCountFlagBits __get_vulkan_sample_count(GLGE::u8 samples) {
     //early out for one
     if (samples <= 1) return VK_SAMPLE_COUNT_1_BIT;
     //round up to closest power of two
@@ -163,7 +163,7 @@ VkSampleCountFlagBits __get_vulkan_sample_count(GLGE::u8 samples) {
  * @param pool the command pool to allocate from
  * @return `VkCommandBuffer` the allocated and ready command buffer
  */
-VkCommandBuffer __beginSingleTimeCommands(VkDevice device, VkCommandPool pool) {
+inline static VkCommandBuffer __beginSingleTimeCommands(VkDevice device, VkCommandPool pool) {
     //allocate the command buffer from the inputted pool
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -191,7 +191,7 @@ VkCommandBuffer __beginSingleTimeCommands(VkDevice device, VkCommandPool pool) {
  * @param pool the command pool the buffer was allocated from
  * @param cmd the actual command buffer
  */
-void __endSingleTimeCommands(VkDevice device, GLGE::Graphic::Backend::Graphic::Vulkan::Instance::QueuePool& queue, VkCommandPool pool, VkCommandBuffer cmd) {
+inline static void __endSingleTimeCommands(VkDevice device, GLGE::Graphic::Backend::Graphic::Vulkan::Instance::QueuePool& queue, VkCommandPool pool, VkCommandBuffer cmd) {
     //end the recording
     vkEndCommandBuffer(cmd);
 
@@ -240,7 +240,7 @@ struct StagingBuffer {
  * @param size the size of the buffer
  * @return `StagingBuffer` the filled, ready-to-use, staging buffer
  */
-StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDeviceSize size) {
+inline static StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDeviceSize size) {
     //store the staging buffer to return
     StagingBuffer buff{};
 
@@ -271,7 +271,7 @@ StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDeviceSize size) {
  * @param allocator the allocator the buffer was allocated from
  * @param buffer the staging buffer to delete
  */
-void __destroyStagingBuffer(VmaAllocator allocator, StagingBuffer& buffer) {
+inline static void __destroyStagingBuffer(VmaAllocator allocator, StagingBuffer& buffer) {
     //sanity check the input
     if (buffer.buffer == VK_NULL_HANDLE) {return;}
     //destroy the buffer
@@ -294,9 +294,10 @@ void __destroyStagingBuffer(VmaAllocator allocator, StagingBuffer& buffer) {
  * @param oldLayout the old layout of the image
  * @param newLayout the new layout of the image
  * @param aspect the image aspect flags
+ * @param mip the index of the mip level to use
  */
-void __transitionImage(VkDevice device, GLGE::Graphic::Backend::Graphic::Vulkan::Instance::QueuePool& queuePool, VkCommandPool pool, VkImage image, GLGE::u32 oldQueue, GLGE::u32 newQueue, 
-                       VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspect) {
+inline static void __transitionImage(VkDevice device, GLGE::Graphic::Backend::Graphic::Vulkan::Instance::QueuePool& queuePool, VkCommandPool pool, VkImage image, GLGE::u32 oldQueue, GLGE::u32 newQueue, 
+                       VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspect, GLGE::u16 mip) {
     //get a single-time command buffer
     VkCommandBuffer cmd = __beginSingleTimeCommands(device, pool);
 
@@ -311,7 +312,7 @@ void __transitionImage(VkDevice device, GLGE::Graphic::Backend::Graphic::Vulkan:
     barrier.subresourceRange.aspectMask = aspect;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
-    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.baseMipLevel = mip;
     barrier.subresourceRange.levelCount = 1;
     barrier.srcAccessMask = 0;
     barrier.dstAccessMask = 0;

@@ -39,6 +39,7 @@ void vk_example1() {
     auto othData = inst.assets().load<GLGE::Graphic::Asset::ImageCPU>("assets/textures/cubeTexture.png", GLGE::Graphic::Asset::ImageCPU::PNG);
     GLGE::Graphic::Image img(*imgData.reference());
     img.write(*othData.reference(), {32,32});
+    GLGE::Graphic::Texture tex(GLGE::Graphic::TextureCPU(*imgData.reference(), 0));
 
     GLGE::Graphic::Image oth({600, 600}, GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
     oth.resizeAndClear({1200, 1200});

@@ -19,8 +19,8 @@
 //add the OpenGL resource set
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 
-GLGE::Graphic::Backend::Graphic::OpenGL::Texture::Texture(const uvec2& size, u16 mipCount, PixelFormat format) 
- : GLGE::Graphic::Backend::Graphic::Texture(size, mipCount, format)
+GLGE::Graphic::Backend::Graphic::OpenGL::Texture::Texture(const uvec2& size, u16 mipCount, PixelFormat format, GLGE::Graphic::Backend::Graphic::Instance* instance) 
+ : GLGE::Graphic::Backend::Graphic::Texture(size, mipCount, format, instance)
 {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Texture::Texture");
     //compute the OpenGL format

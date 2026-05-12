@@ -1,25 +1,25 @@
 /**
  * @file Texture.h
  * @author DM8AT
- * @brief define the OpenGL texture backend
+ * @brief define the vulkan texture backend
  * @version 0.1
- * @date 2026-03-11
+ * @date 2026-05-12
  * 
  * @copyright Copyright (c) 2026
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_TEXTURE_
-#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_TEXTURE_
+#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_TEXTURE_
+#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_TEXTURE_
 
 //add the texture API
 #include "Graphic/Backend/Graphics/Texture.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
-     * @brief a class that implements the OpenGL system for a texture
+     * @brief a class that implements the Vulkan system for a texture
      */
     class Texture : public GLGE::Graphic::Backend::Graphic::Texture {
     public:
@@ -62,29 +62,38 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          */
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
 
-        /**
-         * @brief Get the Handle of the OpenGL texture
-         * 
-         * @return `u32` the handle of the OpenGL texture
-         */
-        inline u32 getHandle() const noexcept
-        {return m_handle;}
-
     protected:
 
         /**
-         * @brief store a counter for name generation
+         * @brief store the vulkan image
          */
-        inline static u32 ms_nameCounter = 0;
+        void* m_image = nullptr;
 
         /**
-         * @brief store the OpenGL handle of the texture
+         * @brief store the VMA allocation
          */
-        u32 m_handle = 0;
+        void* m_allocation = nullptr;
+
         /**
-         * @brief store the name enumerator
+         * @brief store a view into the image
          */
-        u32 m_name = ++ms_nameCounter;
+        void* m_view = nullptr;
+
+        /**
+         * @brief store the vulkan format
+         */
+        i32 m_vkFormat = 0;
+        /**
+         * @brief store the image aspect flags
+         */
+        i32 m_aspectFlags = 0;
+
+        /**
+         * @brief store the current image layout
+         * 
+         * This is an array since single mips may have different layouts
+         */
+        i32 m_layout[16]{};
 
     };
 
