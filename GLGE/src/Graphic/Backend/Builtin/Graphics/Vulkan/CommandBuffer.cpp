@@ -51,24 +51,37 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer(GLGE::Grap
     if (vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(inst->getDevice()), &allocInfo, reinterpret_cast<VkCommandBuffer*>(m_cmdBuffers.data())) != VK_SUCCESS)
     {throw Exception("Failed to allocate a command buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer");}
 
+    //check for manual override
+    if (!m_framesInFlight) {
+        //compute the amount of frames in flight
+        if (imgCount < 3)
+        {m_framesInFlight = 2;}
+        else 
+        {m_framesInFlight = 3;}
+    }
+
     //create synchronization primitives
-    m_syncObjs.reserve(imgCount);
-    for (size_t i = 0; i < imgCount; ++i) {
+    m_syncObjs.reserve(m_framesInFlight);
+    for (size_t i = 0; i < m_framesInFlight; ++i) {
         SyncObjects syncs;
         VkSemaphoreCreateInfo imgAvailCreate {};
         imgAvailCreate.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         if (vkCreateSemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), &imgAvailCreate, nullptr, reinterpret_cast<VkSemaphore*>(&syncs.m_semaphore_imgAvailable)) != VK_SUCCESS)
         {throw Exception("Failed to create the image available semaphore", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer");}
-        VkSemaphoreCreateInfo renderDoneCreate {};
-        renderDoneCreate.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        if (vkCreateSemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), &renderDoneCreate, nullptr, reinterpret_cast<VkSemaphore*>(&syncs.m_semaphore_renderDone)) != VK_SUCCESS)
-        {throw Exception("Failed to create the rendering done semaphore", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer");}
         VkFenceCreateInfo inFlightCreate {};
         inFlightCreate.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         inFlightCreate.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         if (vkCreateFence(reinterpret_cast<VkDevice>(inst->getDevice()), &inFlightCreate, nullptr, reinterpret_cast<VkFence*>(&syncs.m_fence_inFlight)) != VK_SUCCESS)
         {throw Exception("Failed to create the in flight fence", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer");}
         m_syncObjs.push_back(syncs);
+    }
+
+    m_renderDones.resize(imgCount);
+    for (size_t i = 0; i < imgCount; ++i) {
+        VkSemaphoreCreateInfo renderDoneCreate {};
+        renderDoneCreate.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        if (vkCreateSemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), &renderDoneCreate, nullptr, reinterpret_cast<VkSemaphore*>(&m_renderDones[i])) != VK_SUCCESS)
+        {throw Exception("Failed to create the rendering done semaphore", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer");}
     }
 }
 
@@ -81,8 +94,10 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::~CommandBuffer() {
         vkWaitForFences(reinterpret_cast<VkDevice>(inst->getDevice()), 1, reinterpret_cast<const VkFence*>(&m_syncObjs[i].m_fence_inFlight), VK_TRUE, UINT64_MAX);
         vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
         vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(m_syncObjs[i].m_semaphore_imgAvailable), nullptr);
-        vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(m_syncObjs[i].m_semaphore_renderDone), nullptr);
         vkDestroyFence(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkFence>(m_syncObjs[i].m_fence_inFlight), nullptr);
+    }
+    for (size_t i = 0; i < m_renderDones.size(); ++i) {
+        vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(m_renderDones[i]), nullptr);
     }
 
     //delete the command pool
@@ -97,12 +112,16 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin() {
     //wait for the old render to be done
     vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
 
+    //all old images must end
+    for (size_t i = 0; i < m_framesInFlight; ++i)
+    {vkWaitForFences(reinterpret_cast<VkDevice>(inst->getDevice()), 1, reinterpret_cast<VkFence*>(&m_syncObjs[i].m_fence_inFlight), VK_TRUE, UINT64_MAX);}
+
     //begin the command buffer recording
     VkCommandBufferBeginInfo cmdBuffBeg {};
     cmdBuffBeg.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    cmdBuffBeg.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     //begin the recording for all command buffers
     for (size_t i = 0; i < m_cmdBuffers.size(); ++i) {
-        vkWaitForFences(reinterpret_cast<VkDevice>(inst->getDevice()), 1, reinterpret_cast<VkFence*>(&m_syncObjs[i].m_fence_inFlight), VK_TRUE, UINT64_MAX);
         vkBeginCommandBuffer(reinterpret_cast<VkCommandBuffer>(m_cmdBuffers[i]), &cmdBuffBeg);
 
         //switch the image from present to color attachment
@@ -164,7 +183,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onPlay() {
     }
 
     //store the command buffer
-    VkCommandBuffer cmdBuff = reinterpret_cast<VkCommandBuffer>(m_cmdBuffers[m_frameIdx]);
+    VkCommandBuffer cmdBuff = reinterpret_cast<VkCommandBuffer>(m_cmdBuffers[buff]);
 
     VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     //submit the command buffer
@@ -175,7 +194,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onPlay() {
     subInfo.waitSemaphoreCount = 1;
     subInfo.pWaitSemaphores = reinterpret_cast<VkSemaphore*>(&m_syncObjs[m_frameIdx].m_semaphore_imgAvailable);
     subInfo.signalSemaphoreCount = 1;
-    subInfo.pSignalSemaphores = reinterpret_cast<VkSemaphore*>(&m_syncObjs[m_frameIdx].m_semaphore_renderDone);
+    subInfo.pSignalSemaphores = reinterpret_cast<VkSemaphore*>(&m_renderDones[buff]);
     subInfo.pWaitDstStageMask = &waitStages;
     //submit to the queue
     {
@@ -191,7 +210,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onPlay() {
         VkPresentInfoKHR present {};
         present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         present.waitSemaphoreCount = 1;
-        present.pWaitSemaphores = reinterpret_cast<VkSemaphore*>(&m_syncObjs[m_frameIdx].m_semaphore_renderDone);
+        present.pWaitSemaphores = reinterpret_cast<VkSemaphore*>(&m_renderDones[buff]);
         present.swapchainCount = 1;
         present.pSwapchains = &swapchain;
         present.pImageIndices = &buff;

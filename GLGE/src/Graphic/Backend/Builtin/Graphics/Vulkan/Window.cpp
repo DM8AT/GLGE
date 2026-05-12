@@ -67,7 +67,26 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     if (res.x == m_resolution.x && res.y == m_resolution.y)
     {return;}
 
-    //resized
+    //store the new rendering resolution
+    m_resolution = res;
+
+    //re-create the swapchain
+    recreateSwapchain();
+}
+
+bool Window::onVSyncSet(VSync vsync) {
+    //store the new vsync mode
+    m_vsync = vsync;
+    //re-create the swapchain
+    recreateSwapchain();
+
+    //check if the mode was accepted
+    return m_vsync == vsync;
+}
+
+void Window::recreateSwapchain() {
+
+    //swapchain recreated (just assume resize)
     m_resized = true;
 
     //get the instance
@@ -108,6 +127,51 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     m_format = static_cast<i32>(choosenFormat);
     VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
+    //get the supported present modes
+    u32 presentModeCount = 0;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &presentModeCount, nullptr);
+    std::vector<VkPresentModeKHR> presentModes(presentModeCount);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &presentModeCount, presentModes.data());
+
+    //store the selected present mode
+    VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+    //switch over the selected present mode
+    switch (m_vsync) {
+    case VSYNC_DISABLED: {
+            //check for immediate present system
+            bool supported = false;
+            for (const auto& mode : presentModes)
+            {if (mode == VK_PRESENT_MODE_IMMEDIATE_KHR) {supported = true;}}
+            //if it is supported, it is wanted -> use it
+            if (supported)
+            {presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;}
+            else //reset vsync flag - selected is not supported
+            {m_vsync = VSYNC_ENABLED;}
+        } break;
+    case VSYNC_ADAPTIVE: {
+            //check for mailbox
+            bool supportsMailbox = false;
+            bool supportsRelaxed = false;
+            for (const auto& mode : presentModes) {
+                if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {supportsMailbox = true;}
+                if (mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR) {supportsRelaxed = true;}
+            }
+            //prefer mailbox, fallback to immediate
+            if (supportsMailbox) 
+            {presentMode = VK_PRESENT_MODE_MAILBOX_KHR;}
+            else if (supportsRelaxed)
+            {presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;}
+            else //reset vsync flag - selected is not supported
+            {m_vsync = VSYNC_ENABLED;}
+        } break;
+    case VSYNC_ENABLED:
+        //just do nothing
+        break;
+    default:
+        break;
+    }
+
     //create the swapchain
     VkSwapchainCreateInfoKHR swapCreate {};
     swapCreate.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -115,11 +179,11 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     swapCreate.minImageCount = caps.minImageCount + 1;
     swapCreate.imageFormat = choosenFormat;
     swapCreate.imageColorSpace = colorSpace;
-    swapCreate.imageExtent.width = res.x;
-    swapCreate.imageExtent.height = res.y;
+    swapCreate.imageExtent.width = m_resolution.x;
+    swapCreate.imageExtent.height = m_resolution.y;
     swapCreate.imageArrayLayers = 1;
     swapCreate.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    swapCreate.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    swapCreate.presentMode = presentMode;
     swapCreate.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     swapCreate.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     if (vkCreateSwapchainKHR(reinterpret_cast<VkDevice>(inst->getDevice()), &swapCreate, nullptr, reinterpret_cast<VkSwapchainKHR*>(&m_swapchain)) != VK_SUCCESS)
@@ -206,8 +270,8 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
         VkFramebufferCreateInfo fbuffCreate {};
         fbuffCreate.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         fbuffCreate.attachmentCount = 1;
-        fbuffCreate.height = res.y;
-        fbuffCreate.width = res.x;
+        fbuffCreate.height = m_resolution.y;
+        fbuffCreate.width = m_resolution.x;
         fbuffCreate.pAttachments = &view;
         fbuffCreate.layers = 1;
         fbuffCreate.renderPass = initPass;
@@ -231,7 +295,7 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
         renPassBeg.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renPassBeg.framebuffer = fbuff;
         renPassBeg.renderArea.offset = {0,0};
-        renPassBeg.renderArea.extent = {res.x, res.y};
+        renPassBeg.renderArea.extent = {m_resolution.x, m_resolution.y};
         renPassBeg.clearValueCount = 1;
         renPassBeg.pClearValues = &clearCol;
         renPassBeg.renderPass = initPass;
@@ -260,11 +324,4 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     for (const auto& fbuff : fbuffs)
     {vkDestroyFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), fbuff, nullptr);}
     vkDestroyRenderPass(reinterpret_cast<VkDevice>(inst->getDevice()), initPass, nullptr);
-
-    //store the new rendering resolution
-    m_resolution = res;
-}
-
-bool Window::onVSyncSet(VSync vsync) {
-    return false;
 }

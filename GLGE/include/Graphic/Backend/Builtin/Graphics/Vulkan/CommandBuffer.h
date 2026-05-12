@@ -64,6 +64,11 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         virtual void onPlay() override;
 
         /**
+         * @brief store the maximum amount of frames in flight
+         */
+        u8 m_framesInFlight = 0;
+
+        /**
          * @brief store the command pool
          */
         void* m_cmdPool = nullptr;
@@ -81,10 +86,6 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
              */
             void* m_semaphore_imgAvailable = nullptr;
             /**
-             * @brief store the semaphore to say that the render is done
-             */
-            void* m_semaphore_renderDone = nullptr;
-            /**
              * @brief store a fence that says that a frame is in flight
              */
             void* m_fence_inFlight = nullptr;
@@ -93,6 +94,10 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief store the synchronization objects
          */
         std::vector<SyncObjects> m_syncObjs;
+        /**
+         * @brief store the render done semaphores
+         */
+        std::vector<void*> m_renderDones;
         /**
          * @brief store the wrapped frame index
          */

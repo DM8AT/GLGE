@@ -111,6 +111,11 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
     protected:
 
         /**
+         * @brief re-create the vulkan swapchain
+         */
+        void recreateSwapchain();
+
+        /**
          * @brief store the vulkan surface
          */
         void* m_surface = nullptr;
