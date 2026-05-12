@@ -46,11 +46,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Texture::Texture(const uvec2& size, u16
     imgCreate.samples = VK_SAMPLE_COUNT_1_BIT;
     imgCreate.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imgCreate.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imgCreate.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-    imgCreate.usage |= (format.order == GLGE::Graphic::PixelFormat::Order::DEPTH || 
-                        format.order == GLGE::Graphic::PixelFormat::Order::DEPTH_STENCIL || 
-                        format.order == GLGE::Graphic::PixelFormat::Order::STENCIL) 
-                        ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    imgCreate.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     VmaAllocationCreateInfo allocInfo {};
     allocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
     allocInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
