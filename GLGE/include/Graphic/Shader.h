@@ -43,68 +43,35 @@ namespace GLGE::Graphic {
         /**
          * @brief store the types of the shader
          */
-        enum Type : u8 {
+        enum Type : i32 {
             /**
              * @brief a shader program that operates on every vertex
              */
             VERTEX = 0,
             /**
-             * @brief a shader program that operates on every fragment
-             */
-            FRAGMENT,
-            /**
              * @brief a shader program that controls the tesselation
              */
-            TESSELATION_CONTROL,
+            TESSELATION_CONTROL = 1,
             /**
              * @brief a shader program that evaluates the tesselation
              */
-            TESSELATION_EVALUATION,
+            TESSELATION_EVALUATION = 2,
             /**
              * @brief a shader program that operates on primitives and may create or discard primitives
              */
-            GEOMETRY,
+            GEOMETRY = 3,
+            /**
+             * @brief a shader program that operates on every fragment
+             */
+            FRAGMENT = 4,
             /**
              * @brief a shader that just does stuff, fully separate from the render pipeline
              */
-            COMPUTE,
+            COMPUTE = 5,
             /**
-             * @brief a shader for some tasks
+             * @brief a shader that is a compute kernal
              */
-            TASK,
-            /**
-             * @brief a shader that operates on a mesh
-             */
-            MESH,
-            /**
-             * @brief a shader for the ray tracing pipeline that generates rays
-             */
-            RAY_GENERATION,
-            /**
-             * @brief a shader for the ray tracing pipeline that is used to compute intersections
-             */
-            RAY_INTERSECTION,
-            /**
-             * @brief a shader for the ray tracing pipeline that is invoked on any hit
-             */
-            RAY_ANY_HIT,
-            /**
-             * @brief a shader for the ray tracing pipeline that is invoked on the closest hit
-             */
-            RAY_CLOSEST_HIT,
-            /**
-             * @brief a shader for the ray tracing pipeline that is invoked if a ray misses
-             */
-            RAY_MISS,
-            /**
-             * @brief a shader for the ray tracing pipeline that stores callable utilities
-             */
-            RAY_CALLABLE,
-
-            /**
-             * @brief undefined / reserved stamp (DO NOT USE, RESERVED AS AN ERROR VALUE)
-             */
-            UNDEFINED = 0xf
+            KERNAL = 6
         };
 
         /**
@@ -114,7 +81,7 @@ namespace GLGE::Graphic {
             /**
              * @brief store the type of the shader
              */
-            Type type = UNDEFINED;
+            Type type;
             /**
              * @brief store the entry point
              */

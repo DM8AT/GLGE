@@ -21,6 +21,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add textures
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
+//add shaders
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -74,7 +76,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet> Vulkan::createReso
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet>(nullptr, false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader> Vulkan::createShader([[maybe_unused]] GLGE::Graphic::Shader* frontend)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader>(nullptr, false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader>(new GLGE::Graphic::Backend::Graphic::Vulkan::Shader(frontend), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer> Vulkan::createBuffer([[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Type type, [[maybe_unused]] const void* initial, [[maybe_unused]] size_t size, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Usage usage)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer>(nullptr, false);}

@@ -103,29 +103,11 @@ GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, std::
         ElementInfo element;
 
         //get the execution model
-        SpvExecutionModel model = ref_mod.spirv_execution_model;
-        switch (model)
-        {
-        case SpvExecutionModelVertex: element.type = VERTEX; break;
-        case SpvExecutionModelFragment: element.type = FRAGMENT; break;
-        case SpvExecutionModelTessellationEvaluation: element.type = TESSELATION_EVALUATION; break;
-        case SpvExecutionModelTessellationControl: element.type = TESSELATION_CONTROL; break;
-        case SpvExecutionModelGeometry: element.type = GEOMETRY; break;
-        case SpvExecutionModelGLCompute: element.type = COMPUTE; break;
-        case SpvExecutionModelTaskEXT: element.type = TASK; break;
-        case SpvExecutionModelMeshEXT: element.type = MESH; break;
-        case SpvExecutionModelRayGenerationKHR: element.type = RAY_GENERATION; break;
-        case SpvExecutionModelIntersectionKHR: element.type = RAY_INTERSECTION; break;
-        case SpvExecutionModelAnyHitKHR: element.type = RAY_ANY_HIT; break;
-        case SpvExecutionModelClosestHitKHR: element.type = RAY_CLOSEST_HIT; break;
-        case SpvExecutionModelMissKHR: element.type = RAY_MISS; break;
-        case SpvExecutionModelCallableKHR: element.type = RAY_CALLABLE; break;
-        
-        default:
-            //use an incrementing custom counter
-            element.type = static_cast<Shader::Type>(UNDEFINED + (++m_customTypes));
-            break;
-        }
+        //the Shader::Type enum is written to match minimals of the state of SpvExecutionModel_ as of 12/05/2026. 
+        //it is written so that it may be extended automatically and remain memory-valid as the SpvExecutionModel_ is
+        //extended in the future. Both SpvExecutionModel_ and Shader::Type shall be viewed as being equal to i32 in a 
+        //strict memory sense. 
+        element.type = static_cast<Shader::Type>(ref_mod.spirv_execution_model);
 
         //prepare for all entry points
         element.entryPoint = ref_mod.entry_points[0].name;

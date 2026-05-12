@@ -217,7 +217,10 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     m_physicalDevice = __pick_strongest_device(devices, reinterpret_cast<VkInstance>(m_instance));
 
     //store the required device extensions
-    std::vector<const char*> devExt;
+    std::vector<const char*> devExt = {
+        //this extension is required for shader functionality compatibility
+        VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME
+    };
     instance->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->getRequiredDeviceExtensions(devExt);
 
     //get all available device extensions
