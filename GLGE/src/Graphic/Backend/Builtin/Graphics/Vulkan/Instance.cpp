@@ -41,7 +41,7 @@ using namespace GLGE::Graphic::Backend::Graphic::Vulkan;
  * @param required the required bits
  * @return `GLGE::u32` the index of the best fitting queue or `UINT32_MAX` if no queue supports the selected bit
  */
-static GLGE::u32 __selectMinimalFit(const std::vector<VkQueueFamilyProperties>& families, VkQueueFlagBits required) {
+static GLGE::u32 __selectMinimalFit(const std::vector<VkQueueFamilyProperties>& families, VkQueueFlags required) {
     //store information about the best fitting family
     GLGE::u32 bestFit = UINT32_MAX;
     GLGE::u32 bestExtraBits = UINT32_MAX;
@@ -269,9 +269,9 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     vkGetPhysicalDeviceQueueFamilyProperties(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &queueFamilyCount, queueFamilies.data());
 
     //get the different queue families
-    u32 graphicsFamily = __selectMinimalFit(queueFamilies, VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT);
-    u32 transferFamily = __selectMinimalFit(queueFamilies, VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT);
-    u32 computeFamily  = __selectMinimalFit(queueFamilies, VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT);
+    u32 graphicsFamily = __selectMinimalFit(queueFamilies, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT); //the graphics queue must be compute-capable to run inline compute, e.g. for indirect rendering
+    u32 transferFamily = __selectMinimalFit(queueFamilies, VK_QUEUE_TRANSFER_BIT);
+    u32 computeFamily  = __selectMinimalFit(queueFamilies, VK_QUEUE_COMPUTE_BIT);
 
     //check if all queues were found
     if (graphicsFamily == UINT32_MAX)
