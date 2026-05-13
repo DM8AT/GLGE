@@ -98,10 +98,10 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::write(const ImageCPU& image
     //get the instance
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
-    //cannot transition back to layout_undefined. If it was undefined, just switch to transfer_dst_optimal
+    //cannot transition back to layout_undefined. If it was undefined, just switch to general
     bool wasUndefined = m_layout == static_cast<i32>(VK_IMAGE_LAYOUT_UNDEFINED);
     if (wasUndefined) 
-    {m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);}
+    {m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_GENERAL);}
 
     //transition is required if a dedicated transfer queue family exists
     bool dedicatedTransfer = inst->getGraphicsQueue().familyIdx != inst->getTransferQueue().familyIdx;
@@ -182,12 +182,14 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::write(const ImageCPU& image
     if (dedicatedTransfer) {
         //ready the image to work on the transfer queue
         __transitionImage(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), 
-                        reinterpret_cast<VkImage>(m_image), inst->getTransferQueue().familyIdx, inst->getGraphicsQueue().familyIdx, static_cast<VkImageLayout>(m_layout), static_cast<VkImageLayout>(m_layout), 
+                        reinterpret_cast<VkImage>(m_image), inst->getTransferQueue().familyIdx, inst->getGraphicsQueue().familyIdx, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<VkImageLayout>(m_layout), 
                         static_cast<VkImageAspectFlags>(m_aspectFlags), 0);
     }
 
     //clean up
     __destroyStagingBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), staging);
+
+    //the image is now guaranteed to be in general layout
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2& size) {
@@ -306,7 +308,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::read(ImageCPU& out) const {
     //this is required because it needs to get image ownership
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL; //the transition is done here because it simplifies the queue family overlap logic
-    barrier.newLayout = static_cast<VkImageLayout>(m_layout);
+    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
     barrier.srcQueueFamilyIndex = dedicatedTransfer ? inst->getTransferQueue().familyIdx : VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = dedicatedTransfer ? inst->getGraphicsQueue().familyIdx : VK_QUEUE_FAMILY_IGNORED;
     barrier.image = reinterpret_cast<VkImage>(m_image);
@@ -326,7 +328,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::read(ImageCPU& out) const {
     if (dedicatedTransfer) {
         //ready the image to work on the transfer queue
         __transitionImage(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), 
-                        reinterpret_cast<VkImage>(m_image), inst->getTransferQueue().familyIdx, inst->getGraphicsQueue().familyIdx, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, static_cast<VkImageLayout>(m_layout), 
+                        reinterpret_cast<VkImage>(m_image), inst->getTransferQueue().familyIdx, inst->getGraphicsQueue().familyIdx, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 
                         static_cast<VkImageAspectFlags>(m_aspectFlags), 0);
     }
 
@@ -344,28 +346,25 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::clear() {
     //begin a single use command buffer
     VkCommandBuffer cmd = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool));
 
-    //if not in transfer_dst_optimal, switch to it
-    if (m_layout != static_cast<i32>(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)) {
-        //transition required
-        VkImageMemoryBarrier barrier {};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = static_cast<VkImageLayout>(m_layout);
-        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = reinterpret_cast<VkImage>(m_image);
-        barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    //transition required
+    VkImageMemoryBarrier barrier {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = static_cast<VkImageLayout>(m_layout);
+    barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = reinterpret_cast<VkImage>(m_image);
+    barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-        //it is now in transfer_dst_optimal
-        m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    }
+    //it is now in transfer_dst_optimal
+    m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     //record the correct clear type for the image
     if (m_aspectFlags | VK_IMAGE_ASPECT_COLOR_BIT) {
@@ -394,8 +393,27 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::clear() {
         vkCmdClearDepthStencilImage(cmd, reinterpret_cast<VkImage>(m_image), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &value, 1, &range);
     }
 
+    //transition to general required
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = reinterpret_cast<VkImage>(m_image);
+    barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = 0;
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
     //submit the command buffer
     __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), cmd);
+
+    //the image is now guaranteed to be in general
+    m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_GENERAL);
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) {

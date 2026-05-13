@@ -15,6 +15,12 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 //add vulkan windows
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
+//add vulkan shader
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
+//add vulkan resource sets
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+//add vulkan images
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"
@@ -81,6 +87,60 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
             fromFormat.subresourceRange.layerCount = 1;
             vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &fromFormat);
         }
+    }
+
+    //success
+    return true;
+}
+
+bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    //get the command buffers
+    const std::vector<void*>& buffs = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+
+    //extract the actual arguments
+    const auto& [compute, size] = handle.getArguments<GLGE::Graphic::Shader*, GLGE::uvec3>();
+
+    //get the vulkan objects
+    auto* computeShader = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Shader*>(compute->getBackend().get());
+    VkPipeline pipe = reinterpret_cast<VkPipeline>(computeShader->getComputePipeline());
+    VkPipelineLayout layout = reinterpret_cast<VkPipelineLayout>(computeShader->getComputePipelineLayout());
+    VkDescriptorSet set = reinterpret_cast<VkDescriptorSet>(dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(compute->getResources(0)->getBackend().get())->getDescriptorSet());
+
+    //iterate over all command buffers for recording
+    for (const auto& buff : buffs) {
+        //get the actual command buffer
+        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(buff);
+
+        //bind the compute pipeline
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, pipe);
+
+        //prepare resources
+        for (const auto& resource : compute->getResources(0)->resources()) {
+            //depending on the type do different stuff
+            switch (resource->getType())
+            {
+            case GLGE::Graphic::ResourceType::IMAGE: {
+                    //nothing to do for images - images are always stored in general layout
+                }
+                break;
+            
+            default:
+                break;
+            }
+        }
+
+        //bind the descriptor set
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0, 1, &set, 0, nullptr);
+
+        //dispatch the compute shader
+        vkCmdDispatch(cb, size.x, size.y, size.z);
+
+        //finish the dispatch
+        VkMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
     }
 
     //success

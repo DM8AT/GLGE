@@ -1,0 +1,18 @@
+#version 450 core
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+//Output image (bind this as GL_WRITE_ONLY)
+layout (binding = 0, rgba16f) uniform writeonly image2D imgOutput;
+
+void main() {
+    ivec2 size = imageSize(imgOutput);
+    ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+
+    if (pixel.x >= size.x || pixel.y >= size.y)
+    {return;}
+
+    vec3 color = vec3(float(pixel.x) / float(size.x), float(pixel.y) / float(size.y), 0);
+
+    imageStore(imgOutput, pixel, vec4(color, 1.f));
+}

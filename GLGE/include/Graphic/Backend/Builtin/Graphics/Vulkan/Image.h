@@ -115,6 +115,30 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         inline void* getView() const noexcept
         {return m_view;}
 
+        /**
+         * @brief Set the Layout
+         * 
+         * @param layout the new layout of the image
+         */
+        inline void setLayout(i32 layout) noexcept
+        {m_layout = layout;}
+
+        /**
+         * @brief Get the current layout
+         * 
+         * @return `i32` the current layout
+         */
+        inline i32 getLayout() const noexcept
+        {return m_layout;}
+
+        /**
+         * @brief Get the Aspect Flags
+         * 
+         * @return `i32` the image aspect flags
+         */
+        inline i32 getAspectFlags() const noexcept
+        {return m_aspectFlags;}
+
     protected:
 
         /**
@@ -143,6 +167,8 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
         /**
          * @brief store the current image layout
+         * 
+         * This is UNDEFINED if the image was never used and GENERAL if the image was used
          */
         i32 m_layout = 0;
 

@@ -41,7 +41,7 @@ void vk_example1() {
     img.write(*othData.reference(), {32,32});
     GLGE::Graphic::Texture tex(GLGE::Graphic::TextureCPU(*imgData.reference(), 0));
 
-    GLGE::Graphic::Image oth({600, 600}, GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
+    GLGE::Graphic::Image oth({600, 600}, GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT);
     oth.resizeAndClear({1200, 1200});
 
     GLGE::Graphic::ImageCPU newImg;
@@ -54,12 +54,15 @@ void vk_example1() {
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
 
-    GLGE::Graphic::Shader finalize({std::pair{"Compute", "assets/shader/finalize.comp.spv"}});
+    GLGE::Graphic::Shader simple({std::pair{"Compute", "assets/shader/simple.comp.spv"}});
+    GLGE::Graphic::ResourceSet simpleSet(simple.getSet(0), std::pair{"imgOutput", &oth});
+    simple.setResources(0, &simpleSet);
     
     GLGE::Graphic::RenderTarget window(&win);
 
     auto pipe = GLGE::Graphic::RenderPipeline::create(&win, 
-        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))}
+        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
+        std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &simple, GLGE::uvec3(glm::ceil(oth.getSize().x/16.f), glm::ceil(oth.getSize().y/16.f), 1))}
     );
     pipe.record();
 

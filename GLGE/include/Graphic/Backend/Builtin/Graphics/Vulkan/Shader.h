@@ -58,6 +58,14 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         void* getComputePipeline() const noexcept
         {return m_computePipe;}
 
+        /**
+         * @brief Get the Compute Pipeline Layout
+         * 
+         * @return `void*` the compute pipeline layout
+         */
+        void* getComputePipelineLayout() const noexcept
+        {return m_computePipeLayout;}
+
     protected:
 
         /**

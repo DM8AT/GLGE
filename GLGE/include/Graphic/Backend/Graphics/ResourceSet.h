@@ -49,7 +49,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param buffer a pointer to the command buffer to bind the set to
          */
-        virtual void bind(CommandBuffer* buffer) = 0;
+        virtual void bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer) = 0;
 
     protected:
 

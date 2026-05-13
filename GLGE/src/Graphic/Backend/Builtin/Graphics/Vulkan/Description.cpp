@@ -23,6 +23,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
 //add shaders
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
+//add resource sets
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -38,7 +40,8 @@ using namespace GLGE::Graphic::Builtin::Graphics;
 
 Vulkan::Vulkan() 
  : Description(GLGE::Graphic::Backend::Graphic::CommandTable({
-        std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(VkImpl::clear)}
+        std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(VkImpl::clear)},
+        std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(VkImpl::dispatchCompute)}
     }))
 {initialize();}
 
@@ -73,7 +76,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> Vulkan::createFram
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer>(nullptr, false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet> Vulkan::createResourceSet([[maybe_unused]]GLGE::Graphic::ResourceSet* set)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet>(nullptr, false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet>(new GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet(set), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader> Vulkan::createShader([[maybe_unused]] GLGE::Graphic::Shader* frontend)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader>(new GLGE::Graphic::Backend::Graphic::Vulkan::Shader(frontend), false);}
