@@ -127,6 +127,14 @@ namespace GLGE::Graphic {
         {return m_structures[set].get();}
 
         /**
+         * @brief Get the amount of sets
+         * 
+         * @return `u32` the amount of sets
+         */
+        inline u32 getSetCount() const noexcept
+        {return m_sets.size();}
+
+        /**
          * @brief Set the resources
          * 
          * @param set the index of the set

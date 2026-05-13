@@ -82,9 +82,22 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         std::vector<Module> m_modules;
 
         /**
+         * @brief store the compute shader stage
+         */
+        void* m_shaderStage = nullptr;
+        /**
          * @brief store the compute pipeline
          */
         void* m_computePipe = nullptr;
+        /**
+         * @brief store the compute pipeline layout
+         */
+        void* m_computePipeLayout = nullptr;
+
+        /**
+         * @brief store all the descriptor layouts
+         */
+        std::vector<void*> m_layouts;
 
     };
 

@@ -187,9 +187,6 @@ GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, std::
         delete[] data;
     }
 
-    //finalize the shader
-    m_shader->finalize();
-
     //now, create the layouts for all sets
     for (const auto& [set, binding] : bindings) {
         //check if the set fits
@@ -202,6 +199,9 @@ GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, std::
     //prepare for all sets
     m_sets.clear();
     m_sets.resize(m_structures.size(), nullptr);
+
+    //finalize the shader
+    m_shader->finalize();
 }
 
 void GLGE::Graphic::Shader::setResources(u32 set, ResourceSet* resources) {
