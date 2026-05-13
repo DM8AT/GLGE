@@ -1,9 +1,9 @@
 /**
  * @file Framebuffer.h
  * @author DM8AT
- * @brief define the OpenGL implementation for a framebuffer
+ * @brief define the vulkan backend implementation of a framebuffer
  * @version 0.1
- * @date 2026-03-13
+ * @date 2026-05-13
  * 
  * @copyright Copyright (c) 2026
  * 
@@ -16,10 +16,10 @@
 #include "Graphic/Backend/Graphics/Framebuffer.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
-     * @brief overload the framebuffer class for OpenGL
+     * @brief overload the framebuffer class for Vulkan
      */
     class Framebuffer : public GLGE::Graphic::Backend::Graphic::Framebuffer {
     public:
@@ -58,14 +58,6 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
         virtual void onClear(vec4 color, float depth, u32 stencil) override;
 
         /**
-         * @brief Get the Handle of the framebuffer
-         * 
-         * @return `u32` the OpenGL handle
-         */
-        inline u32 getHandle() const noexcept
-        {return m_handle;}
-
-        /**
          * @brief a function to call if an image was updated
          * 
          * @param image a pointer to the updated image
@@ -75,18 +67,33 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
     protected:
 
         /**
-         * @brief store a counter for name generation
+         * @brief Create a Render Pass
          */
-        inline static u32 ms_nameCounter = 0;
+        void createRenderPass();
 
         /**
-         * @brief store the OpenGL handle
+         * @brief Destroy a render pass
          */
-        u32 m_handle = 0;
+        void destroyRenderPass();
+
         /**
-         * @brief store the name enumerator
+         * @brief Create the Framebuffers
          */
-        u32 m_name = ++ms_nameCounter;
+        void createFramebuffers();
+
+        /**
+         * @brief destroy the framebuffers
+         */
+        void destroyFramebuffers();
+
+        /**
+         * @brief store the vulkan framebuffer
+         */
+        void* m_vkFramebuffer = nullptr;
+        /**
+         * @brief store the render pass
+         */
+        void* m_renderPass = nullptr;
 
     };
 

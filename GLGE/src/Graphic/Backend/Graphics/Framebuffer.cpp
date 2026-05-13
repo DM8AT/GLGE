@@ -14,8 +14,8 @@
 GLGE::Graphic::Backend::Graphic::Framebuffer::Framebuffer(u8 colorAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* colorAttachments, 
                                                           u8 depthAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* depthAttachments, 
                                                           u8 stencilAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* stencilAttachments, 
-                                                          bool combinedDepthStencil)
- : m_hasDepthStencil(combinedDepthStencil)
+                                                          bool combinedDepthStencil, GLGE::Graphic::Backend::Graphic::Instance* instance)
+ : m_hasDepthStencil(combinedDepthStencil), m_instance(instance)
 {
     #if GLGE_DEBUG
     //sanity check hard limits

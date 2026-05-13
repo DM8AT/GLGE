@@ -41,8 +41,8 @@ void vk_example1() {
     img.write(*othData.reference(), {32,32});
     GLGE::Graphic::Texture tex(GLGE::Graphic::TextureCPU(*imgData.reference(), 0));
 
-    GLGE::Graphic::Image oth({600, 600}, GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT);
-    oth.resizeAndClear({1200, 1200});
+    GLGE::Graphic::Image oth(win.getSize(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT);
+    GLGE::Graphic::Framebuffer fbuff({&oth}, {}, {});
 
     GLGE::Graphic::ImageCPU newImg;
     img.read(newImg);
@@ -59,10 +59,12 @@ void vk_example1() {
     simple.setResources(0, &simpleSet);
     
     GLGE::Graphic::RenderTarget window(&win);
+    GLGE::Graphic::RenderTarget fbuffTarget(&fbuff);
 
     auto pipe = GLGE::Graphic::RenderPipeline::create(&win, 
         std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
-        std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &simple, GLGE::uvec3(glm::ceil(oth.getSize().x/16.f), glm::ceil(oth.getSize().y/16.f), 1))}
+        std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &simple, GLGE::uvec3(glm::ceil(oth.getSize().x/16.f), glm::ceil(oth.getSize().y/16.f), 1))},
+        std::pair{"Present", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, fbuffTarget, GLGE::u8(0), window, GLGE::u8(0), false, false)}
     );
     pipe.record();
 
@@ -72,6 +74,8 @@ void vk_example1() {
 
         //handle resizing
         if (win.didResize()) {
+            oth.resizeAndClear(win.getResolution());
+            *pipe.getCommand("Compute")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(oth.getSize().x/16.f), glm::ceil(oth.getSize().y/16.f), 1);
             pipe.record();
         }
 

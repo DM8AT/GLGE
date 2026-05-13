@@ -66,7 +66,8 @@ namespace GLGE::Graphic {
 
             //create the framebuffer
             m_fbuff = getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createFramebuffer(
-                colorAttachments.size(), _colorAttachments, depthAttachments.size(), _depthAttachments, stencilAttachments.size(), _stencilAttachments, depthStencil
+                colorAttachments.size(), _colorAttachments, depthAttachments.size(), _depthAttachments, stencilAttachments.size(), _stencilAttachments, depthStencil,
+                getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()
             );
         }
 

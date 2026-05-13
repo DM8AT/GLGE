@@ -81,6 +81,13 @@ namespace GLGE::Graphic {
         virtual void onBuildBinding(ResourceSet* set, u32 unit) = 0;
 
         /**
+         * @brief a function that is called when a resource set holding a reference to this resource is destroyed
+         * 
+         * @param set a pointer to the resource set that was destroyed
+         */
+        virtual void onRemoveBinding(ResourceSet* set) = 0;
+
+        /**
          * @brief Get the type of resource this is
          * 
          * @return `ResourceType` the type to identify the resource

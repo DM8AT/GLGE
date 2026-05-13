@@ -61,7 +61,7 @@ using namespace GLGE::Graphic::Builtin::Graphics;
 OpenGL::OpenGL() 
  : Description(GLGE::Graphic::Backend::Graphic::CommandTable({
         std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(OglImpl::clear)},
-        std::pair{GLGE::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8>(OglImpl::copy)},
+        std::pair{GLGE::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>(OglImpl::copy)},
         std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(OglImpl::dispatchCompute)},
         std::pair{GLGE::Graphic::COMMAND_DRAW_MESH, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Mesh*, GLGE::Graphic::Material*, GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::u32>(OglImpl::drawSimpleMesh)},
         std::pair{GLGE::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(OglImpl::drawWorld)}
@@ -95,8 +95,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Image> OpenGL::createImage([[ma
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> OpenGL::createFramebuffer([[maybe_unused]] u8 colorAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* colorAttachments, 
                                                                                         [[maybe_unused]] u8 depthAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* depthAttachments, 
                                                                                         [[maybe_unused]] u8 stencilAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* stencilAttachments, 
-                                                                                        [[maybe_unused]] bool combinedDepthStencil)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer(colorAttachmentCount, colorAttachments, depthAttachmentCount, depthAttachments, stencilAttachmentCount, stencilAttachments, combinedDepthStencil), false);}
+                                                                                        [[maybe_unused]] bool combinedDepthStencil, GLGE::Graphic::Backend::Graphic::Instance* instance)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Framebuffer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer(colorAttachmentCount, colorAttachments, depthAttachmentCount, depthAttachments, stencilAttachmentCount, stencilAttachments, combinedDepthStencil, instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet> OpenGL::createResourceSet([[maybe_unused]]GLGE::Graphic::ResourceSet* set)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet>(new GLGE::Graphic::Backend::Graphic::OpenGL::ResourceSet(set), false);}

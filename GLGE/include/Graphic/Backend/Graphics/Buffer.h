@@ -187,6 +187,13 @@ namespace GLGE::Graphic::Backend::Graphic {
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) = 0;
 
         /**
+         * @brief a function that is called to build a binding of the resource to a unit in the resource set
+         * 
+         * @param set a pointer to the set to bind to
+         */
+        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) = 0;
+
+        /**
          * @brief Get the type
          * 
          * @return `Type` the type of the stored buffer

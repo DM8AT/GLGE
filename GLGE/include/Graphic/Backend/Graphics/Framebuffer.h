@@ -53,11 +53,12 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param stencilAttachmentCount the amount of stencil attachments to add
          * @param stencilAttachments the stencil attachments to add
          * @param combinedDepthStencil `true` if depth and stencil buffer are combined, `false` if they are different
+         * @param instance a pointer to the owning backend instance
          */
         Framebuffer(u8 colorAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* colorAttachments, 
                     u8 depthAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* depthAttachments, 
                     u8 stencilAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* stencilAttachments, 
-                    bool combinedDepthStencil);
+                    bool combinedDepthStencil, GLGE::Graphic::Backend::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Framebuffer
@@ -195,6 +196,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief `true` if depth and stencil are combined, `false` if they are separated or one of them is only used
          */
         bool m_hasDepthStencil = false;
+
+        /**
+         * @brief store a pointer to the owning instance
+         */
+        GLGE::Graphic::Backend::Graphic::Instance* m_instance = nullptr;
 
     };
 

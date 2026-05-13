@@ -187,6 +187,10 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Image::onBuildBinding(GLGE::Graphi
     reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::ResourceSet*>(set->getBackend().get())->registerBinder(func, this, unit);
 }
 
+void GLGE::Graphic::Backend::Graphic::OpenGL::Image::onDropBinding(GLGE::Graphic::ResourceSet* set) {
+    //just do nothin
+}
+
 void GLGE::Graphic::Backend::Graphic::OpenGL::Image::registerFramebuffer(GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff) {
     //add the framebuffer
     m_ref_framebuffers.push_back(fbuff);

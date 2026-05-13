@@ -21,6 +21,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
 //add vulkan images
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+//add vulkan framebuffers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"
@@ -47,21 +49,6 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
 
             //this is a swapchain image -> it must be a color attachment
 
-            //transition to correct format
-            VkImageMemoryBarrier toFormat{};
-            toFormat.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            toFormat.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            toFormat.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            toFormat.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            toFormat.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            toFormat.image = img;
-            toFormat.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            toFormat.subresourceRange.baseMipLevel = 0;
-            toFormat.subresourceRange.levelCount = 1;
-            toFormat.subresourceRange.baseArrayLayer = 0;
-            toFormat.subresourceRange.layerCount = 1;
-            vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFormat);
-
             //clear the image
             VkClearColorValue clearValue = {{color.r, color.g, color.b, color.w}};
             VkImageSubresourceRange range {};
@@ -70,23 +57,82 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
             range.levelCount = 1;
             range.baseArrayLayer = 0;
             range.layerCount = 1;
-            vkCmdClearColorImage(cmdBuff, img, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &range);
-
-            //transition to correct intermediate format
-            VkImageMemoryBarrier fromFormat{};
-            fromFormat.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            fromFormat.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            fromFormat.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            fromFormat.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            fromFormat.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            fromFormat.image = img;
-            fromFormat.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            fromFormat.subresourceRange.baseMipLevel = 0;
-            fromFormat.subresourceRange.levelCount = 1;
-            fromFormat.subresourceRange.baseArrayLayer = 0;
-            fromFormat.subresourceRange.layerCount = 1;
-            vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &fromFormat);
+            vkCmdClearColorImage(cmdBuff, img, VK_IMAGE_LAYOUT_GENERAL, &clearValue, 1, &range);
         }
+    }
+
+    //success
+    return true;
+}
+
+bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    //get the command buffers
+    const std::vector<void*>& buffs = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+
+    //extract the actual arguments
+    const auto& [from, from_idx, to, to_idx, copyDepth, copyStencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>();
+    
+    //iterate over all buffers
+    for (size_t i = 0; i < buffs.size(); ++i) {
+        //get the command buffer
+        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(buffs[i]);
+
+        //get the vulkan objects
+        struct ImgInfo {
+            VkImage image;
+            GLGE::uvec2 size;
+            VkImageLayout layout;
+            VkImageAspectFlags aspects;
+
+            ImgInfo(GLGE::Graphic::RenderTarget target, GLGE::u8 idx, GLGE::u8 winIdx, bool depthStencil) {
+                if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                    //use a window
+                    auto* win = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get());
+                    image = reinterpret_cast<VkImage>(win->getImages()[winIdx]);
+                    size = win->getResolution();
+                    layout = VK_IMAGE_LAYOUT_GENERAL;
+                    aspects = VK_IMAGE_ASPECT_COLOR_BIT;
+                } else {
+                    //use a framebuffer
+                    GLGE::Graphic::Backend::Graphic::Vulkan::Image* img = nullptr;
+                    if (depthStencil) {
+                        img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend()->getDepthAttachment(0));
+                    } else {
+                        img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend()->getColorAttachment(idx));
+                    }
+                    image = reinterpret_cast<VkImage>(img->getImage());
+                    size = img->getSize();
+                    layout = VK_IMAGE_LAYOUT_GENERAL;
+                    aspects = static_cast<VkImageAspectFlags>(img->getAspectFlags());
+                }
+            }
+        };
+        ImgInfo fromInfo(from, from_idx, i, copyDepth || copyStencil);
+        ImgInfo toInfo(to, to_idx, i, copyDepth || copyStencil);
+
+        //use blit to copy from one image to another
+        VkImageBlit reg {};
+        reg.srcOffsets[0].x = 0;
+        reg.srcOffsets[1].x = fromInfo.size.x;
+        reg.srcOffsets[0].y = 0;
+        reg.srcOffsets[1].y = fromInfo.size.y;
+        reg.srcOffsets[0].z = 0;
+        reg.srcOffsets[1].z = 1;
+        reg.srcSubresource.aspectMask = fromInfo.aspects;
+        reg.srcSubresource.baseArrayLayer = 0;
+        reg.srcSubresource.mipLevel = 0;
+        reg.srcSubresource.layerCount = 1;
+        reg.dstOffsets[0].x = 0;
+        reg.dstOffsets[1].x = toInfo.size.x;
+        reg.dstOffsets[0].y = 0;
+        reg.dstOffsets[1].y = toInfo.size.y;
+        reg.dstOffsets[0].z = 0;
+        reg.dstOffsets[1].z = 1;
+        reg.dstSubresource.aspectMask = toInfo.aspects;
+        reg.dstSubresource.baseArrayLayer = 0;
+        reg.dstSubresource.mipLevel = 0;
+        reg.dstSubresource.layerCount = 1;
+        vkCmdBlitImage(cb, fromInfo.image, fromInfo.layout, toInfo.image, toInfo.layout, 1, &reg, VK_FILTER_LINEAR);
     }
 
     //success

@@ -482,6 +482,17 @@ namespace GLGE::Graphic {
         }
 
         /**
+         * @brief Destroy the Resource Set
+         */
+        ~ResourceSet() {
+            //remove all bindings
+            for (const auto& resource : m_resources) {
+                //drop the binding
+                resource->onRemoveBinding(this);
+            }
+        }
+
+        /**
          * @brief a function to check if a resource set matches a specific template
          * 
          * @param structure a constant reference to a template to check for matching binding names, structure and types

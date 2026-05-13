@@ -18,8 +18,8 @@
 GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer::Framebuffer(u8 colorAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* colorAttachments, 
                                                                   u8 depthAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* depthAttachments, 
                                                                   u8 stencilAttachmentCount, Reference<GLGE::Graphic::Backend::Graphic::Image> const* stencilAttachments, 
-                                                                  bool combinedDepthStencil)
- : GLGE::Graphic::Backend::Graphic::Framebuffer(colorAttachmentCount, colorAttachments, depthAttachmentCount, depthAttachments, stencilAttachmentCount, stencilAttachments, combinedDepthStencil)
+                                                                  bool combinedDepthStencil, GLGE::Graphic::Backend::Graphic::Instance* instance)
+ : GLGE::Graphic::Backend::Graphic::Framebuffer(colorAttachmentCount, colorAttachments, depthAttachmentCount, depthAttachments, stencilAttachmentCount, stencilAttachments, combinedDepthStencil, instance)
 {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer::Framebuffer")
 

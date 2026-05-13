@@ -27,6 +27,15 @@ namespace VkImpl {
     bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle);
 
     /**
+     * @brief copy the contents of one render targets to another
+     * 
+     * @param cmdBuff the command buffer to record the function into
+     * @param handle the handle that holds the required data for the function
+     * @return `true` if the copy was recorded successfully, `false` otherwise
+     */
+    bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle);
+
+    /**
      * @brief dispatch a compute shader
      * 
      * @param cmdBuff the command buffer to record the function into

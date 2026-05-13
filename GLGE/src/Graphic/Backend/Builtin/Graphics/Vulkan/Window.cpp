@@ -247,7 +247,7 @@ void Window::recreateSwapchain() {
     attachDescr.samples = VK_SAMPLE_COUNT_1_BIT;
     VkAttachmentReference attachRef {};
     attachRef.attachment = 0;
-    attachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachRef.layout = VK_IMAGE_LAYOUT_GENERAL;
     VkSubpassDescription subpass {};
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &attachRef;
@@ -287,13 +287,13 @@ void Window::recreateSwapchain() {
     vkBeginCommandBuffer(cmdBuff, &cmdBuffBeg);
 
     //run a dummy render pass for each image
-    for (const auto& fbuff : fbuffs) {
+    for (size_t i = 0; i < m_imgs.size(); ++i) {
         VkClearValue clearCol {};
         clearCol.color = {{0.f, 0.f, 0.f, 0.f}};
         
         VkRenderPassBeginInfo renPassBeg {};
         renPassBeg.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renPassBeg.framebuffer = fbuff;
+        renPassBeg.framebuffer = fbuffs[i];
         renPassBeg.renderArea.offset = {0,0};
         renPassBeg.renderArea.extent = {m_resolution.x, m_resolution.y};
         renPassBeg.clearValueCount = 1;

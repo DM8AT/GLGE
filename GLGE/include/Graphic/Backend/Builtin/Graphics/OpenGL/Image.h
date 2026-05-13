@@ -86,6 +86,13 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
 
         /**
+         * @brief a function that is called to remove the binding between an image and a resource set
+         * 
+         * @param set a pointer to the set to drop the binding to
+         */
+        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) override;
+
+        /**
          * @brief Get the handle of the image
          * 
          * @return `u32` the image handle

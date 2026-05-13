@@ -146,12 +146,13 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param stencilAttachmentCount the amount of stencil attachments to add
          * @param stencilAttachments the stencil attachments to add
          * @param combinedDepthStencil `true` if depth and stencil buffer are combined, `false` if they are different
+         * @param instance a pointer to the owning backend instance
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Framebuffer>` a reference to the new framebuffer
          */
         virtual Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> createFramebuffer([[maybe_unused]] u8 colorAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* colorAttachments, 
                                                                                           [[maybe_unused]] u8 depthAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* depthAttachments, 
                                                                                           [[maybe_unused]] u8 stencilAttachmentCount, [[maybe_unused]] Reference<GLGE::Graphic::Backend::Graphic::Image> const* stencilAttachments, 
-                                                                                          [[maybe_unused]] bool combinedDepthStencil) = 0;
+                                                                                          [[maybe_unused]] bool combinedDepthStencil, GLGE::Graphic::Backend::Graphic::Instance* instance) = 0;
 
         /**
          * @brief Create a new Resource Set

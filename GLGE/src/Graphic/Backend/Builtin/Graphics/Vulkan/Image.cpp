@@ -12,6 +12,10 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add vulkan instances
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+//add vulkan resource sets
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+//add the resource set frontend
+#include "Graphic/ResourceSet.h"
 
 //include vulkan
 #include "vulkan/vulkan.h"
@@ -249,6 +253,36 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
 
     //clear
     clear();
+
+    //binding update required
+    //iterate over all known bindings
+    for (size_t i = 0; i < m_references.size(); ++i) {
+        //extract the descriptor set
+        auto* set = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(m_references[i].first->getBackend().get());
+        VkDescriptorSet vkSet = reinterpret_cast<VkDescriptorSet>(set->getDescriptorSet());
+        
+        //store information about the image
+        VkDescriptorImageInfo info {};
+        info.sampler = VK_NULL_HANDLE;
+        info.imageView = reinterpret_cast<VkImageView>(m_view);
+        info.imageLayout = VK_IMAGE_LAYOUT_GENERAL; //this MUST be general as of the vulkan spec
+
+        //build the write call
+        VkWriteDescriptorSet write {};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = vkSet;
+        write.dstBinding = m_references[i].second;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        write.pImageInfo = &info;
+
+        //update the descriptor set
+        vkUpdateDescriptorSets(reinterpret_cast<VkDevice>(inst->getDevice()), 1, &write, 0, nullptr);
+    }
+
+    //framebuffer update required
+    for (size_t i = 0; i < m_ref_framebuffers.size(); ++i) 
+    {m_ref_framebuffers[i]->onImageUpdated(this);}
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::read(ImageCPU& out) const {
@@ -417,13 +451,21 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::clear() {
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) {
+    //register the binding
+    m_references.emplace_back(set, unit);
+}
 
+void GLGE::Graphic::Backend::Graphic::Vulkan::Image::onDropBinding(GLGE::Graphic::ResourceSet* set) {
+    for (size_t i = 0; i < m_references.size(); ++i)
+    {if (m_references[i].first == set) {m_references.erase(m_references.begin() + i);}}
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::registerFramebuffer(GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff) {
-
+    //store the framebuffer binding
+    m_ref_framebuffers.push_back(fbuff);
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::removeFramebuffer(GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff) {
-
+    for (size_t i = 0; i < m_ref_framebuffers.size(); ++i)
+    {if (m_ref_framebuffers[i] == fbuff) {m_ref_framebuffers.erase(m_ref_framebuffers.begin() + i);}}
 }

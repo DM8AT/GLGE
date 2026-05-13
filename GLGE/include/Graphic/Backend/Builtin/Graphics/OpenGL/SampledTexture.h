@@ -52,6 +52,13 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          */
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
 
+        /**
+         * @brief a function that is called to build a binding of the resource to a unit in the resource set
+         * 
+         * @param set a pointer to the set to bind to
+         */
+        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) override {}
+
     };
 
 }

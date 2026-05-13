@@ -86,6 +86,13 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
 
         /**
+         * @brief a function that is called to remove the binding between an image and a resource set
+         * 
+         * @param set a pointer to the set to drop the binding to
+         */
+        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) override;
+
+        /**
          * @brief register a new framebuffer
          * 
          * @param fbuff a pointer to the framebuffer backend
@@ -139,6 +146,14 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         inline i32 getAspectFlags() const noexcept
         {return m_aspectFlags;}
 
+        /**
+         * @brief Get the Vulkan Format
+         * 
+         * @return `i32` the vulkan format
+         */
+        inline i32 getVkFormat() const noexcept
+        {return m_vkFormat;}
+
     protected:
 
         /**
@@ -171,6 +186,11 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * This is UNDEFINED if the image was never used and GENERAL if the image was used
          */
         i32 m_layout = 0;
+
+        /**
+         * @brief store a list of all set unit pairs that reference this image
+         */
+        std::vector<std::pair<GLGE::Graphic::ResourceSet*, u32>> m_references;
 
     };
 
