@@ -53,5 +53,19 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Shader::addShaderElement(void* dat
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Shader::finalize() {
+    //check if a compute stage exists
+    bool hasCompute = false;
+    for (size_t i = 0; i < m_modules.size(); ++i) {
+        if (m_modules[i].tag == static_cast<i32>(GLGE::Graphic::Shader::Type::COMPUTE))
+        {hasCompute = true;}
+    }
 
+    //if a compute stage exists, create a compute pipeline
+    //this is required for legacy OpenGL compatibility. 
+    if (hasCompute) {
+        //create the compute pipeline
+        VkComputePipelineCreateInfo compCreate {};
+        compCreate.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        compCreate.
+    }
 }

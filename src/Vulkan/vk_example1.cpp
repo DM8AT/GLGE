@@ -54,10 +54,7 @@ void vk_example1() {
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
 
-    GLGE::Graphic::Shader meshShader {
-        std::pair{"Vertex", "assets/shader/simple.vert.spv"},
-        std::pair{"Fragment", "assets/shader/simple.frag.spv"}
-    };
+    GLGE::Graphic::Shader finalize({std::pair{"Compute", "assets/shader/finalize.comp.spv"}});
     
     GLGE::Graphic::RenderTarget window(&win);
 

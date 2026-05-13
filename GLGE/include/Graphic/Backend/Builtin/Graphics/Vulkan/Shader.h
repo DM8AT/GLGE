@@ -50,6 +50,14 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual void finalize() override;
 
+        /**
+         * @brief Get the Compute Pipeline
+         * 
+         * @return `void*` the compute pipeline or `nullptr` if no compute pipeline exists
+         */
+        void* getComputePipeline() const noexcept
+        {return m_computePipe;}
+
     protected:
 
         /**
@@ -72,6 +80,11 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief store the shader modules
          */
         std::vector<Module> m_modules;
+
+        /**
+         * @brief store the compute pipeline
+         */
+        void* m_computePipe = nullptr;
 
     };
 
