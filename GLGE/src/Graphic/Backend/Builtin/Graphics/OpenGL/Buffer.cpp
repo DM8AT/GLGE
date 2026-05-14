@@ -15,8 +15,8 @@
 //add OpenGL resource sets
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 
-GLGE::Graphic::Backend::Graphic::OpenGL::Buffer::Buffer(Type type, const void* initial, size_t size, Usage usage) 
- : GLGE::Graphic::Backend::Graphic::Buffer(type, initial, size, usage)
+GLGE::Graphic::Backend::Graphic::OpenGL::Buffer::Buffer(Type type, const void* initial, size_t size, GLGE::Graphic::Backend::Graphic::Instance* instance, Usage usage) 
+ : GLGE::Graphic::Backend::Graphic::Buffer(type, initial, size, instance, usage)
 {
     //for CPU only just stop
     if (m_usage == Usage::CPU_ONLY) {return;}

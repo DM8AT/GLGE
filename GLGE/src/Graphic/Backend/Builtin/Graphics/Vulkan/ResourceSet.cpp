@@ -21,6 +21,10 @@
 #include "Graphic/Image.h"
 //add vulkan images
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+//get frontend buffers
+#include "Graphic/Buffer.h"
+//add vulkan buffers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"
@@ -149,6 +153,48 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
                 write.descriptorCount = 1;
                 write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 write.pImageInfo = &imgInfos.back();
+                writes.push_back(write);
+            }
+            break;
+        case GLGE::Graphic::ResourceType::STORAGE_BUFFER: {
+                //get the buffer
+                auto* buff = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(dynamic_cast<GLGE::Graphic::Buffer*>(m_resourceSet->resources()[b.getUnit()]));
+                //store information about the buffer
+                VkDescriptorBufferInfo info {};
+                info.offset = 0;
+                info.range = buff->getSize();
+                info.buffer = reinterpret_cast<VkBuffer>(buff->getBuffer());
+                buffInfos.push_back(info);
+
+                //build the write call
+                VkWriteDescriptorSet write {};
+                write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                write.dstSet = vkSet;
+                write.dstBinding = b.getUnit();
+                write.descriptorCount = 1;
+                write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                write.pBufferInfo = &buffInfos.back();
+                writes.push_back(write);
+            }
+            break;
+        case GLGE::Graphic::ResourceType::UNIFORM_BUFFER: {
+                //get the buffer
+                auto* buff = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(dynamic_cast<GLGE::Graphic::Buffer*>(m_resourceSet->resources()[b.getUnit()]));
+                //store information about the buffer
+                VkDescriptorBufferInfo info {};
+                info.offset = 0;
+                info.range = buff->getSize();
+                info.buffer = reinterpret_cast<VkBuffer>(buff->getBuffer());
+                buffInfos.push_back(info);
+
+                //build the write call
+                VkWriteDescriptorSet write {};
+                write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                write.dstSet = vkSet;
+                write.dstBinding = b.getUnit();
+                write.descriptorCount = 1;
+                write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                write.pBufferInfo = &buffInfos.back();
                 writes.push_back(write);
             }
             break;

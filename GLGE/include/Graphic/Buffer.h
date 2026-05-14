@@ -52,7 +52,7 @@ namespace GLGE::Graphic {
          * @param usage the intended usage of the buffer
          */
         Buffer(Type type, const void* initial, size_t size, Usage usage = Usage::UNDEFINED)
-         : BaseClass(), Resource(), m_backend(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createBuffer(type, initial, size, usage))
+         : BaseClass(), Resource(), m_backend(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createBuffer(type, initial, size, usage, getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
         {}
 
         /**

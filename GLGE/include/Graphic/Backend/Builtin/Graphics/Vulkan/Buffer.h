@@ -1,25 +1,25 @@
 /**
  * @file Buffer.h
  * @author DM8AT
- * @brief overload the buffer backend for OpenGL
+ * @brief define the overload for the vulkan buffer
  * @version 0.1
- * @date 2026-03-21
+ * @date 2026-05-14
  * 
  * @copyright Copyright (c) 2026
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BUILTIN_GRAPHICS_OGL_BUFFER_
-#define _GLGE_GRAPHIC_BUILTIN_GRAPHICS_OGL_BUFFER_
+#ifndef _GLGE_GRAPHIC_BUILTIN_GRAPHICS_VK_BUFFER_
+#define _GLGE_GRAPHIC_BUILTIN_GRAPHICS_VK_BUFFER_
 
 //include the buffer backend
 #include "Graphic/Backend/Graphics/Buffer.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
-     * @brief overload of the buffer backend for OpenGL
+     * @brief overload of the buffer backend for Vulkan
      */
     class Buffer : public GLGE::Graphic::Backend::Graphic::Buffer {
     public:
@@ -110,36 +110,42 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param set a pointer to the set to bind to
          */
-        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) override {}
+        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) override;
 
         /**
-         * @brief Get the handle
+         * @brief Get the Buffer
          * 
-         * @return `u32` the OpenGL buffer
+         * @return `void*` the vulkan buffer
          */
-        inline u32 getHandle() const noexcept
-        {return m_handle;}
+        inline void* getBuffer() const noexcept
+        {return m_buffer;}
 
     protected:
 
         /**
-         * @brief store the OpenGL buffer
+         * @brief write data to the buffer using the dedicated transfer queues
+         * 
+         * @param data the data to upload
+         * @param offset the offset in the buffer to write to
+         * @param size the size of the region to upload
          */
-        u32 m_handle = 0;
-        /**
-         * @brief store the flags
-         */
-        u32 m_flags = 0;
+        void asyncUpload(const void* data, u64 offset, u64 size);
 
         /**
-         * @brief store a counter for name generation
+         * @brief store the actual vulkan buffer
          */
-        inline static u32 ms_nameCounter = 0;
-        /**
-         * @brief store the name enumerator
-         */
-        u32 m_name = ++ms_nameCounter;
+        void* m_buffer = nullptr;
 
+        /**
+         * @brief store the VMA allocation
+         */
+        void* m_allocation = nullptr;
+
+        /**
+         * @brief store all resource sets that reference this buffer
+         */
+        std::vector<std::pair<GLGE::Graphic::ResourceSet*, u32>> m_references;
+    
     };
 
 }

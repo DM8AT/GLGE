@@ -357,6 +357,8 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Shader.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/MeshPool.cpp
         )
     endif()
 

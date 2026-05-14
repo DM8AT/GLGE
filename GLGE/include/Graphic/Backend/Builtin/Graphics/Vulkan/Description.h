@@ -153,9 +153,10 @@ namespace Graphics {
          * @param initial the initial data for the buffer, may be `nullptr`
          * @param size the initial size of the buffer
          * @param usage the intended usage of the buffer
+         * @param instance a pointer to the backend instance that will own the buffer
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Buffer>` a reference to the new buffer backend
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Buffer> createBuffer([[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Type type, [[maybe_unused]] const void* initial, [[maybe_unused]] size_t size, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Usage usage) override;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Buffer> createBuffer([[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Type type, [[maybe_unused]] const void* initial, [[maybe_unused]] size_t size, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Usage usage, GLGE::Graphic::Backend::Graphic::Instance* instance) override;
 
         /**
          * @brief Create a Sampled Texture
@@ -178,9 +179,11 @@ namespace Graphics {
         /**
          * @brief Create a Mesh Pool
          * 
+         * @param instance a pointer to the instance that will own the mesh pool
+         * 
          * @return `Reference<GLGE::Graphic::Backend::Graphic::MeshPool>` a reference to the new mesh pool
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::MeshPool> createMeshPool() override;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::MeshPool> createMeshPool(GLGE::Graphic::Instance* instance) override;
 
         /**
          * @brief Create a Vertex Layout

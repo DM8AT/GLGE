@@ -20,6 +20,10 @@
 //add vertex attributes
 #include "Graphic/VertexAttribute.h"
 
+//frontend instances are defined elsewhere
+namespace GLGE::Graphic
+{class Instance;}
+
 //use the backend namespace
 namespace GLGE::Graphic::Backend::Graphic {
 
@@ -31,6 +35,11 @@ namespace GLGE::Graphic::Backend::Graphic {
      */
     class MeshPool : public GLGE::Referable {
     public:
+
+        /**
+         * @brief store the maximum allowed attribute count
+         */
+        inline static constexpr const u8 MAX_ATTRIBUTE_COUNT = 16;
 
         /**
          * @brief define the maximum amount of LODs a single mesh may have
@@ -70,9 +79,45 @@ namespace GLGE::Graphic::Backend::Graphic {
         };
 
         /**
-         * @brief Construct a new Mesh Pool
+         * @brief store metadata about a single mesh
          */
-        MeshPool() = default;
+        struct MetaData {
+            /**
+             * @brief store the whole owned vertex section
+             */
+            LODInfo::Section vertex;
+            /**
+             * @brief store the whole owned index section
+             */
+            LODInfo::Section index;
+
+            /**
+             * @brief store all vertex attributes
+             */
+            VertexAttribute attributes[MAX_ATTRIBUTE_COUNT]{};
+            /**
+             * @brief store the amount of used vertex attributes
+             */
+            u64 attributeCount = 0;
+
+            /**
+             * @brief store all the LODs
+             */
+            LODInfo lod[MAX_LOD_COUNT]{};
+            /**
+             * @brief store the amount of LODs
+             */
+            u8 lodCount = 0;
+        };
+
+        /**
+         * @brief Construct a new Mesh Pool
+         * 
+         * @param instance a pointer to the instance the mesh pool will belong to
+         */
+        MeshPool(GLGE::Graphic::Instance* instance)
+         : m_instance(instance)
+        {}
 
         /**
          * @brief Destroy the Mesh Pool
@@ -207,6 +252,13 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param meshId the ID of the mesh to destroy
          */
         virtual void destroy(u64 meshId) = 0;
+
+    protected:
+
+        /**
+         * @brief store a pointer to the owning backend instance
+         */
+        GLGE::Graphic::Instance* m_instance = nullptr;
 
     };
 

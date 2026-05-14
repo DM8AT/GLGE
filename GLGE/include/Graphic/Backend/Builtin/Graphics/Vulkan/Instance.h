@@ -158,7 +158,7 @@ namespace Vulkan {
          * @return `void*` the vulkan instance
          */
         inline void* getInstance() const noexcept
-        {return m_instance;}
+        {return m_vkInstance;}
 
         /**
          * @brief Get the vulkan device
@@ -220,7 +220,7 @@ namespace Vulkan {
         /**
          * @brief store the vulkan instance
          */
-        void* m_instance = nullptr;
+        void* m_vkInstance = nullptr;
         /**
          * @brief store the selected physical device
          */

@@ -63,7 +63,7 @@ namespace GLGE::Graphic {
          * @param usage the usage of the buffer
          */
         StructuredBuffer(T* data, size_t count, Type type, Usage usage = Usage::CPU_GPU)
-         : BaseClass(), Resource(), m_backend(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createBuffer(type, data, count*sizeof(T), usage))
+         : BaseClass(), Resource(), m_backend(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createBuffer(type, data, count*sizeof(T), usage, getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
         {}
 
         /**
@@ -74,7 +74,7 @@ namespace GLGE::Graphic {
          * @param usage the usage of the buffer
          */
         StructuredBuffer(std::initializer_list<T> initial, Type type, Usage usage = Usage::CPU_GPU)
-         : BaseClass(), Resource(), m_backend(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createBuffer(type, initial.begin(), initial.size()*sizeof(T), usage))
+         : BaseClass(), Resource(), m_backend(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createBuffer(type, initial.begin(), initial.size()*sizeof(T), usage, getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
         {}
 
         /**

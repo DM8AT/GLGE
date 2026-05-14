@@ -114,7 +114,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Texture::update(const ImageCPU& im
     //get memory requirements
     u64 size = image.getSize().x*image.getSize().y*image.getTexelSize();
     //create a staging buffer
-    StagingBuffer staging = __createStagingBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), size);
+    StagingBuffer staging = __createStagingBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), size, inst->getGraphicsQueue().familyIdx);
     //fill in the staging data
     memcpy(staging.mapped, image.getRaw(), size);
 

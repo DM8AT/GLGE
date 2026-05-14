@@ -120,7 +120,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::write(const ImageCPU& image
     //get memory requirements
     u64 size = image.getSize().x*image.getSize().y*image.getTexelSize();
     //create a staging buffer
-    StagingBuffer staging = __createStagingBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), size);
+    StagingBuffer staging = __createStagingBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), size, inst->getGraphicsQueue().familyIdx);
     //fill in the staging data
     memcpy(staging.mapped, image.getRaw(), size);
 
@@ -302,7 +302,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::read(ImageCPU& out) const {
     //compute the byte size
     u64 size = m_size.x*m_size.y*((m_format.r_Bitcount + m_format.g_Bitcount + m_format.b_Bitcount + m_format.a_Bitcount + 7) / 8);
     //allocate a staging buffer
-    StagingBuffer staging = __createStagingBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), size);
+    StagingBuffer staging = __createStagingBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), size, inst->getGraphicsQueue().familyIdx);
     //get a single-time command buffer
     VkCommandBuffer cmd = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getTransferQueue().singleUsePool));
 

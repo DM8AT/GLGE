@@ -104,8 +104,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::ResourceSet> OpenGL::createReso
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader> OpenGL::createShader([[maybe_unused]] GLGE::Graphic::Shader* frontend)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader>(new GLGE::Graphic::Backend::Graphic::OpenGL::Shader(frontend), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer> OpenGL::createBuffer([[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Type type, [[maybe_unused]] const void* initial, [[maybe_unused]] size_t size, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Usage usage)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Buffer(type, initial, size, usage), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer> OpenGL::createBuffer([[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Type type, [[maybe_unused]] const void* initial, [[maybe_unused]] size_t size, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Buffer::Usage usage, GLGE::Graphic::Backend::Graphic::Instance* instance)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Buffer(type, initial, size, instance, usage), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> OpenGL::createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Texture>& texture, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(new GLGE::Graphic::Backend::Graphic::OpenGL::SampledTexture(texture, sampler), false);}
@@ -113,8 +113,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> OpenGL::createS
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> OpenGL::createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Image>& image, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(new GLGE::Graphic::Backend::Graphic::OpenGL::SampledTexture(image, sampler), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool> OpenGL::createMeshPool() 
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool>(new GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool(), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool> OpenGL::createMeshPool(GLGE::Graphic::Instance* instance) 
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool>(new GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool(instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> OpenGL::createVertexLayout(const VertexAttribute* ptr, size_t size, size_t stride, Reference<GLGE::Graphic::Backend::Graphic::MeshPool> pool)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout>(new GLGE::Graphic::Backend::Graphic::OpenGL::VertexLayout(ptr, size, stride, pool), false);}

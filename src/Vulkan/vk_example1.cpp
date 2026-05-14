@@ -35,6 +35,10 @@ void vk_example1() {
     GLGE::Graphic::Window win("Hello from SDL3", {600, 600});
     win.setVSyncMode(GLGE::Graphic::VSYNC_ENABLED);
 
+    std::cout << "Selected GPU: "           << gInst.getGPUName()          << "\n";
+    std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
+    std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
+
     auto imgData = inst.assets().load<GLGE::Graphic::Asset::ImageCPU>("assets/textures/grass.png", GLGE::Graphic::Asset::ImageCPU::PNG);
     auto othData = inst.assets().load<GLGE::Graphic::Asset::ImageCPU>("assets/textures/cubeTexture.png", GLGE::Graphic::Asset::ImageCPU::PNG);
     GLGE::Graphic::Image img(*imgData.reference());
@@ -50,14 +54,23 @@ void vk_example1() {
     cpuImgAsset.image() = newImg;
     cpuImgAsset.export_as("img.png", GLGE::Graphic::Asset::ImageCPU::PNG);
 
-    std::cout << "Selected GPU: "           << gInst.getGPUName()          << "\n";
-    std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
-    std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
+    GLGE::u32 data[] = {0,1,2,3,4,5,6,7,8,9};
+    GLGE::Graphic::Buffer buff(GLGE::Graphic::Buffer::Type::STORAGE, data, sizeof(data), GLGE::Graphic::Buffer::Usage::CPU_GPU);
 
     GLGE::Graphic::Shader simple({std::pair{"Compute", "assets/shader/simple.comp.spv"}});
     GLGE::Graphic::ResourceSet simpleSet(simple.getSet(0), std::pair{"imgOutput", &oth});
     simple.setResources(0, &simpleSet);
     
+    GLGE::Graphic::VertexLayout layout {{
+        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Position, GLGE::Graphic::VertexAttribute::Format::vec3, 0,  0),
+        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::UV,       GLGE::Graphic::VertexAttribute::Format::vec2, 12, 1),
+        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Normal,   GLGE::Graphic::VertexAttribute::Format::vec3, 20, 2),
+        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Tangent,  GLGE::Graphic::VertexAttribute::Format::vec3, 32, 3),
+        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Color,    GLGE::Graphic::VertexAttribute::Format::vec4, 44, 4)
+    }, 60};
+    GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> cube_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Cube.fbx", GLGE::Graphic::Asset::Mesh::ASSIMP);
+    GLGE::World world("Scene 1");
+
     GLGE::Graphic::RenderTarget window(&win);
     GLGE::Graphic::RenderTarget fbuffTarget(&fbuff);
 

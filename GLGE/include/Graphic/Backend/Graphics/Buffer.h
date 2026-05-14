@@ -18,6 +18,8 @@
 #include "Core/Reference.h"
 //add resources
 #include "Graphic/Resource.h"
+//add backend instances
+#include "Instance.h"
 
 //use the library namespace
 namespace GLGE::Graphic::Backend::Graphic {
@@ -96,10 +98,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param type the type of the buffer
          * @param initial a pointer to a data blob to store initially (if `nullptr` is parsed, it is ignored)
          * @param size the size of the data blob to store
+         * @param instance a pointer to the backend instance that will own the buffer
          * @param usage the intended usage of the buffer
          */
-        Buffer(Type type, const void* initial, size_t size, Usage usage = Usage::UNDEFINED)
-         : m_type(type), m_size(size), m_usage(usage)
+        Buffer(Type type, const void* initial, size_t size, GLGE::Graphic::Backend::Graphic::Instance* instance, Usage usage = Usage::UNDEFINED)
+         : m_type(type), m_size(size), m_usage(usage), m_instance(instance)
         {
             //if this is a CPU only buffer, store a copy
             if (m_usage == Usage::CPU_ONLY) {
@@ -263,6 +266,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief store all ranges of the CPU that are out of date
          */
         std::vector<Range> m_cpu_outOfDate;
+
+        /**
+         * @brief store a pointer to the owning instance
+         */
+        GLGE::Graphic::Backend::Graphic::Instance* m_instance = nullptr;
 
     };
 

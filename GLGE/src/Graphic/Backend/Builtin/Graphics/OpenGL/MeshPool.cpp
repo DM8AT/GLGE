@@ -199,7 +199,9 @@ static GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo::Section __allocateSec
     return out;
 }
 
-GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::MeshPool() {
+GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::MeshPool(GLGE::Graphic::Instance* instance) 
+ : GLGE::Graphic::Backend::Graphic::MeshPool(instance)
+{
     //create the VBO and IBO
     glCreateBuffers(1, &m_vbo);
     glCreateBuffers(1, &m_ibo);

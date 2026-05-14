@@ -238,9 +238,10 @@ struct StagingBuffer {
  * 
  * @param allocator the allocator to use for allocations
  * @param size the size of the buffer
+ * @param queue the queue family index the buffer will belong to
  * @return `StagingBuffer` the filled, ready-to-use, staging buffer
  */
-inline static StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDeviceSize size) {
+inline static StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDeviceSize size, GLGE::u32 queue) {
     //store the staging buffer to return
     StagingBuffer buff{};
 
@@ -250,6 +251,8 @@ inline static StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDevi
     buffInfo.size = size;
     buffInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     buffInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    buffInfo.queueFamilyIndexCount = 1;
+    buffInfo.pQueueFamilyIndices = &queue;
     //create the allocation info
     VmaAllocationCreateInfo allocInfo{};
     allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;

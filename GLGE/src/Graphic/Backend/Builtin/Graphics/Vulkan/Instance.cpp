@@ -204,17 +204,17 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     instCreate.ppEnabledLayerNames = instLayers.data();
 
     //create the instance
-    if (vkCreateInstance(&instCreate, nullptr, reinterpret_cast<VkInstance*>(&m_instance)) != VK_SUCCESS)
+    if (vkCreateInstance(&instCreate, nullptr, reinterpret_cast<VkInstance*>(&m_vkInstance)) != VK_SUCCESS)
     {throw GLGE::Exception("Failed to create the vulkan instance", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance::Instance");}
 
     //get all available GPUs
     u32 deviceCount = 0;
-    vkEnumeratePhysicalDevices(reinterpret_cast<VkInstance>(m_instance), &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(reinterpret_cast<VkInstance>(m_vkInstance), &deviceCount, nullptr);
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(reinterpret_cast<VkInstance>(m_instance), &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(reinterpret_cast<VkInstance>(m_vkInstance), &deviceCount, devices.data());
 
     //get and store the best GPU
-    m_physicalDevice = __pick_strongest_device(devices, reinterpret_cast<VkInstance>(m_instance));
+    m_physicalDevice = __pick_strongest_device(devices, reinterpret_cast<VkInstance>(m_vkInstance));
 
     //store the required device extensions
     std::vector<const char*> devExt = {
@@ -388,7 +388,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     VmaAllocatorCreateInfo vmaAllocCreate {};
     vmaAllocCreate.physicalDevice = reinterpret_cast<VkPhysicalDevice>(m_physicalDevice);
     vmaAllocCreate.device = reinterpret_cast<VkDevice>(m_device);
-    vmaAllocCreate.instance = reinterpret_cast<VkInstance>(m_instance);
+    vmaAllocCreate.instance = reinterpret_cast<VkInstance>(m_vkInstance);
     vmaAllocCreate.vulkanApiVersion = appInfo.apiVersion;
     vmaCreateAllocator(&vmaAllocCreate, reinterpret_cast<VmaAllocator*>(&m_allocator));
 
@@ -403,6 +403,9 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
 }
 
 Instance::~Instance() {
+    //destroy the graphic backend
+    m_instance->onGraphicBackendDestroy();
+
     //destroy the memory allocator
     vmaDestroyAllocator(reinterpret_cast<VmaAllocator>(m_allocator));
 
@@ -414,11 +417,12 @@ Instance::~Instance() {
     //destroy the vulkan device
     vkDestroyDevice(reinterpret_cast<VkDevice>(m_device), nullptr);
     //destroy the vulkan instance
-    vkDestroyInstance(reinterpret_cast<VkInstance>(m_instance), nullptr);
+    vkDestroyInstance(reinterpret_cast<VkInstance>(m_vkInstance), nullptr);
 }
 
 void Instance::onBind() {
-    
+    //initialize the graphic backend
+    m_instance->onGraphicBackendInit();
 }
 
 void Instance::onUnbind() {

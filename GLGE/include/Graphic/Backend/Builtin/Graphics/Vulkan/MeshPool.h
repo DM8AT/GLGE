@@ -1,24 +1,26 @@
 /**
  * @file MeshPool.h
  * @author DM8AT
- * @brief define the OpenGL overload for the mesh pool system
+ * @brief define vulkan mesh pools
  * @version 0.1
- * @date 2026-03-25
+ * @date 2026-05-14
  * 
  * @copyright Copyright (c) 2026
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_MESH_POOL_
-#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_MESH_POOL_
+#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_MESH_POOL_
+#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_MESH_POOL_
 
 //add the resource set API
 #include "Graphic/Backend/Graphics/MeshPool.h"
 //add vertex layouts
 #include "Graphic/Backend/Graphics/VertexLayout.h"
+//add vulkan buffers
+#include "Graphic/Backend/Graphics/Buffer.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
      * @brief overload the mesh pool
@@ -85,22 +87,6 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * @return `const LODInfo::Section&` a constant reference to the whole vertex section
          */
         virtual const LODInfo::Section& getVertexSection(u64 meshId) const override;
-
-        /**
-         * @brief get the currently used VBO
-         * 
-         * @return `u32` the currently used VBO
-         */
-        inline u32 getVBO() const noexcept
-        {return m_vbo;}
-
-        /**
-         * @brief get the currently used IBO
-         * 
-         * @return `u32` the currently used IBO
-         */
-        inline u32 getIBO() const noexcept
-        {return m_ibo;}
 
         /**
          * @brief store metadata about a slot
@@ -243,42 +229,53 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
         size_t m_freeTop = SIZE_MAX;
 
         /**
-         * @brief store the actual vertex buffer
-         */
-        u32 m_vbo = 0;
-        /**
          * @brief store a CPU side copy of the vertex buffer
          */
         void* m_vboCopy = nullptr;
         /**
-         * @brief store the last VBO
-         * 
-         * This is done so that the OS can deffer actual buffer deletion until it is no longer needed
+         * @brief store the vertex buffer object
          */
-        u32 m_lastVBO = 0;
+        void* m_vbo = nullptr;
+        /**
+         * @brief store the vbo allocation
+         */
+        void* m_vboAlloc = nullptr;
+        /**
+         * @brief store the old vertex buffer object
+         */
+        void* m_vboOld = nullptr;
+        /**
+         * @brief store the old vbo allocation
+         */
+        void* m_vboAllocOld = nullptr;
         /**
          * @brief store the size of the vertex buffer in bytes
          */
         u64 m_vboSize = 0;
         /**
-         * @brief store the actual index buffer
-         */
-        u32 m_ibo = 0;
-        /**
          * @brief store a CPU side copy of the index buffer
          */
         void* m_iboCopy = nullptr;
         /**
-         * @brief store the last IBO
-         * 
-         * This is done so that the OS can deffer actual buffer deletion until it is no longer needed
+         * @brief store the index buffer object
          */
-        u32 m_lastIBO = 0;
+        void* m_ibo = nullptr;
+        /**
+         * @brief store the ibo allocation
+         */
+        void* m_iboAlloc = nullptr;
+        /**
+         * @brief store the old index buffer object
+         */
+        void* m_iboOld = nullptr;
+        /**
+         * @brief store the old ibo allocation
+         */
+        void* m_iboAllocOld = nullptr;
         /**
          * @brief store the size of the index buffer in bytes
          */
         u64 m_iboSize = 0;
-
     };
 
 }

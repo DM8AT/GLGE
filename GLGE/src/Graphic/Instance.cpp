@@ -21,6 +21,9 @@ void Instance::onInstanceSetting() {
     m_vInst = m_vDesc->createInstance(this, m_gDesc->getAPI(), m_gDesc->getAPIVersion());
     //create the internal graphic instance
     m_gInst = m_gDesc->createInstance(this);
+
+    //bind the graphic instance
+    m_gInst->onBind();
 }
 
 Instance::Instance(GLGE::Graphic::Backend::Graphic::Description* graphicDescription, 
@@ -59,7 +62,7 @@ const GLGE::Graphic::DisplaySetup& Instance::getDisplaySetup() const noexcept
 
 void GLGE::Graphic::Instance::onGraphicBackendInit() {
     //create the mesh pool
-    m_meshPool = m_gDesc->createMeshPool();
+    m_meshPool = m_gDesc->createMeshPool(this);
 }
 
 void GLGE::Graphic::Instance::onGraphicBackendDestroy() {

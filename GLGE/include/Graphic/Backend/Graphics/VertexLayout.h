@@ -33,7 +33,7 @@ namespace GLGE::Graphic::Backend::Graphic {
         /**
          * @brief store the maximum allowed attribute count
          */
-        inline static constexpr const u8 MAX_ATTRIBUTE_COUNT = 16;
+        inline static constexpr const u8 MAX_ATTRIBUTE_COUNT = GLGE::Graphic::Backend::Graphic::MeshPool::MAX_ATTRIBUTE_COUNT;
 
         /**
          * @brief Construct a new Vertex Layout
