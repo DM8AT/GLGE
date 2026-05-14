@@ -16,6 +16,7 @@
 //add OpenGL implementations
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/VertexLayout.h"
+#include "Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
 
 //add OpenGL
 #include "__Mapper.h"
@@ -38,7 +39,7 @@ static GLenum __toGLDepthFunc(GLGE::Graphic::Backend::Graphic::Material::DepthMo
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Material::bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) {
     //binder function
-    void (*func)(void*, size_t) = [](void* _self, size_t offset) {
+    void (*func)(void*, size_t, u32, u8, uvec2) = [](void* _self, size_t offset, u32 target, u8 targetCount, uvec2 resolution) {
         //extract self
         GLGE::Graphic::Backend::Graphic::OpenGL::Material* self = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Material*>(_self);
         //bind the shader
@@ -60,6 +61,14 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Material::bind(GLGE::Graphic::Back
             glFrontFace(GL_CCW);
             glCullFace((self->m_cullMode == CullMode::BACK) ? GL_BACK : GL_FRONT);
         }
+
+        //bind the target
+
+        //activate all color attachments
+        static constexpr const GLenum bufs[16] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7, GL_COLOR_ATTACHMENT8, GL_COLOR_ATTACHMENT9, GL_COLOR_ATTACHMENT10, GL_COLOR_ATTACHMENT11, GL_COLOR_ATTACHMENT12, GL_COLOR_ATTACHMENT13, GL_COLOR_ATTACHMENT14, GL_COLOR_ATTACHMENT15};
+        glNamedFramebufferDrawBuffers(target, targetCount, bufs);
+        glBindFramebuffer(GL_FRAMEBUFFER, target);
+        glViewport(0, 0, resolution.x, resolution.y);
     };
 
     //bind the shader set
@@ -67,8 +76,11 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Material::bind(GLGE::Graphic::Back
         auto ptr = m_shader->getFrontend()->getResources(0);
         if (ptr) {ptr->getBackend()->bind(buffer);}
     }
+    //get the framebuffer
+    auto* fbuff = static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(m_fbuff.get());
+    uvec2 size = fbuff->getColorAttachmentCount() ? fbuff->getColorAttachment(0)->getSize() : fbuff->getDepthAttachment(0)->getSize();
     //bind the shader
-    buffer->addCommand(func, reinterpret_cast<void*>(this), size_t(VBOOffset));
+    buffer->addCommand(func, reinterpret_cast<void*>(this), size_t(VBOOffset), fbuff->getHandle(), fbuff->getColorAttachmentCount(), size);
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Material::rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) {

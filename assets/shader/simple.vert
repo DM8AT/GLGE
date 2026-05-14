@@ -31,7 +31,7 @@ struct TransformData {
     float sz;
 };
 
-layout (set = 0, binding = 1, std430) buffer transf_buffer {
+layout (set = 0, binding = 1, std430) readonly buffer transf_buffer {
     TransformData transf[];
 } transforms;
 

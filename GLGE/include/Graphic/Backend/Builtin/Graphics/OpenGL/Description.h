@@ -201,19 +201,20 @@ namespace Graphics {
          * 
          * @param shader a reference to the used shader backend
          * @param layout a reference to the used vertex layout
+         * @param fbuff a reference to the framebuffer the material will use
          * @param cullMode the mode for the backface culling
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Material>` a reference to the new material
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Material> createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite) override;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Material> createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite) override;
 
         /**
          * @brief Create a Material
          * 
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
-         * @param target a target to render to
+         * @param target the target to adapt to
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Renderer>` a reference to the new renderer
          */
         virtual Reference<GLGE::Graphic::Backend::Graphic::Renderer> createRenderer(World& world, Object* camera, RenderTarget target) override;

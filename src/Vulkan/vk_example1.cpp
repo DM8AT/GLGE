@@ -71,6 +71,17 @@ void vk_example1() {
     GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> cube_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Cube.fbx", GLGE::Graphic::Asset::Mesh::ASSIMP);
     GLGE::World world("Scene 1");
 
+    GLGE::Graphic::Shader meshShader {
+        std::pair{"Vertex", "assets/shader/simple.vert.spv"},
+        std::pair{"Fragment", "assets/shader/simple.frag.spv"}
+    };
+    //GLGE::Graphic::ResourceSet renderSet(meshShader.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()}, 
+    //    std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}
+    //);
+    //meshShader.setResources(0, &renderSet);
+
+    GLGE::Graphic::Material mat(meshShader, layout, fbuff, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
+
     GLGE::Graphic::RenderTarget window(&win);
     GLGE::Graphic::RenderTarget fbuffTarget(&fbuff);
 

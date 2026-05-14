@@ -64,6 +64,14 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual void onImageUpdated(GLGE::Graphic::Backend::Graphic::Image* image) override;
 
+        /**
+         * @brief Get the Render Pass
+         * 
+         * @return `void*` the vulkan render pass
+         */
+        inline void* getRenderPass() const noexcept
+        {return m_renderPass;}
+
     protected:
 
         /**

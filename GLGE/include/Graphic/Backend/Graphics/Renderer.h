@@ -43,7 +43,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
-         * @param target a target to render to
+         * @param target the target to adapt to
          */
         Renderer(World& world, Object* camera, RenderTarget target)
          : m_world(&world), m_camera(camera), m_target(target)
@@ -352,7 +352,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         Object* m_camera = nullptr;
         /**
-         * @brief store the render target to render to
+         * @brief store the target to adapt to
          */
         RenderTarget m_target;
 

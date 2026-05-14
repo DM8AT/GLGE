@@ -74,6 +74,14 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         virtual void bind(size_t offset) = 0;
 
+        /**
+         * @brief Get the size of a whole vertex
+         * 
+         * @return `size_t` the size of a whole vertex
+         */
+        inline size_t getVertexSize() const noexcept
+        {return m_stride;}
+
     protected:
 
         /**

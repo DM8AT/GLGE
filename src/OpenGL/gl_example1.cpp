@@ -159,7 +159,7 @@ void gl_example1() {
     );
     meshShader.setResources(0, &renderSet);
 
-    GLGE::Graphic::Material mat(meshShader, layout, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
+    GLGE::Graphic::Material mat(meshShader, layout, multiSample_fbuff, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
 
     GLGE::Object suzanne = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Suzanne", 

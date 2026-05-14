@@ -29,7 +29,7 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
-         * @param target a target to render to
+         * @param target the target to adapt to
          */
         Renderer(World& world, Object* camera, RenderTarget target);
 

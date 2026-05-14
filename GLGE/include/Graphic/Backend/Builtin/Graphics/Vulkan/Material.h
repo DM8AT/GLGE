@@ -1,22 +1,24 @@
 /**
  * @file Material.h
  * @author DM8AT
- * @brief overload the material class for OpenGL
+ * @brief define the material backend overload for vulkan
  * @version 0.1
- * @date 2026-03-27
+ * @date 2026-05-14
  * 
  * @copyright Copyright (c) 2026
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_MATERIAL_
-#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_MATERIAL_
+#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_MATERIAL_
+#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_MATERIAL_
 
 //add the material class
 #include "Graphic/Backend/Graphics/Material.h"
+//add vulkan instances
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
      * @brief overload the material class for OpenGL
@@ -29,19 +31,17 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param shader a reference to the used shader backend
          * @param layout a reference to the used vertex layout
-         * @param fbuff a pointer to the framebuffer the material will use
+         * @param fbuff a reference to the framebuffer the material will use
          * @param cullMode the mode for the backface culling
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          */
-        Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
-         : GLGE::Graphic::Backend::Graphic::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite)
-        {}
+        Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite);
 
         /**
          * @brief Destroy the Material
          */
-        virtual ~Material() = default;
+        virtual ~Material();
 
         /**
          * @brief bind the material
@@ -58,6 +58,21 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * @param VBOOffset the VBO offset from 0 in bytes
          */
         virtual void rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) override;
+
+    protected:
+
+        /**
+         * @brief store the vulkan instance
+         */
+        GLGE::Graphic::Backend::Graphic::Vulkan::Instance* m_instance = nullptr;
+        /**
+         * @brief store the graphic pipeline
+         */
+        void* m_pipe = nullptr;
+        /**
+         * @brief store the pipeline layout
+         */
+        void* m_pipeLayout = nullptr;
 
     };
 

@@ -28,6 +28,9 @@
 //add graphic instances
 #include "Instance.h"
 
+//add framebuffers
+#include "Framebuffer.h"
+
 //use the libraries namespace
 namespace GLGE::Graphic {
 
@@ -51,12 +54,13 @@ namespace GLGE::Graphic {
          * 
          * @param shader the shader for the material
          * @param layout the layout for the material
+         * @param fbuff the framebuffer the material will use
          * @param cullMode the cull mode for the material
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          */
-        Material(const Shader& shader, const VertexLayout& layout, CullMode cullMode, DepthMode depthMode, bool depthWrite)
-         : BaseClass(), m_material(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createMaterial(shader.getBackend(), layout.getLayout(), cullMode, depthMode, depthWrite))
+        Material(const Shader& shader, const VertexLayout& layout, Framebuffer& fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
+         : BaseClass(), m_material(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createMaterial(shader.getBackend(), layout.getLayout(), fbuff.getBackend(), cullMode, depthMode, depthWrite))
         {}
 
         /**

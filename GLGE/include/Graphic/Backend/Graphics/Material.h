@@ -20,6 +20,8 @@
 #include "VertexLayout.h"
 //add command buffer
 #include "CommandBuffer.h"
+//add backend framebuffers
+#include "Framebuffer.h"
 
 //use the backend namespace
 namespace GLGE::Graphic::Backend::Graphic {
@@ -91,12 +93,14 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param shader a reference to the used shader backend
          * @param layout a reference to the used vertex layout
+         * @param fbuff a reference to the framebuffer to adapt to
          * @param cullMode the mode for the backface culling
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          */
-        Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, CullMode cullMode, DepthMode depthMode, bool depthWrite)
-         : m_shader(shader), m_layout(layout), m_cullMode(cullMode), m_depthMode(depthMode), m_depthWrite(depthWrite)
+        Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, 
+                 CullMode cullMode, DepthMode depthMode, bool depthWrite)
+         : m_shader(shader), m_layout(layout), m_fbuff(fbuff), m_cullMode(cullMode), m_depthMode(depthMode), m_depthWrite(depthWrite)
         {}
 
         /**
@@ -130,6 +134,10 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief store a reference to the vertex layout the material is using
          */
         Reference<VertexLayout> m_layout;
+        /**
+         * @brief store the framebuffer the material uses
+         */
+        Reference<Framebuffer> m_fbuff;
         /**
          * @brief define the cull mode of the material
          */

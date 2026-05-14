@@ -193,6 +193,14 @@ namespace GLGE::Graphic {
         inline Reference<GLGE::Graphic::Backend::Graphic::Shader> getBackend() const noexcept
         {return m_shader;}
 
+        /**
+         * @brief Get all elements
+         * 
+         * @return `const std::vector<ElementInfo>&` a constant reference to all reflected elements
+         */
+        inline const std::vector<ElementInfo>& getElements() const noexcept
+        {return m_elements;}
+
     protected:
 
         /**

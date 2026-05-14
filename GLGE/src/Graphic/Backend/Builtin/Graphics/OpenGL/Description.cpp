@@ -119,8 +119,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool> OpenGL::createMeshPoo
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> OpenGL::createVertexLayout(const VertexAttribute* ptr, size_t size, size_t stride, Reference<GLGE::Graphic::Backend::Graphic::MeshPool> pool)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout>(new GLGE::Graphic::Backend::Graphic::OpenGL::VertexLayout(ptr, size, stride, pool), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> OpenGL::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material>(new GLGE::Graphic::Backend::Graphic::OpenGL::Material(shader, layout, cullMode, depthMode, depthWrite), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> OpenGL::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material>(new GLGE::Graphic::Backend::Graphic::OpenGL::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> OpenGL::createRenderer(World& world, Object* camera, RenderTarget target)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Renderer(world, camera, target), false);}

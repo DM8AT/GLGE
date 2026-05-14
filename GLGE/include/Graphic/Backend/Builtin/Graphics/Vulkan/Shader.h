@@ -25,6 +25,22 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
     public:
 
         /**
+         * @brief store the shader modules
+         */
+        struct Module {
+            /**
+             * @brief store the identification tag of the module
+             * 
+             * This is the `SpvExecutionModel_` value of the reflected type
+             */
+            i32 tag;
+            /**
+             * @brief store the created shader module
+             */
+            void* shaderModule;
+        };
+
+        /**
          * @brief Construct a new Shader
          * 
          * @param frontend a pointer to the shader frontend
@@ -66,23 +82,23 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         void* getComputePipelineLayout() const noexcept
         {return m_computePipeLayout;}
 
-    protected:
+        /**
+         * @brief Get the layouts
+         * 
+         * @return `const std::vector<void*>&` a constant reference to the layouts
+         */
+        inline const std::vector<void*>& getLayouts() const noexcept
+        {return m_layouts;}
 
         /**
-         * @brief store the shader modules
+         * @brief Get the Modules
+         * 
+         * @return `const std::vector<Module>&` a vector containing all the modules
          */
-        struct Module {
-            /**
-             * @brief store the identification tag of the module
-             * 
-             * This is the `SpvExecutionModel_` value of the reflected type
-             */
-            i32 tag;
-            /**
-             * @brief store the created shader module
-             */
-            void* shaderModule;
-        };
+        inline const std::vector<Module>& getModules() const noexcept
+        {return m_modules;}
+
+    protected:
 
         /**
          * @brief store the shader modules

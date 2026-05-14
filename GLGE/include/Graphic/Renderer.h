@@ -35,7 +35,7 @@ namespace GLGE::Graphic {
          * 
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
-         * @param target a target to render to
+         * @param target a target to adapt to - this determines the aspect, but it can be rendered to other targets of the same aspect too
          */
         Renderer(World& world, Object* camera, RenderTarget target)
          : BaseClass(), m_renderer(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createRenderer(world, camera, target))
