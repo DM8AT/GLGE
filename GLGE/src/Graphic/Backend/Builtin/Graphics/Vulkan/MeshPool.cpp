@@ -320,6 +320,7 @@ GLGE::u64 GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate(const void
     //for now hard fail if allocation failed
     if (meta.vertex.count == 0 || meta.index.count == 0)
     {throw Exception("Failed to allocate - the mesh pool ran out of memory", "GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate");}
+    #warning TODO - Add mesh pool resizing
 
     //GPU upload
     __uploadBufferRegion(inst, reinterpret_cast<VkBuffer>(m_vbo), vertices, meta.vertex.size*meta.vertex.count, meta.vertex.offset);
