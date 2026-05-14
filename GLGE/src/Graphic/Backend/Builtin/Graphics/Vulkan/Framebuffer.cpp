@@ -44,6 +44,9 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::onClear(vec4 color, f
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::onImageUpdated(GLGE::Graphic::Backend::Graphic::Image* image) {
+    //if framebuffers are left to resize, ignore it
+    if (m_resizeCountLeft > 0) {return;}
+
     //destroy the framebuffer
     destroyFramebuffers();
     //destroy the render pass

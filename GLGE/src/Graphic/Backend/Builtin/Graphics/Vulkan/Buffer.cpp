@@ -213,7 +213,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
     u32 queue = inst->getGraphicsQueue().familyIdx;
     VkBufferCreateInfo buffCreate {};
     buffCreate.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffCreate.size = m_size;
+    buffCreate.size = size;
     buffCreate.usage = __mapType(m_type) | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     buffCreate.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     buffCreate.queueFamilyIndexCount = 1;
@@ -247,7 +247,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
     //store information about the buffer
     VkDescriptorBufferInfo info {};
     info.offset = 0;
-    info.range = m_size;
+    info.range = size;
     info.buffer = reinterpret_cast<VkBuffer>(m_buffer);
 
     //trigger updates on all resource sets
@@ -264,6 +264,9 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
         //write
         vkUpdateDescriptorSets(reinterpret_cast<VkDevice>(inst->getDevice()), 1, &write, 0, nullptr);
     }
+
+    //store the new size
+    m_size = size;
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::fill(const void* pattern, size_t patternSize, size_t n, size_t offset) {

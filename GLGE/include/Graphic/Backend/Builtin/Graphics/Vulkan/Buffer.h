@@ -120,8 +120,6 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         inline void* getBuffer() const noexcept
         {return m_buffer;}
 
-    protected:
-
         /**
          * @brief write data to the buffer using the dedicated transfer queues
          * 
@@ -130,6 +128,8 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @param size the size of the region to upload
          */
         void asyncUpload(const void* data, u64 offset, u64 size);
+
+    protected:
 
         /**
          * @brief store the actual vulkan buffer

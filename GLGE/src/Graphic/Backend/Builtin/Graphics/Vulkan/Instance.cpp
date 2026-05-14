@@ -340,6 +340,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
 
     //enable specific features
     VkPhysicalDeviceFeatures devFeatures {};
+    devFeatures.shaderStorageImageMultisample = VK_TRUE;
 
     //create the actual device
     VkDeviceCreateInfo devCreateInfo {};
@@ -397,8 +398,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     vkGetPhysicalDeviceProperties(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &props);
     
     //store the limits
-    m_maxSampleCount = glm::min<i32>(static_cast<i32>(props.limits.framebufferColorSampleCounts), static_cast<i32>(props.limits.framebufferDepthSampleCounts));
-    m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(props.limits.framebufferStencilSampleCounts));
+    m_maxSampleCount = glm::min<i32>(static_cast<i32>(props.limits.framebufferColorSampleCounts+1), static_cast<i32>(props.limits.framebufferDepthSampleCounts+1));
+    m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(props.limits.framebufferStencilSampleCounts+1));
     m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(VK_SAMPLE_COUNT_64_BIT));
 }
 

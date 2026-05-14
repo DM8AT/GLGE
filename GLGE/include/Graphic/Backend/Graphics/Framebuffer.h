@@ -193,6 +193,11 @@ namespace GLGE::Graphic::Backend::Graphic {
         u8 m_stencilAttachmentCount = 0;
 
         /**
+         * @brief store the amount of images left to resize
+         */
+        u8 m_resizeCountLeft = 0;
+
+        /**
          * @brief `true` if depth and stencil are combined, `false` if they are separated or one of them is only used
          */
         bool m_hasDepthStencil = false;

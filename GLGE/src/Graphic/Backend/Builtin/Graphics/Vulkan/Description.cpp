@@ -35,6 +35,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
 //add vertex layouts
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/VertexLayout.h"
+//add renderers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -52,7 +54,8 @@ Vulkan::Vulkan()
  : Description(GLGE::Graphic::Backend::Graphic::CommandTable({
         std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(VkImpl::clear)},
         std::pair{GLGE::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>(VkImpl::copy)},
-        std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(VkImpl::dispatchCompute)}
+        std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(VkImpl::dispatchCompute)},
+        std::pair{GLGE::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(VkImpl::drawWorld)}
     }))
 {initialize();}
 
@@ -111,7 +114,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> Vulkan::createMateria
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material>(new GLGE::Graphic::Backend::Graphic::Vulkan::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> Vulkan::createRenderer(World& world, Object* camera, RenderTarget target)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(nullptr, false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::Vulkan::Renderer(world, camera, target), false);}
 
 GLGE::Graphic::GraphicAPI Vulkan::getAPI() const noexcept
 {return GLGE::Graphic::GraphicAPI::VULKAN;}

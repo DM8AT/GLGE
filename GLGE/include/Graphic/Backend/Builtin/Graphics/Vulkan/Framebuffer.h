@@ -72,6 +72,14 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         inline void* getRenderPass() const noexcept
         {return m_renderPass;}
 
+        /**
+         * @brief Get the Framebuffer
+         * 
+         * @return `void*` the vulkan framebuffer
+         */
+        inline void* getFramebuffer() const noexcept
+        {return m_vkFramebuffer;}
+
     protected:
 
         /**

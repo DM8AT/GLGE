@@ -193,4 +193,17 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
     return true;
 }
 
+bool drawWorld(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawWorld");
+
+    //extract all arguments
+    const auto& [renderer] = handle.getArguments<GLGE::Graphic::Renderer*>();
+
+    //draw
+    renderer->getBackend()->record(cmdBuff);
+    
+    //success
+    return true;
+}
+
 }

@@ -133,6 +133,22 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
     writes.reserve(m_resourceSet->getStructure().size());
     std::vector<VkDescriptorImageInfo> imgInfos;
     std::vector<VkDescriptorBufferInfo> buffInfos;
+    u32 imgInfoCount = 0;
+    u32 buffInfoCount = 0;
+    for (const auto& b : m_resourceSet->getStructure()) {
+        //switch over the resource type and sum up what is required
+        switch (m_resourceSet->resources()[b.getUnit()]->getType()) {
+        case GLGE::Graphic::ResourceType::IMAGE: imgInfoCount++; break;
+        case GLGE::Graphic::ResourceType::STORAGE_BUFFER: buffInfoCount++; break;
+        case GLGE::Graphic::ResourceType::UNIFORM_BUFFER: buffInfoCount++; break;
+        
+        default:
+            break;
+        }
+    }
+    //exact reserve required
+    imgInfos.reserve(imgInfoCount);
+    buffInfos.reserve(buffInfoCount);
     for (const auto& b : m_resourceSet->getStructure()) {
         //switch over the resource type
         switch (m_resourceSet->resources()[b.getUnit()]->getType())

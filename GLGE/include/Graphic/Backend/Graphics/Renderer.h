@@ -59,7 +59,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param cmdBuff the buffer to record the drawing to
          */
-        virtual void record(CommandBuffer& cmdBuff) = 0;
+        virtual void record(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff) = 0;
 
         /**
          * @brief update the internal data buffers

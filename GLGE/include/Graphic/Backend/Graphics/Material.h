@@ -124,20 +124,38 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         virtual void rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) = 0;
 
+        /**
+         * @brief get the framebuffer the material uses
+         */
+        inline Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> getFbuff() const noexcept
+        {return m_fbuff;}
+
+        /**
+         * @brief get the shader the material uses
+         */
+        inline Reference<GLGE::Graphic::Backend::Graphic::Shader> getShader() const noexcept
+        {return m_shader;}
+
+        /**
+         * @brief get the vertex layout the material uses
+         */
+        inline Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> getVertexLayout() const noexcept
+        {return m_layout;}
+
     protected:
 
         /**
          * @brief store a reference to the shader backend the material is using
          */
-        Reference<Shader> m_shader;
+        Reference<GLGE::Graphic::Backend::Graphic::Shader> m_shader;
         /**
          * @brief store a reference to the vertex layout the material is using
          */
-        Reference<VertexLayout> m_layout;
+        Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> m_layout;
         /**
          * @brief store the framebuffer the material uses
          */
-        Reference<Framebuffer> m_fbuff;
+        Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> m_fbuff;
         /**
          * @brief define the cull mode of the material
          */

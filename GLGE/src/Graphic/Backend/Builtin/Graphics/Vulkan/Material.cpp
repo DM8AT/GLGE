@@ -218,6 +218,17 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Grap
     rasterStateCreate.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterStateCreate.depthBiasEnable = VK_FALSE;
 
+    //depth stencil state
+    VkPipelineDepthStencilStateCreateInfo depthStencilCreate {};
+    depthStencilCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencilCreate.depthTestEnable = VK_TRUE;
+    depthStencilCreate.depthWriteEnable = m_depthWrite;
+    depthStencilCreate.depthCompareOp = __toVkCompareOp(m_depthMode);
+    depthStencilCreate.depthBoundsTestEnable = VK_FALSE;
+    depthStencilCreate.stencilTestEnable = VK_FALSE;
+    depthStencilCreate.minDepthBounds = 0.0f;
+    depthStencilCreate.maxDepthBounds = 1.0f;
+
     //multi-sample
     i32 sampleCount = m_fbuff->getColorAttachmentCount() ? m_fbuff->getColorAttachment(0)->getSamplesPerPixel() : m_fbuff->getDepthAttachment(0)->getSamplesPerPixel();
     VkPipelineMultisampleStateCreateInfo multiSampleStateCreate {};
@@ -247,6 +258,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Grap
     graphicsPipeCreate.pRasterizationState = &rasterStateCreate;
     graphicsPipeCreate.pMultisampleState = &multiSampleStateCreate;
     graphicsPipeCreate.pColorBlendState = &colorBlendingStateCreate;
+    graphicsPipeCreate.pDepthStencilState = m_fbuff->getDepthAttachmentCount() ? &depthStencilCreate : nullptr;
     graphicsPipeCreate.layout = static_cast<VkPipelineLayout>(m_pipeLayout);
     graphicsPipeCreate.renderPass = static_cast<VkRenderPass>(vkFbuff->getRenderPass());
     graphicsPipeCreate.subpass = 0;

@@ -59,6 +59,22 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual void rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) override;
 
+        /**
+         * @brief Get the Pipeline
+         * 
+         * @return `void*` the vulkan pipeline
+         */
+        inline void* getPipeline() const noexcept
+        {return m_pipe;}
+
+        /**
+         * @brief Get the Pipeline Layout
+         * 
+         * @return `void*` the vulkan pipeline layout
+         */
+        inline void* getPipelineLayout() const noexcept
+        {return m_pipeLayout;}
+
     protected:
 
         /**

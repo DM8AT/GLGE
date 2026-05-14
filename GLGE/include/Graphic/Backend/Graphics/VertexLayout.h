@@ -82,6 +82,12 @@ namespace GLGE::Graphic::Backend::Graphic {
         inline size_t getVertexSize() const noexcept
         {return m_stride;}
 
+        /**
+         * @brief get a reference to the mesh pool to use
+         */
+        inline Reference<GLGE::Graphic::Backend::Graphic::MeshPool> getPool() const noexcept
+        {return m_pool;}
+
     protected:
 
         /**

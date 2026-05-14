@@ -70,11 +70,14 @@ GLGE::Graphic::Backend::Graphic::Framebuffer::~Framebuffer() {
 }
 
 void GLGE::Graphic::Backend::Graphic::Framebuffer::resize(const uvec2& size) {
+    //store how many are queued to resize
+    m_resizeCountLeft = m_colorAttachmentCount + m_depthAttachmentCount + m_stencilAttachmentCount;
+
     //iterate over all existing attachments and resize them
     for (u8 i = 0; i < m_colorAttachmentCount; ++i)
-    {m_attachments[i + COLOR_IDX_OFFSET]->resizeAndClear(size);}
+    {--m_resizeCountLeft; m_attachments[i + COLOR_IDX_OFFSET]->resizeAndClear(size);}
     for (u8 i = 0; i < m_depthAttachmentCount; ++i)
-    {m_attachments[i + DEPTH_IDX_OFFSET]->resizeAndClear(size);}
+    {--m_resizeCountLeft; m_attachments[i + DEPTH_IDX_OFFSET]->resizeAndClear(size);}
     for (u8 i = 0; i < m_stencilAttachmentCount; ++i)
-    {m_attachments[i + STENCIL_IDX_OFFSET]->resizeAndClear(size);}
+    {--m_resizeCountLeft; m_attachments[i + STENCIL_IDX_OFFSET]->resizeAndClear(size);}
 }

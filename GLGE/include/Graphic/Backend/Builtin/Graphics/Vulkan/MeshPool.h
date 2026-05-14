@@ -206,6 +206,22 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual VertexAttribute getVertexAttribute(u64 meshId, u64 attributeId) const override;
 
+        /**
+         * @brief Get the vertex buffer
+         * 
+         * @return `void*` the vulkan buffer that stores the vbo
+         */
+        void* getVbo() const noexcept
+        {return m_vbo;}
+
+        /**
+         * @brief Get the index buffer
+         * 
+         * @return `void*` the vulkan buffer that stores the ibo
+         */
+        void* getIbo() const noexcept
+        {return m_ibo;}
+
     protected:
 
         /**
