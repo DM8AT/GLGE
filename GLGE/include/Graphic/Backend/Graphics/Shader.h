@@ -74,6 +74,14 @@ namespace GLGE::Graphic::Backend::Graphic {
         inline bool finalized() const noexcept
         {return m_finalized;}
 
+        /**
+         * @brief Get the Shader frontend
+         * 
+         * @return `GLGE::Graphic::Shader*` a pointer to the frontend
+         */
+        inline GLGE::Graphic::Shader* getShader() const noexcept
+        {return m_shader;}
+
     protected:
 
         /**

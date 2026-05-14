@@ -67,7 +67,7 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
 
 bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     //get the command buffers
-    const std::vector<void*>& buffs = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+    const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
 
     //extract the actual arguments
     const auto& [from, from_idx, to, to_idx, copyDepth, copyStencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>();
@@ -87,7 +87,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             ImgInfo(GLGE::Graphic::RenderTarget target, GLGE::u8 idx, GLGE::u8 winIdx, bool depthStencil) {
                 if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
                     //use a window
-                    auto* win = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get());
+                    auto* win = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get());
                     image = reinterpret_cast<VkImage>(win->getImages()[winIdx]);
                     size = win->getResolution();
                     layout = VK_IMAGE_LAYOUT_GENERAL;
@@ -96,9 +96,9 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                     //use a framebuffer
                     GLGE::Graphic::Backend::Graphic::Vulkan::Image* img = nullptr;
                     if (depthStencil) {
-                        img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend()->getDepthAttachment(0));
+                        img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend()->getDepthAttachment(0));
                     } else {
-                        img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend()->getColorAttachment(idx));
+                        img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend()->getColorAttachment(idx));
                     }
                     image = reinterpret_cast<VkImage>(img->getImage());
                     size = img->getSize();
@@ -141,16 +141,16 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
 
 bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     //get the command buffers
-    const std::vector<void*>& buffs = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+    const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
 
     //extract the actual arguments
     const auto& [compute, size] = handle.getArguments<GLGE::Graphic::Shader*, GLGE::uvec3>();
 
     //get the vulkan objects
-    auto* computeShader = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Shader*>(compute->getBackend().get());
+    auto* computeShader = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Shader*>(compute->getBackend().get());
     VkPipeline pipe = reinterpret_cast<VkPipeline>(computeShader->getComputePipeline());
     VkPipelineLayout layout = reinterpret_cast<VkPipelineLayout>(computeShader->getComputePipelineLayout());
-    VkDescriptorSet set = reinterpret_cast<VkDescriptorSet>(dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(compute->getResources(0)->getBackend().get())->getDescriptorSet());
+    VkDescriptorSet set = reinterpret_cast<VkDescriptorSet>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(compute->getResources(0)->getBackend().get())->getDescriptorSet());
 
     //iterate over all command buffers for recording
     for (const auto& buff : buffs) {

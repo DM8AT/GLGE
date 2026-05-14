@@ -33,7 +33,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
  : GLGE::Graphic::Backend::Graphic::ResourceSet(set)
 {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(set->getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get());
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(set->getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get());
 
     //store how many of what type exist
     std::unordered_map<VkDescriptorType, u32> descriptorCounts;
@@ -141,7 +141,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
                 //store information about the image
                 VkDescriptorImageInfo info {};
                 info.sampler = VK_NULL_HANDLE;
-                info.imageView = reinterpret_cast<VkImageView>(dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(dynamic_cast<GLGE::Graphic::Image*>(m_resourceSet->resources()[b.getUnit()])->getBackend().get())->getView());
+                info.imageView = reinterpret_cast<VkImageView>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(static_cast<GLGE::Graphic::Image*>(m_resourceSet->resources()[b.getUnit()])->getBackend().get())->getView());
                 info.imageLayout = VK_IMAGE_LAYOUT_GENERAL; //this MUST be general as of the vulkan spec
                 imgInfos.push_back(info);
 
@@ -158,7 +158,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
             break;
         case GLGE::Graphic::ResourceType::STORAGE_BUFFER: {
                 //get the buffer
-                auto* buff = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(dynamic_cast<GLGE::Graphic::Buffer*>(m_resourceSet->resources()[b.getUnit()]));
+                auto* buff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(static_cast<GLGE::Graphic::Buffer*>(m_resourceSet->resources()[b.getUnit()])->getBackendReference().get());
                 //store information about the buffer
                 VkDescriptorBufferInfo info {};
                 info.offset = 0;
@@ -179,7 +179,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
             break;
         case GLGE::Graphic::ResourceType::UNIFORM_BUFFER: {
                 //get the buffer
-                auto* buff = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(dynamic_cast<GLGE::Graphic::Buffer*>(m_resourceSet->resources()[b.getUnit()]));
+                auto* buff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(static_cast<GLGE::Graphic::Buffer*>(m_resourceSet->resources()[b.getUnit()])->getBackendReference().get());
                 //store information about the buffer
                 VkDescriptorBufferInfo info {};
                 info.offset = 0;
@@ -213,7 +213,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
 
 GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::~ResourceSet() {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_resourceSet->getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get());
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_resourceSet->getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get());
 
     //remove the descriptor pool
     vkDestroyDescriptorPool(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkDescriptorPool>(m_pool), nullptr);

@@ -210,7 +210,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::MeshPool(GLGE::Graphic::Insta
  : GLGE::Graphic::Backend::Graphic::MeshPool(instance)
 {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(instance->getGraphicBackendInstance().get());
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(instance->getGraphicBackendInstance().get());
 
     //pre-define some initial sizes
     m_vboSize = 1 << 20; //1 MB pre-cache
@@ -268,7 +268,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::~MeshPool() {
     {return;}
 
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance->getGraphicBackendInstance().get());
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance->getGraphicBackendInstance().get());
 
     //clean up
     vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_vbo), reinterpret_cast<VmaAllocation>(m_vboAlloc));
@@ -286,7 +286,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::~MeshPool() {
 
 GLGE::u64 GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount) {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance->getGraphicBackendInstance().get());
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance->getGraphicBackendInstance().get());
 
     //get the new entity ID
     u64 id = UINT64_MAX;

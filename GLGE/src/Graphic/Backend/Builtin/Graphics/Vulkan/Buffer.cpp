@@ -73,7 +73,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::Buffer(Type type, const void* i
     if (m_usage == Usage::CPU_ONLY) {return;}
 
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //write the buffer create info
     u32 queue = inst->getGraphicsQueue().familyIdx;
@@ -117,7 +117,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::~Buffer() {
     {return;}
 
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //clean up vulkan stuff
     vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_buffer), reinterpret_cast<VmaAllocation>(m_allocation));
@@ -195,7 +195,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
     {return;}
 
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //if preservation is requested, store a copy of the old data
     void* old = nullptr;
@@ -255,7 +255,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
         //build the write call
         VkWriteDescriptorSet write {};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.dstSet = reinterpret_cast<VkDescriptorSet>(dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(m_references[i].first->getBackend().get())->getDescriptorSet());
+        write.dstSet = reinterpret_cast<VkDescriptorSet>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(m_references[i].first->getBackend().get())->getDescriptorSet());
         write.dstBinding = m_references[i].second;
         write.descriptorCount = 1;
         write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -330,7 +330,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::onDropBinding(GLGE::Graphi
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::asyncUpload(const void* data, u64 offset, u64 size) {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //create a staging buffer
     VkBufferCreateInfo stagingCreate {};

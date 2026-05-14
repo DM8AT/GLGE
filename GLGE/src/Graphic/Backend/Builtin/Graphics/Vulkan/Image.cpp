@@ -258,7 +258,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     //iterate over all known bindings
     for (size_t i = 0; i < m_references.size(); ++i) {
         //extract the descriptor set
-        auto* set = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(m_references[i].first->getBackend().get());
+        auto* set = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(m_references[i].first->getBackend().get());
         VkDescriptorSet vkSet = reinterpret_cast<VkDescriptorSet>(set->getDescriptorSet());
         
         //store information about the image

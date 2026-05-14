@@ -57,7 +57,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::onImageUpdated(GLGE::
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createRenderPass() {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //collect all attachments
     std::vector<VkAttachmentDescription> attDescr;
@@ -69,7 +69,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createRenderPass() {
     //collect color attachments
     for (u8 i = 0; i < m_colorAttachmentCount; ++i) {
         //get the vulkan image backend
-        auto* img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[i].get());
+        auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[i].get());
 
         //create the attachment description
         VkAttachmentDescription desc{};
@@ -95,7 +95,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createRenderPass() {
     bool hasDepth = m_depthAttachmentCount > 0;
     if (hasDepth) {
         //get the vulkan image backend
-        auto* img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[DEPTH_IDX_OFFSET].get());
+        auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[DEPTH_IDX_OFFSET].get());
 
         //create the attachment description
         VkAttachmentDescription desc{};
@@ -140,7 +140,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createRenderPass() {
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::destroyRenderPass() {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //if a render pass exists, delete it
     if (m_renderPass) 
@@ -151,7 +151,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::destroyRenderPass() {
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createFramebuffers() {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //store the current size
     uvec2 size = m_attachments[0]->getSize();
@@ -162,7 +162,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createFramebuffers() 
     //get color images
     for (u8 i = 0; i < m_colorAttachmentCount; ++i) {
         //get the vulkan image backend
-        auto* img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[i].get());
+        auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[i].get());
         //store the view
         views.push_back(reinterpret_cast<VkImageView>(img->getView()));
 
@@ -175,7 +175,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createFramebuffers() 
     //if a depth buffer exists, store it
     if (m_depthAttachmentCount > 0) {
         //get the vulkan image backend
-        auto* img = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[DEPTH_IDX_OFFSET].get());
+        auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_attachments[DEPTH_IDX_OFFSET].get());
         //store the depth image view
         views.push_back(reinterpret_cast<VkImageView>(img->getView()));
 
@@ -205,7 +205,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createFramebuffers() 
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::destroyFramebuffers() {
     //get the instance
-    auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
     //if a framebuffer exists, delete it
     if (m_vkFramebuffer)
