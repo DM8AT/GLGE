@@ -132,7 +132,7 @@ static GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo::Section __allocateSec
     }
 
     //caller must handle expansion
-    return {};
+    return Section{0,0,0};
 }
 
 /**
@@ -263,12 +263,25 @@ GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::MeshPool(GLGE::Graphic::Insta
 }
 
 GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::~MeshPool() {
+    //if nothing is stored, stop
+    if (!m_vbo)
+    {return;}
+
     //get the instance
     auto* inst = dynamic_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance->getGraphicBackendInstance().get());
 
     //clean up
     vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_vbo), reinterpret_cast<VmaAllocation>(m_vboAlloc));
     vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_ibo), reinterpret_cast<VmaAllocation>(m_iboAlloc));
+    //if an old buffer is backed up, make sure to delete it
+    if (m_vboOld) 
+    {vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_vboOld), reinterpret_cast<VmaAllocation>(m_vboAllocOld));}
+    //if an old buffer is backed up, make sure to delete it
+    if (m_iboOld) 
+    {vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_iboOld), reinterpret_cast<VmaAllocation>(m_iboAllocOld));}
+
+    //set the vbo to null
+    m_vbo = nullptr;
 }
 
 GLGE::u64 GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount) {
@@ -318,9 +331,232 @@ GLGE::u64 GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate(const void
     meta.index  = __allocateSection(m_indexFreeList,  indexCount,  sizeof(u32));
 
     //for now hard fail if allocation failed
-    if (meta.vertex.count == 0 || meta.index.count == 0)
-    {throw Exception("Failed to allocate - the mesh pool ran out of memory", "GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate");}
-    #warning TODO - Add mesh pool resizing
+    if (meta.vertex.count == 0 || meta.index.count == 0) {
+        //a buffer ran out of space
+
+        static constexpr u64 MAX_BUFFER_RESIZE_STEPS = 64 << 20;
+
+        //store the transfer queue
+        u32 transferQueue = inst->getTransferQueue().familyIdx;
+
+        //check which buffer did
+        if (meta.vertex.count == 0) {
+            //vertex buffer ran out of space
+
+            //compute the size of the new buffer
+            //add a buffer of 1 to the count for alignment guarantee
+            u64 requiredDelta = ((vertexSize+1) * vertexCount) - (m_vertexFreeList.empty() ? 0 : (m_vertexFreeList.back().size * m_vertexFreeList.back().count));
+            u64 delta = glm::max(requiredDelta, glm::min(m_vboSize, MAX_BUFFER_RESIZE_STEPS));
+            u64 newSize = m_vboSize + delta;
+
+            //create the new buffer
+            //this buffer is created on the transfer queue because a data transfer from the old buffer to the new buffer is required
+            VkBufferCreateInfo buffCreate {};
+            buffCreate.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            buffCreate.size = newSize;
+            buffCreate.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            buffCreate.queueFamilyIndexCount = 1;
+            buffCreate.pQueueFamilyIndices = &transferQueue;
+            buffCreate.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            VmaAllocationCreateInfo buffAllocCreate {};
+            buffAllocCreate.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+            VkBuffer buff;
+            VmaAllocation buffAlloc;
+            if (vmaCreateBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &buffCreate, &buffAllocCreate, &buff, &buffAlloc, nullptr) != VK_SUCCESS)
+            {throw Exception("Failed to grow a vertex buffer object", "GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate");}
+            
+            //transfer queue ownership of the buffer to the transfer queue family
+            //this must run on the graphics queue
+            VkCommandBuffer init_transfer = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool));
+            //record the barrier
+            VkBufferMemoryBarrier init_barrier {};
+            init_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            init_barrier.srcAccessMask = 0;
+            init_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            init_barrier.srcQueueFamilyIndex = inst->getGraphicsQueue().familyIdx;
+            init_barrier.dstQueueFamilyIndex = inst->getTransferQueue().familyIdx;
+            init_barrier.buffer = reinterpret_cast<VkBuffer>(m_vbo);
+            init_barrier.offset = 0;
+            init_barrier.size = m_vboSize;
+            vkCmdPipelineBarrier(init_transfer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &init_barrier, 0, nullptr);
+            
+            //submit to graphics
+            __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), init_transfer);
+
+            //start a single time command buffer to copy the data over using an async upload
+            VkCommandBuffer cmdBuff = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getTransferQueue().singleUsePool));
+
+            //get buffer ownership using memory barrier
+            vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &init_barrier, 0, nullptr);
+
+            //copy data
+            VkBufferCopy region {};
+            region.srcOffset = 0;
+            region.dstOffset = 0;
+            region.size = m_vboSize;
+            vkCmdCopyBuffer(cmdBuff, reinterpret_cast<VkBuffer>(m_vbo), buff, 1, &region);
+
+            //transfer ownership back to graphics for the new buffer
+            VkBufferMemoryBarrier finalize_barrier {};
+            finalize_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            finalize_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            finalize_barrier.dstAccessMask = 0;
+            finalize_barrier.srcQueueFamilyIndex = inst->getTransferQueue().familyIdx;
+            finalize_barrier.dstQueueFamilyIndex = inst->getGraphicsQueue().familyIdx;
+            finalize_barrier.buffer = buff;
+            finalize_barrier.offset = 0;
+            finalize_barrier.size = newSize;
+            vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
+
+            //submit the command buffer
+            __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getTransferQueue(), reinterpret_cast<VkCommandPool>(inst->getTransferQueue().singleUsePool), cmdBuff);
+
+            //graphics queue must re-obtain ownership for safe future usage
+            //use another single time command buffer to obtain it
+            VkCommandBuffer finalize_transfer = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool));
+            vkCmdPipelineBarrier(finalize_transfer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
+            __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), finalize_transfer);
+
+            //if an old buffer is backed up, make sure to delete it
+            if (m_vboOld) 
+            {vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_vboOld), reinterpret_cast<VmaAllocation>(m_vboAllocOld));}
+            //backup the old buffer
+            m_vboOld = m_vbo;
+            m_vboAllocOld = m_vboAlloc;
+            //store the new vertex buffer
+            m_vbo = reinterpret_cast<void*>(buff);
+            m_vboAlloc = reinterpret_cast<void*>(buffAlloc);
+
+            //add the free slot or extend it
+            if (m_vertexFreeList.empty()) {
+                m_vertexFreeList.push_back(LODInfo::Section{
+                    .count = 1,
+                    .offset = m_vboSize,
+                    .size = delta
+                });
+            } else {
+                m_vertexFreeList.back().size = vertexSize;
+                m_vertexFreeList.back().count = vertexCount;
+            }
+
+            //store the new size
+            m_vboSize = newSize;
+
+            //allocate the section
+            meta.vertex = __allocateSection(m_vertexFreeList, vertexCount, vertexSize);
+            //sanity check the allocation
+            if (meta.vertex.count == 0)
+            {throw Exception("Vertex buffer resizing error", "GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate");}
+        }
+        if (meta.index.count == 0) {
+            //index buffer ran out of space
+
+            //compute the size of the new buffer
+            //add a buffer of 1 to the count for alignment guarantee
+            u64 requiredDelta = ((indexCount+1) * sizeof(u32)) - (m_indexFreeList.empty() ? 0 : (m_indexFreeList.back().count * m_indexFreeList.back().size));
+            u64 delta = glm::max(requiredDelta, glm::min(m_iboSize, MAX_BUFFER_RESIZE_STEPS));
+            u64 newSize = m_iboSize + delta;
+
+            //create the new buffer
+            //this buffer is created on the transfer queue because a data transfer from the old buffer to the new buffer is required
+            VkBufferCreateInfo buffCreate {};
+            buffCreate.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            buffCreate.size = newSize;
+            buffCreate.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            buffCreate.queueFamilyIndexCount = 1;
+            buffCreate.pQueueFamilyIndices = &transferQueue;
+            buffCreate.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            VmaAllocationCreateInfo buffAllocCreate {};
+            buffAllocCreate.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+            VkBuffer buff;
+            VmaAllocation buffAlloc;
+            if (vmaCreateBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &buffCreate, &buffAllocCreate, &buff, &buffAlloc, nullptr) != VK_SUCCESS)
+            {throw Exception("Failed to grow a vertex buffer object", "GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate");}
+            
+            //transfer queue ownership of the buffer to the transfer queue family
+            //this must run on the graphics queue
+            VkCommandBuffer init_transfer = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool));
+            //record the barrier
+            VkBufferMemoryBarrier init_barrier {};
+            init_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            init_barrier.srcAccessMask = 0;
+            init_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            init_barrier.srcQueueFamilyIndex = inst->getGraphicsQueue().familyIdx;
+            init_barrier.dstQueueFamilyIndex = inst->getTransferQueue().familyIdx;
+            init_barrier.buffer = reinterpret_cast<VkBuffer>(m_ibo);
+            init_barrier.offset = 0;
+            init_barrier.size = m_iboSize;
+            vkCmdPipelineBarrier(init_transfer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &init_barrier, 0, nullptr);
+            
+            //submit to graphics
+            __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), init_transfer);
+
+            //start a single time command buffer to copy the data over using an async upload
+            VkCommandBuffer cmdBuff = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getTransferQueue().singleUsePool));
+
+            //get buffer ownership using memory barrier
+            vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &init_barrier, 0, nullptr);
+
+            //copy data
+            VkBufferCopy region {};
+            region.srcOffset = 0;
+            region.dstOffset = 0;
+            region.size = m_iboSize;
+            vkCmdCopyBuffer(cmdBuff, reinterpret_cast<VkBuffer>(m_vbo), buff, 1, &region);
+
+            //transfer ownership back to graphics for the new buffer
+            VkBufferMemoryBarrier finalize_barrier {};
+            finalize_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            finalize_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            finalize_barrier.dstAccessMask = 0;
+            finalize_barrier.srcQueueFamilyIndex = inst->getTransferQueue().familyIdx;
+            finalize_barrier.dstQueueFamilyIndex = inst->getGraphicsQueue().familyIdx;
+            finalize_barrier.buffer = buff;
+            finalize_barrier.offset = 0;
+            finalize_barrier.size = newSize;
+            vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
+
+            //submit the command buffer
+            __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getTransferQueue(), reinterpret_cast<VkCommandPool>(inst->getTransferQueue().singleUsePool), cmdBuff);
+
+            //graphics queue must re-obtain ownership for safe future usage
+            //use another single time command buffer to obtain it
+            VkCommandBuffer finalize_transfer = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool));
+            vkCmdPipelineBarrier(finalize_transfer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
+            __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), finalize_transfer);
+
+            //if an old buffer is backed up, make sure to delete it
+            if (m_iboOld) 
+            {vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_iboOld), reinterpret_cast<VmaAllocation>(m_iboAllocOld));}
+            //backup the old buffer
+            m_iboOld = m_ibo;
+            m_iboAllocOld = m_iboAlloc;
+            //store the new vertex buffer
+            m_ibo = reinterpret_cast<void*>(buff);
+            m_iboAlloc = reinterpret_cast<void*>(buffAlloc);
+
+            //add the free slot or extend the back
+            if (m_indexFreeList.empty()) {
+                m_indexFreeList.push_back(LODInfo::Section{
+                    .count = 1,
+                    .offset = m_iboSize,
+                    .size = delta
+                });
+            } else {
+                m_indexFreeList.back().size = sizeof(u32);
+                m_indexFreeList.back().count = indexCount;
+            }
+
+            //store the new size
+            m_iboSize = newSize;
+
+            //allocate the section
+            meta.index = __allocateSection(m_indexFreeList, indexCount, sizeof(u32));
+            //sanity check the allocation
+            if (meta.index.count == 0)
+            {throw Exception("Index buffer resizing error", "GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate");}
+        }
+    }
 
     //GPU upload
     __uploadBufferRegion(inst, reinterpret_cast<VkBuffer>(m_vbo), vertices, meta.vertex.size*meta.vertex.count, meta.vertex.offset);
