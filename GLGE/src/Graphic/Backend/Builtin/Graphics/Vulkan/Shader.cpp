@@ -80,6 +80,8 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Shader::finalize() {
         //store all actual bindings
         std::vector<VkDescriptorSetLayoutBinding> bindings;
         bindings.reserve(presets.size());
+        std::vector<VkDescriptorBindingFlags> flags;
+        flags.reserve(presets.size());
 
         //iterate over all presets and create the bindings
         for (const auto& p : presets) {
@@ -114,13 +116,22 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Shader::finalize() {
 
             //store the binding
             bindings.push_back(b);
+            flags.push_back(VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT);
         }
+
+        //create the binding flags
+        VkDescriptorSetLayoutBindingFlagsCreateInfo descLayoutBindingFlagCreate {};
+        descLayoutBindingFlagCreate.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+        descLayoutBindingFlagCreate.bindingCount = flags.size();
+        descLayoutBindingFlagCreate.pBindingFlags = flags.data();
 
         //create the descriptor set layout
         VkDescriptorSetLayoutCreateInfo layoutCreate {};
         layoutCreate.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutCreate.bindingCount = bindings.size();
         layoutCreate.pBindings = bindings.data();
+        layoutCreate.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+        layoutCreate.pNext = &descLayoutBindingFlagCreate;
         VkDescriptorSetLayout layout;
         if (vkCreateDescriptorSetLayout(reinterpret_cast<VkDevice>(inst->getDevice()), &layoutCreate, nullptr, &layout) != VK_SUCCESS)
         {throw Exception("Failed to create a descriptor set layout", "GLGE::Graphic::Backend::Graphic::Vulkan::Shader::finalize");}

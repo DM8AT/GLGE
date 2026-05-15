@@ -89,6 +89,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     //get the required instance extensions
     std::vector<const char*> instExt;
     instance->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->getRequiredInstanceExtensions(instExt);
+    instExt.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
     //get all available instance extensions
     u32 instExtCount = 0;
@@ -219,7 +220,10 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     //store the required device extensions
     std::vector<const char*> devExt = {
         //this extension is required for shader functionality compatibility
-        VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME
+        VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
+        //required for descriptor updates
+        VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+        VK_KHR_MAINTENANCE_3_EXTENSION_NAME
     };
     instance->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->getRequiredDeviceExtensions(devExt);
 
@@ -338,13 +342,40 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
         queueCreates.push_back(create);
     }
 
+    VkPhysicalDeviceDescriptorIndexingFeatures indexing = {};
+    indexing.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    VkPhysicalDeviceFeatures2 features2 = {};
+    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features2.pNext = &indexing;
+    vkGetPhysicalDeviceFeatures2(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &features2);
+
+    //check if everything required is supported
+    if (!features2.features.shaderStorageImageMultisample)
+    {throw Exception("The device must support storage image multi-sample", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!(indexing.descriptorBindingStorageImageUpdateAfterBind && indexing.descriptorBindingSampledImageUpdateAfterBind && indexing.descriptorBindingStorageBufferUpdateAfterBind && indexing.descriptorBindingUniformBufferUpdateAfterBind))
+    {throw Exception("The device must support all required update after binding types for descriptor sets", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!features2.features.multiDrawIndirect)
+    {throw Exception("The multi draw indirect feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!features2.features.sampleRateShading)
+    {throw Exception("The sample rate shading feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+
     //enable specific features
     VkPhysicalDeviceFeatures devFeatures {};
     devFeatures.shaderStorageImageMultisample = VK_TRUE;
+    devFeatures.multiDrawIndirect = VK_TRUE;
+    devFeatures.sampleRateShading = VK_TRUE;
+    //enable descriptor update after binding
+    indexing = {};
+    indexing.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    indexing.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+    indexing.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
+    indexing.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+    indexing.descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE;
 
     //create the actual device
     VkDeviceCreateInfo devCreateInfo {};
     devCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    devCreateInfo.pNext = &indexing;
     devCreateInfo.enabledExtensionCount = devExt.size();
     devCreateInfo.ppEnabledExtensionNames = devExt.data();
     devCreateInfo.queueCreateInfoCount = queueCreates.size();

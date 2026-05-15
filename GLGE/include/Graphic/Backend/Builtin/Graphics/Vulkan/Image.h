@@ -154,17 +154,34 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         inline i32 getVkFormat() const noexcept
         {return m_vkFormat;}
 
+        /**
+         * @brief Get the multi sample resolving image
+         * 
+         * @return `void*` a pointer to a multi-sample resolving image
+         */
+        inline void* getResolveImage() const noexcept
+        {return m_img_msaaResolved;}
+
     protected:
 
         /**
          * @brief store the vulkan image
          */
         void* m_image = nullptr;
-
         /**
          * @brief store the VMA allocation
          */
         void* m_allocation = nullptr;
+        /**
+         * @brief store an image that is used to resolve multi-sampling
+         * 
+         * NULL if multi-sampling is not used on the image
+         */
+        void* m_img_msaaResolved = nullptr;
+        /**
+         * @brief store the allocation for the resolving image
+         */
+        void* m_img_allocResolved = nullptr;
 
         /**
          * @brief store a view into the image

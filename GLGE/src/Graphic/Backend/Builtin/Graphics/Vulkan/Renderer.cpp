@@ -180,7 +180,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
             viewport.minDepth = 0.f;
             viewport.maxDepth = 1.f;
             viewport.width = size.x;
-            viewport.height = size.x;
+            viewport.height = size.y;
             vkCmdSetViewport(cb, 0, 1, &viewport);
             VkRect2D scissor {};
             scissor.offset = {0,0};
@@ -226,7 +226,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         switch (m_target.getType())
         {
         case GLGE::Graphic::RenderTarget::WINDOW: {
-                auto size = reinterpret_cast<GLGE::Graphic::Window*>(m_target.getTarget())->getSize();
+                auto size = reinterpret_cast<GLGE::Graphic::Window*>(m_target.getTarget())->getResolution();
                 aspect = f32(size.x) / f32(size.y);
             } break;
         case GLGE::Graphic::RenderTarget::FRAMEBUFFER: {
@@ -242,7 +242,9 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         data.proj_near = cam->clip_near;
         data.proj_far  = cam->clip_far;
         //compute the projection matrix
-        data.projection = glm::perspective(data.fov, aspect, data.proj_near, data.proj_far);
+        data.projection = glm::perspectiveRH_ZO(data.fov, aspect, data.proj_near, data.proj_far);
+        //vulkan y is inverted
+        data.projection[1][1] *= -1.f;
 
         //get the position (this can be Transform, Transform2D or none)
         Transform* transf = m_world->get<Transform>(*m_camera);

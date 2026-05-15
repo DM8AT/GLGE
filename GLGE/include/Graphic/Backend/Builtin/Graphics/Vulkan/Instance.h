@@ -81,23 +81,23 @@ namespace Vulkan {
             /**
              * @brief store the index of the queue family
              */
-            u32 familyIdx;
+            u32 familyIdx = 0;
             /**
              * @brief store the index of the queue to pull
              */
-            std::atomic_uint32_t idx;
+            std::atomic_uint32_t idx{0};
             /**
              * @brief store the single use command pool
              */
-            void* singleUsePool;
+            void* singleUsePool = nullptr;
             /**
              * @brief store the amount of existing queues
              */
-            u32 queueCount;
+            u32 queueCount = 0;
             /**
              * @brief store all the actual queues
              */
-            std::pair<void*, std::mutex>* queues;
+            std::pair<void*, std::mutex>* queues = nullptr;
 
             /**
              * @brief get a queue that is safe to operate on
@@ -113,7 +113,7 @@ namespace Vulkan {
              * @brief Destroy the Queue Pool
              */
             ~QueuePool()
-            {delete[] queues;}
+            {if (queueCount) {delete[] queues;}}
         };
 
         /**

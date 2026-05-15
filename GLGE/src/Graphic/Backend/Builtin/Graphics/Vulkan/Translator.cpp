@@ -42,10 +42,45 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
 
         //check the type
         if (target.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
-            //TODO, framebuffers don't exist yet
+            //get the framebuffer
+            auto* fbuff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer*>(static_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend().get());
+            //iterate over all color attachments
+            for (size_t i = 0; i < fbuff->getColorAttachmentCount(); ++i) {
+                //extract the image
+                auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(fbuff->getColorAttachment(i));
+                VkImage vkImg = reinterpret_cast<VkImage>(img->getImage());
+
+                //clear the image
+                VkClearColorValue clearValue = {{color.r, color.g, color.b, color.w}};
+                VkImageSubresourceRange range {};
+                range.aspectMask = static_cast<VkImageAspectFlags>(img->getAspectFlags());
+                range.baseMipLevel = 0;
+                range.levelCount = 1;
+                range.baseArrayLayer = 0;
+                range.layerCount = 1;
+                vkCmdClearColorImage(cmdBuff, vkImg, static_cast<VkImageLayout>(img->getLayout()), &clearValue, 1, &range);
+            }
+            //iterate over all depth attachments
+            for (size_t i = 0; i < fbuff->getDepthAttachmentCount(); ++i) {
+                //extract the image
+                auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(fbuff->getDepthAttachment(i));
+                VkImage vkImg = reinterpret_cast<VkImage>(img->getImage());
+
+                //clear the image
+                VkClearDepthStencilValue ds {};
+                ds.depth = depth;
+                ds.stencil = stencil;
+                VkImageSubresourceRange range {};
+                range.aspectMask = static_cast<VkImageAspectFlags>(img->getAspectFlags());
+                range.baseMipLevel = 0;
+                range.levelCount = 1;
+                range.baseArrayLayer = 0;
+                range.layerCount = 1;
+                vkCmdClearDepthStencilImage(cmdBuff, vkImg, static_cast<VkImageLayout>(img->getLayout()), &ds, 1, &range);
+            }
         } else {
             //get the correct image
-            VkImage img = reinterpret_cast<VkImage>(reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get())->getImages()[i]);
+            VkImage img = reinterpret_cast<VkImage>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(static_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get())->getImages()[i]);
 
             //this is a swapchain image -> it must be a color attachment
 
@@ -80,9 +115,11 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         //get the vulkan objects
         struct ImgInfo {
             VkImage image;
+            VkImage resImage;
             GLGE::uvec2 size;
             VkImageLayout layout;
             VkImageAspectFlags aspects;
+            VkSampleCountFlagBits samples;
 
             ImgInfo(GLGE::Graphic::RenderTarget target, GLGE::u8 idx, GLGE::u8 winIdx, bool depthStencil) {
                 if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
@@ -92,6 +129,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                     size = win->getResolution();
                     layout = VK_IMAGE_LAYOUT_GENERAL;
                     aspects = VK_IMAGE_ASPECT_COLOR_BIT;
+                    samples = VK_SAMPLE_COUNT_1_BIT;
                 } else {
                     //use a framebuffer
                     GLGE::Graphic::Backend::Graphic::Vulkan::Image* img = nullptr;
@@ -101,14 +139,42 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                         img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend()->getColorAttachment(idx));
                     }
                     image = reinterpret_cast<VkImage>(img->getImage());
+                    resImage = reinterpret_cast<VkImage>(img->getResolveImage());
                     size = img->getSize();
                     layout = VK_IMAGE_LAYOUT_GENERAL;
                     aspects = static_cast<VkImageAspectFlags>(img->getAspectFlags());
+                    samples = static_cast<VkSampleCountFlagBits>(img->getSamplesPerPixel());
                 }
             }
         };
         ImgInfo fromInfo(from, from_idx, i, copyDepth || copyStencil);
         ImgInfo toInfo(to, to_idx, i, copyDepth || copyStencil);
+
+        //sanity checks for debug
+        #if GLGE_DEBUG
+        if (fromInfo.aspects != toInfo.aspects)
+        {throw GLGE::Exception("Tried to copy data between incompatible image aspects", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::copy");}
+        if (toInfo.samples > 1)
+        {throw GLGE::Exception("Tried to blit to a multi-sample image", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::copy");}
+        #endif
+
+        //multi-sample resolving
+        if (fromInfo.samples > 1) {
+            //TODO: add depth resolution
+            if (!(fromInfo.aspects & VK_IMAGE_ASPECT_COLOR_BIT))
+            {throw GLGE::Exception("Only color images can currently be resolved from MSAA to single images. Please contact the maintainer.", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::copy");}
+
+            //resolve the image
+            VkImageResolve resolve {};
+            resolve.srcSubresource = {fromInfo.aspects, 0, 0, 1};
+            resolve.srcOffset = {0,0,0};
+            resolve.dstSubresource = {fromInfo.aspects, 0, 0, 1};
+            resolve.dstOffset = {0,0,0};
+            resolve.extent = {fromInfo.size.x, fromInfo.size.y, 1};
+            vkCmdResolveImage(cb, fromInfo.image, fromInfo.layout, fromInfo.resImage, VK_IMAGE_LAYOUT_UNDEFINED, 1, &resolve);
+            //replace the copy image with the resolved image
+            fromInfo.image = fromInfo.resImage;
+        }
 
         //use blit to copy from one image to another
         VkImageBlit reg {};
@@ -132,7 +198,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         reg.dstSubresource.baseArrayLayer = 0;
         reg.dstSubresource.mipLevel = 0;
         reg.dstSubresource.layerCount = 1;
-        vkCmdBlitImage(cb, fromInfo.image, fromInfo.layout, toInfo.image, toInfo.layout, 1, &reg, VK_FILTER_LINEAR);
+        vkCmdBlitImage(cb, fromInfo.image, fromInfo.layout, toInfo.image, toInfo.layout, 1, &reg, VK_FILTER_NEAREST);
     }
 
     //success
@@ -194,7 +260,7 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
 }
 
 bool drawWorld(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawWorld");
+    GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawWorld");
 
     //extract all arguments
     const auto& [renderer] = handle.getArguments<GLGE::Graphic::Renderer*>();

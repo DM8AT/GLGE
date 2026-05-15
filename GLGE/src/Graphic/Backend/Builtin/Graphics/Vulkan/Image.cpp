@@ -50,14 +50,17 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
               format.order == GLGE::Graphic::PixelFormat::Order::STENCIL) 
               ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    //get format properties
-    VkImageFormatProperties props;
-    vkGetPhysicalDeviceImageFormatProperties(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), static_cast<VkFormat>(m_vkFormat), 
-                                             VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &props);
-
     //compute the format
     VkFormat form = __pixelFormat_to_VkFormat(format);
     m_vkFormat = static_cast<i32>(form);
+
+    //get format properties
+    VkImageFormatProperties props;
+    VkResult success = vkGetPhysicalDeviceImageFormatProperties(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), static_cast<VkFormat>(m_vkFormat), 
+                                                                VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &props);
+    if (success != VK_SUCCESS)
+    {throw Exception("Unsupported image format", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+
     //create the image
     VkImageCreateInfo imgCreate {};
     imgCreate.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -93,6 +96,15 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
     //store the layout
     m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_UNDEFINED);
 
+    //if MSAA was enabled, create a resolution image
+    if (m_samples > 1) {
+        VkImageCreateInfo resImgCreate = imgCreate;
+        imgCreate.samples = VK_SAMPLE_COUNT_1_BIT;
+        if (vmaCreateImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &resImgCreate, &allocInfo, reinterpret_cast<VkImage*>(&m_img_msaaResolved), reinterpret_cast<VmaAllocation*>(&m_img_allocResolved), nullptr)
+            != VK_SUCCESS)
+        {throw Exception("Failed to create an image", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+    }
+
     //create image view
     VkImageViewCreateInfo imgViewCreate{};
     imgViewCreate.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -114,6 +126,9 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::~Image() {
     //clean up the image
     vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_view), nullptr);
     vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_image), reinterpret_cast<VmaAllocation>(m_allocation));
+    //if MSAA is enabled, destroy the resolution images
+    if (m_img_msaaResolved) 
+    {vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_img_msaaResolved), reinterpret_cast<VmaAllocation>(m_img_allocResolved));}
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::upload(const ImageCPU& image) {
@@ -227,6 +242,9 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     if (m_image) {
         vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_view), nullptr);
         vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_image), reinterpret_cast<VmaAllocation>(m_allocation));
+        //if MSAA is enabled, destroy the resolution images
+        if (m_img_msaaResolved) 
+        {vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_img_msaaResolved), reinterpret_cast<VmaAllocation>(m_img_allocResolved));}
     }
 
     //store the new size
@@ -235,12 +253,14 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_UNDEFINED);
 
     VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-    usage |= (m_aspectFlags | VK_IMAGE_ASPECT_COLOR_BIT) ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    usage |= (m_aspectFlags & VK_IMAGE_ASPECT_COLOR_BIT) ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
     //get format properties
     VkImageFormatProperties props;
-    vkGetPhysicalDeviceImageFormatProperties(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), static_cast<VkFormat>(m_vkFormat), 
-                                             VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &props);
+    VkResult success = vkGetPhysicalDeviceImageFormatProperties(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), static_cast<VkFormat>(m_vkFormat), 
+                                                                VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &props);
+    if (success != VK_SUCCESS)
+    {throw Exception("Unsupported image format", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
 
     //re-create the image (similar to constructor)
     //create the image
@@ -266,6 +286,15 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     if (vmaCreateImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &imgCreate, &allocInfo, reinterpret_cast<VkImage*>(&m_image), reinterpret_cast<VmaAllocation*>(&m_allocation), nullptr)
          != VK_SUCCESS)
     {throw Exception("Failed to create an image", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+
+    //if MSAA was enabled, create a resolution image
+    if (m_samples > 1) {
+        VkImageCreateInfo resImgCreate = imgCreate;
+        imgCreate.samples = VK_SAMPLE_COUNT_1_BIT;
+        if (vmaCreateImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &resImgCreate, &allocInfo, reinterpret_cast<VkImage*>(&m_img_msaaResolved), reinterpret_cast<VmaAllocation*>(&m_img_allocResolved), nullptr)
+            != VK_SUCCESS)
+        {throw Exception("Failed to create an image", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+    }
 
     //create image view
     VkImageViewCreateInfo imgViewCreate{};

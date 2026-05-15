@@ -135,11 +135,19 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief store the actual vulkan buffer
          */
         void* m_buffer = nullptr;
-
         /**
          * @brief store the VMA allocation
          */
         void* m_allocation = nullptr;
+
+        /**
+         * @brief store the old buffer
+         */
+        void* m_oldBuff = nullptr;
+        /**
+         * @brief store the old allocation
+         */
+        void* m_oldAlloc = nullptr;
 
         /**
          * @brief store all resource sets that reference this buffer

@@ -36,7 +36,7 @@
  */
 static VkBufferUsageFlags __mapType(GLGE::Graphic::Backend::Graphic::Buffer::Type type) {
     switch (type) {
-        case GLGE::Graphic::Backend::Graphic::Buffer::Type::STORAGE: return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        case GLGE::Graphic::Backend::Graphic::Buffer::Type::STORAGE: return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT|VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
         case GLGE::Graphic::Backend::Graphic::Buffer::Type::UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         default: return 0;
     }
@@ -121,6 +121,8 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::~Buffer() {
 
     //clean up vulkan stuff
     vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_buffer), reinterpret_cast<VmaAllocation>(m_allocation));
+    if (m_oldBuff) 
+    {vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_oldBuff), reinterpret_cast<VmaAllocation>(m_oldAlloc));}
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::write(const void* data, size_t size, size_t offset) {
@@ -204,9 +206,6 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
         memcpy(old, m_data, m_size);
     }
 
-    //clean up vulkan stuff
-    vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_buffer), reinterpret_cast<VmaAllocation>(m_allocation));
-    
     //create the buffer
 
     //write the buffer create info
@@ -230,6 +229,10 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
     if (vmaCreateBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &buffCreate, &allocCreate, &buffer, &allocation, &allocInfo) != VK_SUCCESS)
     {throw Exception("Failed to allocate a buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::Buffer");}
     //store the buffer and allocation
+    if (m_oldBuff) 
+    {vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_oldBuff), reinterpret_cast<VmaAllocation>(m_oldAlloc));}
+    m_oldBuff = m_buffer;
+    m_oldAlloc = m_allocation;
     m_buffer = reinterpret_cast<void*>(buffer);
     m_allocation = reinterpret_cast<void*>(allocation);
     //if a mapped pointer exists, use the mapped data for initialization
@@ -258,7 +261,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
         write.dstSet = reinterpret_cast<VkDescriptorSet>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(m_references[i].first->getBackend().get())->getDescriptorSet());
         write.dstBinding = m_references[i].second;
         write.descriptorCount = 1;
-        write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        write.descriptorType = (m_type == Type::STORAGE) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         write.pBufferInfo = &info;
 
         //write
