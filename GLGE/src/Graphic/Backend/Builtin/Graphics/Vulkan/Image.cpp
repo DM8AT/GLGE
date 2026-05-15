@@ -44,11 +44,11 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
     //get the instance
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
-    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     usage |= (format.order == GLGE::Graphic::PixelFormat::Order::DEPTH || 
               format.order == GLGE::Graphic::PixelFormat::Order::DEPTH_STENCIL || 
               format.order == GLGE::Graphic::PixelFormat::Order::STENCIL) 
-              ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+              ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_STORAGE_BIT);
 
     //compute the format
     VkFormat form = __pixelFormat_to_VkFormat(format);
