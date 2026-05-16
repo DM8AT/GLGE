@@ -52,10 +52,6 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
     static void (*helper_window)(GLGE::Graphic::Window*, GLGE::vec4, GLGE::f32, GLGE::u32) = [](GLGE::Graphic::Window* window, GLGE::vec4 color, float depth, GLGE::u32 stencil) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear");
             {
-                GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear::makeCurrent");
-                window->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(window->getVideoWindow());
-            }
-            {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear::colorClearPass");
                 glClearNamedFramebufferfv(0, GL_COLOR, 0, (GLGE::f32*)&color);
             }
@@ -96,11 +92,6 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
     static void (*helper_f_to_w)(GLGE::Graphic::Backend::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8, bool, bool) = 
         [](GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff, GLGE::Graphic::Window* win, GLGE::u8 idx, bool copyDepth, bool copyStencil) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy");
-            //first, ensure that the correct window is bound
-            {
-                GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::makeCurrent");
-                win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());
-            }
             //then, copy the actual data
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::copy");
@@ -129,11 +120,6 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
     static void (*helper_w_to_f)(GLGE::Graphic::Backend::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8, bool, bool) = 
         [](GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff, GLGE::Graphic::Window* win, GLGE::u8 idx, bool copyDepth, bool copyStencil) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy");
-            //first, ensure that the correct window is bound
-            {
-                GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::makeCurrent");
-                win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());
-            }
             //then, copy the actual data
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::copy");
@@ -212,7 +198,6 @@ bool drawSimpleMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, con
         //bind the correct buffer type
         if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
             GLGE::Graphic::Window* win = reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget());
-            win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         } else {
             auto* fbuff = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend().get());

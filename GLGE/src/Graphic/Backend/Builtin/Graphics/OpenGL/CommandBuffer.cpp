@@ -16,6 +16,8 @@
 #include "Graphic/Window.h"
 //add the OpenGL contract
 #include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+//add video windows
+#include "Graphic/Backend/Video/Window.h"
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::CommandBuffer::onPlay() {
     //playback the recorded stuff
@@ -26,4 +28,11 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::CommandBuffer::onPlay() {
         getRenderPipeline()->getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()
             ->swap(getRenderPipeline()->getWindow()->getVideoWindow());
     }
+}
+
+void GLGE::Graphic::Backend::Graphic::OpenGL::CommandBuffer::onBegin() {
+    //make the correct window current
+    auto* win = getRenderPipeline()->getWindow();
+    if (win)
+    {win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());}
 }

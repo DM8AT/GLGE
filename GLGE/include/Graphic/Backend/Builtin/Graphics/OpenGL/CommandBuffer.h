@@ -38,6 +38,11 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          */
         virtual ~CommandBuffer() {}
 
+        /**
+         * @brief a function used to say that a recording should start
+         */
+        virtual void onBegin() override;
+
     protected:
 
         /**
