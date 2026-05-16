@@ -59,10 +59,6 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
                 glClearStencil(stencil);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             }
-            {
-                GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear::depthStencilClearPass");
-                glClearNamedFramebufferfi(0, GL_DEPTH_STENCIL, 0, depth, stencil);
-            }
         };
     static void (*helper_fbuff)(GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*, GLGE::u8, GLGE::vec4, float, GLGE::u32)
          = [](GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer* fbuff, GLGE::u8 idx, GLGE::vec4 color, float depth, GLGE::u32 stencil) {
@@ -101,11 +97,13 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::copy");
                 GLGE::u32 fbo = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(fbuff)->getHandle();
                 //blit command relies on read state for the read framebuffer
-                glNamedFramebufferReadBuffer(fbo, GL_COLOR_ATTACHMENT0 + idx);
-                glBlitNamedFramebuffer(fbo, 0, 
-                                       0, 0, fbuff->getColorAttachment(0)->getSize().x, fbuff->getColorAttachment(0)->getSize().y, 
-                                       0, 0, win->getResolution().x, win->getResolution().y, 
-                                       GL_COLOR_BUFFER_BIT | (copyDepth ? GL_DEPTH_BUFFER_BIT : 0) | (copyStencil ? GL_STENCIL_BUFFER_BIT : 0), GL_NEAREST);
+                glNamedFramebufferReadBuffer(fbo, GL_COLOR_ATTACHMENT0 + idx); //this is NOT the window
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+                glDrawBuffer(GL_BACK);
+                glBlitFramebuffer(0, 0, fbuff->getColorAttachment(0)->getSize().x, fbuff->getColorAttachment(0)->getSize().y, 
+                                  0, 0, win->getResolution().x, win->getResolution().y, 
+                                  GL_COLOR_BUFFER_BIT | (copyDepth ? GL_DEPTH_BUFFER_BIT : 0) | (copyStencil ? GL_STENCIL_BUFFER_BIT : 0), GL_NEAREST);
             }
         };
     static void (*helper_f_to_f)(GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*, GLGE::u8, GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*, GLGE::u8, bool, bool) = 
@@ -114,6 +112,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             GLGE::u32 f = from->getHandle();
             GLGE::u32 t = to->getHandle();
             //blit command relies on read state for the read framebuffer
+            //these both are NOT the window
             glNamedFramebufferReadBuffer(f, GL_COLOR_ATTACHMENT0 + from_idx);
             glNamedFramebufferDrawBuffer(t, GL_COLOR_ATTACHMENT0 + to_idx);
             glBlitNamedFramebuffer(f, t, 
@@ -128,12 +127,14 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy::copy");
                 GLGE::u32 fbo = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(fbuff)->getHandle();
-                //blit command relies on read state for the read framebuffer
-                glNamedFramebufferDrawBuffer(fbo, GL_COLOR_ATTACHMENT0 + idx);
-                glBlitNamedFramebuffer(0, fbo, 
-                                       0, 0, win->getResolution().x, win->getResolution().y, 
-                                       0, 0, fbuff->getColorAttachment(0)->getSize().x, fbuff->getColorAttachment(0)->getSize().y, 
-                                       GL_COLOR_BUFFER_BIT | (copyDepth ? GL_DEPTH_BUFFER_BIT : 0) | (copyStencil ? GL_STENCIL_BUFFER_BIT : 0), GL_NEAREST);
+                //configure FBO 0 correctly
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+                glReadBuffer(GL_BACK);
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+                glDrawBuffer(GL_COLOR_ATTACHMENT0 + idx);
+                glBlitFramebuffer(0, 0, win->getResolution().x, win->getResolution().y, 
+                                  0, 0, fbuff->getColorAttachment(0)->getSize().x, fbuff->getColorAttachment(0)->getSize().y, 
+                                  GL_COLOR_BUFFER_BIT | (copyDepth ? GL_DEPTH_BUFFER_BIT : 0) | (copyStencil ? GL_STENCIL_BUFFER_BIT : 0), GL_NEAREST);
             }
         };
     //extract the actual arguments
@@ -206,11 +207,11 @@ bool drawSimpleMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, con
         } else {
             auto* fbuff = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend().get());
             GLGE::u32 fbo = fbuff->getHandle();
+            //enable for general drawing
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
             //activate all color attachments
             static constexpr const GLenum bufs[16] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7, GL_COLOR_ATTACHMENT8, GL_COLOR_ATTACHMENT9, GL_COLOR_ATTACHMENT10, GL_COLOR_ATTACHMENT11, GL_COLOR_ATTACHMENT12, GL_COLOR_ATTACHMENT13, GL_COLOR_ATTACHMENT14, GL_COLOR_ATTACHMENT15};
             glNamedFramebufferDrawBuffers(fbo, fbuff->getColorAttachmentCount(), bufs);
-            //enable for general drawing
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         }
 
         //shader + resources are bound allready

@@ -119,6 +119,11 @@ void Instance::onRegisterWindow(GLGE::Graphic::Backend::Graphic::Window* window)
         //enable depth testing
         glEnable(GL_DEPTH_TEST);
 
+        //setup FBO 0
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDrawBuffer(GL_BACK);
+        glReadBuffer(GL_BACK);        
+
         //get the GPU information
         m_instance->getGraphicDescription()->initialize();
 
