@@ -53,7 +53,11 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear");
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear::colorClearPass");
-                glClearNamedFramebufferfv(0, GL_COLOR, 0, (GLGE::f32*)&color);
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glClearColor(color.r, color.g, color.b, color.a);
+                glClearDepthf(depth);
+                glClearStencil(stencil);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             }
             {
                 GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::clear::clear::depthStencilClearPass");
