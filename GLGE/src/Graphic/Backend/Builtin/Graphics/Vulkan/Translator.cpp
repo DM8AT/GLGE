@@ -158,6 +158,17 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         {throw GLGE::Exception("Tried to blit to a multi-sample image", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::copy");}
         #endif
 
+        //make sure the image is currently up to date
+        VkImageMemoryBarrier barrier {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.image = fromInfo.image;
+        barrier.oldLayout = fromInfo.layout;
+        barrier.newLayout = fromInfo.layout;
+        barrier.subresourceRange.aspectMask = fromInfo.aspects;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.subresourceRange.levelCount = 1;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
         //multi-sample resolving
         if (fromInfo.samples > 1) {
             //TODO: add depth resolution
