@@ -59,7 +59,7 @@ namespace GLGE::Graphic::Backend::Graphic {
             if (m_initialized) 
             {m_resized = false;}
             else
-            {m_initialized = false; m_resized = true;}
+            {m_initialized = true; m_resized = true;}
         }
 
         /**
