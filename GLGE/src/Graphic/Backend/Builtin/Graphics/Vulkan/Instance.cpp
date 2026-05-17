@@ -430,6 +430,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     if (aliasTransfer)
     {m_transferQueue = m_graphicsQueue;}
     else {
+        m_transferQueue = new QueuePool();
         m_transferQueue->familyIdx = transferFamily;
         m_transferQueue->queueCount = transferQueueCount;
         m_transferQueue->queues = new std::pair<void*, std::mutex>[transferQueueCount];
@@ -441,6 +442,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     if (aliasCompute)
     {m_computeQueue = m_graphicsQueue;}
     else {
+        m_computeQueue = new QueuePool();
         m_computeQueue->familyIdx = computeFamily;
         m_computeQueue->queueCount = computeQueueCount;
         m_computeQueue->queues = new std::pair<void*, std::mutex>[computeQueueCount];
