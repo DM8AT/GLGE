@@ -324,6 +324,8 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
 
     //clean up
     if (m_image) {
+        //make sure the image is not in use
+        vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
         //delete the framebuffer
         vkDestroyFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkFramebuffer>(m_depthFbuff), nullptr);
         if (m_resolvedView)

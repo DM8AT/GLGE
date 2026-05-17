@@ -54,7 +54,13 @@ namespace GLGE::Graphic::Backend::Graphic {
         /**
          * @brief tick the graphic window
          */
-        virtual void onUpdate() {m_resized = false;}
+        virtual void onUpdate() {
+            //make sure a resize is triggered during the first tick
+            if (m_initialized) 
+            {m_resized = false;}
+            else
+            {m_initialized = false; m_resized = true;}
+        }
 
         /**
          * @brief a function that is called when the size of the window was changed
@@ -140,6 +146,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief store if the window was resized
          */
         bool m_resized = true;
+
+        /**
+         * @brief store if the window is initialized
+         */
+        bool m_initialized = false;
 
     private:
 
