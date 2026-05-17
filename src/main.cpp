@@ -17,7 +17,7 @@
 /**
  * @brief define if the configuration is changed when an example fails or if the failure is passed
  */
-constexpr bool RETRY = true;
+constexpr bool RETRY = false;
 
 /**
  * @brief define a function pointer to a graphic backend loader function
