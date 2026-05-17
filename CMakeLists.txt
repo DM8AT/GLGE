@@ -14,8 +14,7 @@ set_target_properties(MAIN PROPERTIES
 
 # create a helper library
 add_library(MAIN_LIB 
-    src/OpenGL/gl_example1.cpp
-    src/Vulkan/vk_example1.cpp
+    src/Examples/DefaultExample.cpp
 )
 set_target_properties(MAIN_LIB PROPERTIES CXX_STANDARD 23 CXX_STANDARD_REQUIRED ON)
 target_link_libraries(MAIN PUBLIC MAIN_LIB)
@@ -24,4 +23,4 @@ target_link_libraries(MAIN PUBLIC MAIN_LIB)
 add_subdirectory(GLGE)
 
 # Link libraries if needed
-target_link_libraries(MAIN_LIB PRIVATE GLGE)
+target_link_libraries(MAIN_LIB PUBLIC GLGE)

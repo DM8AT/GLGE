@@ -1,19 +1,15 @@
 /**
- * @file vk_example1.cpp
+ * @file DefaultExample.cpp
  * @author DM8AT
- * @brief define the first Vulkan example
+ * @brief implement the default example
  * @version 0.1
- * @date 2026-04-14
+ * @date 2026-05-17
  * 
  * @copyright Copyright (c) 2026
  * 
  */
-//add the example
-#include "vk_example1.h"
-
-//add GLGE
-#define GLGE_NO_THANKS_MSG
-#include "GLGE.h"
+//add the default example
+#include "DefaultExample.h"
 
 struct Params {
     float gamma;      // e.g., 2.2
@@ -62,15 +58,12 @@ static void updateFirstPersonController(GLGE::Transform& transform, GLGE::Graphi
     {camera.eulerAngles.z -= rotSpeed;}
 }
 
-void vk_example1() {
+unsigned char defaultExample(GLGE::Graphic::Backend::Graphic::Description* gDescr, GLGE::Graphic::Backend::Video::Description* vDescr) {
     //call the static library initialization
     GLGE::Instance::init();
 
-    //store the graphic instance descriptions
-    GLGE::Graphic::Builtin::Graphics::Vulkan graphicDesc;
-    GLGE::Graphic::Builtin::Video::SDL3 videoDesc;
     //store the graphic instance
-    GLGE::Graphic::Instance gInst(&graphicDesc, &videoDesc);
+    GLGE::Graphic::Instance gInst(gDescr, vDescr);
 
     std::cout << "Using graphic backend " << gInst.getGraphicBackendName() << "\n";
     std::cout << "Using video backend " << gInst.getVideoBackendName() << "\n";
@@ -274,4 +267,7 @@ void vk_example1() {
     }
 
     inst.shutdown();
+
+    //success
+    return 0;
 }
