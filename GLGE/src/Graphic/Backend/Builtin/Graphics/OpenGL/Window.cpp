@@ -58,6 +58,8 @@ void Window::onResolutionChange(const uvec2& size, const uvec2& newUsableSize, c
     getWindow()->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->swap(getWindow()->getVideoWindow());
     //store the new rendering resolution
     m_resolution = res;
+    //store that the resolution was updated
+    m_resized = true;
 }
 
 bool Window::onVSyncSet(VSync vsync) {

@@ -85,7 +85,6 @@ bool Window::onVSyncSet(VSync vsync) {
 }
 
 void Window::recreateSwapchain() {
-
     //swapchain recreated (just assume resize)
     m_resized = true;
 

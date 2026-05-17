@@ -246,7 +246,7 @@ void vk_example1() {
         inst.startMainTick();
 
         //handle resizing
-        if (win.getResolution().x != colBuff.getSize().x || win.getResolution().y != colBuff.getSize().y) {
+        if (win.didResize()) {
             multiSample_fbuff.resize(win.getResolution());
             fbuff.resize(win.getResolution());
             ldrFbuff.resize(win.getResolution());
