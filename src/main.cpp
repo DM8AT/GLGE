@@ -84,30 +84,50 @@ int main() {
     //print all loaded examples
     std::cout << "Loaded examples:\n";
     std::cout << structureMapToString(EXAMPLES);
-    std::cout << "Please enter the number of the example to run:\n";
     //get the example to run
     size_t exampleId = UINT64_MAX;
-    std::cin >> exampleId;
-    if (exampleId >= EXAMPLES.size())
-    {throw GLGE::Exception("The selected example does not map to a valid example ID", "main");}
+    //auto-select 0 if only one example exists
+    if (EXAMPLES.size() == 1) 
+    {exampleId = 0;}
+    else {
+        //else, quarry which example to use from the user
+        std::cout << "Please enter the number of the example to run:\n";
+        std::cin >> exampleId;
+        if (exampleId >= EXAMPLES.size())
+        {throw GLGE::Exception("The selected example does not map to a valid example ID", "main");}
+    }
 
     //print all loaded graphic backends
     std::cout << "Loaded graphic backends:\n";
     std::cout << structureMapToString(GRAPHIC_BACKEND_MAP);
     //get the graphic API to use
     size_t graphicApiId = UINT64_MAX;
-    std::cin >> graphicApiId;
-    if (graphicApiId >= GRAPHIC_BACKEND_MAP.size())
-    {throw GLGE::Exception("The selected graphic API ID does not map to a valid graphic API", "main");}
+    //auto-select 0 if only one graphic backend exists
+    if (GRAPHIC_BACKEND_MAP.size() == 1)
+    {graphicApiId = 0;}
+    else {
+        //else, quarry which graphic backend to use from the user
+        std::cout << "Please enter the number of the graphic API to use:\n";
+        std::cin >> graphicApiId;
+        if (graphicApiId >= GRAPHIC_BACKEND_MAP.size())
+        {throw GLGE::Exception("The selected graphic API ID does not map to a valid graphic API", "main");}
+    }
 
     //print all loaded video backends
     std::cout << "Loaded video backends:\n";
     std::cout << structureMapToString(VIDEO_BACKEND_MAP);
     //get the video api to use
     size_t videoApiId = UINT64_MAX;
-    std::cin >> videoApiId;
-    if (videoApiId >= VIDEO_BACKEND_MAP.size())
-    {throw GLGE::Exception("The selected video API ID does not map to a valid video API", "main");}
+    //auto-select 0 if only one video backend exists
+    if (VIDEO_BACKEND_MAP.size() == 1)
+    {videoApiId = 0;}
+    else {
+        //else, quarry which video backend to use from the user
+        std::cout << "Please enter the number of the video API to use:\n";
+        std::cin >> videoApiId;
+        if (videoApiId >= VIDEO_BACKEND_MAP.size())
+        {throw GLGE::Exception("The selected video API ID does not map to a valid video API", "main");}
+    }
 
     //setup for potential looping
     bool success = false;
