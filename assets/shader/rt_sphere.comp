@@ -263,6 +263,7 @@ void main() {
     //NDC coordinates in [-1, 1]
     float px = ((pixel.x + 0.5) / size.x) * 2.0 - 1.0;
     float py = ((pixel.y + 0.5) / size.y) * 2.0 - 1.0;
+    py *= cam.proj[1][1];
 
     //Compute ray direction
     float aspect = float(size.x) / float(size.y);

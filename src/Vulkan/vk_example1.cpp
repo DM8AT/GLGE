@@ -106,7 +106,6 @@ void vk_example1() {
     GLGE::Graphic::Image depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT);
     GLGE::Graphic::Framebuffer fbuff({&colBuff}, {&depthBuff});
 
-    //Currently MSAA support is not good enough, it is disabled
     GLGE::Graphic::Image multiSample_colBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT, 16);
     GLGE::Graphic::Image multiSample_depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT, 16);
     GLGE::Graphic::Framebuffer multiSample_fbuff({&multiSample_colBuff}, {&multiSample_depthBuff});
@@ -140,6 +139,14 @@ void vk_example1() {
     GLGE::Graphic::ResourceSet cullSet(cull.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()},
                                        std::pair{"commandBuffer", renderer.getIndirectDrawBuffer()});
     cull.setResources(0, &cullSet);
+
+    GLGE::Graphic::Shader rt_comp({std::pair{"Compute", "assets/shader/rt_sphere.comp.spv"}});
+    GLGE::Graphic::SampledTexture sampledDepth(depthBuff, sampler);
+    GLGE::Graphic::SampledTexture sampledImg(colBuff, sampler);
+    GLGE::Graphic::ResourceSet set(rt_comp.getSet(0), std::pair{"imgOutput", &colBuff}, std::pair{"depthIn", &sampledDepth}, std::pair{"imgIn", &sampledImg}, std::pair{"cam", renderer.getCameraBuffer()}, 
+        std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}
+    );
+    rt_comp.setResources(0, &set);
 
     GLGE::Graphic::Shader meshShader {
         std::pair{"Vertex", "assets/shader/simple.vert.spv"},
@@ -224,9 +231,8 @@ void vk_example1() {
         std::pair{"Cull", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &cull, GLGE::uvec3(1))},
         std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
         std::pair{"Flatten multi sample", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), HDR_Target, GLGE::u8(0), true, false)},
-        //std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
+        std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
         std::pair{"Finalize", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &finalize, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
-        //std::pair{"Copy LDR", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), LDR_Target, GLGE::u8(0), false, false)},
         std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0), false, false)}
     );
     pipe.record();
@@ -240,11 +246,11 @@ void vk_example1() {
         inst.startMainTick();
 
         //handle resizing
-        if (win.didResize()) {
+        if (win.getResolution().x != colBuff.getSize().x || win.getResolution().y != colBuff.getSize().y) {
             multiSample_fbuff.resize(win.getResolution());
             fbuff.resize(win.getResolution());
             ldrFbuff.resize(win.getResolution());
-            //*pipe.getCommand("Compute")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
+            *pipe.getCommand("Compute")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
             *pipe.getCommand("Finalize")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
 
             //re-record the pipeline to make it aware of the changes
