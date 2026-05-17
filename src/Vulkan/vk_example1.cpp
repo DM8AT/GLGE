@@ -107,8 +107,8 @@ void vk_example1() {
     GLGE::Graphic::Framebuffer fbuff({&colBuff}, {&depthBuff});
 
     //Currently MSAA support is not good enough, it is disabled
-    GLGE::Graphic::Image multiSample_colBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT, 1);
-    GLGE::Graphic::Image multiSample_depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT, 1);
+    GLGE::Graphic::Image multiSample_colBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT, 16);
+    GLGE::Graphic::Image multiSample_depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT, 16);
     GLGE::Graphic::Framebuffer multiSample_fbuff({&multiSample_colBuff}, {&multiSample_depthBuff});
 
     GLGE::Graphic::Image ldrOut(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);

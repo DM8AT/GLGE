@@ -79,7 +79,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
     imgCreate.mipLevels = 1;
     imgCreate.queueFamilyIndexCount = 1;
     imgCreate.pQueueFamilyIndices = &inst->getGraphicsQueue().familyIdx;
-    imgCreate.samples = __clampSamples(__get_vulkan_sample_count(m_samples), props.sampleCounts);
+    imgCreate.samples = __clampSamples(__get_vulkan_sample_count(samples), props.sampleCounts);
     imgCreate.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imgCreate.tiling = VK_IMAGE_TILING_OPTIMAL;
     imgCreate.usage = usage;
@@ -104,10 +104,10 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
     //if MSAA was enabled, create a resolution image
     if (m_samples > 1) {
         VkImageCreateInfo resImgCreate = imgCreate;
-        imgCreate.samples = VK_SAMPLE_COUNT_1_BIT;
+        resImgCreate.samples = VK_SAMPLE_COUNT_1_BIT;
         if (vmaCreateImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &resImgCreate, &allocInfo, reinterpret_cast<VkImage*>(&m_img_msaaResolved), reinterpret_cast<VmaAllocation*>(&m_img_allocResolved), nullptr)
             != VK_SUCCESS)
-        {throw Exception("Failed to create an image", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+        {throw Exception("Failed to create a resolve image", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
     }
 
     //create image view
@@ -122,12 +122,91 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
     imgViewCreate.subresourceRange.baseArrayLayer = 0;
     imgViewCreate.subresourceRange.layerCount = 1;
     if (vkCreateImageView(reinterpret_cast<VkDevice>(inst->getDevice()), &imgViewCreate, nullptr, reinterpret_cast<VkImageView*>(&m_view)) != VK_SUCCESS) 
-    {throw Exception("Failed to create Vulkan texture view", "GLGE::Graphic::Backend::Graphic::Vulkan::Texture::Texture");}
+    {throw Exception("Failed to create Vulkan texture view", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+
+    //create the resolved view
+    if (m_samples > 1) {
+        VkImageViewCreateInfo resImgViewCreate = imgViewCreate;
+        resImgViewCreate.image = reinterpret_cast<VkImage>(m_img_msaaResolved);
+        if (vkCreateImageView(reinterpret_cast<VkDevice>(inst->getDevice()), &resImgViewCreate, nullptr, reinterpret_cast<VkImageView*>(&m_resolvedView)) != VK_SUCCESS) 
+        {throw Exception("Failed to create Vulkan texture resolve view", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+    }
+
+    //if this is a depth image with multi-samples, create an MSAA resolve render pass
+    if ((m_aspectFlags & i32(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) && (m_samples>1)) {
+        //attachment descriptions
+        VkAttachmentDescription2 depthMsaa {};
+        depthMsaa.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
+        depthMsaa.format = form;
+        depthMsaa.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+        depthMsaa.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+        depthMsaa.samples = static_cast<VkSampleCountFlagBits>(m_samples);
+        depthMsaa.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        depthMsaa.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        depthMsaa.stencilLoadOp = (static_cast<VkImageAspectFlags>(m_aspectFlags) & VK_IMAGE_ASPECT_STENCIL_BIT) ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthMsaa.stencilStoreOp = (static_cast<VkImageAspectFlags>(m_aspectFlags) & VK_IMAGE_ASPECT_STENCIL_BIT) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        VkAttachmentDescription2 depthResolve = depthMsaa;
+        depthResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+        VkAttachmentDescription2 descr[] = {depthMsaa, depthResolve};
+        //attachment references
+        VkAttachmentReference2 attRefMsaa {};
+        attRefMsaa.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+        attRefMsaa.attachment = 0;
+        attRefMsaa.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+        attRefMsaa.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VkAttachmentReference2 attRefResolve {};
+        attRefResolve.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+        attRefResolve.attachment = 1;
+        attRefResolve.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+        attRefResolve.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        //resolve subpass
+        VkSubpassDescriptionDepthStencilResolve dsResolve {};
+        dsResolve.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
+        dsResolve.depthResolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+        dsResolve.stencilResolveMode = (attRefMsaa.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) ? VK_RESOLVE_MODE_AVERAGE_BIT : VK_RESOLVE_MODE_NONE;
+        dsResolve.pDepthStencilResolveAttachment = &attRefResolve;
+        VkSubpassDescription2 subpass {};
+        subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.pDepthStencilAttachment = &attRefMsaa;
+        subpass.pNext = &dsResolve;
+        //render pass
+        VkRenderPassCreateInfo2 renPassCreate {};
+        renPassCreate.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+        renPassCreate.attachmentCount = 2;
+        renPassCreate.pAttachments = descr;
+        renPassCreate.subpassCount = 1;
+        renPassCreate.pSubpasses = &subpass;
+        VkRenderPass pass;
+        if (reinterpret_cast<PFN_vkCreateRenderPass2KHR>(inst->get_vkCreateRenderPass2KHR())(reinterpret_cast<VkDevice>(inst->getDevice()), &renPassCreate, nullptr, &pass) != VK_SUCCESS)
+        {throw Exception("Failed to create a render pass to resolve depth MSAA", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+        m_depthResolvePass = reinterpret_cast<void*>(pass);
+
+        //create a depth buffer framebuffer
+        VkImageView views[] = {reinterpret_cast<VkImageView>(m_view), reinterpret_cast<VkImageView>(m_resolvedView)};
+        VkFramebufferCreateInfo fbuffCreate {};
+        fbuffCreate.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        fbuffCreate.width = m_size.x;
+        fbuffCreate.height = m_size.y;
+        fbuffCreate.layers = 1;
+        fbuffCreate.pAttachments = views;
+        fbuffCreate.attachmentCount = 2;
+        fbuffCreate.renderPass = pass;
+        if (vkCreateFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), &fbuffCreate, nullptr, reinterpret_cast<VkFramebuffer*>(&m_depthFbuff)) != VK_SUCCESS)
+        {throw Exception("Failed to create a depth msaa resolve framebuffer", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+    }
 }
 
 GLGE::Graphic::Backend::Graphic::Vulkan::Image::~Image() {
     //get the instance
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
+    //delete the framebuffer
+    vkDestroyFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkFramebuffer>(m_depthFbuff), nullptr);
+    if (m_resolvedView)
+    {vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_resolvedView), nullptr);}
+    //if a resolve pass exists, delete it
+    if (m_depthResolvePass)
+    {vkDestroyRenderPass(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkRenderPass>(m_depthResolvePass), nullptr);}
     //clean up the image
     vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_view), nullptr);
     vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_image), reinterpret_cast<VmaAllocation>(m_allocation));
@@ -245,6 +324,11 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
 
     //clean up
     if (m_image) {
+        //delete the framebuffer
+        vkDestroyFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkFramebuffer>(m_depthFbuff), nullptr);
+        if (m_resolvedView)
+        {vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_resolvedView), nullptr);}
+        //destroy the views
         vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(m_view), nullptr);
         vmaDestroyImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkImage>(m_image), reinterpret_cast<VmaAllocation>(m_allocation));
         //if MSAA is enabled, destroy the resolution images
@@ -298,7 +382,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     //if MSAA was enabled, create a resolution image
     if (m_samples > 1) {
         VkImageCreateInfo resImgCreate = imgCreate;
-        imgCreate.samples = VK_SAMPLE_COUNT_1_BIT;
+        resImgCreate.samples = VK_SAMPLE_COUNT_1_BIT;
         if (vmaCreateImage(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &resImgCreate, &allocInfo, reinterpret_cast<VkImage*>(&m_img_msaaResolved), reinterpret_cast<VmaAllocation*>(&m_img_allocResolved), nullptr)
             != VK_SUCCESS)
         {throw Exception("Failed to create an image", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
@@ -317,6 +401,29 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     imgViewCreate.subresourceRange.layerCount = 1;
     if (vkCreateImageView(reinterpret_cast<VkDevice>(inst->getDevice()), &imgViewCreate, nullptr, reinterpret_cast<VkImageView*>(&m_view)) != VK_SUCCESS) 
     {throw Exception("Failed to create Vulkan texture view", "GLGE::Graphic::Backend::Graphic::Vulkan::Texture::Texture");}
+
+    //create the resolved view
+    if (m_samples > 1) {
+        VkImageViewCreateInfo resImgViewCreate = imgViewCreate;
+        resImgViewCreate.image = reinterpret_cast<VkImage>(m_img_msaaResolved);
+        if (vkCreateImageView(reinterpret_cast<VkDevice>(inst->getDevice()), &resImgViewCreate, nullptr, reinterpret_cast<VkImageView*>(&m_resolvedView)) != VK_SUCCESS) 
+        {throw Exception("Failed to create Vulkan texture resolve view", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+    }
+
+    if (m_depthResolvePass) {
+        //create a depth buffer framebuffer
+        VkImageView views[] = {reinterpret_cast<VkImageView>(m_view), reinterpret_cast<VkImageView>(m_resolvedView)};
+        VkFramebufferCreateInfo fbuffCreate {};
+        fbuffCreate.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        fbuffCreate.width = m_size.x;
+        fbuffCreate.height = m_size.y;
+        fbuffCreate.layers = 1;
+        fbuffCreate.pAttachments = views;
+        fbuffCreate.attachmentCount = 2;
+        fbuffCreate.renderPass = reinterpret_cast<VkRenderPass>(m_depthResolvePass);
+        if (vkCreateFramebuffer(reinterpret_cast<VkDevice>(inst->getDevice()), &fbuffCreate, nullptr, reinterpret_cast<VkFramebuffer*>(&m_depthFbuff)) != VK_SUCCESS)
+        {throw Exception("Failed to create a depth msaa resolve framebuffer", "GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image");}
+    }
 
     //clear
     clear();
@@ -477,9 +584,6 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::clear() {
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-    //it is now in transfer_dst_optimal
-    m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
     //record the correct clear type for the image
     if (m_aspectFlags & VK_IMAGE_ASPECT_COLOR_BIT) {
         //store the region to clear
@@ -522,6 +626,72 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::clear() {
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     barrier.dstAccessMask = 0;
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+    //if a resolve image exists, clear it too
+    if (m_img_msaaResolved) {
+        //transition required
+        VkImageMemoryBarrier barrier {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = static_cast<VkImageLayout>(m_layout);
+        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = reinterpret_cast<VkImage>(m_img_msaaResolved);
+        barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        //it is now in transfer_dst_optimal
+        m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+        //record the correct clear type for the image
+        if (m_aspectFlags & VK_IMAGE_ASPECT_COLOR_BIT) {
+            //store the region to clear
+            VkImageSubresourceRange range {};
+            range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            range.baseArrayLayer = 0;
+            range.baseMipLevel = 0;
+            range.layerCount = 1;
+            range.levelCount = 1;
+            //color clear (always true black)
+            VkClearColorValue color {};
+            vkCmdClearColorImage(cmd, reinterpret_cast<VkImage>(m_img_msaaResolved), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &color, 1, &range);
+        } else {
+            //depth / stencil clear
+
+            //store the region to clear
+            VkImageSubresourceRange range {};
+            range.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+            range.baseArrayLayer = 0;
+            range.baseMipLevel = 0;
+            range.layerCount = 1;
+            range.levelCount = 1;
+            //store the depth / stencil clear
+            VkClearDepthStencilValue value {};
+            vkCmdClearDepthStencilImage(cmd, reinterpret_cast<VkImage>(m_img_msaaResolved), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &value, 1, &range);
+        }
+
+        //transition to general required
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = reinterpret_cast<VkImage>(m_img_msaaResolved);
+        barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(m_aspectFlags);
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = 0;
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    }
 
     //submit the command buffer
     __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), cmd);

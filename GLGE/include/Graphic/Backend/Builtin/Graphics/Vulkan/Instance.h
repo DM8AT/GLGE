@@ -210,6 +210,14 @@ namespace Vulkan {
         i32 getMaxSampleCount() const noexcept
         {return m_maxSampleCount;}
 
+        /**
+         * @brief Get the vkCreateRenderPass2KHR function
+         * 
+         * @return `void*` a pointer to the function
+         */
+        void* get_vkCreateRenderPass2KHR() const noexcept
+        {return m_vkCreateRenderPass2KHR;}
+
     protected:
 
         /**
@@ -234,6 +242,11 @@ namespace Vulkan {
          * @brief store the VMA allocator
          */
         void* m_allocator = nullptr;
+
+        /**
+         * @brief store the vkCreateRenderPass2KHR function
+         */
+        void* m_vkCreateRenderPass2KHR = nullptr;
 
         /**
          * @brief store the graphics queue

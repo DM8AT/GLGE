@@ -223,7 +223,12 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
         VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
         //required for descriptor updates
         VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-        VK_KHR_MAINTENANCE_3_EXTENSION_NAME
+        VK_KHR_MAINTENANCE_3_EXTENSION_NAME,
+        //required for depth MSAA resolve
+        VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME,
+        VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
+        VK_KHR_MAINTENANCE_2_EXTENSION_NAME,
+        VK_KHR_MULTIVIEW_EXTENSION_NAME
     };
     instance->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->getRequiredDeviceExtensions(devExt);
 
@@ -344,10 +349,17 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
 
     VkPhysicalDeviceDescriptorIndexingFeatures indexing = {};
     indexing.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-    VkPhysicalDeviceFeatures2 features2 = {};
+    VkPhysicalDeviceFeatures2KHR features2 = {};
     features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     features2.pNext = &indexing;
     vkGetPhysicalDeviceFeatures2(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &features2);
+
+    VkPhysicalDeviceDepthStencilResolveProperties resolveProps {};
+    resolveProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES;
+    VkPhysicalDeviceProperties2 properties2 {};
+    properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+    properties2.pNext = &resolveProps;
+    vkGetPhysicalDeviceProperties2(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &properties2);
 
     //check if everything required is supported
     if (!features2.features.shaderStorageImageMultisample)
@@ -358,6 +370,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     {throw Exception("The multi draw indirect feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     if (!features2.features.sampleRateShading)
     {throw Exception("The sample rate shading feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!(resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_AVERAGE_BIT_KHR))
+    {throw Exception("The device does not support depth MSAA averaging", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
 
     //enable specific features
     VkPhysicalDeviceFeatures devFeatures {};
@@ -435,6 +449,9 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(VK_SAMPLE_COUNT_64_BIT));
     m_extensionInfo.anisotropic.supported = features2.features.samplerAnisotropy;
     m_extensionInfo.anisotropic.maxAnisotropy = props.limits.maxSamplerAnisotropy;
+
+    //load extension functions
+    m_vkCreateRenderPass2KHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCreateRenderPass2KHR"));
 }
 
 Instance::~Instance() {

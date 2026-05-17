@@ -116,6 +116,8 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         struct ImgInfo {
             VkImage image = VK_NULL_HANDLE;
             VkImage resImage = VK_NULL_HANDLE;
+            VkFramebuffer fbuff = VK_NULL_HANDLE;
+            VkRenderPass pass = VK_NULL_HANDLE;
             GLGE::uvec2 size = {0,0};
             VkImageLayout layout;
             VkImageAspectFlags aspects;
@@ -144,6 +146,8 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                     layout = VK_IMAGE_LAYOUT_GENERAL;
                     aspects = static_cast<VkImageAspectFlags>(img->getAspectFlags());
                     samples = static_cast<VkSampleCountFlagBits>(img->getSamplesPerPixel());
+                    fbuff = reinterpret_cast<VkFramebuffer>(img->getDepthFramebuffer());
+                    pass = reinterpret_cast<VkRenderPass>(img->getDepthResolveRenderPass());
                 }
             }
 
@@ -178,10 +182,6 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
 
         //multi-sample resolving
         if (fromInfo.samples > 1) {
-            //TODO: add depth resolution
-            if (!(fromInfo.aspects & VK_IMAGE_ASPECT_COLOR_BIT))
-            {throw GLGE::Exception("Only color images can currently be resolved from MSAA to single images. Please contact the maintainer.", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::copy");}
-
             //resolve the image
             VkImageResolve resolve {};
             resolve.srcSubresource = {fromInfo.aspects, 0, 0, 1};
@@ -189,9 +189,25 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             resolve.dstSubresource = {fromInfo.aspects, 0, 0, 1};
             resolve.dstOffset = {0,0,0};
             resolve.extent = {fromInfo.size.x, fromInfo.size.y, 1};
-            vkCmdResolveImage(cb, fromInfo.image, fromInfo.layout, fromInfo.resImage, VK_IMAGE_LAYOUT_UNDEFINED, 1, &resolve);
+            vkCmdResolveImage(cb, fromInfo.image, fromInfo.layout, fromInfo.resImage, VK_IMAGE_LAYOUT_GENERAL, 1, &resolve);
             //replace the copy image with the resolved image
             fromInfo.image = fromInfo.resImage;
+
+            //run the depth pass
+            if (fromDepth.pass != VK_NULL_HANDLE) {
+                //start the render pass
+                VkRenderPassBeginInfo rpBegin{};
+                rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                rpBegin.renderPass = fromDepth.pass;
+                rpBegin.framebuffer = fromDepth.fbuff;
+                rpBegin.renderArea.offset = {0, 0};
+                rpBegin.renderArea.extent = {fromDepth.size.x, fromDepth.size.y};
+                vkCmdBeginRenderPass(cb, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
+                //directly end it
+                vkCmdEndRenderPass(cb);
+                //now, use the resolved img
+                fromDepth.image = fromDepth.resImage;
+            }
         }
 
         //use blit to copy from one image to another

@@ -162,6 +162,22 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         inline void* getResolveImage() const noexcept
         {return m_img_msaaResolved;}
 
+        /**
+         * @brief Get the Depth Resolve Render Pass
+         * 
+         * @return `void*` the depth resolve render pass
+         */
+        inline void* getDepthResolveRenderPass() const noexcept
+        {return m_depthResolvePass;}
+
+        /**
+         * @brief Get the Depth Framebuffer
+         * 
+         * @return `void*` the vulkan depth framebuffer
+         */
+        inline void* getDepthFramebuffer() const noexcept
+        {return m_depthFbuff;}
+
     protected:
 
         /**
@@ -184,9 +200,22 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         void* m_img_allocResolved = nullptr;
 
         /**
+         * @brief store the depth resolve render pass
+         */
+        void* m_depthResolvePass = nullptr;
+        /**
+         * @brief store the depth framebuffer
+         */
+        void* m_depthFbuff = nullptr;
+
+        /**
          * @brief store a view into the image
          */
         void* m_view = nullptr;
+        /**
+         * @brief store a view into the resolved image
+         */
+        void* m_resolvedView = nullptr;
 
         /**
          * @brief store the vulkan format
