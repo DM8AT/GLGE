@@ -155,6 +155,21 @@ namespace GLGE::Graphic {
         inline Reference<GLGE::Graphic::Backend::Graphic::Image> getBackend() const noexcept
         {return m_image;}
 
+        /**
+         * @brief get if this is a valid resource
+         * 
+         * @return `const char*` `nullptr` if the resource is valid, a human-readable error string otherwise
+         */
+        virtual const char* onValidation() override {
+            //MSAA may not be a resource
+            if (m_image->getSamplesPerPixel() > 1) {return "Cannot directly access an multi-sampled image, read-only access is granted using SampledTexture wrappers.";}
+            //depth / stencil may not be an image
+            if (m_image->getFormat().order == GLGE::Graphic::PixelFormat::Order::DEPTH || m_image->getFormat().order == GLGE::Graphic::PixelFormat::Order::STENCIL)
+            {return "Cannot directly access a depth or stencil image. Use a SampledTexture for read-only access.";}
+            //others are valid
+            return nullptr;
+        }
+
     protected:
 
         /**

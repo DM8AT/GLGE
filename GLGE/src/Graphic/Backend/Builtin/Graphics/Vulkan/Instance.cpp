@@ -374,8 +374,6 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     vkGetPhysicalDeviceProperties2(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &properties2);
 
     //check if everything required is supported
-    if (!features2.features.shaderStorageImageMultisample)
-    {throw Exception("The device must support storage image multi-sample", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     if (!(indexing.descriptorBindingStorageImageUpdateAfterBind && indexing.descriptorBindingSampledImageUpdateAfterBind && indexing.descriptorBindingStorageBufferUpdateAfterBind && indexing.descriptorBindingUniformBufferUpdateAfterBind))
     {throw Exception("The device must support all required update after binding types for descriptor sets", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     if (!features2.features.multiDrawIndirect)
@@ -394,7 +392,6 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
 
     //enable specific features
     VkPhysicalDeviceFeatures devFeatures {};
-    devFeatures.shaderStorageImageMultisample = VK_TRUE;
     devFeatures.multiDrawIndirect = VK_TRUE;
     devFeatures.sampleRateShading = VK_TRUE;
     devFeatures.samplerAnisotropy = features2.features.samplerAnisotropy;

@@ -53,7 +53,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
     usage |= (format.order == GLGE::Graphic::PixelFormat::Order::DEPTH || 
               format.order == GLGE::Graphic::PixelFormat::Order::DEPTH_STENCIL || 
               format.order == GLGE::Graphic::PixelFormat::Order::STENCIL) 
-              ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_STORAGE_BIT);
+              ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | ((samples>1) ? 0 : VK_IMAGE_USAGE_STORAGE_BIT));
 
     //compute the format
     VkFormat form = __pixelFormat_to_VkFormat(format);
@@ -347,7 +347,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     usage |= (m_format.order == GLGE::Graphic::PixelFormat::Order::DEPTH || 
               m_format.order == GLGE::Graphic::PixelFormat::Order::DEPTH_STENCIL || 
               m_format.order == GLGE::Graphic::PixelFormat::Order::STENCIL) 
-              ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_STORAGE_BIT);
+              ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | ((m_samples>1) ? 0 : VK_IMAGE_USAGE_STORAGE_BIT));
 
     //get format properties
     VkImageFormatProperties props;

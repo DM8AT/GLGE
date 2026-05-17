@@ -248,6 +248,16 @@ namespace GLGE::Graphic {
         inline void fill(const void* pattern, size_t patternSize, size_t n, size_t offset)
         {m_backend->fill(pattern, patternSize, n, offset);}
 
+        /**
+         * @brief get if this is a valid resource
+         * 
+         * @return `const char*` `nullptr` if the resource is valid, a human-readable error string otherwise
+         */
+        virtual const char* onValidation() override {
+            //always valid
+            return nullptr;
+        }
+
     protected:
 
         /**

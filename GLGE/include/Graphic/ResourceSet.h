@@ -456,6 +456,14 @@ namespace GLGE::Graphic {
                 {throw GLGE::Exception("Failed to provide resources binding to all requested name binding points", "GLGE::Graphic::ResourceSet::ResourceSet");}
                 Resource* res = m_resources[m_nameLut.at(binding.getNameHash())];
 
+                //check if the resource is valid
+                const char* msg = res->onValidation();
+                if (msg) {
+                    std::stringstream err;
+                    err << "Provided an invalid resource. Reason: " << msg;
+                    throw Exception(err.str(), "GLGE::Graphic::ResourceSet::ResourceSet");
+                }
+
                 //check if the type matches in debug
                 #if GLGE_DEBUG
                 if (res->getType() != binding.getType())

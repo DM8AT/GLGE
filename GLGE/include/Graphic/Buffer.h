@@ -195,6 +195,16 @@ namespace GLGE::Graphic {
         inline Reference<GLGE::Graphic::Backend::Graphic::Buffer> getBackendReference() const noexcept
         {return m_backend;}
 
+        /**
+         * @brief get if this is a valid resource
+         * 
+         * @return `const char*` `nullptr` if the resource is valid, a human-readable error string otherwise
+         */
+        virtual const char* onValidation() override {
+            //always valid
+            return nullptr;
+        }
+
     protected:
 
         /**

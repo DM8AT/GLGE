@@ -88,6 +88,13 @@ namespace GLGE::Graphic {
         virtual void onRemoveBinding(ResourceSet* set) = 0;
 
         /**
+         * @brief get if this is a valid resource
+         * 
+         * @return `const char*` `nullptr` if the resource is valid, a human-readable error string otherwise
+         */
+        virtual const char* onValidation() = 0;
+
+        /**
          * @brief Get the type of resource this is
          * 
          * @return `ResourceType` the type to identify the resource
