@@ -72,7 +72,12 @@ static std::string structureMapToString(const std::vector<std::pair<const char*,
     return stream.str();
 }
 
-int main() {
+/**
+ * @brief a function that is responsible for gathering which example to run and to try and run it
+ * 
+ * @return `int` the return value of the program, `0` on success
+ */
+int uiSelector() {
     //sanity check that all lists are filled
     if (EXAMPLES.size() == 0)
     {throw GLGE::Exception("Failed to run the example launcher - the example list is empty", "main");}
@@ -85,48 +90,63 @@ int main() {
     std::cout << "Loaded examples:\n";
     std::cout << structureMapToString(EXAMPLES);
     //get the example to run
-    size_t exampleId = UINT64_MAX;
+    size_t exampleId = SIZE_MAX;
     //auto-select 0 if only one example exists
     if (EXAMPLES.size() == 1) 
     {exampleId = 0;}
     else {
         //else, quarry which example to use from the user
         std::cout << "Please enter the number of the example to run:\n";
-        std::cin >> exampleId;
+        if (!(std::cin >> exampleId)) {
+            //non-numeric input. Clear the state, then throw
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            throw std::invalid_argument("Please input only numbers");
+        }
         if (exampleId >= EXAMPLES.size())
-        {throw GLGE::Exception("The selected example does not map to a valid example ID", "main");}
+        {throw std::invalid_argument("The selected example does not map to a valid example ID");}
     }
 
     //print all loaded graphic backends
     std::cout << "Loaded graphic backends:\n";
     std::cout << structureMapToString(GRAPHIC_BACKEND_MAP);
     //get the graphic API to use
-    size_t graphicApiId = UINT64_MAX;
+    size_t graphicApiId = SIZE_MAX;
     //auto-select 0 if only one graphic backend exists
     if (GRAPHIC_BACKEND_MAP.size() == 1)
     {graphicApiId = 0;}
     else {
         //else, quarry which graphic backend to use from the user
         std::cout << "Please enter the number of the graphic API to use:\n";
-        std::cin >> graphicApiId;
+        if (!(std::cin >> graphicApiId)) {
+            //non-numeric input. Clear the state, then throw
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            throw std::invalid_argument("Please input only numbers");
+        }
         if (graphicApiId >= GRAPHIC_BACKEND_MAP.size())
-        {throw GLGE::Exception("The selected graphic API ID does not map to a valid graphic API", "main");}
+        {throw std::invalid_argument("The selected graphic API ID does not map to a valid graphic API");}
     }
 
     //print all loaded video backends
     std::cout << "Loaded video backends:\n";
     std::cout << structureMapToString(VIDEO_BACKEND_MAP);
     //get the video api to use
-    size_t videoApiId = UINT64_MAX;
+    size_t videoApiId = SIZE_MAX;
     //auto-select 0 if only one video backend exists
     if (VIDEO_BACKEND_MAP.size() == 1)
     {videoApiId = 0;}
     else {
         //else, quarry which video backend to use from the user
         std::cout << "Please enter the number of the video API to use:\n";
-        std::cin >> videoApiId;
+        if (!(std::cin >> videoApiId)) {
+            //non-numeric input. Clear the state, then throw
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            throw std::invalid_argument("Please input only numbers");
+        }
         if (videoApiId >= VIDEO_BACKEND_MAP.size())
-        {throw GLGE::Exception("The selected video API ID does not map to a valid video API", "main");}
+        {throw std::invalid_argument("The selected video API ID does not map to a valid video API");}
     }
 
     //setup for potential looping
@@ -153,8 +173,17 @@ int main() {
             auto gDescr = ((*(GRAPHIC_BACKEND_MAP[graphicApiId].second))());
             auto vDescr = (*(VIDEO_BACKEND_MAP[videoApiId].second))();
 
+            //log the selected configuration
+            std::cout << "Current configuration:\n    Graphic API: " << gDescr->getName() << "\n    Video AP: " << vDescr->getName() << "\n";
+
+            //log a clear separation between what the launcher printed and what the example printed
+            std::cout << "------------------LAUNCHED EXAMPLE------------------\n";
+
             //create the APIs and run the code, storing the return value
             unsigned char ret = (*(EXAMPLES[exampleId].second))(gDescr.get(), vDescr.get());
+
+            //print that the example closed via return
+            std::cout << "------------------EXAMPLE RETURNED------------------\n";
 
             //validate success
             if (ret == 0 || !RETRY) {
@@ -167,9 +196,12 @@ int main() {
                 stepHelper();
             }
         } catch (const std::exception& exception) {
+            //print that the example closed via exception
+            std::cout << "------------------EXAMPLE THREW EXCEPTION------------------\n";
+            //check if retries are allowed
             if (RETRY) {
                 //print it but ignore it
-                std::cout << "[FATAL ERROR] Failed to run the selected example in the current configuration. An exception was thrown. What:\n";
+                std::cout << "[ERROR] Failed to run the selected example in the current configuration. An exception was thrown. What:\n";
                 std::cout << exception.what() << "\n";
                 //step
                 stepHelper();
@@ -182,4 +214,30 @@ int main() {
 
     //sane exit
     return 0;
+}
+
+int main(void) {
+    //store if the program is active
+    bool active = true;
+    //store what to return
+    int retValue = 0;
+    //loop while the program is active
+    while (active) {
+        //run the selector
+        try {
+            int ret = uiSelector();
+            active = false;
+        } catch (const std::invalid_argument& exception) {
+            //input error - print and re-try
+            std::cout << "----------------\n" << exception.what() << "\n----------------\n";
+        } catch (const std::exception& exception) {
+            //print the fatal error
+            std::cout << "[FATAL ERROR] A fatal error was thrown during selection:\n" << exception.what() << "\n";
+            //set the return value to 256 and stop
+            retValue = 0xff;
+            active = false;
+        }
+    }
+    //return the return value
+    return retValue;
 }
