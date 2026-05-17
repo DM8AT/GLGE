@@ -162,8 +162,8 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Image::Image(const uvec2& size, PixelFo
         //resolve subpass
         VkSubpassDescriptionDepthStencilResolve dsResolve {};
         dsResolve.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
-        dsResolve.depthResolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
-        dsResolve.stencilResolveMode = (attRefMsaa.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) ? VK_RESOLVE_MODE_AVERAGE_BIT : VK_RESOLVE_MODE_NONE;
+        dsResolve.depthResolveMode = static_cast<VkResolveModeFlagBits>(inst->getDepthAveragingModes());
+        dsResolve.stencilResolveMode = (attRefMsaa.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) ? static_cast<VkResolveModeFlagBits>(inst->getDepthAveragingModes()) : VK_RESOLVE_MODE_NONE;
         dsResolve.pDepthStencilResolveAttachment = &attRefResolve;
         VkSubpassDescription2 subpass {};
         subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;

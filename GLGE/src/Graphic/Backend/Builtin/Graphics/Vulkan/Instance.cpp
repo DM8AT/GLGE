@@ -370,8 +370,15 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     {throw Exception("The multi draw indirect feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     if (!features2.features.sampleRateShading)
     {throw Exception("The sample rate shading feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
-    if (!(resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_AVERAGE_BIT_KHR))
-    {throw Exception("The device does not support depth MSAA averaging", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    //store the supported depth averaging modes
+    if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_AVERAGE_BIT) 
+    {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_AVERAGE_BIT);}
+    if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_MAX_BIT) 
+    {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_MAX_BIT);}
+    if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_MIN_BIT) 
+    {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_MIN_BIT);}
+    if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_SAMPLE_ZERO_BIT) 
+    {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);}
 
     //enable specific features
     VkPhysicalDeviceFeatures devFeatures {};

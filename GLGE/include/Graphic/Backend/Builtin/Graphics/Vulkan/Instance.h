@@ -218,6 +218,14 @@ namespace Vulkan {
         void* get_vkCreateRenderPass2KHR() const noexcept
         {return m_vkCreateRenderPass2KHR;}
 
+        /**
+         * @brief Get the Depth Averaging Modes
+         * 
+         * @return `i32` the depth averaging modes
+         */
+        i32 getDepthAveragingModes() const noexcept
+        {return m_validDepthAveraging;}
+
     protected:
 
         /**
@@ -267,6 +275,10 @@ namespace Vulkan {
          * This is the minimum of the depth and color sample count
          */
         i32 m_maxSampleCount = 0;
+        /**
+         * @brief store the depth averaging modes
+         */
+        i32 m_validDepthAveraging = 0;
 
     };
 
