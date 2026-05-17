@@ -73,16 +73,57 @@ static std::string structureMapToString(const std::vector<std::pair<const char*,
 }
 
 /**
+ * @brief a helper function to read a size_t from the console
+ * 
+ * @return `size_t` the read value
+ */
+static size_t readSizeT() {
+    //get the whole line
+    std::string line;
+    //loop until something is inputted
+    while (line.empty()) {
+        if (!std::getline(std::cin, line))
+        {throw GLGE::Exception("The input stream closed", "readSizeT");}
+    }
+
+    //convert the line to an input string stream
+    std::istringstream iss(line);
+
+    //check if the initial value is a number
+    long long value;
+    if (!(iss >> value))  {
+        //throw an error
+        throw std::invalid_argument("Please input only numbers");
+    }
+
+    //check if the value is negative (invalid size_t)
+    if (value < 0) {
+        //input state is still valid
+        throw std::invalid_argument("Please input only positive numbers");
+    }
+
+    //check for too many input items
+    std::string extra;
+    if (iss >> extra) {
+        //throw an error
+        throw std::invalid_argument("Please input only a single number");
+    }
+
+    //return the valid number
+    return size_t(value);
+}
+
+/**
  * @brief a function that is responsible for gathering which example to run and to try and run it
  */
 void uiSelector() {
     //sanity check that all lists are filled
     if (EXAMPLES.size() == 0)
-    {throw GLGE::Exception("Failed to run the example launcher - the example list is empty", "main");}
+    {throw GLGE::Exception("Failed to run the example launcher - the example list is empty", "uiSelector");}
     if (GRAPHIC_BACKEND_MAP.size() == 0)
-    {throw GLGE::Exception("Failed to run the example launcher - the graphic backend list is empty", "main");}
+    {throw GLGE::Exception("Failed to run the example launcher - the graphic backend list is empty", "uiSelector");}
     if (VIDEO_BACKEND_MAP.size() == 0)
-    {throw GLGE::Exception("Failed to run the example launcher - the video backend list is empty", "main");}
+    {throw GLGE::Exception("Failed to run the example launcher - the video backend list is empty", "uiSelector");}
 
     //print all loaded examples
     std::cout << "Loaded examples:\n";
@@ -95,12 +136,7 @@ void uiSelector() {
     else {
         //else, quarry which example to use from the user
         std::cout << "Please enter the number of the example to run:\n";
-        if (!(std::cin >> exampleId)) {
-            //non-numeric input. Clear the state, then throw
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            throw std::invalid_argument("Please input only numbers");
-        }
+        exampleId = readSizeT();
         if (exampleId >= EXAMPLES.size())
         {throw std::invalid_argument("The selected example does not map to a valid example ID");}
     }
@@ -116,12 +152,7 @@ void uiSelector() {
     else {
         //else, quarry which graphic backend to use from the user
         std::cout << "Please enter the number of the graphic API to use:\n";
-        if (!(std::cin >> graphicApiId)) {
-            //non-numeric input. Clear the state, then throw
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            throw std::invalid_argument("Please input only numbers");
-        }
+        graphicApiId = readSizeT();
         if (graphicApiId >= GRAPHIC_BACKEND_MAP.size())
         {throw std::invalid_argument("The selected graphic API ID does not map to a valid graphic API");}
     }
@@ -137,12 +168,7 @@ void uiSelector() {
     else {
         //else, quarry which video backend to use from the user
         std::cout << "Please enter the number of the video API to use:\n";
-        if (!(std::cin >> videoApiId)) {
-            //non-numeric input. Clear the state, then throw
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            throw std::invalid_argument("Please input only numbers");
-        }
+        videoApiId = readSizeT();
         if (videoApiId >= VIDEO_BACKEND_MAP.size())
         {throw std::invalid_argument("The selected video API ID does not map to a valid video API");}
     }
@@ -162,7 +188,7 @@ void uiSelector() {
         if (videoApiId >= VIDEO_BACKEND_MAP.size()) 
         {videoApiId = 0;}
         if (videoApiId == initialVideoAPI && graphicApiId == initialGraphicAPI)
-        {throw GLGE::Exception("Failed to find a configuration that can run the selected example", "main");}
+        {throw GLGE::Exception("Failed to find a configuration that can run the selected example", "uiSelector");}
     };
     //if `RETRY` is enabled try to loop when the example crashes
     while (!success) {
