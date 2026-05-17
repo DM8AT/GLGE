@@ -257,8 +257,11 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     //reset the layout (new image -> undefined)
     m_layout = static_cast<i32>(VK_IMAGE_LAYOUT_UNDEFINED);
 
-    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-    usage |= (m_aspectFlags & VK_IMAGE_ASPECT_COLOR_BIT) ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    usage |= (m_format.order == GLGE::Graphic::PixelFormat::Order::DEPTH || 
+              m_format.order == GLGE::Graphic::PixelFormat::Order::DEPTH_STENCIL || 
+              m_format.order == GLGE::Graphic::PixelFormat::Order::STENCIL) 
+              ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT|VK_IMAGE_USAGE_STORAGE_BIT);
 
     //get format properties
     VkImageFormatProperties props;
