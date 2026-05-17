@@ -180,19 +180,19 @@ namespace Vulkan {
          * @brief get the graphics queue
          */
         QueuePool& getGraphicsQueue() noexcept
-        {return m_graphicsQueue;}
+        {return *m_graphicsQueue;}
 
         /**
          * @brief get the transfer queues
          */
         QueuePool& getTransferQueue() noexcept
-        {return m_transferQueue;}
+        {return *m_transferQueue;}
 
         /**
          * @brief get the compute queues
          */
         QueuePool& getComputeQueue() noexcept
-        {return m_computeQueue;}
+        {return *m_computeQueue;}
 
         /**
          * @brief Get the VMA allocator
@@ -259,15 +259,15 @@ namespace Vulkan {
         /**
          * @brief store the graphics queue
          */
-        QueuePool m_graphicsQueue;
+        QueuePool* m_graphicsQueue = nullptr;
         /**
          * @brief store the transfer queues
          */
-        QueuePool m_transferQueue;
+        QueuePool* m_transferQueue = nullptr;
         /**
          * @brief store the compute queues
          */
-        QueuePool m_computeQueue;
+        QueuePool* m_computeQueue = nullptr;
 
         /**
          * @brief store the maximal samples for framebuffer attachments

@@ -315,19 +315,31 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     familyRequestMap[graphicsFamily].count++;
     --familyFreeMap[graphicsFamily];
     u32 transferQueueIdx = familyRequestMap[transferFamily].count;
+    //store what to alias with the graphics queue
+    bool aliasTransfer = false;
+    bool aliasCompute = false;
     //the transfer queue family must have remaining queues
-    if (familyFreeMap[transferFamily] == 0)
-    {throw Exception("To few queues available - Failed to assign a transfer queue", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
-    u32 transferQueueCount = (transferFamily == computeFamily) ? (familyFreeMap[transferFamily] / 2) : familyFreeMap[transferFamily];
-    familyRequestMap[transferFamily].count += transferQueueCount;
-    familyFreeMap[transferFamily] -= transferQueueCount;
+    u32 transferQueueCount = 0;
+    if (familyFreeMap[transferFamily] == 0) {
+        //throw Exception("To few queues available - Failed to assign a transfer queue", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");
+        aliasTransfer = true;
+    } else {
+        transferQueueCount = (transferFamily == computeFamily) ? (familyFreeMap[transferFamily] / 2) : familyFreeMap[transferFamily];
+        familyRequestMap[transferFamily].count += transferQueueCount;
+        familyFreeMap[transferFamily] -= transferQueueCount;
+    }
     //the compute queue family must have remaining queues
-    if (familyFreeMap[computeFamily] == 0)
-    {throw Exception("To few queues available - Failed to assign a compute queue", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
-    u32 computeQueueIdx  = familyRequestMap[computeFamily].count;
-    u32 computeQueueCount = familyFreeMap[computeFamily];
-    familyRequestMap[computeFamily].count += computeQueueCount;
-    familyFreeMap[computeFamily] -= computeQueueCount;
+    u32 computeQueueIdx = 0;
+    u32 computeQueueCount = 0;
+    if (familyFreeMap[computeFamily] == 0) {
+        //throw Exception("To few queues available - Failed to assign a compute queue", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");
+        aliasCompute = true;
+    } else {
+        computeQueueIdx  = familyRequestMap[computeFamily].count;
+        computeQueueCount = familyFreeMap[computeFamily];
+        familyRequestMap[computeFamily].count += computeQueueCount;
+        familyFreeMap[computeFamily] -= computeQueueCount;
+    }
 
     //create a vector of floats for the biggest queue count
     std::vector<float> priorities(glm::max<u32>(1, glm::max<u32>(transferQueueCount, computeQueueCount)), 1.f);
@@ -408,35 +420,50 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
 
     //get the queues
     //graphics
-    m_graphicsQueue.familyIdx = graphicsFamily;
-    m_graphicsQueue.queueCount = 1;
-    m_graphicsQueue.queues = new std::pair<void*, std::mutex>[1];
-    vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), graphicsFamily, graphicsQueueIdx, reinterpret_cast<VkQueue*>(&m_graphicsQueue.queues[0]));
+    m_graphicsQueue = new QueuePool();
+    m_graphicsQueue->familyIdx = graphicsFamily;
+    m_graphicsQueue->queueCount = 1;
+    m_graphicsQueue->queues = new std::pair<void*, std::mutex>[1];
+    vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), graphicsFamily, graphicsQueueIdx, reinterpret_cast<VkQueue*>(&m_graphicsQueue->queues[0]));
     //transfer
-    m_transferQueue.familyIdx = transferFamily;
-    m_transferQueue.queueCount = transferQueueCount;
-    m_transferQueue.queues = new std::pair<void*, std::mutex>[transferQueueCount];
-    for (size_t i = 0; i < transferQueueCount; ++i) 
-    {vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), m_transferQueue.familyIdx, transferQueueIdx + i, reinterpret_cast<VkQueue*>(&m_transferQueue.queues[i]));}
+    //if aliasing is enabled, just use graphic
+    if (aliasTransfer)
+    {m_transferQueue = m_graphicsQueue;}
+    else {
+        m_transferQueue->familyIdx = transferFamily;
+        m_transferQueue->queueCount = transferQueueCount;
+        m_transferQueue->queues = new std::pair<void*, std::mutex>[transferQueueCount];
+        for (size_t i = 0; i < transferQueueCount; ++i) 
+        {vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), m_transferQueue->familyIdx, transferQueueIdx + i, reinterpret_cast<VkQueue*>(&m_transferQueue->queues[i]));}
+    }
     //compute
-    m_computeQueue.familyIdx = computeFamily;
-    m_computeQueue.queueCount = computeQueueCount;
-    m_computeQueue.queues = new std::pair<void*, std::mutex>[computeQueueCount];
-    for (size_t i = 0; i < computeQueueCount; ++i) 
-    {vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), m_computeQueue.familyIdx, computeQueueIdx + i, reinterpret_cast<VkQueue*>(&m_computeQueue.queues[i]));}
+    //if aliasing is enabled, just use graphics
+    if (aliasCompute)
+    {m_computeQueue = m_graphicsQueue;}
+    else {
+        m_computeQueue->familyIdx = computeFamily;
+        m_computeQueue->queueCount = computeQueueCount;
+        m_computeQueue->queues = new std::pair<void*, std::mutex>[computeQueueCount];
+        for (size_t i = 0; i < computeQueueCount; ++i) 
+        {vkGetDeviceQueue(reinterpret_cast<VkDevice>(m_device), m_computeQueue->familyIdx, computeQueueIdx + i, reinterpret_cast<VkQueue*>(&m_computeQueue->queues[i]));}
+    }
 
     //create single-use command pools
     VkCommandPoolCreateInfo cmdPoolCreate {};
     cmdPoolCreate.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    cmdPoolCreate.queueFamilyIndex = m_graphicsQueue.familyIdx;
-    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_graphicsQueue.singleUsePool)) != VK_SUCCESS)
+    cmdPoolCreate.queueFamilyIndex = m_graphicsQueue->familyIdx;
+    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_graphicsQueue->singleUsePool)) != VK_SUCCESS)
     {throw Exception("Failed to create the graphics single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
-    cmdPoolCreate.queueFamilyIndex = m_transferQueue.familyIdx;
-    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_transferQueue.singleUsePool)) != VK_SUCCESS)
-    {throw Exception("Failed to create the transfer single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
-    cmdPoolCreate.queueFamilyIndex = m_computeQueue.familyIdx;
-    if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_computeQueue.singleUsePool)) != VK_SUCCESS)
-    {throw Exception("Failed to create the compute single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!aliasTransfer) {
+        cmdPoolCreate.queueFamilyIndex = m_transferQueue->familyIdx;
+        if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_transferQueue->singleUsePool)) != VK_SUCCESS)
+        {throw Exception("Failed to create the transfer single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    }
+    if (!aliasCompute) {
+        cmdPoolCreate.queueFamilyIndex = m_computeQueue->familyIdx;
+        if (vkCreateCommandPool(reinterpret_cast<VkDevice>(m_device), &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_computeQueue->singleUsePool)) != VK_SUCCESS)
+        {throw Exception("Failed to create the compute single use command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    }
 
     //create the VMA allocator
     VmaAllocatorCreateInfo vmaAllocCreate {};
@@ -469,9 +496,19 @@ Instance::~Instance() {
     vmaDestroyAllocator(reinterpret_cast<VmaAllocator>(m_allocator));
 
     //destroy the command pools
-    vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_graphicsQueue.singleUsePool), nullptr);
-    vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_transferQueue.singleUsePool), nullptr);
-    vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_computeQueue.singleUsePool),  nullptr);
+    vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_graphicsQueue->singleUsePool), nullptr);
+    if (m_transferQueue != m_graphicsQueue) {
+        vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_transferQueue->singleUsePool), nullptr);
+        delete m_transferQueue;
+        m_transferQueue = nullptr;
+    }
+    if (m_computeQueue != m_graphicsQueue) {
+        vkDestroyCommandPool(reinterpret_cast<VkDevice>(m_device), reinterpret_cast<VkCommandPool>(m_computeQueue->singleUsePool),  nullptr);
+        delete m_graphicsQueue;
+        m_graphicsQueue = nullptr;
+    }
+    delete m_graphicsQueue;
+    m_graphicsQueue = nullptr;
 
     //destroy the vulkan device
     vkDestroyDevice(reinterpret_cast<VkDevice>(m_device), nullptr);
