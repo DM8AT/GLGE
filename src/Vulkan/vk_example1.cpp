@@ -106,7 +106,7 @@ void vk_example1() {
     GLGE::Graphic::Image depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT);
     GLGE::Graphic::Framebuffer fbuff({&colBuff}, {&depthBuff});
 
-    //Currently MSAA support is not good enough
+    //Currently MSAA support is not good enough, it is disabled
     GLGE::Graphic::Image multiSample_colBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT, 1);
     GLGE::Graphic::Image multiSample_depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT, 1);
     GLGE::Graphic::Framebuffer multiSample_fbuff({&multiSample_colBuff}, {&multiSample_depthBuff});
@@ -114,12 +114,13 @@ void vk_example1() {
     GLGE::Graphic::Image ldrOut(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
     GLGE::Graphic::Framebuffer ldrFbuff({&ldrOut});
 
-    // float exposure = 1.15f;
-    // GLGE::Graphic::StructuredBuffer<Params> buff({Params(2.2, 0.18, 1e-4, exposure)}, GLGE::Graphic::Buffer::Type::UNIFORM, GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
+    float exposure = 1.15f;
+    GLGE::Graphic::StructuredBuffer<Params> buff({Params(2.2, 0.18, 1e-4, exposure)}, GLGE::Graphic::Buffer::Type::UNIFORM, GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
+    GLGE::Graphic::SampledTexture sampled(colBuff, sampler);
 
-    // GLGE::Graphic::Shader finalize({std::pair{"Compute", "assets/shader/finalize.comp.spv"}});
-    // GLGE::Graphic::ResourceSet ldrSet(finalize.getSet(0), std::pair{"imgInput", &sampled}, std::pair{"imgOutput", &ldrOut}, std::pair{"params", &buff});
-    // finalize.setResources(0, &ldrSet);
+    GLGE::Graphic::Shader finalize({std::pair{"Compute", "assets/shader/finalize.comp.spv"}});
+    GLGE::Graphic::ResourceSet ldrSet(finalize.getSet(0), std::pair{"imgInput", &sampled}, std::pair{"imgOutput", &ldrOut}, std::pair{"params", &buff});
+    finalize.setResources(0, &ldrSet);
 
     GLGE::Graphic::RenderTarget window(&win);
     GLGE::Graphic::RenderTarget LDR_Target(&ldrFbuff);
@@ -223,8 +224,9 @@ void vk_example1() {
         std::pair{"Cull", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &cull, GLGE::uvec3(1))},
         std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
         std::pair{"Flatten multi sample", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), HDR_Target, GLGE::u8(0), true, false)},
-        //std::pair{"Finalize", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &finalize, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
-        std::pair{"Copy LDR", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), LDR_Target, GLGE::u8(0), false, false)},
+        //std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
+        std::pair{"Finalize", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &finalize, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
+        //std::pair{"Copy LDR", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), LDR_Target, GLGE::u8(0), false, false)},
         std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0), false, false)}
     );
     pipe.record();
@@ -243,7 +245,7 @@ void vk_example1() {
             fbuff.resize(win.getResolution());
             ldrFbuff.resize(win.getResolution());
             //*pipe.getCommand("Compute")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
-            //*pipe.getCommand("Finalize")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
+            *pipe.getCommand("Finalize")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
 
             //re-record the pipeline to make it aware of the changes
             pipe.record();

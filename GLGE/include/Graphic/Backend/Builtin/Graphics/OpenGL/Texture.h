@@ -63,6 +63,13 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
 
         /**
+         * @brief a function that is called to remove a binding of the resource to a unit in the resource set
+         * 
+         * @param set a pointer to the set to remove from
+         */
+        virtual void onRemoveBinding(GLGE::Graphic::ResourceSet* set) override {/*unused*/}
+
+        /**
          * @brief Get the Handle of the OpenGL texture
          * 
          * @return `u32` the handle of the OpenGL texture

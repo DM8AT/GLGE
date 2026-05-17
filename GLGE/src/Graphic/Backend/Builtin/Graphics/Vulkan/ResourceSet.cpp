@@ -21,10 +21,16 @@
 #include "Graphic/Image.h"
 //add vulkan images
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+//add vulkan textures
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
+//add vulkan samplers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
 //get frontend buffers
 #include "Graphic/Buffer.h"
 //add vulkan buffers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
+//add sampled textures
+#include "Graphic/SampledTexture.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"
@@ -150,6 +156,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
         //switch over the resource type and sum up what is required
         switch (m_resourceSet->resources()[b.getUnit()]->getType()) {
         case GLGE::Graphic::ResourceType::IMAGE: imgInfoCount++; break;
+        case GLGE::Graphic::ResourceType::SAMPLED_TEXTURE: imgInfoCount++; break;
         case GLGE::Graphic::ResourceType::STORAGE_BUFFER: buffInfoCount++; break;
         case GLGE::Graphic::ResourceType::UNIFORM_BUFFER: buffInfoCount++; break;
         
@@ -179,6 +186,30 @@ GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet::ResourceSet(GLGE::Graphic:
                 write.dstBinding = b.getUnit();
                 write.descriptorCount = 1;
                 write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                write.pImageInfo = &imgInfos.back();
+                writes.push_back(write);
+            }
+            break;
+        case GLGE::Graphic::ResourceType::SAMPLED_TEXTURE: {
+                auto* sampledTex = static_cast<GLGE::Graphic::SampledTexture*>(m_resourceSet->resources()[b.getUnit()]);
+                VkImageView view;
+                if (sampledTex->getBackend()->isTexture()) 
+                {view = reinterpret_cast<VkImageView>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Texture*>(sampledTex->getBackend()->getData().texture.get())->getView());}
+                else
+                {view = reinterpret_cast<VkImageView>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(sampledTex->getBackend()->getData().image.get())->getView());}
+                //create the image info
+                VkDescriptorImageInfo imgInfo {};
+                imgInfo.sampler = reinterpret_cast<VkSampler>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Sampler*>(sampledTex->getBackend()->getSampler().get())->getSampler());
+                imgInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imgInfo.imageView = view;
+                imgInfos.push_back(imgInfo);
+                //create the write info
+                VkWriteDescriptorSet write {};
+                write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                write.dstBinding = b.getUnit();
+                write.dstSet = vkSet;
+                write.descriptorCount = 1;
+                write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 write.pImageInfo = &imgInfos.back();
                 writes.push_back(write);
             }

@@ -62,6 +62,45 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
 
+        /**
+         * @brief a function that is called to remove a binding of the resource to a unit in the resource set
+         * 
+         * @param set a pointer to the set to remove from
+         */
+        virtual void onRemoveBinding(GLGE::Graphic::ResourceSet* set) override;
+
+        /**
+         * @brief Get the actual image
+         * 
+         * @return `void*` the image vulkan handle
+         */
+        inline void* getImage() const noexcept
+        {return m_image;}
+
+        /**
+         * @brief Get the image view
+         * 
+         * @return `void*` the vulkan image view
+         */
+        inline void* getView() const noexcept
+        {return m_view;}
+
+        /**
+         * @brief Get the Aspect Flags
+         * 
+         * @return `i32` the image aspect flags
+         */
+        inline i32 getAspectFlags() const noexcept
+        {return m_aspectFlags;}
+
+        /**
+         * @brief Get the Vulkan Format
+         * 
+         * @return `i32` the vulkan format
+         */
+        inline i32 getVkFormat() const noexcept
+        {return m_vkFormat;}
+
     protected:
 
         /**

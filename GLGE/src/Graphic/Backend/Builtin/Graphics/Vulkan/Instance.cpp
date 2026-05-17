@@ -364,6 +364,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     devFeatures.shaderStorageImageMultisample = VK_TRUE;
     devFeatures.multiDrawIndirect = VK_TRUE;
     devFeatures.sampleRateShading = VK_TRUE;
+    devFeatures.samplerAnisotropy = features2.features.samplerAnisotropy;
     //enable descriptor update after binding
     indexing = {};
     indexing.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
@@ -432,6 +433,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     m_maxSampleCount = glm::min<i32>(static_cast<i32>(props.limits.framebufferColorSampleCounts+1), static_cast<i32>(props.limits.framebufferDepthSampleCounts+1));
     m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(props.limits.framebufferStencilSampleCounts+1));
     m_maxSampleCount = glm::min<i32>(m_maxSampleCount, static_cast<i32>(VK_SAMPLE_COUNT_64_BIT));
+    m_extensionInfo.anisotropic.supported = features2.features.samplerAnisotropy;
+    m_extensionInfo.anisotropic.maxAnisotropy = props.limits.maxSamplerAnisotropy;
 }
 
 Instance::~Instance() {

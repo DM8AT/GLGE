@@ -37,6 +37,10 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/VertexLayout.h"
 //add renderers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.h"
+//add samplers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
+//add texture samplers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -75,7 +79,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCo
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer(renderPipeline), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> Vulkan::createSampler([[maybe_unused]] const GLGE::Graphic::SamplerCPU& sampler, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(nullptr, false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(new GLGE::Graphic::Backend::Graphic::Vulkan::Sampler(sampler, instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture> Vulkan::createTexture([[maybe_unused]] const GLGE::uvec2& size, [[maybe_unused]] GLGE::u16 mipCount, [[maybe_unused]] GLGE::Graphic::PixelFormat format, GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Texture>(new GLGE::Graphic::Backend::Graphic::Vulkan::Texture(size, mipCount, format, instance), false);}
@@ -99,10 +103,10 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer> Vulkan::createBuffer([[
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Buffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::Buffer(type, initial, size, instance, usage), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> Vulkan::createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Texture>& texture, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(nullptr, false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(new GLGE::Graphic::Backend::Graphic::Vulkan::SampledTexture(texture, sampler), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> Vulkan::createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Image>& image, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(nullptr, false);}
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(new GLGE::Graphic::Backend::Graphic::Vulkan::SampledTexture(image, sampler), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool> Vulkan::createMeshPool(GLGE::Graphic::Instance* instance) 
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool>(new GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool(instance), false);}

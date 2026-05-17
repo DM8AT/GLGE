@@ -1,9 +1,9 @@
 /**
  * @file Sampler.h
  * @author DM8AT
- * @brief define the overload for an OpenGL sampler
+ * @brief define the vulkan sampler overload
  * @version 0.1
- * @date 2026-03-11
+ * @date 2026-05-17
  * 
  * @copyright Copyright (c) 2026
  * 
@@ -16,7 +16,7 @@
 #include "Graphic/Backend/Graphics/Sampler.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
      * @brief an overload for the sampler for the OpenGL API
@@ -43,14 +43,6 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
         virtual void update() override;
 
         /**
-         * @brief Get the Sampler
-         * 
-         * @return `u32` the OpenGL sampler object
-         */
-        inline u32 getSampler() const noexcept
-        {return m_sampler;}
-
-        /**
          * @brief a function that is called to build a binding of the resource to a unit in the resource set
          * 
          * @param set a pointer to the set to bind to
@@ -63,24 +55,30 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param set a pointer to the set to remove from
          */
-        virtual void onRemoveBinding(GLGE::Graphic::ResourceSet* set) 
-        {/*Unused*/}
+        virtual void onRemoveBinding(GLGE::Graphic::ResourceSet* set) override;
+
+        /**
+         * @brief Get the Sampler
+         * 
+         * @return `void*` the vulkan sampler object
+         */
+        void* getSampler() const noexcept
+        {return m_sampler;}
 
     protected:
 
         /**
-         * @brief store a counter for name generation
+         * @brief store all bindings the sampler has
          */
-        inline static u32 ms_nameCounter = 0;
-
+        std::vector<std::pair<GLGE::Graphic::ResourceSet*, u32>> m_bindings;
         /**
-         * @brief store the sampler object
+         * @brief store the sampler
          */
-        u32 m_sampler = 0;
+        void* m_sampler = nullptr;
         /**
-         * @brief store the name enumerator
+         * @brief store the old sampler
          */
-        u32 m_name = ++ms_nameCounter;
+        void* m_oldSampler = nullptr;
 
     };
 

@@ -189,3 +189,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Texture::update(const ImageCPU& im
 void GLGE::Graphic::Backend::Graphic::Vulkan::Texture::onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) {
 
 }
+
+void GLGE::Graphic::Backend::Graphic::Vulkan::Texture::onRemoveBinding(GLGE::Graphic::ResourceSet* set) {
+
+}

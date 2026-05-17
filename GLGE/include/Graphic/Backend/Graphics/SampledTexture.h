@@ -30,6 +30,43 @@ namespace GLGE::Graphic::Backend::Graphic {
     public:
 
         /**
+         * @brief store the image or texture
+         */
+        union Data {
+            /**
+             * @brief store a reference to the texture to sample
+             */
+            Reference<GLGE::Graphic::Backend::Graphic::Texture> texture;
+            /**
+             * @brief store a reference to the image to sample
+             */
+            Reference<GLGE::Graphic::Backend::Graphic::Image> image;
+
+            /**
+             * @brief Construct a new Data
+             * 
+             * @param _texture a constant reference to the texture to store
+             */
+            Data(const Reference<GLGE::Graphic::Backend::Graphic::Texture>& _texture) 
+             : texture(_texture)
+            {}
+
+            /**
+             * @brief Construct a new Data
+             * 
+             * @param _image a constant reference to the image to store
+             */
+            Data(const Reference<GLGE::Graphic::Backend::Graphic::Image>& _image)
+             : image(_image)
+            {}
+
+            /**
+             * @brief Destroy the Data
+             */
+            ~Data() {}
+        };
+
+        /**
          * @brief Construct a new Sampled Texture
          * 
          * @param texture a reference to the texture to sample
@@ -75,48 +112,36 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) = 0;
 
+        /**
+         * @brief Get the Data
+         * 
+         * @return `const Data&` a constant reference to the stored data
+         */
+        inline const Data& getData() const noexcept
+        {return m_data;}
+
+        /**
+         * @brief get if the sampled texture stores a texture or an image
+         * 
+         * @return `true` if a texture is stored, `false` if it is an image
+         */
+        inline bool isTexture() const noexcept
+        {return m_isTexture;}
+
+        /**
+         * @brief Get the Sampler
+         * 
+         * @return `Reference<GLGE::Graphic::Backend::Graphic::Sampler>` a reference to the stored sampler
+         */
+        inline Reference<GLGE::Graphic::Backend::Graphic::Sampler> getSampler() const noexcept
+        {return m_sampler;}
+
     protected:
 
         /**
          * @brief store if this is a texture or an image
          */
         bool m_isTexture = false;
-        /**
-         * @brief store the image or texture
-         */
-        union Data {
-            /**
-             * @brief store a reference to the texture to sample
-             */
-            Reference<GLGE::Graphic::Backend::Graphic::Texture> texture;
-            /**
-             * @brief store a reference to the image to sample
-             */
-            Reference<GLGE::Graphic::Backend::Graphic::Image> image;
-
-            /**
-             * @brief Construct a new Data
-             * 
-             * @param _texture a constant reference to the texture to store
-             */
-            Data(const Reference<GLGE::Graphic::Backend::Graphic::Texture>& _texture) 
-             : texture(_texture)
-            {}
-
-            /**
-             * @brief Construct a new Data
-             * 
-             * @param _image a constant reference to the image to store
-             */
-            Data(const Reference<GLGE::Graphic::Backend::Graphic::Image>& _image)
-             : image(_image)
-            {}
-
-            /**
-             * @brief Destroy the Data
-             */
-            ~Data() {}
-        };
         /**
          * @brief the data storage for the sampler
          */

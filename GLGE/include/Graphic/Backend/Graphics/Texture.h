@@ -100,6 +100,13 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) = 0;
 
+        /**
+         * @brief a function that is called to remove a binding of the resource to a unit in the resource set
+         * 
+         * @param set a pointer to the set to remove from
+         */
+        virtual void onRemoveBinding(GLGE::Graphic::ResourceSet* set) = 0;
+
     protected:
 
         /**

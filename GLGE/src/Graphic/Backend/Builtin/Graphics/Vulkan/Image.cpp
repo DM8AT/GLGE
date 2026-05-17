@@ -14,8 +14,13 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add vulkan resource sets
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+//add vulkan samplers
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
 //add the resource set frontend
 #include "Graphic/ResourceSet.h"
+
+//add texture samplers
+#include "Graphic/SampledTexture.h"
 
 //include vulkan
 #include "vulkan/vulkan.h"
@@ -319,10 +324,23 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
         //extract the descriptor set
         auto* set = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(m_references[i].first->getBackend().get());
         VkDescriptorSet vkSet = reinterpret_cast<VkDescriptorSet>(set->getDescriptorSet());
+
+        //get a potential sampler
+        VkSampler sampler = VK_NULL_HANDLE;
+        if (m_references[i].first->resources()[m_references[i].second]->getType() == GLGE::Graphic::ResourceType::SAMPLED_TEXTURE) {
+            //extract the sampler
+            sampler = reinterpret_cast<VkSampler>(
+                        static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Sampler*>(
+                            static_cast<GLGE::Graphic::SampledTexture*>(
+                                (m_references[i].first->resources())[m_references[i].second]
+                            )->getBackend()->getSampler().get()
+                        )->getSampler()
+                      );
+        }
         
         //store information about the image
         VkDescriptorImageInfo info {};
-        info.sampler = VK_NULL_HANDLE;
+        info.sampler = sampler;
         info.imageView = reinterpret_cast<VkImageView>(m_view);
         info.imageLayout = VK_IMAGE_LAYOUT_GENERAL; //this MUST be general as of the vulkan spec
 
@@ -332,7 +350,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
         write.dstSet = vkSet;
         write.dstBinding = m_references[i].second;
         write.descriptorCount = 1;
-        write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        write.descriptorType = (sampler == VK_NULL_HANDLE) ? VK_DESCRIPTOR_TYPE_STORAGE_IMAGE : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         write.pImageInfo = &info;
 
         //update the descriptor set

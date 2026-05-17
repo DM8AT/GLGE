@@ -93,6 +93,14 @@ namespace GLGE::Graphic {
         virtual u64 getTypeHash() const noexcept override
         {return getTypeHash64<SampledTexture>();}
 
+        /**
+         * @brief Get the Backend
+         * 
+         * @return `Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>` a reference to the backend
+         */
+        Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> getBackend() const noexcept
+        {return m_sampledTexture;}
+
     protected:
 
         /**

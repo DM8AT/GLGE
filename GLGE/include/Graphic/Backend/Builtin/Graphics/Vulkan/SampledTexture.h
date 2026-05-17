@@ -1,22 +1,22 @@
 /**
  * @file SampledTexture.h
  * @author DM8AT
- * @brief overload the sampled texture backend for OpenGL
+ * @brief define the vulkan sampled texture overload
  * @version 0.1
- * @date 2026-03-22
+ * @date 2026-05-17
  * 
  * @copyright Copyright (c) 2026
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_SAMPLED_TEXTURE_
-#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_OGL_SAMPLED_TEXTURE_
+#ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_SAMPLED_TEXTURE_
+#define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_SAMPLED_TEXTURE_
 
 //add the sampled texture backend
 #include "Graphic/Backend/Graphics/SampledTexture.h"
 
 //use the namespace
-namespace GLGE::Graphic::Backend::Graphic::OpenGL {
+namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
      * @brief overload for the sampled texture
@@ -62,7 +62,7 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param set a pointer to the set to bind to
          */
-        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) override {}
+        virtual void onDropBinding(GLGE::Graphic::ResourceSet* set) override;
 
     };
 

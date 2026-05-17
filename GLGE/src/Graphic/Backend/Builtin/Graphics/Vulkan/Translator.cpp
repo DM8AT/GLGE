@@ -114,9 +114,9 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
 
         //get the vulkan objects
         struct ImgInfo {
-            VkImage image;
-            VkImage resImage;
-            GLGE::uvec2 size;
+            VkImage image = VK_NULL_HANDLE;
+            VkImage resImage = VK_NULL_HANDLE;
+            GLGE::uvec2 size = {0,0};
             VkImageLayout layout;
             VkImageAspectFlags aspects;
             VkSampleCountFlagBits samples;
@@ -146,9 +146,15 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                     samples = static_cast<VkSampleCountFlagBits>(img->getSamplesPerPixel());
                 }
             }
+
+            ImgInfo() = default;
         };
-        ImgInfo fromInfo(from, from_idx, i, copyDepth || copyStencil);
-        ImgInfo toInfo(to, to_idx, i, copyDepth || copyStencil);
+        ImgInfo fromInfo(from, from_idx, i, false);
+        ImgInfo fromDepth;
+        if (copyDepth || copyStencil) {fromDepth = ImgInfo(from, from_idx, i, true);}
+        ImgInfo toInfo(to, to_idx, i, false);
+        ImgInfo toDepth;
+        if (copyDepth || copyStencil) {toDepth = ImgInfo(to, to_idx, i, true);}
 
         //sanity checks for debug
         #if GLGE_DEBUG
@@ -211,6 +217,32 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         reg.dstSubresource.mipLevel = 0;
         reg.dstSubresource.layerCount = 1;
         vkCmdBlitImage(cb, fromInfo.image, fromInfo.layout, toInfo.image, toInfo.layout, 1, &reg, VK_FILTER_NEAREST);
+
+        //if depth data exists, do the same for the depth
+        if (fromDepth.image != VK_NULL_HANDLE && toDepth.image != VK_NULL_HANDLE) {
+            VkImageBlit reg {};
+            reg.srcOffsets[0].x = 0;
+            reg.srcOffsets[1].x = fromDepth.size.x;
+            reg.srcOffsets[0].y = 0;
+            reg.srcOffsets[1].y = fromDepth.size.y;
+            reg.srcOffsets[0].z = 0;
+            reg.srcOffsets[1].z = 1;
+            reg.srcSubresource.aspectMask = fromDepth.aspects;
+            reg.srcSubresource.baseArrayLayer = 0;
+            reg.srcSubresource.mipLevel = 0;
+            reg.srcSubresource.layerCount = 1;
+            reg.dstOffsets[0].x = 0;
+            reg.dstOffsets[1].x = toDepth.size.x;
+            reg.dstOffsets[0].y = 0;
+            reg.dstOffsets[1].y = toDepth.size.y;
+            reg.dstOffsets[0].z = 0;
+            reg.dstOffsets[1].z = 1;
+            reg.dstSubresource.aspectMask = toDepth.aspects;
+            reg.dstSubresource.baseArrayLayer = 0;
+            reg.dstSubresource.mipLevel = 0;
+            reg.dstSubresource.layerCount = 1;
+            vkCmdBlitImage(cb, fromDepth.image, fromDepth.layout, toDepth.image, toDepth.layout, 1, &reg, VK_FILTER_NEAREST);
+        }
     }
 
     //success
@@ -234,6 +266,13 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
     for (const auto& buff : buffs) {
         //get the actual command buffer
         VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(buff);
+
+        //prepare the dispatch
+        VkMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 
         //bind the compute pipeline
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, pipe);
@@ -260,10 +299,6 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
         vkCmdDispatch(cb, size.x, size.y, size.z);
 
         //finish the dispatch
-        VkMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
         vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
     }
 
