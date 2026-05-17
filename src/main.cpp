@@ -74,10 +74,8 @@ static std::string structureMapToString(const std::vector<std::pair<const char*,
 
 /**
  * @brief a function that is responsible for gathering which example to run and to try and run it
- * 
- * @return `int` the return value of the program, `0` on success
  */
-int uiSelector() {
+void uiSelector() {
     //sanity check that all lists are filled
     if (EXAMPLES.size() == 0)
     {throw GLGE::Exception("Failed to run the example launcher - the example list is empty", "main");}
@@ -211,9 +209,6 @@ int uiSelector() {
             }
         }
     }
-
-    //sane exit
-    return 0;
 }
 
 int main(void) {
@@ -225,7 +220,7 @@ int main(void) {
     while (active) {
         //run the selector
         try {
-            int ret = uiSelector();
+            uiSelector();
             active = false;
         } catch (const std::invalid_argument& exception) {
             //input error - print and re-try
