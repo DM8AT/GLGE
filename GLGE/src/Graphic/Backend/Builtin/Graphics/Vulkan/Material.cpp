@@ -259,8 +259,8 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Grap
     graphicsPipeCreate.pMultisampleState = &multiSampleStateCreate;
     graphicsPipeCreate.pColorBlendState = &colorBlendingStateCreate;
     graphicsPipeCreate.pDepthStencilState = m_fbuff->getDepthAttachmentCount() ? &depthStencilCreate : nullptr;
-    graphicsPipeCreate.layout = static_cast<VkPipelineLayout>(m_pipeLayout);
-    graphicsPipeCreate.renderPass = static_cast<VkRenderPass>(vkFbuff->getRenderPass());
+    graphicsPipeCreate.layout = reinterpret_cast<VkPipelineLayout>(m_pipeLayout);
+    graphicsPipeCreate.renderPass = reinterpret_cast<VkRenderPass>(vkFbuff->getRenderPass());
     graphicsPipeCreate.subpass = 0;
     graphicsPipeCreate.basePipelineHandle = VK_NULL_HANDLE;
     VkPipeline pipe;

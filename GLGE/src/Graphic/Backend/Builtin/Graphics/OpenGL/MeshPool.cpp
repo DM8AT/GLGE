@@ -265,7 +265,7 @@ GLGE::u64 GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool::allocate(const void
     size_t indexBytes  = sizeof(u32) * indexCount;
 
     //look for the smallest free sections that would fit the buffer
-    meta.vertex = __allocateSection(m_vertexFreeList, vertices, vertexCount, vertexSize,  m_vboSize, m_vbo, m_lastVBO, true,  &m_vboCopy);
+    meta.vertex = __allocateSection(m_vertexFreeList, vertices, vertexCount, vertexSize, m_vboSize, m_vbo, m_lastVBO, true, &m_vboCopy);
     meta.index  = __allocateSection(m_indexFreeList,  indices,  indexCount,  sizeof(u32), m_iboSize, m_ibo, m_lastIBO, false, &m_iboCopy);
 
     //return the identifier

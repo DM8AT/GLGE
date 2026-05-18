@@ -157,8 +157,8 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
             //start the render pass
             VkRenderPassBeginInfo renPassBeg {};
             renPassBeg.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renPassBeg.framebuffer = static_cast<VkFramebuffer>(vkFbuff->getFramebuffer());
-            renPassBeg.renderPass = static_cast<VkRenderPass>(vkFbuff->getRenderPass());
+            renPassBeg.framebuffer = reinterpret_cast<VkFramebuffer>(vkFbuff->getFramebuffer());
+            renPassBeg.renderPass = reinterpret_cast<VkRenderPass>(vkFbuff->getRenderPass());
             renPassBeg.renderArea.offset = {0,0};
             renPassBeg.renderArea.extent = {size.x, size.y};
             vkCmdBeginRenderPass(cb, &renPassBeg, VK_SUBPASS_CONTENTS_INLINE);

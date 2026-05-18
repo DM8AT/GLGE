@@ -135,19 +135,19 @@ namespace GLGE {
             /**
              * @brief store the entity identifier of the parent
              */
-            Tiny::ECS::Entity parent = Tiny::ECS::Entity::INVALID;
+            Tiny::ECS::Entity parent = Tiny::ECS::Entity::getInvalid();
             /**
              * @brief store the first sibling of the child
              */
-            Tiny::ECS::Entity firstChild = Tiny::ECS::Entity::INVALID;
+            Tiny::ECS::Entity firstChild = Tiny::ECS::Entity::getInvalid();
             /**
              * @brief the identifier of the next sibling
              */
-            Tiny::ECS::Entity nextSibling = Tiny::ECS::Entity::INVALID;
+            Tiny::ECS::Entity nextSibling = Tiny::ECS::Entity::getInvalid();
             /**
              * @brief the identifier of the previous sibling
              */
-            Tiny::ECS::Entity prevSibling = Tiny::ECS::Entity::INVALID;
+            Tiny::ECS::Entity prevSibling = Tiny::ECS::Entity::getInvalid();
 
             /**
              * @brief store a name in a binary buffer
@@ -188,7 +188,7 @@ namespace GLGE {
          * @return `true` if the object is valid, `false` otherwise
          */
         inline bool valid() const noexcept
-        {return !(m_ent == Tiny::ECS::Entity::INVALID);}
+        {return !(m_ent == Tiny::ECS::Entity::getInvalid());}
 
         /**
          * @brief check if the object is valid
@@ -223,7 +223,7 @@ namespace GLGE {
         /**
          * @brief store the handle of the referenced entity
          */
-        Tiny::ECS::Entity m_ent = Tiny::ECS::Entity::INVALID;
+        Tiny::ECS::Entity m_ent = Tiny::ECS::Entity::getInvalid();
 
     };
 
@@ -375,7 +375,7 @@ namespace GLGE {
             else
             {node = &m_root;}
             Tiny::ECS::Entity ent = node->firstChild;
-            while (!(ent == Tiny::ECS::Entity::INVALID)) {
+            while (!(ent == Tiny::ECS::Entity::getInvalid())) {
                 //store the new node
                 res.push_back(Object(ent));
                 //step forward
@@ -415,7 +415,7 @@ namespace GLGE {
             {hierarchy = &m_root;}
             Tiny::ECS::Entity node = hierarchy->firstChild;
             //iterate
-            while (!(node == Tiny::ECS::Entity::INVALID)) {
+            while (!(node == Tiny::ECS::Entity::getInvalid())) {
                 //first, call the function
                 fn(Object(node));
                 //then, step
@@ -537,8 +537,8 @@ namespace GLGE {
          * 
          * The root node is NOT a valid entity, it is a special case. 
          */
-        inline static constexpr Object getRoot() noexcept
-        {return Object(Tiny::ECS::Entity::INVALID);}
+        inline static Object getRoot() noexcept
+        {return Object(Tiny::ECS::Entity::getInvalid());}
 
     protected:
 
@@ -683,7 +683,7 @@ namespace GLGE {
             {hierarchy = &m_root;}
             Tiny::ECS::Entity node = hierarchy->firstChild;
             //iterate
-            while (!(node == Tiny::ECS::Entity::INVALID)) {
+            while (!(node == Tiny::ECS::Entity::getInvalid())) {
                 //first, call the function
                 fn(Object(node));
                 //recurse
@@ -711,21 +711,21 @@ namespace GLGE {
             //skip this is the element is new
             if (exists) {
                 //lookup the element in the old child list and remove it
-                if (childNode->prevSibling != Tiny::ECS::Entity::INVALID) 
+                if (childNode->prevSibling != Tiny::ECS::Entity::getInvalid()) 
                 {m_reg.get<Component::HierarchyNode>(childNode->prevSibling)->nextSibling = childNode->nextSibling;}
                 else {
                     //if there is no element further in front, don't forget to change the first entry of the parent to the next child
                     Component::HierarchyNode* node = nullptr;
-                    if (childNode->parent == Tiny::ECS::Entity::INVALID)
+                    if (childNode->parent == Tiny::ECS::Entity::getInvalid())
                     {node = &m_root;}
                     else
                     {node = m_reg.get<Component::HierarchyNode>(childNode->parent);}
                     node->firstChild = childNode->nextSibling;
                 }
-                if (childNode->nextSibling != Tiny::ECS::Entity::INVALID) {m_reg.get<Component::HierarchyNode>(childNode->nextSibling)->prevSibling = childNode->prevSibling;}
+                if (childNode->nextSibling != Tiny::ECS::Entity::getInvalid()) {m_reg.get<Component::HierarchyNode>(childNode->nextSibling)->prevSibling = childNode->prevSibling;}
                 //clean the entry
-                childNode->prevSibling = Tiny::ECS::Entity::INVALID;
-                childNode->nextSibling = Tiny::ECS::Entity::INVALID;
+                childNode->prevSibling = Tiny::ECS::Entity::getInvalid();
+                childNode->nextSibling = Tiny::ECS::Entity::getInvalid();
             }
 
             //walk the parent liked child list until the end
@@ -733,11 +733,11 @@ namespace GLGE {
             Component::HierarchyNode* currNode = parentNode;
             bool hasSiblings = false;
             //skip if no childs exist
-            if (!(next == Tiny::ECS::Entity::INVALID)) {
+            if (!(next == Tiny::ECS::Entity::getInvalid())) {
                 hasSiblings = true;
                 while (true) {
                     currNode = m_reg.get<Component::HierarchyNode>(next);
-                    if (currNode->nextSibling == Tiny::ECS::Entity::INVALID)
+                    if (currNode->nextSibling == Tiny::ECS::Entity::getInvalid())
                     {break;}
                     next = currNode->nextSibling;
                 }

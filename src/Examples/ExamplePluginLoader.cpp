@@ -80,7 +80,7 @@ bool hasPluginExtension(const std::filesystem::path& p) {
  */
 void loadExamplePluginsFromDirectory(const char* directoryPath) {
     //check if the directory path exists
-    const std::filesystem::path root(directoryPath);
+    const std::filesystem::path root(std::filesystem::absolute(directoryPath));
     if (!std::filesystem::exists(root) || !std::filesystem::is_directory(root)) 
     {throw std::runtime_error(std::string("Example plugin directory is missing or not a directory: ") + root.string());}
 

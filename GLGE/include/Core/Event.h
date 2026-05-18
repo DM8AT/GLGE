@@ -45,7 +45,7 @@ namespace GLGE {
          * @param data the data for the event
          * @param dataSize the size of the data
          */
-        constexpr Event(u64 id, u8* data, u8 dataSize)
+        Event(u64 id, u8* data, u8 dataSize)
          : m_id(id)
         {
             //in debug sanity check the size
@@ -64,7 +64,7 @@ namespace GLGE {
          * @param data a pointer to the data
          * @param dataSize the size of the data
          */
-        constexpr Event(const std::string_view& name, u8* data, u8 dataSize)
+        Event(const std::string_view& name, u8* data, u8 dataSize)
          : Event(__FNV_1A_64_HASH(name), data, dataSize)
         {}
 

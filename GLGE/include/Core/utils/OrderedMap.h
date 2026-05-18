@@ -231,7 +231,7 @@ namespace GLGE {
          * 
          * @param key the key of the element to erase
          */
-        inline void erase(const Key& key) {
+        inline void eraseKey(const Key& key) {
             //find the index of the element
             size_t idx = m_nameMap.find(key)->second;
             //erase using the index
@@ -256,7 +256,7 @@ namespace GLGE {
          * @param it the iterator pointing to the element to erase
          * @return `iterator` an iterator to the next element
          */
-        inline iterator erase(iterator it) {
+        inline iterator eraseIter(iterator it) {
             //convert the iterator to an index
             size_t idx = static_cast<size_t>(it - m_pairs.begin());
             //erase using the index and return the resulting iterator
@@ -348,7 +348,7 @@ namespace GLGE {
          * @return `Value&` a reference to the value
          * @throws std::out_of_range if the key does not exist
          */
-        inline Value& at(const Key& key) {
+        inline Value& atKey(const Key& key) {
             auto it = m_nameMap.find(key);
             if (it == m_nameMap.end()) {
                 throw std::out_of_range("OrderedMap::at(): key not found");
@@ -363,7 +363,7 @@ namespace GLGE {
          * @return `const Value&` a constant reference to the value
          * @throws std::out_of_range if the key does not exist
          */
-        inline const Value& at(const Key& key) const {
+        inline const Value& atKey(const Key& key) const {
             auto it = m_nameMap.find(key);
             if (it == m_nameMap.end()) {
                 throw std::out_of_range("OrderedMap::at(): key not found");
@@ -378,7 +378,7 @@ namespace GLGE {
          * @return `Value&` a reference to the value
          * @throws std::out_of_range if the index is out of bounds
          */
-        inline Value& at(size_t idx) {
+        inline Value& atIdx(size_t idx) {
             if (idx >= m_pairs.size()) {
                 throw std::out_of_range("OrderedMap::at(): index out of range");
             }
@@ -392,7 +392,7 @@ namespace GLGE {
          * @return `const Value&` a constant reference to the value
          * @throws std::out_of_range if the index is out of bounds
          */
-        inline const Value& at(size_t idx) const {
+        inline const Value& atIdx(size_t idx) const {
             if (idx >= m_pairs.size()) {
                 throw std::out_of_range("OrderedMap::at(): index out of range");
             }

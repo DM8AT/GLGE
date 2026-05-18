@@ -36,7 +36,7 @@ void DisplaySetup::__backendRemoveDisplay(u32 id) {
 
 Display& DisplaySetup::__backendAccessForEditing(u32 id) {
     //return the specific element
-    return m_displays.at(id);
+    return m_displays.atKey(id);
 }
 
 void DisplaySetup::__backendSetPrimaryDisplayID(u32 id) {

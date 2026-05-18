@@ -267,7 +267,7 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         /**
          * @brief store the size of the vertex buffer in bytes
          */
-        u64 m_vboSize = 0;
+        size_t m_vboSize = 0;
         /**
          * @brief store a CPU side copy of the index buffer
          */
@@ -291,7 +291,7 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         /**
          * @brief store the size of the index buffer in bytes
          */
-        u64 m_iboSize = 0;
+        size_t m_iboSize = 0;
     };
 
 }

@@ -345,9 +345,9 @@ GLGE::u64 GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate(const void
 
             //compute the size of the new buffer
             //add a buffer of 1 to the count for alignment guarantee
-            u64 requiredDelta = ((vertexSize+1) * vertexCount) - (m_vertexFreeList.empty() ? 0 : (m_vertexFreeList.back().size * m_vertexFreeList.back().count));
-            u64 delta = glm::max(requiredDelta, glm::min(m_vboSize, MAX_BUFFER_RESIZE_STEPS));
-            u64 newSize = m_vboSize + delta;
+            size_t requiredDelta = ((vertexSize+1) * vertexCount) - (m_vertexFreeList.empty() ? 0 : (m_vertexFreeList.back().size * m_vertexFreeList.back().count));
+            size_t delta = glm::max<size_t>(requiredDelta, glm::min<size_t>(m_vboSize, MAX_BUFFER_RESIZE_STEPS));
+            size_t newSize = m_vboSize + delta;
 
             //create the new buffer
             //this buffer is created on the transfer queue because a data transfer from the old buffer to the new buffer is required
@@ -453,9 +453,9 @@ GLGE::u64 GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool::allocate(const void
 
             //compute the size of the new buffer
             //add a buffer of 1 to the count for alignment guarantee
-            u64 requiredDelta = ((indexCount+1) * sizeof(u32)) - (m_indexFreeList.empty() ? 0 : (m_indexFreeList.back().count * m_indexFreeList.back().size));
-            u64 delta = glm::max(requiredDelta, glm::min(m_iboSize, MAX_BUFFER_RESIZE_STEPS));
-            u64 newSize = m_iboSize + delta;
+            size_t requiredDelta = ((indexCount+1) * sizeof(u32)) - (m_indexFreeList.empty() ? 0 : (m_indexFreeList.back().count * m_indexFreeList.back().size));
+            size_t delta = glm::max<size_t>(requiredDelta, glm::min<size_t>(m_iboSize, MAX_BUFFER_RESIZE_STEPS));
+            size_t newSize = m_iboSize + delta;
 
             //create the new buffer
             //this buffer is created on the transfer queue because a data transfer from the old buffer to the new buffer is required

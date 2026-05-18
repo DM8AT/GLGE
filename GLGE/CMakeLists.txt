@@ -82,75 +82,64 @@ endif()
 # only download tracy in debug if tracy is enabled
 
 # Tracy is required for the core
-# first, check if the OS has tracy installed
-find_package(TRACY QUIET)
-# if not, fetch Tracy from github
-if (NOT TRACY_FOUND)
-    # print a message
-    message(STATUS "Tracy not found - fetching from GitHub")
-    # use FetchContent to fetch Tracy from github
-    include(FetchContent)
-    FetchContent_Declare(
-        tracy
-        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-        GIT_TAG "v0.13.1"
-    )
-    FetchContent_MakeAvailable(tracy)
-endif()
+# print a message
+message(STATUS "Fetching Tracy from GitHub")
+# use FetchContent to fetch Tracy from github
+include(FetchContent)
+FetchContent_Declare(
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+    GIT_TAG "v0.13.1"
+)
+FetchContent_MakeAvailable(tracy)
 
 # only required for GLGE Graphic
 if (GLGE_INCLUDE_GRAPHICS)
     #### SDL3
-    # first, check if the OS has SDL3 installed
-    find_package(SDL3 QUIET)
-    # if not, fetch SDL3 from github
-    if (NOT SDL3_FOUND)
-        # print a message
-        message(STATUS "SDL3 not found - fetching from GitHub")
-        # use FetchContent to fetch SDL3 from github
-        include(FetchContent)
-        FetchContent_Declare(
-            SDL3
-            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-            GIT_TAG "release-3.4.0"
-        )
-        FetchContent_MakeAvailable(SDL3)
-    endif()
+    # print a message
+    message(STATUS "Fetching SDL3 from GitHub")
+    # use FetchContent to fetch SDL3 from github
+    include(FetchContent)
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG "release-3.4.0"
+    )
+    FetchContent_MakeAvailable(SDL3)
+
     #### Assimp
-    # first, check if the OS has assimp installed
-    find_package(assimp QUIET)
-    # if not, fetch SDL3 from github
-    if (NOT assimp_FOUND)
-        # print a message
-        message(STATUS "assimp not found - fetching from GitHub")
-        # use FetchContent to fetch SDL3 from github
-        include(FetchContent)
-        FetchContent_Declare(
-            assimp
-            GIT_REPOSITORY https://github.com/assimp/assimp
-            GIT_TAG "v6.0.4"
-        )
-        FetchContent_MakeAvailable(assimp)
-    endif()
+    # Force Assimp to build static no matter what
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+    # print a message
+    message(STATUS "Fetching assimp from GitHub")
+    # use FetchContent to fetch SDL3 from github
+    include(FetchContent)
+    FetchContent_Declare(
+        assimp
+        GIT_REPOSITORY https://github.com/assimp/assimp
+        GIT_TAG "v6.0.4"
+    )
+    FetchContent_MakeAvailable(assimp)
+    
     #### SPIRV-Reflect
-    # first, check if the OS has SDL3 installed
-    find_package(spirv-reflect QUIET)
-    # if not, fetch SDL3 from github
-    if (NOT spirv-reflect_FOUND)
-        # set the option for a static library
-        option(SPIRV_REFLECT_STATIC_LIB FORCE ON)
-        option(SPIRV_REFLECT_INSTALL FORCE OFF)
-        # print a message
-        message(STATUS "SPIRV-Reflect not found - fetching from GitHub")
-        # use FetchContent to fetch SDL3 from github
-        include(FetchContent)
-        FetchContent_Declare(
-            spirv-reflect
-            GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Reflect
-            GIT_TAG "vulkan-sdk-1.4.350.0"
-        )
-        FetchContent_MakeAvailable(spirv-reflect)
-    endif()
+    # set the option for a static library
+    option(SPIRV_REFLECT_STATIC_LIB FORCE ON)
+    option(SPIRV_REFLECT_INSTALL FORCE OFF)
+    # print a message
+    message(STATUS "Fetching SPIRV-Reflect from GitHub")
+    # use FetchContent to fetch SDL3 from github
+    include(FetchContent)
+    FetchContent_Declare(
+        spirv-reflect
+        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Reflect
+        GIT_TAG "vulkan-sdk-1.4.350.0"
+    )
+    FetchContent_MakeAvailable(spirv-reflect)
+    
     #### Vulkan
     # only add vulkan if vulkan is requested
     if (GLGE_GRAPHICS_INCLUDE_VULKAN)
@@ -275,6 +264,16 @@ endif()
 
 # add the library to the interface
 target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_CORE_NAME})
+
+# set whole archive flags
+if (MSVC)
+    # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_CORE_NAME}")
+else()
+    target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive" 
+                                                   "$<TARGET_FILE:${GLGE_CORE_NAME}>"
+                                                   "-Wl,--no-whole-archive"
+                                                   )
+endif()
 
 ###### GLGE_GRAPHIC
 
@@ -414,5 +413,15 @@ if (GLGE_INCLUDE_GRAPHICS)
 
     # link the library to the interface
     target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_GRAPHIC_NAME})
+    
+    # set whole archive flags
+    if (MSVC)
+        # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
+    else()
+        target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
+                                                       "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
+                                                       "-Wl,--no-whole-archive"
+                                                       )
+    endif()
 
 endif()

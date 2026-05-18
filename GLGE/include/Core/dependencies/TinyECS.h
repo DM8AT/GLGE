@@ -734,12 +734,29 @@ protected:
      : blob((((index<<INDEX_OFFSET) & INDEX_MASK)) | ((version<<VERSION_OFFSET) & VERSION_MASK))
     {}
 
+    /**
+     * @brief Construct a new Entity_t
+     * 
+     * @param raw the raw blob to store
+     */
+    constexpr Entity_t(T raw)
+     : blob(raw) 
+    {}
+
+    /**
+     * @brief store the blob for invalid markers
+     */
+    inline static constexpr T INVALID_BLOB = INDEX_MASK | VERSION_MASK;
+
 public:
 
     /**
-     * @brief store an invalid identifier
+     * @brief get an invalid identifier
+     * 
+     * @return `Entity_t` an invalid marker
      */
-    inline static constexpr Entity_t INVALID = Entity_t(INDEX_MASK, VERSION_MASK);
+    inline static constexpr Entity_t getInvalid() noexcept
+    {return Entity_t(INVALID_BLOB);}
 
 };
 
@@ -808,7 +825,7 @@ public:
             #ifdef TINY_ECS_DEBUG
             if (m_arches.size() >= MAX_ARCHTYPE_COUNT) {
                 throw Exception(std::string("Ran out of archtype IDs: Can only create ") + std::to_string(MAX_ARCHTYPE_COUNT) + " archtypes, but was tasked to create more");
-                return;
+                return EntityT::getInvalid();
             }
             #endif
 
@@ -827,7 +844,7 @@ public:
             #ifdef TINY_ECS_DEBUG
             if (m_entities.size() >= MAX_ENTITY_COUNT) {
                 throw Exception(std::string("Ran out of type IDs: Can only create ") + std::to_string(MAX_ENTITY_COUNT) + " entities, but was tasked to create more");
-                return;
+                return EntityT::getInvalid();
             }
             #endif
 

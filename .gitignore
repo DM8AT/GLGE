@@ -6,3 +6,6 @@ plugins
 document*
 # Ignore VS code settings
 .vscode
+# Ignore VS settings
+.vs
+CMakeSettings.json

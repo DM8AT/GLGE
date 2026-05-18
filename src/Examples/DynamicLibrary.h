@@ -83,7 +83,7 @@ public:
     /**
      * @brief open a dynamic library from a specific path
      * 
-     * @param path the path to load from
+     * @param path the ABSOLUTE path to load from
      * @return `true` if the load was successful, `false` on error
      */
     bool open(const std::filesystem::path& path) {
@@ -92,7 +92,27 @@ public:
         //control path must respect the load model
     #if defined(_WIN32)
         //load the windows handle
-        m_handle = LoadLibraryW(path.c_str());
+        BOOL ok = SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+        if (!ok) {printf("SetDefaultDllDirectories failed: %lu\n", GetLastError());}
+        m_handle = LoadLibraryExW(path.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+
+        //get what went wrong
+        if (!m_handle) {
+            DWORD err = GetLastError();
+            LPWSTR msg = nullptr;
+            FormatMessageW(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+                FORMAT_MESSAGE_FROM_SYSTEM | 
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr, 
+                err, 0, 
+                (LPWSTR)&msg, 0,
+                nullptr
+            );
+            wprintf(L"DynamicLibrary::open failed with error; %lu: %ls\n", err, msg);
+            LocalFree(msg);
+        }
+
         //handle remains `nullptr` on failure
         return m_handle != nullptr;
     #else
