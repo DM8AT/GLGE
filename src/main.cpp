@@ -198,7 +198,7 @@ void uiSelector() {
             auto vDescr = (*(VIDEO_BACKEND_MAP[videoApiId].second))();
 
             //log the selected configuration
-            std::cout << "Current configuration:\n    Graphic API: " << gDescr->getName() << "\n    Video AP: " << vDescr->getName() << "\n";
+            std::cout << "Current configuration:\n    Graphic API: " << gDescr->getName() << "\n    Video API: " << vDescr->getName() << "\n";
 
             //log a clear separation between what the launcher printed and what the example printed
             std::cout << "------------------LAUNCHED EXAMPLE------------------\n";
