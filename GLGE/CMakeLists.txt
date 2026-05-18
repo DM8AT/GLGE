@@ -52,33 +52,22 @@ project(${GLGE_PROJ_NAME})
 
 # Shared libraries are currently not supported unless the host enables GLGE_BUILD_SHARED_LIBS
 option(GLGE_BUILD_SHARED_LIBS "Build GLGE_CORE / GLGE_GRAPHIC as shared libraries (required for out-of-tree launcher plugins)" OFF)
-if(GLGE_BUILD_SHARED_LIBS)
-    set(GLGE_CORE_LIBRARY_TYPE SHARED)
-    set(GLGE_GRAPHIC_LIBRARY_TYPE SHARED)
-else()
-    set(GLGE_CORE_LIBRARY_TYPE STATIC)
-    set(GLGE_GRAPHIC_LIBRARY_TYPE STATIC)
-endif()
 
 ###### DEPENDENCIES
 
 # GLM is required for the core
-# first, check if the OS has GLM installed
-find_package(GLM QUIET)
-# if not, fetch GLM from github
-if (NOT GLM_FOUND)
-    # print a message
-    message(STATUS "GLM not found - fetching from GitHub")
-    # use FetchContent to fetch GLM from github
-    include(FetchContent)
-    FetchContent_Declare(
-        GLM
-        GIT_REPOSITORY https://github.com/g-truc/glm.git
-        GIT_TAG "1.0.3"
-    )
-    FetchContent_MakeAvailable(GLM)
-endif()
+# print a message
+message(STATUS "Fetching GLM from GitHub")
+# use FetchContent to fetch GLM from github
+include(FetchContent)
+FetchContent_Declare(
+    GLM
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG "1.0.3"
+)
+FetchContent_MakeAvailable(GLM)
 
+    
 # only download tracy in debug if tracy is enabled
 
 # Tracy is required for the core
@@ -108,12 +97,6 @@ if (GLGE_INCLUDE_GRAPHICS)
     FetchContent_MakeAvailable(SDL3)
 
     #### Assimp
-    # Force Assimp to build static no matter what
-    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
     # print a message
     message(STATUS "Fetching assimp from GitHub")
     # use FetchContent to fetch SDL3 from github
@@ -265,16 +248,6 @@ endif()
 # add the library to the interface
 target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_CORE_NAME})
 
-# set whole archive flags
-if (MSVC)
-    # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_CORE_NAME}")
-else()
-    target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive" 
-                                                   "$<TARGET_FILE:${GLGE_CORE_NAME}>"
-                                                   "-Wl,--no-whole-archive"
-                                                   )
-endif()
-
 ###### GLGE_GRAPHIC
 
 # check if graphics are wanted
@@ -414,14 +387,4 @@ if (GLGE_INCLUDE_GRAPHICS)
     # link the library to the interface
     target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_GRAPHIC_NAME})
     
-    # set whole archive flags
-    if (MSVC)
-        # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
-    else()
-        target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
-                                                       "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
-                                                       "-Wl,--no-whole-archive"
-                                                       )
-    endif()
-
 endif()
