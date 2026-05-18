@@ -52,6 +52,13 @@ project(${GLGE_PROJ_NAME})
 
 # Shared libraries are currently not supported unless the host enables GLGE_BUILD_SHARED_LIBS
 option(GLGE_BUILD_SHARED_LIBS "Build GLGE_CORE / GLGE_GRAPHIC as shared libraries (required for out-of-tree launcher plugins)" OFF)
+if(GLGE_BUILD_SHARED_LIBS)
+    set(GLGE_CORE_LIBRARY_TYPE SHARED)
+    set(GLGE_GRAPHIC_LIBRARY_TYPE SHARED)
+else()
+    set(GLGE_CORE_LIBRARY_TYPE STATIC)
+    set(GLGE_GRAPHIC_LIBRARY_TYPE STATIC)
+endif()
 
 ###### DEPENDENCIES
 
@@ -67,7 +74,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(GLM)
 
-    
 # only download tracy in debug if tracy is enabled
 
 # Tracy is required for the core
@@ -97,6 +103,12 @@ if (GLGE_INCLUDE_GRAPHICS)
     FetchContent_MakeAvailable(SDL3)
 
     #### Assimp
+    # Force Assimp to build static no matter what
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
     # print a message
     message(STATUS "Fetching assimp from GitHub")
     # use FetchContent to fetch SDL3 from github
@@ -137,23 +149,17 @@ if (GLGE_INCLUDE_GRAPHICS)
         endif()
 
         #### VMA
-        # Try to find system-installed VMA
-        find_path(VMA_INCLUDE_DIR NAMES vk_mem_alloc.h)
+        message(STATUS "Fetching VMA from GitHub")
+        include(FetchContent)
+        FetchContent_Declare(
+            VMA
+            GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+            GIT_TAG v3.1.0
+        )
+        FetchContent_MakeAvailable(VMA)
 
-        # If not found, fetch it
-        if(NOT VMA_INCLUDE_DIR)
-            message(STATUS "VMA not found - fetching from GitHub")
-            include(FetchContent)
-            FetchContent_Declare(
-                VMA
-                GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-                GIT_TAG v3.1.0
-            )
-            FetchContent_MakeAvailable(VMA)
-
-            # FetchContent exposes VMA source dir here
-            set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
-        endif()
+        # FetchContent exposes VMA source dir here
+        set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
 
     endif()
 endif()
@@ -247,6 +253,16 @@ endif()
 
 # add the library to the interface
 target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_CORE_NAME})
+
+# set whole archive flags
+if (MSVC)
+    # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_CORE_NAME}")
+else()
+    target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive" 
+                                                   "$<TARGET_FILE:${GLGE_CORE_NAME}>"
+                                                   "-Wl,--no-whole-archive"
+                                                   )
+endif()
 
 ###### GLGE_GRAPHIC
 
@@ -387,4 +403,14 @@ if (GLGE_INCLUDE_GRAPHICS)
     # link the library to the interface
     target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_GRAPHIC_NAME})
     
+    # set whole archive flags
+    if (MSVC)
+        # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
+    else()
+        target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
+                                                       "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
+                                                       "-Wl,--no-whole-archive"
+                                                       )
+    endif()
+
 endif()
