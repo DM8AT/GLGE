@@ -50,8 +50,15 @@ option(GLGE_ENABLE_TRACY "Enable Tracy profiler integration" ON)
 # define the project
 project(${GLGE_PROJ_NAME})
 
-# Shared libraries are currently not supported
-set(BUILD_SHARED_LIBS OFF)
+# Shared libraries are currently not supported unless the host enables GLGE_BUILD_SHARED_LIBS
+option(GLGE_BUILD_SHARED_LIBS "Build GLGE_CORE / GLGE_GRAPHIC as shared libraries (required for out-of-tree launcher plugins)" OFF)
+if(GLGE_BUILD_SHARED_LIBS)
+    set(GLGE_CORE_LIBRARY_TYPE SHARED)
+    set(GLGE_GRAPHIC_LIBRARY_TYPE SHARED)
+else()
+    set(GLGE_CORE_LIBRARY_TYPE STATIC)
+    set(GLGE_GRAPHIC_LIBRARY_TYPE STATIC)
+endif()
 
 ###### DEPENDENCIES
 
@@ -86,7 +93,7 @@ if (NOT TRACY_FOUND)
     FetchContent_Declare(
         tracy
         GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-        GIT_TAG "master"
+        GIT_TAG "v0.13.1"
     )
     FetchContent_MakeAvailable(tracy)
 endif()
@@ -140,7 +147,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         FetchContent_Declare(
             spirv-reflect
             GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Reflect
-            GIT_TAG "main"
+            GIT_TAG "vulkan-sdk-1.4.350.0"
         )
         FetchContent_MakeAvailable(spirv-reflect)
     endif()
@@ -192,7 +199,7 @@ target_include_directories(${GLGE_LIB_NAME} INTERFACE
 ###### GLGE_CORE
 
 # add the source files to the core library
-add_library(${GLGE_CORE_NAME}
+add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
     ${GLGE_SRC_DIR}/Core/Instance.cpp
     ${GLGE_SRC_DIR}/Core/BaseClass.cpp
     ${GLGE_SRC_DIR}/Core/Object.cpp
@@ -215,6 +222,9 @@ set_target_properties(${GLGE_CORE_NAME} PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
 )
+if(WIN32 AND GLGE_BUILD_SHARED_LIBS)
+    set_target_properties(${GLGE_CORE_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 # check for tracy integration
 if (GLGE_ENABLE_TRACY )
@@ -367,7 +377,7 @@ if (GLGE_INCLUDE_GRAPHICS)
     endif()
 
     # compile the library
-    add_library(${GLGE_GRAPHIC_NAME} ${GLGE_GRAPHIC_SOURCE})
+    add_library(${GLGE_GRAPHIC_NAME} ${GLGE_GRAPHIC_LIBRARY_TYPE} ${GLGE_GRAPHIC_SOURCE})
 
     # add SDL3, assimp and spirv reflect
     target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE SDL3::SDL3 assimp spirv-reflect-static ${GLGE_CORE_NAME})
@@ -398,6 +408,9 @@ if (GLGE_INCLUDE_GRAPHICS)
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON
     )
+    if(WIN32 AND GLGE_BUILD_SHARED_LIBS)
+        set_target_properties(${GLGE_GRAPHIC_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    endif()
 
     # link the library to the interface
     target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_GRAPHIC_NAME})

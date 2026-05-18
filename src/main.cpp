@@ -8,11 +8,24 @@
  * @copyright Copyright (c) 2026
  * 
  */
-//add examples
+//add examples and the example plugin loader
 #include "Examples/Examples.h"
+#include "Examples/ExamplePluginLoader.h"
 
 //add default I/O
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+/**
+ * @brief Directory scanned for example modules (`.so` / `.dll` / `.dylib`) exporting `EXAMPLE_SYS_REGISTER_EXAMPLE_PLUGIN`.
+ */
+constexpr const char* const EXAMPLE_PLUGIN_DIRECTORY = "plugins";
+/**
+ * @brief store all examples
+ */
+std::vector<std::pair<const char*, PFN_ExampleFunc>> EXAMPLES;
 
 /**
  * @brief define if the configuration is changed when an example fails or if the failure is passed
@@ -20,28 +33,22 @@
 constexpr bool RETRY = false;
 
 /**
- * @brief define a function pointer to a graphic backend loader function
+ * @brief store all graphic backends
+ * 
+ * The first element is the display name, the second the identification name
  */
-typedef std::unique_ptr<GLGE::Graphic::Backend::Graphic::Description> (*PFN_GraphicBackendLoader)();
-
-/**
- * @brief store all graphic backend
- */
-std::vector<std::pair<const char*, PFN_GraphicBackendLoader>> GRAPHIC_BACKEND_MAP = {
-    std::pair("OpenGL", []() -> std::unique_ptr<GLGE::Graphic::Backend::Graphic::Description> {return std::make_unique<GLGE::Graphic::Builtin::Graphics::OpenGL>();}),
-    std::pair("Vulkan", []() -> std::unique_ptr<GLGE::Graphic::Backend::Graphic::Description> {return std::make_unique<GLGE::Graphic::Builtin::Graphics::Vulkan>();})
+std::vector<std::pair<const char*, const char*>> GRAPHIC_BACKEND_MAP = {
+    std::pair("OpenGL 4.6 core", "OpenGL"),
+    std::pair("Vulkan 1.0", "Vulkan")
 };
 
 /**
- * @brief define a function pointer to a video backend loader function
+ * @brief store all video backends
+ * 
+ * The first element is the display name, the second the identification name
  */
-typedef std::unique_ptr<GLGE::Graphic::Backend::Video::Description> (*PFN_VideoBackendLoader)();
-
-/**
- * @brief store all graphic backend
- */
-std::vector<std::pair<const char*, PFN_VideoBackendLoader>> VIDEO_BACKEND_MAP = {
-    std::pair("SDL3", []() -> std::unique_ptr<GLGE::Graphic::Backend::Video::Description> {return std::make_unique<GLGE::Graphic::Builtin::Video::SDL3>();})
+std::vector<std::pair<const char*, const char*>> VIDEO_BACKEND_MAP = {
+    std::pair("SDL 3", "SDL3")
 };
 
 /**
@@ -83,7 +90,7 @@ static size_t readSizeT() {
     //loop until something is inputted
     while (line.empty()) {
         if (!std::getline(std::cin, line))
-        {throw GLGE::Exception("The input stream closed", "readSizeT");}
+        {throw std::runtime_error("The input stream closed");}
     }
 
     //convert the line to an input string stream
@@ -119,11 +126,11 @@ static size_t readSizeT() {
 void uiSelector() {
     //sanity check that all lists are filled
     if (EXAMPLES.size() == 0)
-    {throw GLGE::Exception("Failed to run the example launcher - the example list is empty", "uiSelector");}
+    {throw std::runtime_error("Failed to run the example launcher - the example list is empty");}
     if (GRAPHIC_BACKEND_MAP.size() == 0)
-    {throw GLGE::Exception("Failed to run the example launcher - the graphic backend list is empty", "uiSelector");}
+    {throw std::runtime_error("Failed to run the example launcher - the graphic backend list is empty");}
     if (VIDEO_BACKEND_MAP.size() == 0)
-    {throw GLGE::Exception("Failed to run the example launcher - the video backend list is empty", "uiSelector");}
+    {throw std::runtime_error("Failed to run the example launcher - the video backend list is empty");}
 
     //print all loaded examples
     std::cout << "Loaded examples:\n";
@@ -188,23 +195,19 @@ void uiSelector() {
         if (videoApiId >= VIDEO_BACKEND_MAP.size()) 
         {videoApiId = 0;}
         if (videoApiId == initialVideoAPI && graphicApiId == initialGraphicAPI)
-        {throw GLGE::Exception("Failed to find a configuration that can run the selected example", "uiSelector");}
+        {throw std::runtime_error("Failed to find a configuration that can run the selected example");}
     };
     //if `RETRY` is enabled try to loop when the example crashes
     while (!success) {
         try {
-            //create the backend descriptors
-            auto gDescr = ((*(GRAPHIC_BACKEND_MAP[graphicApiId].second))());
-            auto vDescr = (*(VIDEO_BACKEND_MAP[videoApiId].second))();
+            const char* graphicBackendName = GRAPHIC_BACKEND_MAP[graphicApiId].second;
+            const char* videoBackendName = VIDEO_BACKEND_MAP[videoApiId].second;
 
-            //log the selected configuration
-            std::cout << "Current configuration:\n    Graphic API: " << gDescr->getName() << "\n    Video API: " << vDescr->getName() << "\n";
+            std::cout << "Current configuration:\n    Graphic API: " << graphicBackendName << "\n    Video API: " << videoBackendName << "\n";
 
-            //log a clear separation between what the launcher printed and what the example printed
             std::cout << "------------------LAUNCHED EXAMPLE------------------\n";
 
-            //create the APIs and run the code, storing the return value
-            unsigned char ret = (*(EXAMPLES[exampleId].second))(gDescr.get(), vDescr.get());
+            unsigned char ret = (*(EXAMPLES[exampleId].second))(graphicBackendName, videoBackendName);
 
             //print that the example closed via return
             std::cout << "------------------EXAMPLE RETURNED------------------\n";
@@ -238,6 +241,9 @@ void uiSelector() {
 }
 
 int main(void) {
+    //load all dynamic examples
+    loadExamplePluginsFromDirectory(EXAMPLE_PLUGIN_DIRECTORY);
+
     //store if the program is active
     bool active = true;
     //store what to return

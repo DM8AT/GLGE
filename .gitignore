@@ -1,5 +1,7 @@
 # Ignore my build stuff
 build*
+# Ignore the compiled plugin sources
+plugins
 # Ignore my doc setup (just doxygen utility, doxyfile will upload)
 document*
 # Ignore VS code settings

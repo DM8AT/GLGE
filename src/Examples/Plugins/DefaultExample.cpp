@@ -1,15 +1,41 @@
 /**
  * @file DefaultExample.cpp
  * @author DM8AT
- * @brief implement the default example
+ * @brief the default example shipped as an general example of GLGE
  * @version 0.1
- * @date 2026-05-17
+ * @date 2026-05-18
  * 
  * @copyright Copyright (c) 2026
  * 
  */
-//add the default example
-#include "DefaultExample.h"
+//add the example system
+#include "ExamplePluginContract.h"
+#include "ExampleBackendFactory.h"
+
+/**
+ * @brief a function that invokes the default example
+ * 
+ * This is just an all-around example that does not test a specific system in-depth.
+ * 
+ * @param gDescr the graphic description to use
+ * @param vDescr the video description to use
+ * @return `unsigned char` the return value of the call
+ */
+unsigned char defaultExample(const char* graphicBackendName, const char* videoBackendName);
+
+/**
+ * @brief define the function that is used to register the example
+ * 
+ * @param ptr a pointer to the example registry
+ */
+extern "C" GLGE_EXAMPLE_PLUGIN_API void EXAMPLE_SYS_REGISTER_EXAMPLE_PLUGIN(ExampleRegistryPtr ptr) {
+    //get the example registry
+    auto* reg = reinterpret_cast<ExampleRegistry*>(ptr);
+
+    //add the example
+    reg->addExample("Default Example - This is just an all-around example that does not test a specific system in-depth.",
+                    &defaultExample);
+}
 
 struct Params {
     float gamma;      // e.g., 2.2
@@ -58,12 +84,16 @@ static void updateFirstPersonController(GLGE::Transform& transform, GLGE::Graphi
     {camera.eulerAngles.z -= rotSpeed;}
 }
 
-unsigned char defaultExample(GLGE::Graphic::Backend::Graphic::Description* gDescr, GLGE::Graphic::Backend::Video::Description* vDescr) {
+unsigned char defaultExample(const char* graphicBackendName, const char* videoBackendName) {
+    //the descriptions need to be created here using the provided names
+    auto gDescr = createGraphicBackendDescription(graphicBackendName);
+    auto vDescr = createVideoBackendDescription(videoBackendName);
+
     //call the static library initialization
     GLGE::Instance::init();
 
     //store the graphic instance
-    GLGE::Graphic::Instance gInst(gDescr, vDescr);
+    GLGE::Graphic::Instance gInst(gDescr.get(), vDescr.get());
 
     std::cout << "Using graphic backend " << gInst.getGraphicBackendName() << "\n";
     std::cout << "Using video backend " << gInst.getVideoBackendName() << "\n";
