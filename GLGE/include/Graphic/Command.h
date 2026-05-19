@@ -63,22 +63,11 @@ namespace GLGE::Graphic {
         COMMAND_DISPATCH_COMPUTE = 4,
 
         /**
-         * @brief draw a simple mesh, potentially instancing it multiple times
-         * 
-         * @param mesh a pointer to the mesh to draw
-         * @param material a pointer to the material to use
-         * @param target the render target to draw the mesh to
-         * @param LOD the level of detail of the mesh to draw
-         * @param instanceCount the amount of instances of the mesh to draw
-         */
-        COMMAND_DRAW_MESH = 5,
-
-        /**
          * @brief draw all objects that are enabled at the time of recording the buffer
          * 
          * @param renderer a pointer to the renderer to use to render the world
          */
-        COMMAND_DRAW_WORLD = 6,
+        COMMAND_DRAW_WORLD = 5,
 
         /**
          * @brief a base value for custom commands. All custom commands must 

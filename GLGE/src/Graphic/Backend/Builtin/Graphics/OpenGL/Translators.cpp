@@ -194,48 +194,6 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
     return true;
 }
 
-bool drawSimpleMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawSimpleMesh");
-
-    //store a helper function that is called when the draw is invoked
-    static void (*helper)(GLGE::u64, GLGE::u8, GLGE::u32, GLGE::Graphic::RenderTarget, GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo)
-     = [](GLGE::u64 meshId, GLGE::u8 LOD, GLGE::u32 instances, GLGE::Graphic::RenderTarget target, GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo lod) {
-        //bind the correct buffer type
-        if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
-            GLGE::Graphic::Window* win = reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget());
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        } else {
-            auto* fbuff = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend().get());
-            GLGE::u32 fbo = fbuff->getHandle();
-            //enable for general drawing
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-            //activate all color attachments
-            static constexpr const GLenum bufs[16] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7, GL_COLOR_ATTACHMENT8, GL_COLOR_ATTACHMENT9, GL_COLOR_ATTACHMENT10, GL_COLOR_ATTACHMENT11, GL_COLOR_ATTACHMENT12, GL_COLOR_ATTACHMENT13, GL_COLOR_ATTACHMENT14, GL_COLOR_ATTACHMENT15};
-            glNamedFramebufferDrawBuffers(fbo, fbuff->getColorAttachmentCount(), bufs);
-        }
-
-        //shader + resources are bound allready
-        GLenum indexType = (lod.index.size == 1) ? GL_UNSIGNED_BYTE : ((lod.index.size == 2) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
-        glDrawElementsInstanced(GL_TRIANGLES, lod.index.count, indexType, reinterpret_cast<const void*>(lod.index.offset), instances);
-    };
-
-    //extract all arguments
-    const auto& [mesh, material, target, LOD, instances] = handle.getArguments<GLGE::Graphic::Mesh*, GLGE::Graphic::Material*, GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::u32>();
-
-    //store the mesh pool
-    auto pool = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool*>(mesh->getPool().get());
-    //setup the offset
-    GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo lod = pool->getLODInfo(mesh->getID(), LOD);
-
-    //bind the material
-    material->getBackend()->bind(&cmdBuff, lod.vertex.offset);
-    //draw
-    cmdBuff.addCommand(helper, mesh->getID(), GLGE::u8(LOD), GLGE::u32(instances), GLGE::Graphic::RenderTarget(target), static_cast<GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo>(lod));
-
-    //success
-    return true;
-}
-
 bool drawWorld(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawWorld");
 

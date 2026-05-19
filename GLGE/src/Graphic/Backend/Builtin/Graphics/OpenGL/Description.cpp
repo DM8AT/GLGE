@@ -63,7 +63,6 @@ OpenGL::OpenGL()
         std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(OglImpl::clear)},
         std::pair{GLGE::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>(OglImpl::copy)},
         std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(OglImpl::dispatchCompute)},
-        std::pair{GLGE::Graphic::COMMAND_DRAW_MESH, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Mesh*, GLGE::Graphic::Material*, GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::u32>(OglImpl::drawSimpleMesh)},
         std::pair{GLGE::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(OglImpl::drawWorld)}
     }))
 {}
