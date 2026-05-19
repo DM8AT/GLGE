@@ -93,6 +93,10 @@ namespace GLGE::Graphic {
      * a payload. The payload acts as a list of parameters. 
      */
     template <typename... Args>
+    requires (
+        (std::is_trivially_copyable_v<Args> && ...) && 
+        (std::is_trivially_copy_assignable_v<Args> && ...) 
+    )
     class Command {
     public:
 

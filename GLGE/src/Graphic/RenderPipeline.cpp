@@ -38,7 +38,7 @@ RenderPipeline::RenderPipeline(GLGE::Graphic::Window* window, const std::vector<
 
 RenderPipeline::~RenderPipeline() {
     //clean up the pool and set it to null
-    delete m_pool;
+    delete[] m_pool;
     m_pool = nullptr;
 }
 
