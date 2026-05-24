@@ -34,6 +34,7 @@ function(add_example_plugin target output_name)
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins"
     )
     target_include_directories(${target} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Examples
         ${CMAKE_CURRENT_SOURCE_DIR}/src/Examples/Plugins
         ${CMAKE_CURRENT_SOURCE_DIR}/GLGE/include
@@ -74,6 +75,7 @@ set_target_properties(MAIN PROPERTIES
 # add all required include directories
 target_include_directories(MAIN PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Examples
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 # add all dynamic libraries
