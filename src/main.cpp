@@ -11,6 +11,8 @@
 //add examples and the example plugin loader
 #include "Examples/Examples.h"
 #include "Examples/ExamplePluginLoader.h"
+//add the test system
+#include "Testing/TestLauncher.h"
 
 //add default I/O
 #include <iostream>
@@ -50,75 +52,6 @@ std::vector<std::pair<const char*, const char*>> GRAPHIC_BACKEND_MAP = {
 std::vector<std::pair<const char*, const char*>> VIDEO_BACKEND_MAP = {
     std::pair("SDL 3", "SDL3")
 };
-
-/**
- * @brief a helper function to stringify a list of elements in a structured way
- * 
- * @tparam T ignored
- * @param list the list to print
- * @param align the size of the begin block, padded with spaces
- * @return `std::string` the string containing the map
- */
-template <typename T> 
-static std::string structureMapToString(const std::vector<std::pair<const char*, T>>& list, size_t align = 6) {
-    //create the initial stream
-    std::stringstream stream;
-    //keep track of the current element ID
-    size_t id = 0;
-    //iterate over all elements
-    for (const auto& [name, _] : list) {
-        //create the beginning section of the element
-        std::string begin("[");
-        begin += std::to_string(id);
-        begin += "]";
-        begin.resize(align, ' ');
-        stream << begin << " " << name << "\n";
-        ++id;
-    }
-    //return the final stream
-    return stream.str();
-}
-
-/**
- * @brief a helper function to read a size_t from the console
- * 
- * @return `size_t` the read value
- */
-static size_t readSizeT() {
-    //get the whole line
-    std::string line;
-    //loop until something is inputted
-    while (line.empty()) {
-        if (!std::getline(std::cin, line))
-        {throw std::runtime_error("The input stream closed");}
-    }
-
-    //convert the line to an input string stream
-    std::istringstream iss(line);
-
-    //check if the initial value is a number
-    long long value;
-    if (!(iss >> value))  {
-        //throw an error
-        throw std::invalid_argument("Please input only numbers");
-    }
-
-    //check if the value is negative (invalid size_t)
-    if (value < 0) {
-        //input state is still valid
-        throw std::invalid_argument("Please input only positive numbers");
-    }
-
-    //check for too many input items
-    std::string extra;
-    if (iss >> extra) {
-        //throw an error
-        throw std::invalid_argument("Please input only a single number");
-    }
-
-    //return the valid number
-    return size_t(value);
-}
 
 /**
  * @brief a function that is responsible for gathering which example to run and to try and run it
@@ -240,7 +173,7 @@ void uiSelector() {
     }
 }
 
-int main(void) {
+int runExamples() {
     //load all dynamic examples
     loadExamplePluginsFromDirectory(EXAMPLE_PLUGIN_DIRECTORY);
 
@@ -267,4 +200,41 @@ int main(void) {
     }
     //return the return value
     return retValue;
+}
+
+int main(void) {
+    //print what the numbers mean
+    std::cout << "[0]     Run Examples - Launches the example selector to run any provided example\n";
+    std::cout << "[1]     Run Unit Tests - Launches the test launcher to select a suite or a list of suites to run\n";
+
+    //get the selected number
+    size_t selected = SIZE_MAX;
+    while (selected == SIZE_MAX) {
+        try {
+            //try to read a size_t (this may throw)
+            selected = readSizeT();
+        } catch (const std::invalid_argument& exception) {
+            //input error - print and re-try
+            std::cout << "----------------\n" << exception.what() << "\n----------------\n";
+        } catch (const std::exception& exception) {
+            //print the fatal error
+            std::cout << "[FATAL ERROR] A fatal error was thrown during selection:\n" << exception.what() << "\n";
+            //just stop
+            return 0xff;
+        }
+        //sanity check the range
+        if (selected > 1) {
+            //print an error
+            std::cout << "----------------\nPlease input either 0 or 1\n----------------\n";
+            selected = SIZE_MAX;
+        }
+    }
+
+    //run the according function
+    if (selected == 0)
+    {return runExamples();}
+    else if (selected == 1)
+    {return launchUnitTests();}
+    else 
+    {return 0xf1;} //what?
 }
