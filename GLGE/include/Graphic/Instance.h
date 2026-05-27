@@ -239,7 +239,7 @@ namespace Graphic {
         /**
          * @brief store the internal graphic instance
          */
-        Reference<Backend::Graphic::Instance> m_gInst = nullptr;
+        Reference<Backend::Graphic::Instance> m_gInst;
         /**
          * @brief store the internal video instance
          */

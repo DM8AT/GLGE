@@ -189,7 +189,7 @@ namespace GLGE::Graphic {
         /**
          * @brief store the command handle 
          */
-        Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> m_cmdBuff = nullptr;
+        Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> m_cmdBuff;
 
         /**
          * @brief store the types for all the commands

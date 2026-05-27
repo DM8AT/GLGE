@@ -61,7 +61,6 @@ namespace GLGE {
 
         //give access to references
         template <typename T>
-        requires std::is_base_of_v<Referable, T>
         friend class Reference;
 
         /**
@@ -92,7 +91,6 @@ namespace GLGE {
      * @tparam T the type to reference count
      */
     template <typename T>
-    requires std::is_base_of_v<Referable, T>
     class Reference {
     public:
 
@@ -104,10 +102,13 @@ namespace GLGE {
         /**
          * @brief Construct a new Reference
          * 
+         * @tparam U same as T, used for requirements
          * @param ptr the pointer to reference count
          * @param add `true` to add to the reference count, `false` to just wrap it
          */
-        Reference(T* ptr, bool add = true) noexcept 
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        Reference(U* ptr, bool add = true) noexcept 
          : m_ptr(ptr) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::Reference")
 
@@ -119,9 +120,12 @@ namespace GLGE {
         /**
          * @brief Construct a new Reference
          * 
+         * @tparam U same as T, used for requirements
          * @param other the reference to copy
          */
-        Reference(const Reference& other) noexcept
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        Reference(const Reference<U>& other) noexcept
          : m_ptr(other.m_ptr) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::Reference")
 
@@ -132,9 +136,12 @@ namespace GLGE {
         /**
          * @brief Construct a new Referable
          * 
+         * @tparam U same as T, used for requirements
          * @param other the reference to move from 
          */
-        Reference(Reference&& other) noexcept
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        Reference(Reference<U>&& other) noexcept
          : m_ptr(other.m_ptr) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::Reference")
 
@@ -158,10 +165,13 @@ namespace GLGE {
         /**
          * @brief the copy asign operator
          * 
+         * @tparam U same as T, used for requirements
          * @param other a constant reference to the reference to copy
          * @return `Reference&` a reference to this after copying
          */
-        Reference& operator=(const Reference& other) noexcept {
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        Reference<U>& operator=(const Reference<U>& other) noexcept {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::operator=")
 
             //don't copy to self
@@ -174,10 +184,13 @@ namespace GLGE {
         /**
          * @brief the copy move operator
          * 
+         * @tparam U same as T, used for requirements
          * @param other a move reference to the reference to move
          * @return `Reference&` a reference to this after moving
          */
-        Reference& operator=(Reference&& other) noexcept {
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        Reference<U>& operator=(Reference<U>&& other) noexcept {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::operator=")
 
             //don't move to self
@@ -196,25 +209,34 @@ namespace GLGE {
         /**
          * @brief get the raw pointer
          * 
-         * @return `T*` the stored pointer
+         * @tparam U same as T, used for requirements
+         * @return `U*` the stored pointer
          */
-        T* get() const noexcept
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        U* get() const noexcept
         {return m_ptr;}
 
         /**
          * @brief dereference this reference
          * 
-         * @return `T&` a reference to the stored value
+         * @tparam U same as T, used for requirements
+         * @return `U&` a reference to the stored value
          */
-        T& operator*() const noexcept
-        {return m_ptr;}
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        U& operator*() const noexcept
+        {return *m_ptr;}
 
         /**
          * @brief get the stored pointer
          * 
-         * @return `T*` the stored pointer
+         * @tparam U same as T, used for requirements
+         * @return `U*` the stored pointer
          */
-        T* operator->() const noexcept
+        template <typename U = T>
+        requires std::is_base_of_v<Referable, U>
+        U* operator->() const noexcept
         {return m_ptr;}
 
     private:

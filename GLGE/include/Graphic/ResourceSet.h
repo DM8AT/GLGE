@@ -573,7 +573,7 @@ namespace GLGE::Graphic {
         /**
          * @brief store a reference to the backend
          */
-        Reference<GLGE::Graphic::Backend::Graphic::ResourceSet> m_rSet = nullptr;
+        Reference<GLGE::Graphic::Backend::Graphic::ResourceSet> m_rSet;
 
     };
 

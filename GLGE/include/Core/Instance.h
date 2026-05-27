@@ -437,6 +437,14 @@ namespace GLGE {
         {return m_mainLimiter;}
 
         /**
+         * @brief access the rate limiter of the main tick
+         * 
+         * @return `const RateLimit&` a constant reference to the rate limiter
+         */
+        inline const RateLimit& mainLimiter() const noexcept
+        {return m_mainLimiter;}
+
+        /**
          * @brief push a new task to the internal task queue
          * 
          * @param task the task to queue to be run on the main thread

@@ -50,4 +50,9 @@
 //add transforms
 #include "Transform.h"
 
+//add apps
+#include "Application.h"
+//add the layer system
+#include "LayerManager.h"
+
 #endif
