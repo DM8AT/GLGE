@@ -104,6 +104,11 @@ if (UNIT_TEST_BUILD_DEFAULT)
         src/Testing/Tests/MathTestSuite.cpp
     )
     list(APPEND UNIT_TEST_TARGETS UnitTest_MathSuite)
+    # core test suite
+    add_unit_test(UnitTest_CoreSuite CoreTestSuite
+        src/Testing/Tests/CoreTestSuite.cpp
+    )
+    list(APPEND UNIT_TEST_TARGETS UnitTest_MathSuite)
 endif()
 
 # define the launcher executable

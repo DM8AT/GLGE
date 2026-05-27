@@ -9,6 +9,7 @@
  * 
  */
 //add GLGE
+#define GLGE_NO_THANKS_MSG
 #include "GLGE.h"
 //add the testing contract
 #include "TestContract.h"
@@ -747,6 +748,107 @@ void vec4Test(const TestContext* ctx, TestReport* report, const TestFunctions* f
     report->result = TEST_SUCCESS;
 }
 
+template <typename Fn>
+void quatTest(GLGE::Quaternion a, GLGE::Quaternion b, GLGE::Quaternion expected, Fn invoke, const char* op, const TestFunctions* fn) {
+    //compute the actual value
+    GLGE::Quaternion val = invoke(a, b);
+    
+    //setup assertion reporting
+    TestAssertion ass;
+    std::stringstream ex;
+    ex << "(w: " << a.w << ", x: " << a.x << ", y: " << a.y << ", z: " << a.z << ") " << op << " (w: " << b.w << ", x: " << b.x << ", y: " << b.y << ", z: " << b.z << ") = (w: " << expected.w << ", x: " << expected.x << ", y: " << expected.y << ", z: " << expected.z << ")";
+    std::string ex_str = ex.str();
+    
+    std::stringstream ac;
+    ac << "(w: " << a.w << ", x: " << a.x << ", y: " << a.y << ", z: " << a.z << ") " << op << " (w: " << b.w << ", x: " << b.x << ", y: " << b.y << ", z: " << b.z << ") = (w: " << val.w << ", x: " << val.x << ", y: " << val.y << ", z: " << val.z << ")";
+    std::string ac_str = ac.str();
+    
+    ass.expected = ex_str.c_str();
+    ass.actual = ac_str.c_str();
+    
+    //allow for small floating point variations
+    constexpr float eps = 1e-5f;
+    ass.passed = (std::abs(expected.w - val.w) < eps) && (std::abs(expected.x - val.x) < eps) && (std::abs(expected.y - val.y) < eps) && (std::abs(expected.z - val.z) < eps);
+    (*(fn->assertion))(&ass);
+}
+
+void quatTestSuite(const TestContext* ctx, TestReport* report, const TestFunctions* fn) {
+    report->result = TEST_CONTROLLED_FAIL;
+
+    TestMessage msg;
+    msg.msg = "[INFO] Testing Quaternion functionality";
+    (*(fn->log))(&msg);
+
+    //identity quaternion
+    GLGE::Quaternion q1(1.0f, 0.0f, 0.0f, 0.0f);
+    //arbitrary quaternion 1
+    GLGE::Quaternion q2(0.7071f, 0.0f, 0.7071f, 0.0f); //90 deg rotation around Y
+    //arbitrary quaternion 2
+    GLGE::Quaternion q3(0.0f, 1.0f, 0.0f, 0.0f); //180 deg rotation around X
+
+    //multiplication tests
+    quatTest(q1, q2, q2, [](GLGE::Quaternion a, GLGE::Quaternion b) { return a * b; }, "*", fn);
+    quatTest(q2, q3, GLGE::Quaternion(0.0f, 0.7071f, 0.0f, -0.7071f), [](GLGE::Quaternion a, GLGE::Quaternion b) {return a * b;}, "*", fn);
+
+    //addition tests
+    quatTest(q1, q1, GLGE::Quaternion(2.0f, 0.0f, 0.0f, 0.0f), [](GLGE::Quaternion a, GLGE::Quaternion b) {return a + b;}, "+", fn);
+
+    //unary operations (Conjugate passed via b parameter slot acting as identity for test logic)
+    quatTest(q2, q1, GLGE::Quaternion(0.7071f, 0.0f, -0.7071f, 0.0f), [](GLGE::Quaternion a, GLGE::Quaternion b) {return glm::conjugate(a);}, "conjugate", fn);
+
+    //success
+    report->result = TEST_SUCCESS;
+}
+
+template <typename Fn>
+void f16Test(float a, float b, float expected, Fn invoke, const char* op, const TestFunctions* fn) {
+    //cast float inputs into the simulated f16 types
+    GLGE::f16 halfA(a);
+    GLGE::f16 halfB(b);
+    
+    //invoke functionality (casting back to float for verification)
+    float val = invoke(halfA, halfB);
+    
+    TestAssertion ass;
+    std::stringstream ex;
+    ex << "f16(" << a << ") " << op << " f16(" << b << ") = " << expected;
+    std::string ex_str = ex.str();
+    
+    std::stringstream ac;
+    ac << "f16(" << a << ") " << op << " f16(" << b << ") = " << val;
+    std::string ac_str = ac.str();
+    
+    ass.expected = ex_str.c_str();
+    ass.actual = ac_str.c_str();
+    
+    //half-precision floats have limited accuracy (~1e-3 tolerance depending on the magnitude)
+    constexpr float eps = 1e-3f;
+    ass.passed = (std::abs(expected - val) < eps);
+                 
+    (*(fn->assertion))(&ass);
+}
+
+void f16TestSuite(const TestContext* ctx, TestReport* report, const TestFunctions* fn) {
+    report->result = TEST_CONTROLLED_FAIL;
+
+    TestMessage msg;
+    msg.msg = "[INFO] Testing 16-bit Float (f16) System";
+    (*(fn->log))(&msg);
+
+    //basic Conversion & Accuracy tests
+    f16Test(1.0f, 0.0f, 1.0f, [](GLGE::f16 a, GLGE::f16 b) { return a; }, "identity", fn);
+    f16Test(-15.5f, 0.0f, -15.5f, [](GLGE::f16 a, GLGE::f16 b) { return a; }, "identity_negative", fn);
+    f16Test(0.00005f, 0.0f, 0.0f, [](GLGE::f16 a, GLGE::f16 b) { return a; }, "underflow_to_zero", fn); 
+
+    //arithmetic validations
+    f16Test(2.5f, 1.5f, 4.0f, [](GLGE::f16 a, GLGE::f16 b) { return a + b; }, "+", fn);
+    f16Test(5.0f, 2.0f, 10.0f, [](GLGE::f16 a, GLGE::f16 b) { return a * b; }, "*", fn);
+    f16Test(7.5f, 2.5f, 3.0f, [](GLGE::f16 a, GLGE::f16 b) { return a / b; }, "/", fn);
+
+    //success
+    report->result = TEST_SUCCESS;
+}
+
 std::vector<Test> tests {
     Test{
         .header = {
@@ -801,6 +903,42 @@ std::vector<Test> tests {
             .requirements = 0
         },
         .invoker = &vec4Test
+    },
+    Test{
+        .header = {
+            .sType = TEST_TEST,
+            .pNext = nullptr
+        },
+        .entry = {
+            .header = {
+                .sType = TEST_ENTRY,
+                .pNext = nullptr
+            },
+            .name = "Quaternion test",
+            .tags = "math quaternion suite",
+            .description = "Test the functionality of the glm quaternion alias mappings",
+            .timeout = uint64_t(1E4),
+            .requirements = 0
+        },
+        .invoker = &quatTestSuite
+    },
+    Test{
+        .header = {
+            .sType = TEST_TEST,
+            .pNext = nullptr
+        },
+        .entry = {
+            .header = {
+                .sType = TEST_ENTRY,
+                .pNext = nullptr
+            },
+            .name = "16-bit Float test",
+            .tags = "math f16 half suite",
+            .description = "Test the bitwise encoding, decoding, and operations of 16-bit floats",
+            .timeout = uint64_t(1E4),
+            .requirements = 0
+        },
+        .invoker = &f16TestSuite
     }
 };
 

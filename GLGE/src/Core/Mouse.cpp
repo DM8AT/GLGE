@@ -18,6 +18,9 @@ void GLGE::Mouse::update() noexcept {
     {m_pressed.set(static_cast<MouseButton>(button), (m_pressed[static_cast<MouseButton>(button)] || m_thisTickDown[static_cast<MouseButton>(button)]) && !m_thisTickUp[static_cast<MouseButton>(button)]);}
     //reset the wheel
     m_wheel = 0;
+    //update the delta
+    m_delta = m_thisTickDelta;
+    m_thisTickDelta = {0,0};
 
     //copy the state of this tick over
     m_down = m_thisTickDown;

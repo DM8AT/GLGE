@@ -1,0 +1,101 @@
+{
+    "schema_version": 1,
+    "meta": {
+        "name": "Keyboard and mouse test",
+        "tags": [
+            "keyboard",
+            "mouse",
+            "core"
+        ],
+        "description": "Test that the abstract keyboard and mouse classes work"
+    },
+    "start_time_unix_ms": 1779878148748,
+    "log": [
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148959,
+            "msg": "[INFO] Testing if keyboards can register presses"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148959,
+            "expected": "Expected the key to be pressed and down, but not up",
+            "actual": "The key was pressed and down, but not up",
+            "passed": 1
+        },
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148959,
+            "msg": "[INFO] Testing if keyboards can register releases"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148959,
+            "expected": "Expected the key to be not pressed nor down, but up",
+            "actual": "The key was not pressed nor down, but up",
+            "passed": 1
+        },
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148959,
+            "msg": "[INFO] Testing if a mouse button can be pressed"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148959,
+            "expected": "Expected the button to be pressed and down, but not up",
+            "actual": "The button was pressed and down, but not up",
+            "passed": 1
+        },
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148959,
+            "msg": "[INFO] Testing if a mouse button can be released"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148959,
+            "expected": "Expected the button to be not pressed nor down, but up",
+            "actual": "The button was not pressed nor down, but up",
+            "passed": 1
+        },
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148959,
+            "msg": "[INFO] Testing if a mouse can be moved"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148959,
+            "expected": "Expected mouse to be at (4,4) and have moved (4,4) this tick",
+            "actual": "The mouse was at (4,4) and moved (4,4) this tick",
+            "passed": 1
+        },
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148959,
+            "msg": "[INFO] Testing if a motion decays, but the position does not"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148959,
+            "expected": "Expected mouse to be at (4,4) and have moved (0,0) this tick",
+            "actual": "The mouse was at (4,4) and moved (0,0) this tick",
+            "passed": 1
+        }
+    ],
+    "stdout": [
+
+    ],
+    "stderr": [
+
+    ],
+    "end_time_unix_ms": 1779878149061,
+    "duration_ms": 313,
+    "return": {
+        "exit_code":0,
+        "state": "TEST_EXEC_TEST_RESULT_SUCCESS",
+        "termination_signal": 0,
+        "termination_reason": "exited"
+    }
+}

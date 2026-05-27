@@ -1,0 +1,65 @@
+{
+    "schema_version": 1,
+    "meta": {
+        "name": "Job system test",
+        "tags": [
+            "job",
+            "async",
+            "core"
+        ],
+        "description": "Test the functionality of the job system"
+    },
+    "start_time_unix_ms": 1779878148748,
+    "log": [
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148959,
+            "msg": "[INFO] Testing if a task can run in the job system"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "The value was set to 1 by the task",
+            "actual": "The value was set to 1 by the task",
+            "passed": 1
+        },
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148960,
+            "msg": "[INFO] Testing if automatic task ordering works"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "Expected the recorded value to be 5 and the current value to be 2",
+            "actual": "Expected the recorded value to be 5 and the current value to be 2",
+            "passed": 1
+        },
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148960,
+            "msg": "[INFO] Testing if cross-thread resource sharing and bulk tasks work"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148974,
+            "expected": "Expected the count the be equal to the expected count",
+            "actual": "The count is equal to the expected count",
+            "passed": 1
+        }
+    ],
+    "stdout": [
+
+    ],
+    "stderr": [
+
+    ],
+    "end_time_unix_ms": 1779878149071,
+    "duration_ms": 323,
+    "return": {
+        "exit_code":0,
+        "state": "TEST_EXEC_TEST_RESULT_SUCCESS",
+        "termination_signal": 0,
+        "termination_reason": "exited"
+    }
+}

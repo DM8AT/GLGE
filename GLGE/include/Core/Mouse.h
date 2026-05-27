@@ -256,7 +256,7 @@ namespace GLGE {
          * @param delta the delta vector done by the mouse
          */
         void move(const vec2& pos, const vec2& delta) 
-        {m_pos = pos; m_delta = delta;}
+        {m_pos = pos; m_thisTickDelta = delta;}
 
         /**
          * @brief scroll the mouse wheel
@@ -339,11 +339,15 @@ namespace GLGE {
          */
         vec2 m_pos;
         /**
-         * @brief store how much the mouse is moved this tick
+         * @brief store how much the mouse is moved the previous tick
          * 
          * This is not effected by using the mouse warp function, just the move function
          */
         vec2 m_delta;
+        /**
+         * @brief store how much the mouse was moved this tick
+         */
+        vec2 m_thisTickDelta;
         /**
          * @brief store how much the mouse wheel is moved
          * 

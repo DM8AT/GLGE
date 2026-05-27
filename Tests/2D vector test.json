@@ -9,897 +9,897 @@
         ],
         "description": "Test the functionality of the 2D vector types"
     },
-    "start_time_unix_ms": 1779736979187,
+    "start_time_unix_ms": 1779878148748,
     "log": [
         {
             "msg_type": "message",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "msg": "[INFO] Testing float 2D vectors"
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 7, y: 9) + (x: 3, y: 4) = (x: 10, y: 13)",
             "actual": "(x: 7, y: 9) + (x: 3, y: 4) = (x: 10, y: 13)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -2, y: 5) + (x: -5, y: 2) = (x: -7, y: 7)",
             "actual": "(x: -2, y: 5) + (x: -5, y: 2) = (x: -7, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 12, y: 2) + (x: 10, y: -1) = (x: 22, y: 1)",
             "actual": "(x: 12, y: 2) + (x: 10, y: -1) = (x: 22, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 0, y: 0) + (x: -4, y: 7) = (x: -4, y: 7)",
             "actual": "(x: 0, y: 0) + (x: -4, y: 7) = (x: -4, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 55, y: 30) + (x: 50, y: 10) = (x: 105, y: 40)",
             "actual": "(x: 55, y: 30) + (x: 50, y: 10) = (x: 105, y: 40)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 3, y: -8) + (x: 1, y: -4) = (x: 4, y: -12)",
             "actual": "(x: 3, y: -8) + (x: 1, y: -4) = (x: 4, y: -12)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 15, y: 15) + (x: 7, y: 8) = (x: 22, y: 23)",
             "actual": "(x: 15, y: 15) + (x: 7, y: 8) = (x: 22, y: 23)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -6, y: -6) + (x: -3, y: -3) = (x: -9, y: -9)",
             "actual": "(x: -6, y: -6) + (x: -3, y: -3) = (x: -9, y: -9)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 8, y: 1) + (x: 8, y: 0) = (x: 16, y: 1)",
             "actual": "(x: 8, y: 1) + (x: 8, y: 0) = (x: 16, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 23, y: 11) + (x: 12, y: 5) = (x: 35, y: 16)",
             "actual": "(x: 23, y: 11) + (x: 12, y: 5) = (x: 35, y: 16)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 1, y: 6) + (x: -2, y: 3) = (x: -1, y: 9)",
             "actual": "(x: 1, y: 6) + (x: -2, y: 3) = (x: -1, y: 9)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 14, y: 5) + (x: 9, y: 1) = (x: 23, y: 6)",
             "actual": "(x: 14, y: 5) + (x: 9, y: 1) = (x: 23, y: 6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -1, y: 9) + (x: 4, y: 5) = (x: 3, y: 14)",
             "actual": "(x: -1, y: 9) + (x: 4, y: 5) = (x: 3, y: 14)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 32, y: 48) + (x: 20, y: 40) = (x: 52, y: 88)",
             "actual": "(x: 32, y: 48) + (x: 20, y: 40) = (x: 52, y: 88)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 7, y: 9) - (x: 3, y: 4) = (x: 4, y: 5)",
             "actual": "(x: 7, y: 9) - (x: 3, y: 4) = (x: 4, y: 5)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -2, y: 5) - (x: -5, y: 2) = (x: 3, y: 3)",
             "actual": "(x: -2, y: 5) - (x: -5, y: 2) = (x: 3, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 12, y: 2) - (x: 10, y: -1) = (x: 2, y: 3)",
             "actual": "(x: 12, y: 2) - (x: 10, y: -1) = (x: 2, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 0, y: 0) - (x: -4, y: 7) = (x: 4, y: -7)",
             "actual": "(x: 0, y: 0) - (x: -4, y: 7) = (x: 4, y: -7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 55, y: 30) - (x: 50, y: 10) = (x: 5, y: 20)",
             "actual": "(x: 55, y: 30) - (x: 50, y: 10) = (x: 5, y: 20)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 3, y: -8) - (x: 1, y: -4) = (x: 2, y: -4)",
             "actual": "(x: 3, y: -8) - (x: 1, y: -4) = (x: 2, y: -4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 15, y: 15) - (x: 7, y: 8) = (x: 8, y: 7)",
             "actual": "(x: 15, y: 15) - (x: 7, y: 8) = (x: 8, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -6, y: -6) - (x: -3, y: -3) = (x: -3, y: -3)",
             "actual": "(x: -6, y: -6) - (x: -3, y: -3) = (x: -3, y: -3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 8, y: 1) - (x: 8, y: 0) = (x: 0, y: 1)",
             "actual": "(x: 8, y: 1) - (x: 8, y: 0) = (x: 0, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 23, y: 11) - (x: 12, y: 5) = (x: 11, y: 6)",
             "actual": "(x: 23, y: 11) - (x: 12, y: 5) = (x: 11, y: 6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 1, y: 6) - (x: -2, y: 3) = (x: 3, y: 3)",
             "actual": "(x: 1, y: 6) - (x: -2, y: 3) = (x: 3, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 14, y: 5) - (x: 9, y: 1) = (x: 5, y: 4)",
             "actual": "(x: 14, y: 5) - (x: 9, y: 1) = (x: 5, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -1, y: 9) - (x: 4, y: 5) = (x: -5, y: 4)",
             "actual": "(x: -1, y: 9) - (x: 4, y: 5) = (x: -5, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 32, y: 48) - (x: 20, y: 40) = (x: 12, y: 8)",
             "actual": "(x: 32, y: 48) - (x: 20, y: 40) = (x: 12, y: 8)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 3, y: 4) * (x: 2, y: 5) = (x: 6, y: 20)",
             "actual": "(x: 3, y: 4) * (x: 2, y: 5) = (x: 6, y: 20)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -5, y: 2) * (x: 3, y: -3) = (x: -15, y: -6)",
             "actual": "(x: -5, y: 2) * (x: 3, y: -3) = (x: -15, y: -6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 10, y: -1) * (x: 0, y: 4) = (x: 0, y: -4)",
             "actual": "(x: 10, y: -1) * (x: 0, y: 4) = (x: 0, y: -4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 4, y: 5) * (x: 3, y: 2) = (x: 12, y: 10)",
             "actual": "(x: 4, y: 5) * (x: 3, y: 2) = (x: 12, y: 10)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 12, y: 20) / (x: 3, y: 4) = (x: 4, y: 5)",
             "actual": "(x: 12, y: 20) / (x: 3, y: 4) = (x: 4, y: 5)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: -15, y: 9) / (x: 5, y: -3) = (x: -3, y: -3)",
             "actual": "(x: -15, y: 9) / (x: 5, y: -3) = (x: -3, y: -3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 8, y: 0) / (x: 2, y: 1) = (x: 4, y: 0)",
             "actual": "(x: 8, y: 0) / (x: 2, y: 1) = (x: 4, y: 0)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 50, y: 40) / (x: 10, y: 4) = (x: 5, y: 10)",
             "actual": "(x: 50, y: 40) / (x: 10, y: 4) = (x: 5, y: 10)",
             "passed": 1
         },
         {
             "msg_type": "message",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "msg": "[INFO] Testing unsigned 32 bit integer 2D vectors"
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 7, y: 9) + (x: 3, y: 4) = (x: 10, y: 13)",
             "actual": "(x: 7, y: 9) + (x: 3, y: 4) = (x: 10, y: 13)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 4294967294, y: 5) + (x: 4294967291, y: 2) = (x: 4294967289, y: 7)",
             "actual": "(x: 4294967294, y: 5) + (x: 4294967291, y: 2) = (x: 4294967289, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 12, y: 2) + (x: 10, y: 4294967295) = (x: 22, y: 1)",
             "actual": "(x: 12, y: 2) + (x: 10, y: 4294967295) = (x: 22, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 0, y: 0) + (x: 4294967292, y: 7) = (x: 4294967292, y: 7)",
             "actual": "(x: 0, y: 0) + (x: 4294967292, y: 7) = (x: 4294967292, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 55, y: 30) + (x: 50, y: 10) = (x: 105, y: 40)",
             "actual": "(x: 55, y: 30) + (x: 50, y: 10) = (x: 105, y: 40)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 3, y: 4294967288) + (x: 1, y: 4294967292) = (x: 4, y: 4294967284)",
             "actual": "(x: 3, y: 4294967288) + (x: 1, y: 4294967292) = (x: 4, y: 4294967284)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 15, y: 15) + (x: 7, y: 8) = (x: 22, y: 23)",
             "actual": "(x: 15, y: 15) + (x: 7, y: 8) = (x: 22, y: 23)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 4294967290, y: 4294967290) + (x: 4294967293, y: 4294967293) = (x: 4294967287, y: 4294967287)",
             "actual": "(x: 4294967290, y: 4294967290) + (x: 4294967293, y: 4294967293) = (x: 4294967287, y: 4294967287)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 8, y: 1) + (x: 8, y: 0) = (x: 16, y: 1)",
             "actual": "(x: 8, y: 1) + (x: 8, y: 0) = (x: 16, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 23, y: 11) + (x: 12, y: 5) = (x: 35, y: 16)",
             "actual": "(x: 23, y: 11) + (x: 12, y: 5) = (x: 35, y: 16)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 1, y: 6) + (x: 4294967294, y: 3) = (x: 4294967295, y: 9)",
             "actual": "(x: 1, y: 6) + (x: 4294967294, y: 3) = (x: 4294967295, y: 9)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 14, y: 5) + (x: 9, y: 1) = (x: 23, y: 6)",
             "actual": "(x: 14, y: 5) + (x: 9, y: 1) = (x: 23, y: 6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 4294967295, y: 9) + (x: 4, y: 5) = (x: 3, y: 14)",
             "actual": "(x: 4294967295, y: 9) + (x: 4, y: 5) = (x: 3, y: 14)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 32, y: 48) + (x: 20, y: 40) = (x: 52, y: 88)",
             "actual": "(x: 32, y: 48) + (x: 20, y: 40) = (x: 52, y: 88)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 7, y: 9) - (x: 3, y: 4) = (x: 4, y: 5)",
             "actual": "(x: 7, y: 9) - (x: 3, y: 4) = (x: 4, y: 5)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 4294967294, y: 5) - (x: 4294967291, y: 2) = (x: 3, y: 3)",
             "actual": "(x: 4294967294, y: 5) - (x: 4294967291, y: 2) = (x: 3, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 12, y: 2) - (x: 10, y: 4294967295) = (x: 2, y: 3)",
             "actual": "(x: 12, y: 2) - (x: 10, y: 4294967295) = (x: 2, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 0, y: 0) - (x: 4294967292, y: 7) = (x: 4, y: 4294967289)",
             "actual": "(x: 0, y: 0) - (x: 4294967292, y: 7) = (x: 4, y: 4294967289)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 55, y: 30) - (x: 50, y: 10) = (x: 5, y: 20)",
             "actual": "(x: 55, y: 30) - (x: 50, y: 10) = (x: 5, y: 20)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 3, y: 4294967288) - (x: 1, y: 4294967292) = (x: 2, y: 4294967292)",
             "actual": "(x: 3, y: 4294967288) - (x: 1, y: 4294967292) = (x: 2, y: 4294967292)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148960,
             "expected": "(x: 15, y: 15) - (x: 7, y: 8) = (x: 8, y: 7)",
             "actual": "(x: 15, y: 15) - (x: 7, y: 8) = (x: 8, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 4294967290, y: 4294967290) - (x: 4294967293, y: 4294967293) = (x: 4294967293, y: 4294967293)",
             "actual": "(x: 4294967290, y: 4294967290) - (x: 4294967293, y: 4294967293) = (x: 4294967293, y: 4294967293)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 8, y: 1) - (x: 8, y: 0) = (x: 0, y: 1)",
             "actual": "(x: 8, y: 1) - (x: 8, y: 0) = (x: 0, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 23, y: 11) - (x: 12, y: 5) = (x: 11, y: 6)",
             "actual": "(x: 23, y: 11) - (x: 12, y: 5) = (x: 11, y: 6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 1, y: 6) - (x: 4294967294, y: 3) = (x: 3, y: 3)",
             "actual": "(x: 1, y: 6) - (x: 4294967294, y: 3) = (x: 3, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 14, y: 5) - (x: 9, y: 1) = (x: 5, y: 4)",
             "actual": "(x: 14, y: 5) - (x: 9, y: 1) = (x: 5, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 4294967295, y: 9) - (x: 4, y: 5) = (x: 4294967291, y: 4)",
             "actual": "(x: 4294967295, y: 9) - (x: 4, y: 5) = (x: 4294967291, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 32, y: 48) - (x: 20, y: 40) = (x: 12, y: 8)",
             "actual": "(x: 32, y: 48) - (x: 20, y: 40) = (x: 12, y: 8)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 3, y: 4) * (x: 2, y: 5) = (x: 6, y: 20)",
             "actual": "(x: 3, y: 4) * (x: 2, y: 5) = (x: 6, y: 20)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 10, y: 1) * (x: 0, y: 4) = (x: 0, y: 4)",
             "actual": "(x: 10, y: 1) * (x: 0, y: 4) = (x: 0, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 4, y: 5) * (x: 3, y: 2) = (x: 12, y: 10)",
             "actual": "(x: 4, y: 5) * (x: 3, y: 2) = (x: 12, y: 10)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 12, y: 20) / (x: 3, y: 4) = (x: 4, y: 5)",
             "actual": "(x: 12, y: 20) / (x: 3, y: 4) = (x: 4, y: 5)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 8, y: 4) / (x: 2, y: 1) = (x: 4, y: 4)",
             "actual": "(x: 8, y: 4) / (x: 2, y: 1) = (x: 4, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 50, y: 40) / (x: 10, y: 4) = (x: 5, y: 10)",
             "actual": "(x: 50, y: 40) / (x: 10, y: 4) = (x: 5, y: 10)",
             "passed": 1
         },
         {
             "msg_type": "message",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "msg": "[INFO] Testing signed 32 bit integer 2D vectors"
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 7, y: 9) + (x: 3, y: 4) = (x: 10, y: 13)",
             "actual": "(x: 7, y: 9) + (x: 3, y: 4) = (x: 10, y: 13)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -2, y: 5) + (x: -5, y: 2) = (x: -7, y: 7)",
             "actual": "(x: -2, y: 5) + (x: -5, y: 2) = (x: -7, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 12, y: 2) + (x: 10, y: -1) = (x: 22, y: 1)",
             "actual": "(x: 12, y: 2) + (x: 10, y: -1) = (x: 22, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 0, y: 0) + (x: -4, y: 7) = (x: -4, y: 7)",
             "actual": "(x: 0, y: 0) + (x: -4, y: 7) = (x: -4, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 55, y: 30) + (x: 50, y: 10) = (x: 105, y: 40)",
             "actual": "(x: 55, y: 30) + (x: 50, y: 10) = (x: 105, y: 40)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 3, y: -8) + (x: 1, y: -4) = (x: 4, y: -12)",
             "actual": "(x: 3, y: -8) + (x: 1, y: -4) = (x: 4, y: -12)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 15, y: 15) + (x: 7, y: 8) = (x: 22, y: 23)",
             "actual": "(x: 15, y: 15) + (x: 7, y: 8) = (x: 22, y: 23)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -6, y: -6) + (x: -3, y: -3) = (x: -9, y: -9)",
             "actual": "(x: -6, y: -6) + (x: -3, y: -3) = (x: -9, y: -9)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 8, y: 1) + (x: 8, y: 0) = (x: 16, y: 1)",
             "actual": "(x: 8, y: 1) + (x: 8, y: 0) = (x: 16, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 23, y: 11) + (x: 12, y: 5) = (x: 35, y: 16)",
             "actual": "(x: 23, y: 11) + (x: 12, y: 5) = (x: 35, y: 16)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 1, y: 6) + (x: -2, y: 3) = (x: -1, y: 9)",
             "actual": "(x: 1, y: 6) + (x: -2, y: 3) = (x: -1, y: 9)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 14, y: 5) + (x: 9, y: 1) = (x: 23, y: 6)",
             "actual": "(x: 14, y: 5) + (x: 9, y: 1) = (x: 23, y: 6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -1, y: 9) + (x: 4, y: 5) = (x: 3, y: 14)",
             "actual": "(x: -1, y: 9) + (x: 4, y: 5) = (x: 3, y: 14)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 32, y: 48) + (x: 20, y: 40) = (x: 52, y: 88)",
             "actual": "(x: 32, y: 48) + (x: 20, y: 40) = (x: 52, y: 88)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 7, y: 9) - (x: 3, y: 4) = (x: 4, y: 5)",
             "actual": "(x: 7, y: 9) - (x: 3, y: 4) = (x: 4, y: 5)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -2, y: 5) - (x: -5, y: 2) = (x: 3, y: 3)",
             "actual": "(x: -2, y: 5) - (x: -5, y: 2) = (x: 3, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 12, y: 2) - (x: 10, y: -1) = (x: 2, y: 3)",
             "actual": "(x: 12, y: 2) - (x: 10, y: -1) = (x: 2, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 0, y: 0) - (x: -4, y: 7) = (x: 4, y: -7)",
             "actual": "(x: 0, y: 0) - (x: -4, y: 7) = (x: 4, y: -7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 55, y: 30) - (x: 50, y: 10) = (x: 5, y: 20)",
             "actual": "(x: 55, y: 30) - (x: 50, y: 10) = (x: 5, y: 20)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 3, y: -8) - (x: 1, y: -4) = (x: 2, y: -4)",
             "actual": "(x: 3, y: -8) - (x: 1, y: -4) = (x: 2, y: -4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 15, y: 15) - (x: 7, y: 8) = (x: 8, y: 7)",
             "actual": "(x: 15, y: 15) - (x: 7, y: 8) = (x: 8, y: 7)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -6, y: -6) - (x: -3, y: -3) = (x: -3, y: -3)",
             "actual": "(x: -6, y: -6) - (x: -3, y: -3) = (x: -3, y: -3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 8, y: 1) - (x: 8, y: 0) = (x: 0, y: 1)",
             "actual": "(x: 8, y: 1) - (x: 8, y: 0) = (x: 0, y: 1)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 23, y: 11) - (x: 12, y: 5) = (x: 11, y: 6)",
             "actual": "(x: 23, y: 11) - (x: 12, y: 5) = (x: 11, y: 6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 1, y: 6) - (x: -2, y: 3) = (x: 3, y: 3)",
             "actual": "(x: 1, y: 6) - (x: -2, y: 3) = (x: 3, y: 3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 14, y: 5) - (x: 9, y: 1) = (x: 5, y: 4)",
             "actual": "(x: 14, y: 5) - (x: 9, y: 1) = (x: 5, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -1, y: 9) - (x: 4, y: 5) = (x: -5, y: 4)",
             "actual": "(x: -1, y: 9) - (x: 4, y: 5) = (x: -5, y: 4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 32, y: 48) - (x: 20, y: 40) = (x: 12, y: 8)",
             "actual": "(x: 32, y: 48) - (x: 20, y: 40) = (x: 12, y: 8)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 3, y: 4) * (x: 2, y: 5) = (x: 6, y: 20)",
             "actual": "(x: 3, y: 4) * (x: 2, y: 5) = (x: 6, y: 20)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -5, y: 2) * (x: 3, y: -3) = (x: -15, y: -6)",
             "actual": "(x: -5, y: 2) * (x: 3, y: -3) = (x: -15, y: -6)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 10, y: -1) * (x: 0, y: 4) = (x: 0, y: -4)",
             "actual": "(x: 10, y: -1) * (x: 0, y: 4) = (x: 0, y: -4)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 4, y: 5) * (x: 3, y: 2) = (x: 12, y: 10)",
             "actual": "(x: 4, y: 5) * (x: 3, y: 2) = (x: 12, y: 10)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 12, y: 20) / (x: 3, y: 4) = (x: 4, y: 5)",
             "actual": "(x: 12, y: 20) / (x: 3, y: 4) = (x: 4, y: 5)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -15, y: 9) / (x: 5, y: -3) = (x: -3, y: -3)",
             "actual": "(x: -15, y: 9) / (x: 5, y: -3) = (x: -3, y: -3)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 8, y: 0) / (x: 2, y: 1) = (x: 4, y: 0)",
             "actual": "(x: 8, y: 0) / (x: 2, y: 1) = (x: 4, y: 0)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 50, y: 40) / (x: 10, y: 4) = (x: 5, y: 10)",
             "actual": "(x: 50, y: 40) / (x: 10, y: 4) = (x: 5, y: 10)",
             "passed": 1
         },
         {
             "msg_type": "message",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "msg": "[INFO] Testing special cases"
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 1, y: 1) / (x: 0, y: 0) = (x: inf, y: inf)",
             "actual": "(x: 1, y: 1) / (x: 0, y: 0) = (x: inf, y: inf)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 0, y: 0) - (x: 1, y: 1) = (x: 4294967295, y: 4294967295)",
             "actual": "(x: 0, y: 0) - (x: 1, y: 1) = (x: 4294967295, y: 4294967295)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 2147483647, y: 2147483647) + (x: 1, y: 1) = (x: -2147483648, y: -2147483648)",
             "actual": "(x: 2147483647, y: 2147483647) + (x: 1, y: 1) = (x: -2147483648, y: -2147483648)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -2147483648, y: -2147483648) - (x: 1, y: 1) = (x: 2147483647, y: 2147483647)",
             "actual": "(x: -2147483648, y: -2147483648) - (x: 1, y: 1) = (x: 2147483647, y: 2147483647)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 0, y: 0) * (x: 55, y: -23) = (x: 0, y: 0)",
             "actual": "(x: 0, y: 0) * (x: 55, y: -23) = (x: 0, y: -0)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 1, y: 1) * (x: 55, y: -23) = (x: 55, y: -23)",
             "actual": "(x: 1, y: 1) * (x: 55, y: -23) = (x: 55, y: -23)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: -0.5, y: 10.5) + (x: 0.5, y: -10.5) = (x: 0, y: 0)",
             "actual": "(x: -0.5, y: 10.5) + (x: 0.5, y: -10.5) = (x: 0, y: 0)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 100, y: 100) + (x: 100, y: -100) = (x: 200, y: 0)",
             "actual": "(x: 100, y: 100) + (x: 100, y: -100) = (x: 200, y: 0)",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "(x: 25, y: 25) / (x: 1, y: 5) = (x: 25, y: 5)",
             "actual": "(x: 25, y: 25) / (x: 1, y: 5) = (x: 25, y: 5)",
             "passed": 1
         },
         {
             "msg_type": "message",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "msg": "[INFO] Testing geometric functions"
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling length on vector (x: 3, y: 4) should result in 5",
             "actual": "Calling length on vector (x: 3, y: 4) resulted in 5",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling normalize on vector (x: 0, y: 5) should result in [    0.000,    1.000]",
             "actual": "Calling normalize on vector (x: 0, y: 5) resulted in [    0.000,    1.000]",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling normalize [Zero Vector Case] on vector (x: 0, y: 0) should result in [      nan,      nan]",
             "actual": "Calling normalize [Zero Vector Case] on vector (x: 0, y: 0) resulted in [     -nan,     -nan]",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling normalize() [Large Vector Case] on vector (x: 3e+18, y: 4e+18) should result in [    0.600,    0.800]",
             "actual": "Calling normalize() [Large Vector Case] on vector (x: 3e+18, y: 4e+18) resulted in [    0.600,    0.800]",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling dot [Perpendicular] on vector (x: 1, y: 0) should result in 0",
             "actual": "Calling dot [Perpendicular] on vector (x: 1, y: 0) resulted in 0",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979400,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling dot [Opposite Alignment] on vector (x: 1, y: 0) should result in -1",
             "actual": "Calling dot [Opposite Alignment] on vector (x: 1, y: 0) resulted in -1",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979401,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling scalar multiplication [Negative Zero Check] on vector (x: 0, y: 0) should result in [   -0.000,   -0.000]",
             "actual": "Calling scalar multiplication [Negative Zero Check] on vector (x: 0, y: 0) resulted in [   -0.000,   -0.000]",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979401,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling operator*(Vector, Scalar) on vector (x: 4, y: -2.5) should result in [   12.000,   -7.500]",
             "actual": "Calling operator*(Vector, Scalar) on vector (x: 4, y: -2.5) resulted in [   12.000,   -7.500]",
             "passed": 1
         },
         {
             "msg_type": "assertion",
-            "time_stamp_unix_ms": 1779736979401,
+            "time_stamp_unix_ms": 1779878148961,
             "expected": "Calling operator*(Scalar, Vector) on vector (x: 4, y: -2.5) should result in [   12.000,   -7.500]",
             "actual": "Calling operator*(Scalar, Vector) on vector (x: 4, y: -2.5) resulted in [   12.000,   -7.500]",
             "passed": 1
@@ -911,8 +911,8 @@
     "stderr": [
 
     ],
-    "end_time_unix_ms": 1779736979503,
-    "duration_ms": 316,
+    "end_time_unix_ms": 1779878149061,
+    "duration_ms": 313,
     "return": {
         "exit_code":0,
         "state": "TEST_EXEC_TEST_RESULT_SUCCESS",

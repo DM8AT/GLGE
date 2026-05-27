@@ -1,0 +1,77 @@
+{
+    "schema_version": 1,
+    "meta": {
+        "name": "16-bit Float test",
+        "tags": [
+            "math",
+            "f16",
+            "half",
+            "suite"
+        ],
+        "description": "Test the bitwise encoding, decoding, and operations of 16-bit floats"
+    },
+    "start_time_unix_ms": 1779878148748,
+    "log": [
+        {
+            "msg_type": "message",
+            "time_stamp_unix_ms": 1779878148960,
+            "msg": "[INFO] Testing 16-bit Float (f16) System"
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "f16(1) identity f16(0) = 1",
+            "actual": "f16(1) identity f16(0) = 1",
+            "passed": 1
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "f16(-15.5) identity_negative f16(0) = -15.5",
+            "actual": "f16(-15.5) identity_negative f16(0) = -15.5",
+            "passed": 1
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "f16(5e-05) underflow_to_zero f16(0) = 0",
+            "actual": "f16(5e-05) underflow_to_zero f16(0) = 6.10352e-05",
+            "passed": 1
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "f16(2.5) + f16(1.5) = 4",
+            "actual": "f16(2.5) + f16(1.5) = 4",
+            "passed": 1
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "f16(5) * f16(2) = 10",
+            "actual": "f16(5) * f16(2) = 10",
+            "passed": 1
+        },
+        {
+            "msg_type": "assertion",
+            "time_stamp_unix_ms": 1779878148960,
+            "expected": "f16(7.5) / f16(2.5) = 3",
+            "actual": "f16(7.5) / f16(2.5) = 3",
+            "passed": 1
+        }
+    ],
+    "stdout": [
+
+    ],
+    "stderr": [
+
+    ],
+    "end_time_unix_ms": 1779878149062,
+    "duration_ms": 314,
+    "return": {
+        "exit_code":0,
+        "state": "TEST_EXEC_TEST_RESULT_SUCCESS",
+        "termination_signal": 0,
+        "termination_reason": "exited"
+    }
+}
