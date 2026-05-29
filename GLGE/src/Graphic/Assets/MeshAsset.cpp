@@ -72,7 +72,7 @@ static const GLGE::Graphic::VertexAttribute defaultAttributes[] = {
     GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Color_0,  GLGE::Graphic::VertexAttribute::Format::vec4, offsetof(Vertex, color_0), 4),
 };
 
-GLGE::u64 GLGE::Graphic::Asset::Mesh::load(const std::vector<u8>& data) {
+GLGE::u64 GLGE::Graphic::Asset::Mesh::load(AssetManager*, const std::vector<u8>& data) {
     //confirm the magic number (first for bytes are "MESH")
     if (data.size() < 4) {throw Exception("Failed to load GLGE mesh file - Invalid format", "GLGE::Graphic::Asset::Mesh::load");}
     if (!(data[0] == 'M' && data[1] == 'E' && data[2] == 'S' && data[3] == 'H')) {throw Exception("Failed to load GLGE mesh file - Invalid format", "GLGE::Graphic::Asset::Mesh::load");}
@@ -277,7 +277,7 @@ void GLGE::Graphic::Asset::Mesh::store(std::vector<u8>& out) {
     out.insert(out.end(), data.begin(), data.end());
 }
 
-void GLGE::Graphic::Asset::Mesh::import_from(const std::filesystem::path& file, u32 format) {
+void GLGE::Graphic::Asset::Mesh::import_from(AssetManager*, const std::filesystem::path& file, u32 format) {
     //check if the file exists
     if (!std::filesystem::is_regular_file(file)) {
         std::stringstream stream;
@@ -295,7 +295,7 @@ void GLGE::Graphic::Asset::Mesh::import_from(const std::filesystem::path& file, 
         f.read(reinterpret_cast<char*>(data.data()), size);
         f.close();
         //load using the loading function
-        load(data);
+        load(nullptr, data);
     } else if (format == Format::ASSIMP) {
         //load the file using assimp
         Assimp::Importer importer;

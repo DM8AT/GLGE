@@ -103,10 +103,11 @@ namespace GLGE::Graphic::Asset {
         /**
          * @brief load the texture from a GLGE data stream
          * 
+         * @param manager a pointer to the asset manager used for loading
          * @param data the data to load from
          * @return `u64` the amount of loaded bytes
          */
-        virtual u64 load(const std::vector<u8>& data) override;
+        virtual u64 load(AssetManager* manager, const std::vector<u8>& data) override;
 
         /**
          * @brief store an texture to a GLGE data stream
@@ -118,10 +119,11 @@ namespace GLGE::Graphic::Asset {
         /**
          * @brief load an cpu texture from a file
          * 
+         * @param manager a pointer to the asset manager used for loading
          * @param file the file to load the texture from
          * @param format the format of the texture
          */
-        virtual void import_from(const std::filesystem::path& file, u32 format) noexcept(false) override;
+        virtual void import_from(AssetManager* manager, const std::filesystem::path& file, u32 format) noexcept(false) override;
 
         /**
          * @brief store the cpu texture in a file

@@ -22,7 +22,7 @@
 //add miniz (for zip compression / decompression)
 #include "miniz/miniz.h"
 
-GLGE::u64 GLGE::Graphic::Asset::ImageCPU::load(const std::vector<u8>& inp) {
+GLGE::u64 GLGE::Graphic::Asset::ImageCPU::load(AssetManager*, const std::vector<u8>& inp) {
     //grab the uncompressed size
     u64 expectedSize = 0;
     memcpy((u8*)&expectedSize, inp.data(), 8);
@@ -86,7 +86,7 @@ void GLGE::Graphic::Asset::ImageCPU::store(std::vector<u8>& out) {
     out.resize(offs + compressedSize);
 }
 
-void GLGE::Graphic::Asset::ImageCPU::import_from(const std::filesystem::path& file, u32 format) noexcept(false) {
+void GLGE::Graphic::Asset::ImageCPU::import_from(AssetManager*, const std::filesystem::path& file, u32 format) noexcept(false) {
     //empty path ("") means to just stop
     if (file == "") {return;}
 
@@ -109,7 +109,7 @@ void GLGE::Graphic::Asset::ImageCPU::import_from(const std::filesystem::path& fi
         f.read((char*)data.data(), s);
 
         //parse the GLGE data
-        load(data);
+        load(nullptr, data);
     } else if (format == Format::HDR) {
         //hdr loads as floats
         ivec2 size;

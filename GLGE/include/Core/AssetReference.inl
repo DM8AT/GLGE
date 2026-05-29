@@ -36,6 +36,9 @@ namespace GLGE {
         auto uit = storage->uuid_to_index.find(m_handle->m_uuid);
         if (uit != storage->uuid_to_index.end()) {
             m_asset = storage->assets.at(uit->second);
+            //check if the asset is being destroyed
+            if (static_cast<Asset*>(m_asset)->m_destroying.load(std::memory_order_acquire))
+            {throw Exception("Trying to reference an asset that is currently being destroyed", "AssetReference<T>::AssetReference");}
         }
         else 
         {throw Exception("Referencing an invalid asset, asset reference could not be created", "AssetReference<T>::AssetReference");}
@@ -61,6 +64,11 @@ namespace GLGE {
         std::shared_lock lock2(storage->mtx);
         auto ait = storage->uuid_to_index.find(m_uuid);
         if (ait == storage->uuid_to_index.end()) {
+            m_manager = nullptr;
+            return;
+        }
+        //check if the asset is being destroyed
+        if (static_cast<Asset*>(storage->assets[ait->second])->m_destroying.load(std::memory_order_acquire)) {
             m_manager = nullptr;
             return;
         }
@@ -99,7 +107,12 @@ namespace GLGE {
             m_manager = nullptr;
             return;
         }
-        ((Asset*)&storage->assets[ait->second])->m_references.fetch_add(1, std::memory_order_acq_rel);
+        //check if the asset is being destroyed
+        if (static_cast<Asset*>(storage->assets[ait->second])->m_destroying.load(std::memory_order_acquire)) {
+            m_manager = nullptr;
+            return;
+        }
+        static_cast<Asset*>(storage->assets[ait->second])->m_references.fetch_add(1, std::memory_order_acq_rel);
     }
 
     //implement the move constructor
@@ -120,6 +133,8 @@ namespace GLGE {
     template <typename T>
     AssetHandle<T>& AssetHandle<T>::operator=(const AssetHandle<T>& other) {
         GLGE_PROFILER_SCOPE();
+        //prevent self-assignment
+        if (this == &other) {return *this;}
         //decrement old asset
         decrement();
 
@@ -152,7 +167,12 @@ namespace GLGE {
             m_manager = nullptr;
             return *this;
         }
-        ((Asset*)&storage->assets[ait->second])->m_references.fetch_add(1, std::memory_order_acq_rel);
+        //check if the asset is being destroyed
+        if (static_cast<Asset*>(storage->assets[ait->second])->m_destroying.load(std::memory_order_acquire)) {
+            m_manager = nullptr;
+            return *this;
+        }
+        static_cast<Asset*>(storage->assets[ait->second])->m_references.fetch_add(1, std::memory_order_acq_rel);
 
         //return self
         return *this;
@@ -162,6 +182,8 @@ namespace GLGE {
     template <typename T>
     AssetHandle<T>& AssetHandle<T>::operator=(AssetHandle<T>&& other) {
         GLGE_PROFILER_SCOPE();
+        //prevent self-assignment
+        if (this == &other) {return *this;}
         //decrement old asset
         decrement();
 
@@ -184,9 +206,13 @@ namespace GLGE {
     //implement the destructor
     template<typename T>
     void AssetHandle<T>::decrement() {
-        GLGE_PROFILER_SCOPE();
         if (!isValid()) return;
+        GLGE_PROFILER_SCOPE();
 
+        //store the potential asset to erase
+        //this must happen outside the locked scope
+        T* ass = nullptr;
+        {
         std::unique_lock typeLock(m_manager->m_typeLock);
 
         auto it = m_manager->m_typeStorage.find(m_type);
@@ -197,15 +223,54 @@ namespace GLGE {
         //lock storage after type lock
         std::unique_lock storageLock(storage->mtx);
 
+        //get the index of the asset using the UUID
         auto ait = storage->uuid_to_index.find(m_uuid);
         if (ait == storage->uuid_to_index.end()) return;
 
-        Asset& a = *storage->assets[ait->second];
+        //get the asset
+        T* asset = storage->assets[ait->second];
+        Asset* a = static_cast<Asset*>(asset);
 
-        if (a.m_references.fetch_sub(1) != 1)
+        //reject multi-deletion
+        if (a->m_destroying.load(std::memory_order_acquire)) {
+            m_manager = nullptr;
+            m_type = 0;
+            m_uuid = 0;
             return;
+        }
+
+        //decrement reference count, stop if too large
+        if (a->m_references.fetch_sub(1) != 1) {
+            m_manager = nullptr;
+            m_type = 0;
+            m_uuid = 0;
+            return;
+        }
 
         //refcount is now 0, so erase asset
+        ass = asset;
+        ass->m_destroying.store(true, std::memory_order_release);
+
+        //drop locks
+        }
+
+        //stop if nothing to erase
+        if (ass == nullptr) {return;}
+
+        //it is now safe to delete the asset (no locks exist)
+        delete ass;
+
+        {
+        //re-acquire locks
+        std::unique_lock typeLock(m_manager->m_typeLock);
+        auto it = m_manager->m_typeStorage.find(m_type);
+        if (it == m_manager->m_typeStorage.end()) return;
+        auto* storage = static_cast<AssetManager::TypeStorage<T>*>(it->second);
+        std::unique_lock storageLock(storage->mtx);
+
+        //index must be re-queried, it may have changed
+        auto ait = storage->uuid_to_index.find(m_uuid);
+        if (ait == storage->uuid_to_index.end()) return;
 
         size_t index = ait->second;
         size_t last = storage->assets.size() - 1;
@@ -215,10 +280,15 @@ namespace GLGE {
             std::swap(storage->assets[index], storage->assets[last]);
             storage->uuid_to_index[lastUUID] = index;
         }
-
-        delete storage->assets.back();
+        //asset is now at the back, remove the back
         storage->assets.pop_back();
         storage->uuid_to_index.erase(m_uuid);
+        }
+
+        //clean up
+        m_manager = nullptr;
+        m_type = 0;
+        m_uuid = 0;
 
         //do NOT delete storage here, it's too dangerous
     }

@@ -78,10 +78,11 @@ namespace Asset {
         /**
          * @brief load the image from a GLGE data stream
          * 
+         * @param manager a pointer to the asset manager used for loading
          * @param data the data to load from
          * @return `u64` the amount of loaded bytes
          */
-        virtual u64 load(const std::vector<u8>& data) override;
+        virtual u64 load(AssetManager* manager, const std::vector<u8>& data) override;
 
         /**
          * @brief store an image to a GLGE data stream
@@ -93,10 +94,11 @@ namespace Asset {
         /**
          * @brief load an cpu image from a file
          * 
+         * @param manager a pointer to the asset manager used for loading
          * @param file the file to load the image from
          * @param format the format of the image
          */
-        virtual void import_from(const std::filesystem::path& file, u32 format) noexcept(false) override;
+        virtual void import_from(AssetManager* manager, const std::filesystem::path& file, u32 format) noexcept(false) override;
 
         /**
          * @brief store the cpu image in a file

@@ -69,6 +69,52 @@ namespace GLGE {
                 }
             }
             TypeStorage<T>* storage = static_cast<TypeStorage<T>*>(it->second);
+            //create the assets
+            T* ass = new T();
+            ass->__make_valid(type_hash);
+            ass->import_from(this, from, format);
+            UUID uuid = ass->getUUID();
+            {
+                //make sure to obtain a lock
+                std::unique_lock lock(storage->mtx);
+
+                //now safe to work on the data
+
+                //add the new element to the back
+                storage->assets.push_back(ass);
+                storage->uuid_to_index.insert_or_assign(uuid, storage->assets.size()-1);
+            }
+            //ass was moved to storage, do NOT delete it
+
+            //return a new handle to it
+            return AssetHandle<T>(uuid, type_hash, this);
+        }
+
+        /**
+         * @brief load a new asset
+         * 
+         * @tparam `T` the type of the asset to load
+         * @param data the raw data to load from
+         * @return `AssetHandle<T>`a handle to the loaded asset
+         */
+        template <typename T>
+        requires std::is_base_of_v<Asset, T> && std::is_default_constructible_v<T>
+        AssetHandle<T> load(const std::vector<u8>& data) {
+            GLGE_PROFILER_SCOPE();
+            constexpr u64 type_hash = getTypeHash64<T>();
+            //check if the type exists
+            auto it = m_typeStorage.find(type_hash);
+            //if the element does not exist, add it
+            if (it == m_typeStorage.end()) {
+                //lock and re-check (to avoid race condition)
+                std::unique_lock lock(m_typeLock);
+                it = m_typeStorage.find(type_hash);
+                if (it == m_typeStorage.end()) {
+                    m_typeStorage.insert_or_assign(type_hash, static_cast<void*>(new TypeStorage<T>{}));
+                    it = m_typeStorage.find(type_hash);
+                }
+            }
+            TypeStorage<T>* storage = static_cast<TypeStorage<T>*>(it->second);
             UUID uuid;
             {
                 //make sure to obtain a lock
@@ -79,7 +125,7 @@ namespace GLGE {
                 //add the new element to the back
                 storage->assets.push_back(new T());
                 storage->assets.back()->__make_valid(type_hash);
-                storage->assets.back()->import_from(from, format);
+                storage->assets.back()->load(this, data);
                 uuid = storage->assets.back()->getUUID();
                 storage->uuid_to_index.insert_or_assign(uuid, storage->assets.size()-1);
             }

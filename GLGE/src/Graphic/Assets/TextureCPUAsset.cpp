@@ -19,7 +19,7 @@
 //for file io
 #include <fstream>
 
-GLGE::u64 GLGE::Graphic::Asset::TextureCPU::load(const std::vector<u8>& data) {
+GLGE::u64 GLGE::Graphic::Asset::TextureCPU::load(AssetManager*, const std::vector<u8>& data) {
     //cumulate the amount of used bytes
     u64 sumUsed = 1;
     //get the mip count
@@ -34,7 +34,7 @@ GLGE::u64 GLGE::Graphic::Asset::TextureCPU::load(const std::vector<u8>& data) {
     for (u8 i = 0; i < mipCount; ++i) {
         //use a temporary image asset to load the image
         GLGE::Graphic::Asset::ImageCPU asset;
-        u64 used = asset.load(std::vector<u8>(it, data.end()));
+        u64 used = asset.load(nullptr, std::vector<u8>(it, data.end()));
         it += used;
         sumUsed += used;
         //store the mip
@@ -61,7 +61,7 @@ void GLGE::Graphic::Asset::TextureCPU::store(std::vector<u8>& data) {
     }
 }
 
-void GLGE::Graphic::Asset::TextureCPU::import_from(const std::filesystem::path& file, u32 format) noexcept(false) {
+void GLGE::Graphic::Asset::TextureCPU::import_from(AssetManager*, const std::filesystem::path& file, u32 format) noexcept(false) {
     //if the file is "" stop
     if (file == "")
     {return;}
@@ -83,7 +83,7 @@ void GLGE::Graphic::Asset::TextureCPU::import_from(const std::filesystem::path& 
     f.read((char*)blob.data(), s);
     
     //load the full data
-    load(blob);
+    load(nullptr, blob);
 }
 
 void GLGE::Graphic::Asset::TextureCPU::export_as(const std::filesystem::path& file, u32 format) noexcept(false) {

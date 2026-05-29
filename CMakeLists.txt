@@ -95,6 +95,11 @@ if(EXAMPLE_PLUGIN_BUILD_DEFAULT)
         src/Examples/Plugins/WindowExample.cpp
     )
     list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
+    # Assets
+    add_example_plugin(ExamplePlugin_AssetExample AssetExample
+        src/Examples/Plugins/AssetExample.cpp
+    )
+    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_AssetExample)
 endif()
 
 # add unit tests

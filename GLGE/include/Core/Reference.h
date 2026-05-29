@@ -120,12 +120,9 @@ namespace GLGE {
         /**
          * @brief Construct a new Reference
          * 
-         * @tparam U same as T, used for requirements
          * @param other the reference to copy
          */
-        template <typename U = T>
-        requires std::is_base_of_v<Referable, U>
-        Reference(const Reference<U>& other) noexcept
+        Reference(const Reference<T>& other) noexcept
          : m_ptr(other.m_ptr) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::Reference")
 
@@ -136,12 +133,9 @@ namespace GLGE {
         /**
          * @brief Construct a new Referable
          * 
-         * @tparam U same as T, used for requirements
          * @param other the reference to move from 
          */
-        template <typename U = T>
-        requires std::is_base_of_v<Referable, U>
-        Reference(Reference<U>&& other) noexcept
+        Reference(Reference<T>&& other) noexcept
          : m_ptr(other.m_ptr) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::Reference")
 
@@ -165,13 +159,10 @@ namespace GLGE {
         /**
          * @brief the copy asign operator
          * 
-         * @tparam U same as T, used for requirements
          * @param other a constant reference to the reference to copy
          * @return `Reference&` a reference to this after copying
          */
-        template <typename U = T>
-        requires std::is_base_of_v<Referable, U>
-        Reference<U>& operator=(const Reference<U>& other) noexcept {
+        Reference<T>& operator=(const Reference<T>& other) noexcept {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::operator=")
 
             //don't copy to self
@@ -184,13 +175,10 @@ namespace GLGE {
         /**
          * @brief the copy move operator
          * 
-         * @tparam U same as T, used for requirements
          * @param other a move reference to the reference to move
          * @return `Reference&` a reference to this after moving
          */
-        template <typename U = T>
-        requires std::is_base_of_v<Referable, U>
-        Reference<U>& operator=(Reference<U>&& other) noexcept {
+        Reference<T>& operator=(Reference<T>&& other) noexcept {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Reference<T>::operator=")
 
             //don't move to self

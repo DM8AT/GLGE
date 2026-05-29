@@ -30,6 +30,12 @@
 //use the library namespace
 namespace GLGE {
 
+    //asset managers are defined later
+    class AssetManager;
+    //asset handles are defined later
+    template <typename T>
+    class AssetHandle;
+
     /**
      * @brief a base class that all assets must implement
      */
@@ -49,10 +55,11 @@ namespace GLGE {
         /**
          * @brief load the asset from raw safe data
          * 
+         * @param manager a pointer to the asset manager used for loading
          * @param data the raw binary data to load the asset from
          * @return `u64` the amount of loaded bytes
          */
-        virtual u64 load(const std::vector<u8>& data) = 0;
+        virtual u64 load(AssetManager* manager, const std::vector<u8>& data) = 0;
 
         /**
          * @brief store the asset in binary
@@ -66,10 +73,11 @@ namespace GLGE {
         /**
          * @brief import the asset from a stand-alone file
          * 
+         * @param manager a pointer to the asset manager used for loading
          * @param file the file to import the asset from
          * @param format the format of the asset
          */
-        virtual void import_from(const std::filesystem::path& file, u32 format) noexcept(false) = 0;
+        virtual void import_from(AssetManager* manager, const std::filesystem::path& file, u32 format) noexcept(false) = 0;
 
         /**
          * @brief export the asset in a specific file format
@@ -108,6 +116,9 @@ namespace GLGE {
         //asset handles are friends
         template <typename T1>
         friend class AssetHandle;
+        //asset references are friends
+        template <typename T2>
+        friend class AssetReference;
 
         /**
          * @brief a function to fully setup the asset
@@ -139,14 +150,12 @@ namespace GLGE {
          * @brief store the reference count
          */
         std::atomic_uint64_t m_references = 0;
+        /**
+         * @brief store if the asset is currently being destroyed
+         */
+        std::atomic_bool m_destroying{false};
 
     };
-
-    //asset managers are defined later
-    class AssetManager;
-    //asset handles are defined later
-    template <typename T>
-    class AssetHandle;
 
     /**
      * @brief a structure to refer to an asset
@@ -262,6 +271,13 @@ namespace GLGE {
     template <typename T>
     class AssetHandle {
     public:
+
+        /**
+         * @brief Construct a new Asset Handle
+         * 
+         * The handle will be invalid
+         */
+        AssetHandle() = default;
 
         /**
          * @brief Construct a new Asset Handle

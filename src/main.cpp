@@ -190,12 +190,9 @@ int runExamples() {
         } catch (const std::invalid_argument& exception) {
             //input error - print and re-try
             std::cout << "----------------\n" << exception.what() << "\n----------------\n";
-        } catch (const std::exception& exception) {
-            //print the fatal error
-            std::cout << "[FATAL ERROR] A fatal error was thrown during selection:\n" << exception.what() << "\n";
-            //set the return value to 256 and stop
-            retValue = 0xff;
-            active = false;
+        } catch (...) {
+            //re-throw
+            throw;
         }
     }
     //return the return value
@@ -216,11 +213,9 @@ int main(void) {
         } catch (const std::invalid_argument& exception) {
             //input error - print and re-try
             std::cout << "----------------\n" << exception.what() << "\n----------------\n";
-        } catch (const std::exception& exception) {
-            //print the fatal error
-            std::cout << "[FATAL ERROR] A fatal error was thrown during selection:\n" << exception.what() << "\n";
-            //just stop
-            return 0xff;
+        } catch (...) {
+            //re-throw
+            throw;
         }
         //sanity check the range
         if (selected > 1) {

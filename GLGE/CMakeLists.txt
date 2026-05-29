@@ -88,6 +88,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tracy)
 
+# oneTBB is used for advanced thread primitives
+# print a message
+message(STATUS "Fetching oneTBB from GitHub")
+# use FetchContent to fetch oneTBB from github
+include(FetchContent)
+FetchContent_Declare(
+    oneTBB
+    GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git 
+    GIT_TAG "v2022.2.0"
+)
+# Disable unnecessary components
+set(TBB_TEST OFF CACHE BOOL "" FORCE)
+set(TBB_STRICT OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(oneTBB)
+
 # only required for GLGE Graphic
 if (GLGE_INCLUDE_GRAPHICS)
     #### SDL3
@@ -182,11 +197,15 @@ add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
     ${GLGE_SRC_DIR}/Core/Object.cpp
     ${GLGE_SRC_DIR}/Core/Keyboard.cpp
     ${GLGE_SRC_DIR}/Core/Mouse.cpp
+    ${GLGE_SRC_DIR}/Core/CompoundAsset.cpp
+    # External: Miniz
+    ${GLGE_SRC_DIR}/external/miniz/miniz.c
 )
 
 # add the internal include directories
 target_include_directories(${GLGE_CORE_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_INCLUDE_DIR}
+    ${GLGE_SRC_DIR}/external
 )
 
 # add a definition to the library if this is a debug build and debugging is allowed
@@ -231,8 +250,8 @@ if (GLGE_ENABLE_TRACY )
 
 endif()
 
-# add glm
-target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm)
+# add libs
+target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm tbb)
 
 # compiler-specific release flags
 if(MSVC)
@@ -299,7 +318,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Assets/TextureCPUAsset.cpp
         ${GLGE_SRC_DIR}/Graphic/Assets/MeshAsset.cpp
         # External: Miniz
-        ${GLGE_SRC_DIR}/Graphic/Assets/miniz/miniz.c
+        ${GLGE_SRC_DIR}/external/miniz/miniz.c
     )
 
     # optionally add OpenGL
@@ -379,6 +398,7 @@ if (GLGE_INCLUDE_GRAPHICS)
     target_include_directories(${GLGE_GRAPHIC_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/glad/include
+        ${GLGE_SRC_DIR}/external
     )
 
     # add a definition to the library if this is a debug build and debugging is allowed

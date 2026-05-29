@@ -7,6 +7,8 @@
  * 
  * @copyright Copyright (c) 2025
  * 
+ * Implemented due to memory alignment issues encountered under MSVC with std::optional, not as safe as std::optional. 
+ * Prefer std::optional when possible. 
  */
 //header guard
 #ifndef _GLGE_CORE_OPTIONAL_
