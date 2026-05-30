@@ -26,6 +26,8 @@
 #include "Exception.h"
 //add the type info
 #include "TypeInfo.h"
+//add recursive thread shared mutex
+#include "utils/RecursiveThreadMutexShared.h"
 
 //use the library namespace
 namespace GLGE {
@@ -259,7 +261,7 @@ namespace GLGE {
         /**
          * @brief store the own lock on the asset
          */
-        std::shared_lock<std::shared_mutex> m_lock;
+        std::shared_lock<RecursiveThreadMutexShared> m_lock;
 
     };
 

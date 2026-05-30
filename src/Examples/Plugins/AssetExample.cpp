@@ -13,8 +13,7 @@
 #include "ExampleBackendFactory.h"
 
 void printHelper(GLGE::AssetHandle<GLGE::CompoundAsset> asset, uint64_t depth) {
-    GLGE::CompoundAsset& ass = *asset.reference();
-    for (const auto& entry : ass) {
+    for (const auto& entry : *asset.reference()) {
         std::cout << std::string(depth*4, ' ') << entry.path() << "\n";
         if (entry.is_directory()) {
             GLGE::AssetHandle<GLGE::CompoundAsset> nextAsset = asset.reference()->open<GLGE::CompoundAsset>(entry.path());

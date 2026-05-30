@@ -19,6 +19,8 @@
 //for thread safety
 #include <shared_mutex>
 #include <atomic>
+//add recursive thread shared mutex
+#include "utils/RecursiveThreadMutexShared.h"
 
 //add the profiler
 #include "Profiler.h"
@@ -186,7 +188,7 @@ namespace GLGE {
             /**
              * @brief mutex for operations on the type data
              */
-            std::shared_mutex mtx;
+            RecursiveThreadMutexShared mtx;
 
             /**
              * @brief map uuids to indices
