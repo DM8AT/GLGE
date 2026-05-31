@@ -247,7 +247,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         data.projection[1][1] *= -1.f;
 
         //get the position (this can be Transform, Transform2D or none)
-        Transform* transf = m_world->get<Transform>(*m_camera);
+        WorldTransform* transf = m_world->get<WorldTransform>(*m_camera);
 
         if (transf) {
             //transform in use
@@ -306,7 +306,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         };
 
         //try to get the transform
-        Transform* transf = m_world->get<Transform>(m_entities[i]);
+        WorldTransform* transf = m_world->get<WorldTransform>(m_entities[i]);
 
         //check if a transform was found
         if (transf) {
@@ -381,7 +381,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         data.cullDistance = cullDistance;
 
         //fill in the position
-        Transform* transf = m_world->get<Transform>(obj);
+        WorldTransform* transf = m_world->get<WorldTransform>(obj);
         if (transf) {
             //copy the position
             data.pos = transf->pos;
@@ -439,7 +439,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         data.cullDistance = cullDistance;
 
         //fill in the position
-        Transform* transf = m_world->get<Transform>(obj);
+        WorldTransform* transf = m_world->get<WorldTransform>(obj);
         if (transf) {
             //copy the position
             data.pos = transf->pos;
@@ -484,7 +484,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         data.intensity = light->intensity;
 
         //fill in the position
-        Transform* transf = m_world->get<Transform>(obj);
+        WorldTransform* transf = m_world->get<WorldTransform>(obj);
         if (transf) {
             //compute the direction vector
             data.dir = vec3(0,1,0) * transf->rot;

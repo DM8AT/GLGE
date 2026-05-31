@@ -197,6 +197,7 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
         GLGE::Graphic::Component::Renderable{&cube_mesh.reference()->mesh(), &mat, true}, 
         GLGE::Transform{{-5,-1,-2}, {{0,0,0}}, {1,1,1}}
     );
+    world.setParent(cube, suzanne);
     GLGE::Object plane = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Plane", 
         GLGE::Graphic::Component::Renderable{&plane_mesh.reference()->mesh(), &mat, true}, 
@@ -289,6 +290,8 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
         world.get<GLGE::Transform>(suzanne)->pos.y = glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);
         world.get<GLGE::Transform>(suzanne2)->pos.y = 1.f - glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);
         world.get<GLGE::Graphic::Component::PointLight>(light)->intensity = (glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9 / 2.333) * 0.5 + 0.5) * 50;
+        //bake the transforms
+        GLGE::System::BakeTransforms(world);
         //update the renderer (update transformation state)
         renderer.update();
 

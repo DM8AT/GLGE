@@ -68,24 +68,14 @@ namespace GLGE {
          * 
          * @param buffer the buffer to load from
          */
-        virtual void load(const std::span<const u8>& buffer) override {
-            //copy the data
-            memcpy(&pos, buffer.data(), sizeof(pos));
-            memcpy(&rot, buffer.data() + sizeof(pos), sizeof(rot));
-            memcpy(&scale, buffer.data() + sizeof(pos) + sizeof(rot), sizeof(scale));
-        }
+        virtual void load(const std::span<const u8>& buffer) override;
 
         /**
          * @brief store the serializable asset
          * 
          * @param buffer the buffer to write the serializable data to
          */
-        virtual void store(std::vector<u8>& buffer) override {
-            //add the data
-            buffer.insert(buffer.end(), reinterpret_cast<u8*>(&pos), reinterpret_cast<u8*>(&pos) + sizeof(pos));
-            buffer.insert(buffer.end(), reinterpret_cast<u8*>(&rot), reinterpret_cast<u8*>(&rot) + sizeof(rot));
-            buffer.insert(buffer.end(), reinterpret_cast<u8*>(&scale), reinterpret_cast<u8*>(&scale) + sizeof(scale));
-        }
+        virtual void store(std::vector<u8>& buffer) override;
 
     };
 
@@ -135,24 +125,48 @@ namespace GLGE {
          * 
          * @param buffer the buffer to load from
          */
-        virtual void load(const std::span<const u8>& buffer) override {
-            //copy the data
-            memcpy(&pos, buffer.data(), sizeof(pos));
-            memcpy(&angle, buffer.data() + sizeof(angle), sizeof(angle));
-            memcpy(&scale, buffer.data() + sizeof(pos) + sizeof(angle), sizeof(scale));
-        }
+        virtual void load(const std::span<const u8>& buffer) override;
 
         /**
          * @brief store the serializable asset
          * 
          * @param buffer the buffer to write the serializable data to
          */
-        virtual void store(std::vector<u8>& buffer) override {
-            //add the data
-            buffer.insert(buffer.end(), reinterpret_cast<u8*>(&pos), reinterpret_cast<u8*>(&pos) + sizeof(pos));
-            buffer.insert(buffer.end(), reinterpret_cast<u8*>(&angle), reinterpret_cast<u8*>(&angle) + sizeof(angle));
-            buffer.insert(buffer.end(), reinterpret_cast<u8*>(&scale), reinterpret_cast<u8*>(&scale) + sizeof(scale));
-        }
+        virtual void store(std::vector<u8>& buffer) override;
+
+    };
+
+    /**
+     * @brief store a transform that holds 3D transformation relative to the world's root
+     * 
+     * This is the version only used for 3D transforms
+     */
+    struct WorldTransform {
+        /**
+         * @brief store the position relative to the world's root
+         */
+        vec3 pos;
+        /**
+         * @brief store the rotation relative to the world's root
+         */
+        Quaternion rot;
+        /**
+         * @brief store the scale relative to the world's root
+         */
+        vec3 scale;
+    };
+
+    /**
+     * @brief a namespace that contains all system functions
+     */
+    namespace System {
+
+        /**
+         * @brief a system that bakes all transforms to the world transforms
+         * 
+         * @param world a reference to the world to operate on
+         */
+        void BakeTransforms(World& world);
 
     };
 

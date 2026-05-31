@@ -199,6 +199,7 @@ add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
     ${GLGE_SRC_DIR}/Core/CompoundAsset.cpp
     ${GLGE_SRC_DIR}/Core/utils/RecursiveThreadMutexShared.cpp
     ${GLGE_SRC_DIR}/Core/WorldAsset.cpp
+    ${GLGE_SRC_DIR}/Core/Transform.cpp
     # External: Miniz
     ${GLGE_SRC_DIR}/external/miniz/miniz.c
 )
