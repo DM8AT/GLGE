@@ -213,9 +213,9 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
             .flags = 0
         },
         GLGE::Transform{
-            .pos = {-0.75,0,1},
-            .rot = GLGE::vec3{0,0,0},
-            .scale = {1,1,1}
+            {-0.75,0,1},
+            GLGE::vec3{0,0,0},
+            {1,1,1}
         }
     );
     GLGE::Object spot = world.create<GLGE::Graphic::Component::SpotLight, GLGE::Transform>(
@@ -230,9 +230,9 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
             .flags = 0
         },
         GLGE::Transform{
-            .pos = {0,0,-3},
-            .rot = GLGE::vec3{glm::radians(160.f),glm::radians(-20.f),0},
-            .scale = {1,1,1}
+            {0,0,-3},
+            GLGE::vec3{glm::radians(160.f),glm::radians(-20.f),0},
+            {1,1,1}
         }
     );
     GLGE::Object skylight = world.create<GLGE::Graphic::Component::DirectionalLight, GLGE::Transform>(
@@ -243,9 +243,9 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
             .flags = 0
         }, 
         GLGE::Transform {
-            .pos {0,0,0},
-            .rot = GLGE::vec3{glm::radians(-12.5f), 0, glm::radians(20.f)},
-            .scale {1,1,1}
+            {0,0,0},
+            GLGE::vec3{glm::radians(-12.5f), 0, glm::radians(20.f)},
+            {1,1,1}
         }
     );
 

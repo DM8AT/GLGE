@@ -17,6 +17,9 @@
 //add assets
 #include "Asset.h"
 
+//add transforms
+#include "Transform.h"
+
 //use the library namespace
 namespace GLGE {
 
@@ -39,11 +42,6 @@ namespace GLGE {
          */
         class ComponentRegistry {
         public:
-
-            /**
-             * @brief Construct a new Component Registry
-             */
-            ComponentRegistry() = default;
 
             /**
              * @brief Destroy the Component Registry
@@ -82,6 +80,15 @@ namespace GLGE {
             }
 
         protected:
+
+            /**
+             * @brief Construct a new Component Registry
+             */
+            ComponentRegistry() {
+                //add all default components
+                addType<Transform>();
+                addType<Transform2D>();
+            }
 
             /**
              * @brief define the type used for the type-erased discovery functions
