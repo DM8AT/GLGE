@@ -55,7 +55,8 @@
 //add the layer system
 #include "LayerManager.h"
 
-//add compound assets
+//add assets
 #include "CompoundAsset.h"
+#include "WorldAsset.h"
 
 #endif

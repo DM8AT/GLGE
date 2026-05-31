@@ -322,7 +322,7 @@ bool GLGE::CompoundAsset::hasEntry(const std::filesystem::path& virtualPath) {
     beg++;
     if (beg == virtualPath.end()) {return exists;}
     if (m_virtualEntryMap.at(beg->string()).reference.fileType == getTypeHash64<CompoundAsset>())
-    {return m_virtualEntryMap.at(beg->string()).handle->reference()->hasEntry(*beg);}
+    {return m_virtualEntryMap.at(beg->string()).handle.getTyped<CompoundAsset>().reference()->hasEntry(*beg);}
     //at this point -> fail
     return false;
 }

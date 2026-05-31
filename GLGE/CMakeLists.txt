@@ -194,11 +194,11 @@ target_include_directories(${GLGE_LIB_NAME} INTERFACE
 add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
     ${GLGE_SRC_DIR}/Core/Instance.cpp
     ${GLGE_SRC_DIR}/Core/BaseClass.cpp
-    ${GLGE_SRC_DIR}/Core/Object.cpp
     ${GLGE_SRC_DIR}/Core/Keyboard.cpp
     ${GLGE_SRC_DIR}/Core/Mouse.cpp
     ${GLGE_SRC_DIR}/Core/CompoundAsset.cpp
     ${GLGE_SRC_DIR}/Core/utils/RecursiveThreadMutexShared.cpp
+    ${GLGE_SRC_DIR}/Core/WorldAsset.cpp
     # External: Miniz
     ${GLGE_SRC_DIR}/external/miniz/miniz.c
 )

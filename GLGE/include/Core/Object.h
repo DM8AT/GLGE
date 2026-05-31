@@ -28,46 +28,43 @@ namespace GLGE {
     class World;
 
     /**
+     * @brief a base class for all components that can be saved / loaded
+     */
+    class SerializableComponent {
+    public:
+
+        /**
+         * @brief Destroy the Serializable Component
+         */
+        virtual ~SerializableComponent() = default;
+
+        /**
+         * @brief load the serializable component
+         * 
+         * Span is used to not copy the data
+         * 
+         * @param buffer the buffer to load from
+         */
+        virtual void load(const std::span<const u8>& buffer) = 0;
+
+        /**
+         * @brief store the serializable asset
+         * 
+         * @param buffer the buffer to write the serializable data to
+         */
+        virtual void store(std::vector<u8>& buffer) = 0;
+
+    };
+
+    /**
      * @brief store all the default components
      */
     namespace Component {
 
         /**
-         * @brief a base class for all components that can be saved / loaded
-         */
-        class SerializableComponent {
-        public:
-
-            /**
-             * @brief Destroy the Serializable Component
-             */
-            virtual ~SerializableComponent() = default;
-
-            /**
-             * @brief load the serializable component
-             * 
-             * @param entity the entity to load to
-             * @param buffer the buffer to load from
-             * @param offset the starting offset to start reading from
-             * @param world the context of the world to load to
-             * @return `u64` the amount of read bytes
-             */
-            virtual u64 load(Tiny::ECS::Entity entity, const std::vector<u8>& buffer, u64 offset, World* world) = 0;
-
-            /**
-             * @brief store the serializable asset
-             * 
-             * @param buffer the buffer to write the serializable data to
-             * @param world a pointer to the world to store from
-             */
-            virtual void store(std::vector<u8>& buffer, World* world) = 0;
-
-        };
-
-        /**
          * @brief store the name of an object
          */
-        class Name : public SerializableComponent {
+        class Name {
         public:
 
             /**
@@ -96,30 +93,12 @@ namespace GLGE {
              */
             u32 name;
 
-            /**
-             * @brief store a name in a binary buffer
-             * 
-             * @param buffer the buffer to write to
-             * @param world a pointer to the world to store from
-             */
-            virtual void store(std::vector<u8>& buffer, World* world) override;
-
-            /**
-             * @brief load a name from a binary buffer
-             * 
-             * @param entity the entity to load to
-             * @param buffer the buffer to read from
-             * @param offset the offset to start reading at
-             * @param world the context of the world to load to
-             * @return `u64` the amount of read bytes
-             */
-            virtual u64 load(Tiny::ECS::Entity entity, const std::vector<u8>& buffer, u64 offset, World* world) override;
         };
 
         /**
          * @brief a class for storing a single node of the world hierarchy tree
          */
-        class HierarchyNode : public SerializableComponent {
+        class HierarchyNode {
         public:
 
             /**
@@ -149,24 +128,6 @@ namespace GLGE {
              */
             Tiny::ECS::Entity prevSibling = Tiny::ECS::Entity::getInvalid();
 
-            /**
-             * @brief store a name in a binary buffer
-             * 
-             * @param buffer the buffer to write to
-             * @param world a pointer to the world to store from
-             */
-            virtual void store(std::vector<u8>& buffer, World* world) override;
-
-            /**
-             * @brief load a name from a binary buffer
-             * 
-             * @param entity the entity to load to
-             * @param buffer the buffer to read from
-             * @param offset the offset to start reading at
-             * @param world the context of the world to load to
-             * @return `u64` the amount of read bytes
-             */
-            virtual u64 load(Tiny::ECS::Entity entity, const std::vector<u8>& buffer, u64 offset, World* world) override;
         };
 
     }
@@ -243,6 +204,22 @@ namespace GLGE {
         {}
 
         /**
+         * @brief Set the name of the world
+         * 
+         * @param name the new name for the world
+         */
+        inline void setName(const std::string& name) noexcept
+        {m_name = name;}
+
+        /**
+         * @brief Get the Name of the world
+         * 
+         * @return `const std::string&` the name of the world
+         */
+        const std::string& getName() const noexcept
+        {return m_name;}
+
+        /**
          * @brief create a new object
          * 
          * @tparam Cs the components to add to the object
@@ -252,7 +229,7 @@ namespace GLGE {
          * @return `Object` a reference to the new object
          */
         template <typename... Cs, typename... Args>
-        requires (((std::is_base_of_v<Component::SerializableComponent, Cs> || std::is_default_constructible_v<Cs>) && ...) && !Tiny::ECS::util::contains_type_v<Object, Args...>)
+        requires (((std::is_default_constructible_v<Cs>) && ...) && !Tiny::ECS::util::contains_type_v<Object, Args...>)
         Object create(const std::string& name, Args&&... args) {
             //sanity check that all components are assigned
             static_assert(sizeof...(Cs) == sizeof...(Args), "Arguments for all components must be given, not more and not less");
@@ -272,7 +249,7 @@ namespace GLGE {
          * @return `Object` a reference to the new object
          */
         template <typename... Cs, typename... Args>
-        requires (((std::is_base_of_v<Component::SerializableComponent, Cs> || std::is_default_constructible_v<Cs>) && ...) && !Tiny::ECS::util::contains_type_v<Object, Args...>)
+        requires (((std::is_default_constructible_v<Cs>) && ...) && !Tiny::ECS::util::contains_type_v<Object, Args...>)
         Object create(const std::string& name, Object parent, Args&&... args) {
             //sanity check that all components are assigned
             static_assert(sizeof...(Cs) == sizeof...(Args), "Arguments for all components must be given, not more and not less");
@@ -297,7 +274,7 @@ namespace GLGE {
          * @return `std::vector<Object>` a vector containing all the new objects
          */
         template <typename... Cs, typename... Args>
-        requires (((std::is_base_of_v<Component::SerializableComponent, Cs> || std::is_default_constructible_v<Cs>) && ...) && !Tiny::ECS::util::contains_type_v<Object, Args...>)
+        requires (((std::is_default_constructible_v<Cs>) && ...) && !Tiny::ECS::util::contains_type_v<Object, Args...>)
         std::vector<Object> create(u64 count, const std::string& name, Args&&... args) {
             //sanity check that all components are assigned
             static_assert(sizeof...(Cs) == sizeof...(Args), "Arguments for all components must be given, not more and not less");
@@ -539,6 +516,73 @@ namespace GLGE {
          */
         inline static Object getRoot() noexcept
         {return Object(Tiny::ECS::Entity::getInvalid());}
+
+        /**
+         * @brief add a new component to an existing object
+         * 
+         * @tparam T the type of the component to add
+         * @tparam Args the argument types used to initialize the component
+         * @param obj the object to add the component to
+         * @param args the arguments used for initialization
+         */
+        template <typename T, typename... Args>
+        void add(Object obj, Args&&... args) 
+        {m_reg.add<T, Args...>(obj.m_ent, std::forward<Args>(args)...);}
+
+        /**
+         * @brief Get the all objects that have a specific name
+         * 
+         * It is valid to parse in an unknown name. If no object contains the name, the list will be empty. 
+         * This scenario is fully valid. 
+         * 
+         * @param name the name of the objects to fetch
+         * @return `std::vector<Object>` a list containing all objects with that name
+         */
+        std::vector<Object> getAllWithName(const std::string& name) {
+            //early out on unknown name
+            auto it = m_inverseNameIdMap.find(name);
+            if (it == m_inverseNameIdMap.end())
+            {return {};}
+
+            //else, gather all objects with that name
+            std::vector<Object> objs;
+            m_reg.each_match<Component::Name>([&it, &objs](const Tiny::ECS::Entity& ent, const Component::Name& name) {
+                //name ID must match
+                if (name.name == it->second)
+                {objs.push_back(Object(ent));}
+            });
+
+            //return all found objects
+            return objs;
+        }
+
+        /**
+         * @brief Get the all objects that have a specific name
+         * 
+         * It is valid to parse in an unknown name. If no object contains the name, the list will be empty. 
+         * This scenario is fully valid. 
+         * 
+         * @param name the name of the objects to fetch
+         * @param parent the parent to query from
+         * @return `std::vector<Object>` a list containing all objects with that name
+         */
+        std::vector<Object> getAllWithNameFrom(const std::string& name, Object parent) {
+            //early out on unknown name
+            auto it = m_inverseNameIdMap.find(name);
+            if (it == m_inverseNameIdMap.end())
+            {return {};}
+
+            //else, gather all objects with that name
+            std::vector<Object> objs;
+            m_reg.each_match<Component::Name, Component::HierarchyNode>([&it, &objs, &parent](const Tiny::ECS::Entity& ent, const Component::Name& name, const Component::HierarchyNode& node) {
+                //name ID and parent must match
+                if ((name.name == it->second) && (node.parent == parent.m_ent))
+                {objs.push_back(Object(ent));}
+            });
+
+            //return all found objects
+            return objs;
+        }
 
     protected:
 

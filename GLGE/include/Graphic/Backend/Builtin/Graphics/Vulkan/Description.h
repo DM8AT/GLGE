@@ -15,6 +15,9 @@
 //include the backend description
 #include "Graphic/Backend/Graphics/BackendDescription.h"
 
+//Internally Vulkan relies on 64-Bit architecture, so enforce it
+static_assert(sizeof(void*) == 8, "The Vulkan system may only be used on 64-Bit machines. 32-Bit compatibility is NOT supported.");
+
 //use the graphic builtin namespace
 namespace GLGE::Graphic {
 /**

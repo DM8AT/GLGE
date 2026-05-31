@@ -62,9 +62,9 @@ namespace GLGE {
              */
             VirtualFileRef reference;
             /**
-             * @brief if the type is a compound asset, this stores a handle to it
+             * @brief if the asset is loaded, store the handle
              */
-            std::optional<AssetHandle<CompoundAsset>> handle;
+            UntypedAssetHandle handle;
         };
 
     public:
@@ -434,13 +434,12 @@ namespace GLGE {
                 //append the data and store the metadata
                 m_rawBlob.insert(m_rawBlob.end(), compressed.begin(), compressed.end());
                 m_virtualEntryMap[name].reference = meta;
-                //if this is a compound asset, store the handle
-                if constexpr (std::is_same_v<T, CompoundAsset>) 
-                {m_virtualEntryMap[name].handle = handle;}
+                //store the handle
+                m_virtualEntryMap[name].handle.getTyped<T>() = handle;
             } else {
                 //if not, recurse deeper
                 if (m_virtualEntryMap.at(beg->string()).reference.fileType == getTypeHash64<CompoundAsset>())
-                {m_virtualEntryMap.at(beg->string()).handle->reference()->open<T>(*beg);}
+                {m_virtualEntryMap.at(beg->string()).handle.getTyped<CompoundAsset>().reference()->open<T>(*beg);}
             }
         }
 
@@ -484,9 +483,8 @@ namespace GLGE {
                 //get the element
                 FileEntry& entry = m_virtualEntryMap.at(el->string());
                 //check if it is allready loaded
-                if constexpr (std::is_same_v<T, CompoundAsset>) {
-                    if (entry.handle.has_value()) {return *entry.handle;}
-                }
+                if (entry.handle.isValid())
+                {return entry.handle.getTyped<T>();}
                 //sanity check the type
                 if (entry.reference.fileType != getTypeHash64<T>()){
                     //return an invalid handle
@@ -496,11 +494,13 @@ namespace GLGE {
                 std::vector<u8> data;
                 entry.reference.uncompressedSize = getUncompressed(data, entry.reference);
                 //actual load to the asset
-                return m_manager->load<T>(data);
+                AssetHandle<T> handle = m_manager->load<T>(data);
+                entry.handle.getTyped<T>() = handle;
+                return handle;
             }
             //if not, recurse deeper
             if (m_virtualEntryMap.at(el->string()).reference.fileType == getTypeHash64<CompoundAsset>())
-            {return m_virtualEntryMap.at(el->string()).handle->reference()->open<T>(*beg);}
+            {return m_virtualEntryMap.at(el->string()).handle.getTyped<CompoundAsset>().reference()->open<T>(*beg);}
 
             //return an invalid handle
             return AssetHandle<T>{};

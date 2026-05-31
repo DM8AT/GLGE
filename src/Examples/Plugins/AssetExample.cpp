@@ -22,9 +22,58 @@ void printHelper(GLGE::AssetHandle<GLGE::CompoundAsset> asset, uint64_t depth) {
     }
 }
 
+class ExampleComponent : public GLGE::SerializableComponent {
+public:
+
+    /**
+     * @brief Construct a new Example Component
+     * 
+     * All components must be default-constructable
+     */
+    ExampleComponent() = default;
+
+    /**
+     * @brief Construct a new Example Component
+     * 
+     * @param v the value to initialize with
+     */
+    ExampleComponent(GLGE::u64 v) : value(v) {}
+
+    /**
+     * @brief load the serializable component
+     * 
+     * @param entity the entity to load to
+     * @param buffer the buffer to load from
+     * @param world the context of the world to load to
+     */
+    virtual void load(const std::span<const GLGE::u8>& buffer) override {
+        //store the number
+        memcpy(&value, buffer.data(), sizeof(value));
+    }
+
+    /**
+     * @brief store the serializable asset
+     * 
+     * @param buffer the buffer to write the serializable data to
+     * @param world a pointer to the world to store from
+     */
+    virtual void store(std::vector<GLGE::u8>& buffer) override {
+        //add the number
+        GLGE::u8 data[8] {};
+        memcpy(data, &value, sizeof(value));
+        buffer.insert(buffer.end(), data, data+8);
+    }
+
+    GLGE::u64 value = 0;
+
+};
+
 GLGE::u8 assetExample(const char *graphicBackendName, const char *videoBackendName) {
     //initialize
     GLGE::Instance::init();
+
+    //this registration can be done at any time. 
+    GLGE::WorldAsset::getComponentRegistry().addType<ExampleComponent>();
 
     //the descriptions need to be created here using the provided names
     auto gDescr = createGraphicBackendDescription(graphicBackendName);
@@ -40,6 +89,15 @@ GLGE::u8 assetExample(const char *graphicBackendName, const char *videoBackendNa
     auto img = ass.reference()->open<GLGE::Graphic::Asset::ImageCPU>("imgs/img");
     if (img) 
     {img.reference()->export_as("Img.png", GLGE::Graphic::Asset::ImageCPU::PNG);}
+
+    auto worldAss = ass.reference()->open<GLGE::WorldAsset>("worlds/Hello World");
+    GLGE::World& world = worldAss.reference()->world();
+    world.printTree(world.getRoot());
+
+    GLGE::Object first = world.getAllWithName("First").front();
+    std::cout << "Value from \"First\": " << world.get<ExampleComponent>(first)->value << "\n";
+    GLGE::Object third = world.getAllWithName("Third").front();
+    std::cout << "Value from \"Third\": " << world.get<ExampleComponent>(third)->value << "\n";
 
     return 0;
 }

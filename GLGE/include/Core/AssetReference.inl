@@ -24,16 +24,16 @@ namespace GLGE {
     {
         GLGE_PROFILER_SCOPE();
         //lock type map
-        std::shared_lock lock(m_handle->m_manager->m_typeLock);
+        std::shared_lock lock(m_handle->m_data.manager->m_typeLock);
         //quarry the specific type storage
-        auto it = m_handle->m_manager->m_typeStorage.find(m_handle->m_type);
-        if (it == m_handle->m_manager->m_typeStorage.end())
+        auto it = m_handle->m_data.manager->m_typeStorage.find(m_handle->m_data.type);
+        if (it == m_handle->m_data.manager->m_typeStorage.end())
         {throw Exception("Referencing an invalid asset, asset reference could not be created", "AssetReference<T>::AssetReference");}
         AssetManager::TypeStorage<T>* storage = reinterpret_cast<AssetManager::TypeStorage<T>*>(it->second);
         //lock the asset
         m_lock = std::shared_lock(storage->mtx);
         //quarry by UUID, store the asset if valid
-        auto uit = storage->uuid_to_index.find(m_handle->m_uuid);
+        auto uit = storage->uuid_to_index.find(m_handle->m_data.uuid);
         if (uit != storage->uuid_to_index.end()) {
             m_asset = storage->assets.at(uit->second);
             //check if the asset is being destroyed
@@ -49,27 +49,31 @@ namespace GLGE {
     //implement the normal constructor
     template <typename T>
     AssetHandle<T>::AssetHandle(UUID uuid, u64 type, AssetManager* manager) 
-     : m_uuid(uuid), m_manager(manager), m_type(type)
+     : m_data(AssetHandleData{
+        .uuid = uuid,
+        .manager = manager,
+        .type = type
+     })
     {
         GLGE_PROFILER_SCOPE();
         //lock type map
-        std::shared_lock lock(m_manager->m_typeLock);
+        std::shared_lock lock(m_data.manager->m_typeLock);
         //register that the handle exists
-        auto it = m_manager->m_typeStorage.find(m_type);
-        if (it == m_manager->m_typeStorage.end()) {
-            m_manager = nullptr;
+        auto it = m_data.manager->m_typeStorage.find(m_data.type);
+        if (it == m_data.manager->m_typeStorage.end()) {
+            m_data.manager = nullptr;
             return;
         }
         AssetManager::TypeStorage<T>* storage = (AssetManager::TypeStorage<T>*)(it->second);
         std::shared_lock lock2(storage->mtx);
-        auto ait = storage->uuid_to_index.find(m_uuid);
+        auto ait = storage->uuid_to_index.find(m_data.uuid);
         if (ait == storage->uuid_to_index.end()) {
-            m_manager = nullptr;
+            m_data.manager = nullptr;
             return;
         }
         //check if the asset is being destroyed
         if (static_cast<Asset*>(storage->assets[ait->second])->m_destroying.load(std::memory_order_acquire)) {
-            m_manager = nullptr;
+            m_data.manager = nullptr;
             return;
         }
         storage->assets[ait->second]->m_references.fetch_add(1, std::memory_order_acq_rel);
@@ -78,38 +82,38 @@ namespace GLGE {
     //implement the copy constructor
     template <typename T>
     AssetHandle<T>::AssetHandle(const AssetHandle<T>& other) 
-     : m_uuid(other.m_uuid), m_manager(other.m_manager), m_type(other.m_type)
+     : m_data(other.m_data)
     {
         GLGE_PROFILER_SCOPE();
         //do NOT decrement the old asset - this handle did not exist before this, no old reference to clean
 
         //early-path for invalid other
-        if (other.m_manager == nullptr) {
+        if (other.m_data.manager == nullptr) {
             //just clear this one too
-            m_manager = nullptr;
-            m_type = 0;
-            m_uuid = 0;
+            m_data.manager = nullptr;
+            m_data.type = 0;
+            m_data.uuid = 0;
             return;
         }
 
         //lock type map
-        std::shared_lock lock(m_manager->m_typeLock);
+        std::shared_lock lock(m_data.manager->m_typeLock);
         //register that the handle exists
-        auto it = m_manager->m_typeStorage.find(m_type);
-        if (it == m_manager->m_typeStorage.end()) {
-            m_manager = nullptr;
+        auto it = m_data.manager->m_typeStorage.find(m_data.type);
+        if (it == m_data.manager->m_typeStorage.end()) {
+            m_data.manager = nullptr;
             return;
         }
         AssetManager::TypeStorage<T>* storage = (AssetManager::TypeStorage<T>*)(it->second);
         std::shared_lock lock2(storage->mtx);
-        auto ait = storage->uuid_to_index.find(m_uuid);
+        auto ait = storage->uuid_to_index.find(m_data.uuid);
         if (ait == storage->uuid_to_index.end()) {
-            m_manager = nullptr;
+            m_data.manager = nullptr;
             return;
         }
         //check if the asset is being destroyed
         if (static_cast<Asset*>(storage->assets[ait->second])->m_destroying.load(std::memory_order_acquire)) {
-            m_manager = nullptr;
+            m_data.manager = nullptr;
             return;
         }
         static_cast<Asset*>(storage->assets[ait->second])->m_references.fetch_add(1, std::memory_order_acq_rel);
@@ -118,15 +122,15 @@ namespace GLGE {
     //implement the move constructor
     template <typename T>
     AssetHandle<T>::AssetHandle(AssetHandle<T>&& other)
-     : m_uuid(other.m_uuid), m_manager(other.m_manager), m_type(other.m_type) 
+     : m_data(other.m_data)
     {
         GLGE_PROFILER_SCOPE();
         //handle count is kept the same
 
         //invalidate the handle
-        other.m_manager = nullptr;
-        other.m_type = 0;
-        other.m_uuid = 0;
+        other.m_data.manager = nullptr;
+        other.m_data.type = 0;
+        other.m_data.uuid = 0;
     }
 
     //implement the copy asign operator
@@ -139,37 +143,35 @@ namespace GLGE {
         decrement();
 
         //early path for invalid other
-        if (other.m_manager == nullptr) {
+        if (other.m_data.manager == nullptr) {
             //just clear this one too
-            m_manager = nullptr;
-            m_type = 0;
-            m_uuid = 0;
+            m_data.manager = nullptr;
+            m_data.type = 0;
+            m_data.uuid = 0;
             return *this;
         }
 
         //get the data
-        m_uuid = other.m_uuid;
-        m_manager = other.m_manager;
-        m_type = other.m_type;
+        m_data = other.m_data;
 
         //lock type map
-        std::shared_lock lock(m_manager->m_typeLock);
+        std::shared_lock lock(m_data.manager->m_typeLock);
         //register that the handle exists
-        auto it = m_manager->m_typeStorage.find(m_type);
-        if (it == m_manager->m_typeStorage.end()) {
-            m_manager = nullptr;
+        auto it = m_data.manager->m_typeStorage.find(m_data.type);
+        if (it == m_data.manager->m_typeStorage.end()) {
+            m_data.manager = nullptr;
             return *this;
         }
         AssetManager::TypeStorage<T>* storage = (AssetManager::TypeStorage<T>*)(it->second);
         std::shared_lock lock2(storage->mtx);
-        auto ait = storage->uuid_to_index.find(m_uuid);
+        auto ait = storage->uuid_to_index.find(m_data.uuid);
         if (ait == storage->uuid_to_index.end()) {
-            m_manager = nullptr;
+            m_data.manager = nullptr;
             return *this;
         }
         //check if the asset is being destroyed
         if (static_cast<Asset*>(storage->assets[ait->second])->m_destroying.load(std::memory_order_acquire)) {
-            m_manager = nullptr;
+            m_data.manager = nullptr;
             return *this;
         }
         static_cast<Asset*>(storage->assets[ait->second])->m_references.fetch_add(1, std::memory_order_acq_rel);
@@ -188,16 +190,14 @@ namespace GLGE {
         decrement();
 
         //get the data
-        m_uuid = other.m_uuid;
-        m_manager = other.m_manager;
-        m_type = other.m_type;
+        m_data = other.m_data;
 
         //handle count is kept the same
 
         //invalidate other
-        other.m_manager = nullptr;
-        other.m_type = 0;
-        other.m_uuid = 0;
+        other.m_data.manager = nullptr;
+        other.m_data.type = 0;
+        other.m_data.uuid = 0;
 
         //return self
         return *this;
@@ -213,10 +213,10 @@ namespace GLGE {
         //this must happen outside the locked scope
         T* ass = nullptr;
         {
-        std::unique_lock typeLock(m_manager->m_typeLock);
+        std::unique_lock typeLock(m_data.manager->m_typeLock);
 
-        auto it = m_manager->m_typeStorage.find(m_type);
-        if (it == m_manager->m_typeStorage.end()) return;
+        auto it = m_data.manager->m_typeStorage.find(m_data.type);
+        if (it == m_data.manager->m_typeStorage.end()) return;
 
         auto* storage = static_cast<AssetManager::TypeStorage<T>*>(it->second);
 
@@ -224,7 +224,7 @@ namespace GLGE {
         std::unique_lock storageLock(storage->mtx);
 
         //get the index of the asset using the UUID
-        auto ait = storage->uuid_to_index.find(m_uuid);
+        auto ait = storage->uuid_to_index.find(m_data.uuid);
         if (ait == storage->uuid_to_index.end()) return;
 
         //get the asset
@@ -233,17 +233,17 @@ namespace GLGE {
 
         //reject multi-deletion
         if (a->m_destroying.load(std::memory_order_acquire)) {
-            m_manager = nullptr;
-            m_type = 0;
-            m_uuid = 0;
+            m_data.manager = nullptr;
+            m_data.type = 0;
+            m_data.uuid = 0;
             return;
         }
 
         //decrement reference count, stop if too large
         if (a->m_references.fetch_sub(1) != 1) {
-            m_manager = nullptr;
-            m_type = 0;
-            m_uuid = 0;
+            m_data.manager = nullptr;
+            m_data.type = 0;
+            m_data.uuid = 0;
             return;
         }
 
@@ -262,14 +262,14 @@ namespace GLGE {
 
         {
         //re-acquire locks
-        std::unique_lock typeLock(m_manager->m_typeLock);
-        auto it = m_manager->m_typeStorage.find(m_type);
-        if (it == m_manager->m_typeStorage.end()) return;
+        std::unique_lock typeLock(m_data.manager->m_typeLock);
+        auto it = m_data.manager->m_typeStorage.find(m_data.type);
+        if (it == m_data.manager->m_typeStorage.end()) return;
         auto* storage = static_cast<AssetManager::TypeStorage<T>*>(it->second);
         std::unique_lock storageLock(storage->mtx);
 
         //index must be re-queried, it may have changed
-        auto ait = storage->uuid_to_index.find(m_uuid);
+        auto ait = storage->uuid_to_index.find(m_data.uuid);
         if (ait == storage->uuid_to_index.end()) return;
 
         size_t index = ait->second;
@@ -282,13 +282,13 @@ namespace GLGE {
         }
         //asset is now at the back, remove the back
         storage->assets.pop_back();
-        storage->uuid_to_index.erase(m_uuid);
+        storage->uuid_to_index.erase(m_data.uuid);
         }
 
         //clean up
-        m_manager = nullptr;
-        m_type = 0;
-        m_uuid = 0;
+        m_data.manager = nullptr;
+        m_data.type = 0;
+        m_data.uuid = 0;
 
         //do NOT delete storage here, it's too dangerous
     }

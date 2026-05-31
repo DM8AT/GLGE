@@ -266,6 +266,26 @@ namespace GLGE {
     };
 
     /**
+     * @brief store the type-independent data
+     */
+    struct AssetHandleData {
+        /**
+         * @brief store the UUID of the asset the handle refers to
+         */
+        UUID uuid = 0;
+        /**
+         * @brief store the asset manager of the asset the handle refers to
+         * 
+         * if `manager == nullptr`, the handle is invalid
+         */
+        AssetManager* manager = nullptr;
+        /**
+         * @brief store the type hash of the asset's type
+         */
+        u64 type = 0;
+    };
+
+    /**
      * @brief store a reference to an asset
      * 
      * @tparam `T` the type of asset the handle is pointing to
@@ -323,7 +343,7 @@ namespace GLGE {
          */
         inline UUID getUUID() const noexcept {
             GLGE_PROFILER_SCOPE();
-            return m_uuid;
+            return m_data.uuid;
         }
 
         /**
@@ -333,7 +353,7 @@ namespace GLGE {
          */
         inline AssetManager* getAssetManager() const noexcept {
             GLGE_PROFILER_SCOPE();
-            return m_manager;
+            return m_data.manager;
         }
 
         /**
@@ -343,7 +363,7 @@ namespace GLGE {
          */
         inline u64 getType() const noexcept {
             GLGE_PROFILER_SCOPE();
-            return m_type;
+            return m_data.type;
         }
 
         /**
@@ -356,7 +376,7 @@ namespace GLGE {
             GLGE_PROFILER_SCOPE();
             //in debug to type checking
             #if GLGE_DEBUG
-            if (getTypeHash64<T>() != m_type)
+            if (getTypeHash64<T>() != m_data.type)
             {throw Exception("Type mismatch detected while referencing an asset", "GLGE::AssetHandle::reference");}
             #endif
             //create the new asset handle
@@ -370,7 +390,7 @@ namespace GLGE {
          */
         inline bool isValid() const noexcept {
             GLGE_PROFILER_SCOPE();
-            return m_manager != nullptr;
+            return m_data.manager != nullptr;
         }
 
         /**
@@ -403,24 +423,325 @@ namespace GLGE {
         AssetHandle(UUID uuid, u64 type, AssetManager* manager);
 
         /**
+         * @brief say that no reference counting should be used
+         */
+        struct NoRefCountTag {u8 blob = 0;};
+
+        /**
+         * @brief Construct a new Asset Handle
+         * 
+         * @param data the data to create from
+         */
+        AssetHandle(AssetHandleData data, NoRefCountTag)
+         : m_data(data)
+        {}
+
+        /**
+         * @brief Construct a new Asset Handle
+         * 
+         * @param data the data to create from
+         */
+        AssetHandle(AssetHandleData data)
+         : AssetHandle(data.uuid, data.type, data.manager)
+        {}
+
+        /**
          * @brief decrement the reference count of the asset and potentially clean it up
          */
         void decrement();
 
+        //untyped asset handles are friends
+        friend class UntypedAssetHandle;
+
         /**
-         * @brief store the UUID of the asset the handle refers to
+         * @brief store the actual data
          */
-        UUID m_uuid = 0;
+        AssetHandleData m_data;
+
+    };
+
+    /**
+     * @brief a wrapper for an asset handle that can be stored without a template
+     */
+    class UntypedAssetHandle {
+    public:
+
         /**
-         * @brief store the asset manager of the asset the handle refers to
+         * @brief Construct a new Untyped Asset Handle
          * 
-         * if `m_manager == nullptr`, the handle is invalid
+         * The created untyped handle is invalid
          */
-        AssetManager* m_manager = nullptr;
+        UntypedAssetHandle() = default;
+
         /**
-         * @brief store the type hash of the asset's type
+         * @brief Construct a new Asset Handle
+         * 
+         * @tparam T the type of the asset handle to move from
+         * @param other the handle to copy
          */
-        u64 m_type = 0;
+        template <typename T>
+        UntypedAssetHandle(const AssetHandle<T>& other) {
+            //create the lambdas
+            __createLambdas<T>();
+            //use the copy lambda
+            (*m_copy)(&m_data, &other.m_data);
+        }
+
+        /**
+         * @brief Construct a new Asset Handle
+         * 
+         * @tparam T the type of the asset handle to move from
+         * @param other the handle to move from
+         */
+        template <typename T>
+        UntypedAssetHandle(AssetHandle<T>&& other) {
+            //create the lambdas
+            __createLambdas<T>();
+            //use the move lambda
+            (*m_move)(&m_data, &other.m_data);
+        }
+
+        /**
+         * @brief copy an asset handle
+         * 
+         * @tparam T the type of the asset handle to move from
+         * @param other the asset handle to copy
+         * @return `UntypedAssetHandle&` a reference to the filled out handle
+         */
+        template <typename T>
+        UntypedAssetHandle& operator=(const AssetHandle<T>& other) {
+            //clean up the old handle
+            if (m_destroy)
+            {(*m_destroy)(&m_data);}
+            //then, create the new lambdas
+            __createLambdas<T>();
+            //just use the copy function
+            (*m_copy)(&m_data, &other.m_data);
+            //return a reference to this
+            return *this;
+        }
+
+        /**
+         * @brief move an asset handle
+         * 
+         * @tparam T the type of the asset handle to move from
+         * @param other the asset handle to move from
+         * @return `UntypedAssetHandle&` a reference to this asset handle after it is filled out
+         */
+        template <typename T>
+        UntypedAssetHandle& operator=(AssetHandle<T>&& other) {
+            //clean up the old handle
+            if (m_destroy)
+            {(*m_destroy)(&m_data);}
+            //then, create the new lambdas
+            __createLambdas<T>();
+            //just use the move function
+            (*m_move)(&m_data, &other.m_data);
+            //return a reference to this
+            return *this;
+        }
+
+        /**
+         * @brief Construct a new Asset Handle
+         * 
+         * @param other the handle to copy
+         */
+        UntypedAssetHandle(const UntypedAssetHandle& other) {
+            //copy the lambdas from the other handle
+            m_move = other.m_move;
+            m_copy = other.m_copy;
+            m_destroy = other.m_destroy;
+            //then, use the copy call
+            if (m_copy)
+            {(*m_copy)(&m_data, &other.m_data);}
+        }
+
+        /**
+         * @brief Construct a new Asset Handle
+         * 
+         * @param other the handle to move from
+         */
+        UntypedAssetHandle(UntypedAssetHandle&& other) {
+            //copy the lambdas from the other handle
+            m_move = other.m_move;
+            m_copy = other.m_copy;
+            m_destroy = other.m_destroy;
+            //then, use the copy call
+            if (m_move)
+            {(*m_move)(&m_data, &other.m_data);}
+        }
+
+        /**
+         * @brief copy an asset handle
+         * 
+         * @param other the asset handle to copy
+         * @return `UntypedAssetHandle&` a reference to the filled out handle
+         */
+        UntypedAssetHandle& operator=(const UntypedAssetHandle& other) {
+            //stop self assignment
+            if (this == &other) {return *this;}
+            //clean up the old handle
+            if (m_destroy)
+            {(*m_destroy)(&m_data);}
+            //copy the lambdas from the other handle
+            m_move = other.m_move;
+            m_copy = other.m_copy;
+            m_destroy = other.m_destroy;
+            //then, use the copy call
+            if (m_copy)
+            {(*m_copy)(&m_data, &other.m_data);}
+            //return a reference to this
+            return *this;
+        }
+
+        /**
+         * @brief move an asset handle
+         * 
+         * @param other the asset handle to move from
+         * @return `UntypedAssetHandle&` a reference to this asset handle after it is filled out
+         */
+        UntypedAssetHandle& operator=(UntypedAssetHandle&& other) {
+            //stop self assignment
+            if (this == &other) {return *this;}
+            //clean up the old handle
+            if (m_destroy)
+            {(*m_destroy)(&m_data);}
+            //copy the lambdas from the other handle
+            m_move = other.m_move;
+            m_copy = other.m_copy;
+            m_destroy = other.m_destroy;
+            //then, use the move call
+            if (m_move)
+            {(*m_move)(&m_data, &other.m_data);}
+            //return a reference to this
+            return *this;
+        }
+
+        /**
+         * @brief Destroy the Asset Handle
+         */
+        ~UntypedAssetHandle() {
+            //if a destructor exists, delete it
+            if (m_destroy) 
+            {(*m_destroy)(&m_data);}
+        }
+
+        /**
+         * @brief Get the typed asset handle
+         * 
+         * This creates a new asset handle. 
+         * 
+         * @tparam T the type of the handle to get
+         * @return `AssetHandle<T>` the typed handle
+         */
+        template <typename T>
+        AssetHandle<T> getTyped() {
+            //if the types match, return the handle
+            if (m_data.type == getTypeHash64<T>())
+            {return AssetHandle<T>(m_data);}
+            //return an invalid handle
+            return AssetHandle<T>();
+        }
+
+        /**
+         * @brief Get the type hash
+         * 
+         * @return `u64` the type hash
+         */
+        u64 getType() const noexcept
+        {return m_data.type;}
+
+        /**
+         * @brief check if the handle is valid
+         * 
+         * @return `true` if the handle is valid, `false` if not
+         */
+        inline bool isValid() const noexcept
+        {return m_data.manager != nullptr;}
+
+        /**
+         * @brief check if the handle is valid
+         * 
+         * @return `true` if the handle is valid, `false` if not
+         */
+        inline operator bool() const noexcept
+        {return isValid();}
+
+    protected:
+
+        /**
+         * @brief store the data
+         */
+        AssetHandleData m_data;
+
+        /**
+         * @brief create all lambda functions
+         * 
+         * @tparam T the type of the original handle
+         */
+        template <typename T>
+        void __createLambdas() {
+            m_move = [](AssetHandleData* destination, AssetHandleData* source) {
+                //just copy the type-erased data
+                *destination = *source;
+
+                //clear the from data
+                source->uuid = 0;
+                source->manager = nullptr;
+                source->type = 0;
+
+                //=> +/- 0
+            };
+            m_copy = [](AssetHandleData* destination, const AssetHandleData* source) {
+                //create the handles
+                AssetHandle<T> src(*source, typename AssetHandle<T>::NoRefCountTag{}); //+0
+                AssetHandle<T> dst(src);                                             //+1
+
+                //copy data over
+                *destination = dst.m_data;
+
+                //invalidate the managers
+                //setting the manager to `nullptr` prevents the manager from updating the refcount
+                //since the refcount lives in the asset manager
+                dst.m_data.manager = nullptr;
+                src.m_data.manager = nullptr;
+                // +/- 0
+
+                //=> Total +1
+            };
+            m_destroy = [](AssetHandleData* data) {
+                //stop if the data is invalid
+                if (!data->manager)
+                {return;}
+
+                //else, create the handle
+                AssetHandle<T> handle(*data, typename AssetHandle<T>::NoRefCountTag{}); //+0
+
+                //clear the handle
+                data->uuid = 0;
+                data->manager = nullptr;
+                data->type = 0;
+
+                //decrement is now called automatically in the handle destructor
+
+                //=> Total -1
+            };
+        }
+
+        /**
+         * @brief a function to move the asset handle
+         */
+        void (*m_move)(AssetHandleData*, AssetHandleData*) = nullptr;
+
+        /**
+         * @brief a function to copy the asset handle
+         */
+        void (*m_copy)(AssetHandleData*, const AssetHandleData*) = nullptr;
+
+        /**
+         * @brief a function to destroy the asset handle
+         */
+        void (*m_destroy)(AssetHandleData*) = nullptr;
 
     };
 

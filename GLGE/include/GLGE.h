@@ -10,7 +10,7 @@
  */
 //header guard
 #ifndef _GLGE_
-#define _GLGE
+#define _GLGE_
 
 //print a thanks message during compilation if not disabled
 #ifndef GLGE_NO_THANKS_MSG

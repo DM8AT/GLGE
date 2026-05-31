@@ -2,7 +2,7 @@
  * @file TinyECS.h
  * @author DM8AT
  * @brief a fast, low-overhead single file small entity component system for C++ 23+
- * @version 0.1
+ * @version 1.0
  * @date 2026-02-15
  * 
  * @copyright Copyright (c) 2026
@@ -637,6 +637,15 @@ struct Entity_t {
     Entity_t() = delete;
 
     /**
+     * @brief Construct a new Entity_t
+     * 
+     * @param raw the raw blob to store
+     */
+    constexpr Entity_t(T raw)
+     : blob(raw) 
+    {}
+
+    /**
      * @brief 
      * 
      * @tparam _T the type of the index type to store
@@ -648,6 +657,14 @@ struct Entity_t {
     template <typename _T, _T _INDEX_SIZE_V, _T _INDEX_OFFSET_V>
     bool operator==(const Entity_t<_T, _INDEX_SIZE_V, _INDEX_OFFSET_V>& other) const
     {return (blob == static_cast<T>(other.blob));}
+
+    /**
+     * @brief Get the raw blob
+     * 
+     * @return `T` the raw blob
+     */
+    inline T getBlob() const noexcept
+    {return blob;}
 
 protected:
 
@@ -732,15 +749,6 @@ protected:
      */
     constexpr Entity_t(base_type index, base_type version)
      : blob((((index<<INDEX_OFFSET) & INDEX_MASK)) | ((version<<VERSION_OFFSET) & VERSION_MASK))
-    {}
-
-    /**
-     * @brief Construct a new Entity_t
-     * 
-     * @param raw the raw blob to store
-     */
-    constexpr Entity_t(T raw)
-     : blob(raw) 
     {}
 
     /**
@@ -2419,8 +2427,9 @@ protected:
                 meta.freeCount += (ChunkSize-1);
             } else {
                 //compute the free chunk index
-                i_chunk_t cIdx = (meta.offset + meta.size - (meta.freeCount>>CHUNK_CORRECTION_SHIFT)) - 1;
-                i_chunk_t lIdx = ChunkSize - (meta.freeCount & CHUNK_INDEX_MASK);
+                i_chunk_t shift = (meta.freeCount & CHUNK_INDEX_MASK)>>CHUNK_CORRECTION_SHIFT;
+                i_chunk_t cIdx = (meta.offset + meta.size - shift) - 1;
+                i_chunk_t lIdx = (ChunkSize - (meta.freeCount & CHUNK_INDEX_MASK) & CHUNK_INDEX_MASK);
 
                 //store the element using copy assignment
                 Chunk<T>& c = *(reinterpret_cast<Chunk<T>*>(m_column->m_storage) + cIdx);
