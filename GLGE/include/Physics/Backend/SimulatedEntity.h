@@ -31,6 +31,8 @@ namespace GLGE::Physic::Backend {
 
         /**
          * @brief define object filtering
+         * 
+         * @warning TODO
          */
         struct Filter {
             /**
