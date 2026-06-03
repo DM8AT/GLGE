@@ -154,6 +154,36 @@ namespace GLGE {
          * @brief store the scale relative to the world's root
          */
         vec3 scale;
+
+        /**
+         * @brief cast the world transform to a normal transform
+         * 
+         * @return `Transform` the resulting transform
+         */
+        inline operator Transform() const noexcept
+        {return Transform(pos, rot, scale);}
+
+        /**
+         * @brief a function to get the matrix representing this transformation
+         * 
+         * @return `glm::mat4` the matrix representing the transformation
+         */
+        inline glm::mat4 toMatrix() const noexcept {
+            //create matrices for the elements
+            glm::mat4 T = glm::translate(glm::mat4(1.0f), pos);
+            glm::mat4 R = glm::toMat4(rot);
+            glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
+            //return multiplied together
+            return T * R * S;
+        }
+
+        /**
+         * @brief helper operator to get as a 4x4 matrix
+         * 
+         * @return `glm::mat4` a matrix representing the transform
+         */
+        inline operator glm::mat4() const noexcept
+        {return toMatrix();}
     };
 
     /**

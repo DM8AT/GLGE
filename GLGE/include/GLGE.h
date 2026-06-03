@@ -23,4 +23,7 @@
 //add graphics
 #include "Graphic/Graphic.h"
 
+//add physics
+#include "Physics/Physics.h"
+
 #endif

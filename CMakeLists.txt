@@ -100,6 +100,11 @@ if(EXAMPLE_PLUGIN_BUILD_DEFAULT)
         src/Examples/Plugins/AssetExample.cpp
     )
     list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_AssetExample)
+    # Physics
+    add_example_plugin(ExamplePlugin_PhysicsExample PhysicsExample
+        src/Examples/Plugins/PhysicsExample.cpp
+    )
+    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_PhysicsExample)
 endif()
 
 # add unit tests

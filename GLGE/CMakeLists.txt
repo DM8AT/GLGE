@@ -6,6 +6,8 @@ set(GLGE_LIB_NAME GLGE)
 set(GLGE_CORE_NAME GLGE_CORE)
 # set the name for the graphic library
 set(GLGE_GRAPHIC_NAME GLGE_GRAPHIC)
+# set the name for the physics library
+set(GLGE_PHYSICS_NAME GLGE_PHYSICS)
 # set the name for the project
 set(GLGE_PROJ_NAME GLGE)
 
@@ -44,6 +46,28 @@ option(GLGE_GRAPHIC_ALLOW_ENGINE_COMMAND_OVERRIDE
     OFF
 )
 
+# an option to disable GLGE Physics
+option(GLGE_INCLUDE_PHYSICS
+    "Enable the GLGE Physics extension"
+    ON
+)
+
+# an option to disable the Jolt implementation
+option(GLGE_PHYSICS_INCLUDE_JOLT
+    "Enable Jolt backend"
+    ON
+)
+
+# option(GLGE_PHYSICS_INCLUDE_PHYSX
+#     "Enable PhysX backend"
+#     OFF
+# )
+# 
+# option(GLGE_PHYSICS_INCLUDE_BULLET
+#     "Enable Bullet backend"
+#     OFF
+# )
+
 # Tracy profiling option
 option(GLGE_ENABLE_TRACY "Enable Tracy profiler integration" ON)
 
@@ -55,9 +79,28 @@ option(GLGE_BUILD_SHARED_LIBS "Build GLGE_CORE / GLGE_GRAPHIC as shared librarie
 if(GLGE_BUILD_SHARED_LIBS)
     set(GLGE_CORE_LIBRARY_TYPE SHARED)
     set(GLGE_GRAPHIC_LIBRARY_TYPE SHARED)
+    set(GLGE_PHYSICS_LIBRARY_TYPE SHARED)
 else()
     set(GLGE_CORE_LIBRARY_TYPE STATIC)
     set(GLGE_GRAPHIC_LIBRARY_TYPE STATIC)
+    set(GLGE_PHYSICS_LIBRARY_TYPE STATIC)
+endif()
+
+# check if physics should be enabled
+set(GLGE_PHYSICS_ENABLED FALSE)
+# at least one backend must enabled
+if(GLGE_PHYSICS_INCLUDE_JOLT)
+    set(GLGE_PHYSICS_ENABLED TRUE)
+endif()
+# if(GLGE_PHYSICS_INCLUDE_PHYSX)
+#     set(GLGE_PHYSICS_ENABLED TRUE)
+# endif()
+# if(GLGE_PHYSICS_INCLUDE_BULLET)
+#     set(GLGE_PHYSICS_ENABLED TRUE)
+# endif()
+if(NOT GLGE_PHYSICS_ENABLED)
+    set(GLGE_INCLUDE_PHYSICS OFF)
+    message(STATUS "No physics backends selected. Physics disabled.")
 endif()
 
 ###### DEPENDENCIES
@@ -175,6 +218,29 @@ if (GLGE_INCLUDE_GRAPHICS)
         # FetchContent exposes VMA source dir here
         set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
 
+    endif()
+endif()
+
+if (GLGE_INCLUDE_PHYSICS)
+    ### Jolt
+    if(GLGE_PHYSICS_INCLUDE_JOLT)
+        # message
+        message(STATUS "Fetching Jolt Physics")
+        # get Jolt
+        FetchContent_Declare(
+            JoltPhysics
+            GIT_REPOSITORY https://github.com/jrouwe/JoltPhysics.git
+            GIT_TAG v5.3.0
+        )
+        # make it available if not automatically done
+        FetchContent_MakeAvailable(JoltPhysics)
+        FetchContent_GetProperties(JoltPhysics)
+        if(NOT JoltPhysics_POPULATED)
+            add_subdirectory(
+                ${joltphysics_SOURCE_DIR}/Build
+                ${joltphysics_BINARY_DIR}
+            )
+        endif()
     endif()
 endif()
 
@@ -424,14 +490,63 @@ if (GLGE_INCLUDE_GRAPHICS)
     # link the library to the interface
     target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_GRAPHIC_NAME})
     
-    # set whole archive flags
-    if (MSVC)
-        # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
-    else()
-        target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
-                                                       "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
-                                                       "-Wl,--no-whole-archive"
-                                                       )
+endif()
+
+# check if physics is enabled
+if (GLGE_INCLUDE_PHYSICS)
+
+    # define all always-present physics sources
+    set(GLGE_PHYSICS_SOURCE 
+            ${GLGE_SRC_DIR}/Physics/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/SimulatedEntity.cpp
+    )
+
+    # if jolt is enabled, add jolt sources
+    if (GLGE_PHYSICS_INCLUDE_JOLT)
+        # append to the source
+        set (GLGE_PHYSICS_SOURCE
+            ${GLGE_PHYSICS_SOURCE}
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/Description.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/Collider.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/World.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/SimulatedEntity.cpp
+        )
     endif()
 
+    # compile the library
+    add_library(${GLGE_PHYSICS_NAME} ${GLGE_PHYSICS_LIBRARY_TYPE} ${GLGE_PHYSICS_SOURCE})
+
+    # if jolt is enabled, add jolt libs
+    if (GLGE_PHYSICS_INCLUDE_JOLT)
+    target_link_libraries(${GLGE_PHYSICS_NAME} PRIVATE Jolt)
+    target_include_directories(${GLGE_PHYSICS_NAME} PRIVATE ${joltphysics_SOURCE_DIR})
+    endif()
+
+    # add the internal include directories
+    target_include_directories(${GLGE_PHYSICS_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_INCLUDE_DIR}
+        ${GLGE_SRC_DIR}/external
+    )
+
+    # specify that this is a C++23 library
+    set_target_properties(${GLGE_PHYSICS_NAME} PROPERTIES
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON
+    )
+
+    # link the library to the interface
+    target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_PHYSICS_NAME})
+    
+endif()
+
+# set whole archive flags
+if (MSVC)
+    # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
+else()
+    target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
+                                                    "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
+                                                    "-Wl,--no-whole-archive"
+                                                    )
 endif()

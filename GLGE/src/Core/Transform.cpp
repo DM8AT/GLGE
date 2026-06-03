@@ -60,14 +60,17 @@ static void BakeChildren(GLGE::World& world, GLGE::Tiny::ECS::Entity entity, con
     //world Position = ParentPos + (ParentRot * (ParentScale * LocalPos))
     wTransf->pos = parentGlobal.pos + (parentGlobal.rot * (parentGlobal.scale * lTransf->pos));
 
+    //this must be copied, because the archtype may resize
+    GLGE::WorldTransform wTransfCpy = *wTransf;
+
     //recurse to the children's children
     GLGE::Component::HierarchyNode* node = world.get<GLGE::Component::HierarchyNode>(entity);
     if (node->firstChild != GLGE::Tiny::ECS::Entity::getInvalid()) 
-    {BakeChildren(world, node->firstChild, *wTransf);}
+    {BakeChildren(world, node->firstChild, wTransfCpy);}
 
     //process next sibling
     if (node->nextSibling != GLGE::Tiny::ECS::Entity::getInvalid())
-    {BakeChildren(world, node->nextSibling, *wTransf);}
+    {BakeChildren(world, node->nextSibling, wTransfCpy);}
 }
 
 void GLGE::System::BakeTransforms(World& world) {
@@ -80,14 +83,14 @@ void GLGE::System::BakeTransforms(World& world) {
 
     //iterate over all the objects
     for (const auto& obj : roots) {
-        //get the local transform
-        Transform* lTransf = world.get<Transform>(obj);
         //if a world transform exists, reuse it. Else, add it
         WorldTransform* wTransf = world.get<WorldTransform>(obj);
         if (!wTransf) {
             world.add<WorldTransform>(obj);
             wTransf = world.get<WorldTransform>(obj);
         }
+        //get the local transform
+        Transform* lTransf = world.get<Transform>(obj);
         //this is a root object, so just copy the data over
         wTransf->pos = lTransf->pos;
         wTransf->rot = lTransf->rot;
@@ -95,7 +98,9 @@ void GLGE::System::BakeTransforms(World& world) {
 
         //bake the children
         Component::HierarchyNode* node = world.get<Component::HierarchyNode>(obj);
-        if (node->firstChild != Tiny::ECS::Entity::getInvalid())
-        {BakeChildren(world, node->firstChild, *wTransf);}
+        if (node->firstChild != Tiny::ECS::Entity::getInvalid()) {
+            WorldTransform wTransfCpy = *wTransf; //this must be copied, because the archtype may resize
+            BakeChildren(world, node->firstChild, wTransfCpy);
+        }
     }
 }
