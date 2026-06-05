@@ -58,15 +58,15 @@ option(GLGE_PHYSICS_INCLUDE_JOLT
     ON
 )
 
-# option(GLGE_PHYSICS_INCLUDE_PHYSX
-#     "Enable PhysX backend"
-#     OFF
-# )
+option(GLGE_PHYSICS_INCLUDE_PHYSX
+    "Enable PhysX backend"
+    OFF
+)
 # 
-# option(GLGE_PHYSICS_INCLUDE_BULLET
-#     "Enable Bullet backend"
-#     OFF
-# )
+option(GLGE_PHYSICS_INCLUDE_BULLET
+    "Enable Bullet backend"
+    ON
+)
 
 # Tracy profiling option
 option(GLGE_ENABLE_TRACY "Enable Tracy profiler integration" ON)
@@ -92,9 +92,9 @@ set(GLGE_PHYSICS_ENABLED FALSE)
 if(GLGE_PHYSICS_INCLUDE_JOLT)
     set(GLGE_PHYSICS_ENABLED TRUE)
 endif()
-# if(GLGE_PHYSICS_INCLUDE_PHYSX)
-#     set(GLGE_PHYSICS_ENABLED TRUE)
-# endif()
+if(GLGE_PHYSICS_INCLUDE_PHYSX)
+    set(GLGE_PHYSICS_ENABLED TRUE)
+endif()
 # if(GLGE_PHYSICS_INCLUDE_BULLET)
 #     set(GLGE_PHYSICS_ENABLED TRUE)
 # endif()
@@ -241,6 +241,35 @@ if (GLGE_INCLUDE_PHYSICS)
                 ${joltphysics_BINARY_DIR}
             )
         endif()
+    endif()
+
+    ### PhysX
+    if (GLGE_PHYSICS_INCLUDE_PHYSX)
+        message(WARNING "Physics is currently NOT supported")
+    endif()
+
+    ### Bullet
+    if (GLGE_PHYSICS_INCLUDE_BULLET)
+        # get from github
+        FetchContent_Declare(
+            bullet
+            GIT_REPOSITORY https://github.com/bulletphysics/bullet3.git
+            GIT_TAG master
+        )
+
+        # setup build
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+        set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+        set(BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
+        set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
+        set(BUILD_CPU_DEMOS OFF CACHE BOOL "" FORCE)
+        set(INSTALL_LIBS OFF CACHE BOOL "" FORCE)
+
+        # disable multi threading
+        set(BULLET2_MULTITHREADING OFF CACHE BOOL "" FORCE)
+
+        # build
+        FetchContent_MakeAvailable(bullet)
     endif()
 endif()
 
@@ -515,6 +544,18 @@ if (GLGE_INCLUDE_PHYSICS)
         )
     endif()
 
+    # if bullet is enabled, add bullet sources
+    if (GLGE_PHYSICS_INCLUDE_BULLET)
+        # append to the source
+        set (GLGE_PHYSICS_SOURCE
+            ${GLGE_PHYSICS_SOURCE}
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/Description.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/World.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/SimulatedEntity.cpp
+        )
+    endif()
+
     # compile the library
     add_library(${GLGE_PHYSICS_NAME} ${GLGE_PHYSICS_LIBRARY_TYPE} ${GLGE_PHYSICS_SOURCE})
 
@@ -522,6 +563,16 @@ if (GLGE_INCLUDE_PHYSICS)
     if (GLGE_PHYSICS_INCLUDE_JOLT)
     target_link_libraries(${GLGE_PHYSICS_NAME} PRIVATE Jolt)
     target_include_directories(${GLGE_PHYSICS_NAME} PRIVATE ${joltphysics_SOURCE_DIR})
+    endif()
+
+    # if physx is enabled, add physx libs
+    if (GLGE_PHYSICS_INCLUDE_PHYSX)
+    endif()
+
+    # if bullet is enabled, add bullet libs
+    if (GLGE_PHYSICS_INCLUDE_BULLET)
+    target_link_libraries(${GLGE_PHYSICS_NAME} PRIVATE BulletDynamics BulletCollision LinearMath)
+    target_include_directories(${GLGE_PHYSICS_NAME} PRIVATE ${bullet_SOURCE_DIR}/src)
     endif()
 
     # add the internal include directories

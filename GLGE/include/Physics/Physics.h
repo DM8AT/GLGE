@@ -23,5 +23,6 @@
 
 //add the builtins
 #include "Backend/Builtin/Jolt/Description.h"
+#include "Backend/Builtin/Bullet/Description.h"
 
 #endif

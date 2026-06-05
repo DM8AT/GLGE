@@ -59,11 +59,11 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
     //the descriptions need to be created here using the provided names
     auto gDescr = createGraphicBackendDescription(graphicBackendName);
     auto vDescr = createVideoBackendDescription(videoBackendName);
-    GLGE::Physic::Builtin::Jolt jolt;
+    GLGE::Physic::Builtin::Bullet physics;
 
     //create the instance
     GLGE::Graphic::Instance gInst(gDescr.get(), vDescr.get());
-    GLGE::Physic::Instance  pInst(&jolt);
+    GLGE::Physic::Instance  pInst(&physics);
     GLGE::Instance inst("Physic example", GLGE::Version(1,0,0), std::pair{"Graphic", &gInst}, std::pair{"Physic", &pInst});
 
     //open a window
@@ -78,7 +78,7 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
     GLGE::Physic::BoxCollider    box = GLGE::vec3{1};
 
     GLGE::Physic::World physicsWorld(world, GLGE::vec3(0,-9.81,0), 5E5, 2ull*1024ull*1024ull*1024ull);
-    GLGE::Physic::SimulatedEntity floor = physicsWorld.createEntity(plane);
+    GLGE::Physic::SimulatedEntity floor = physicsWorld.createEntity(plane, GLGE::Physic::SimulatedEntity::BodyType::STATIC, 1.f, 0.1f);
     GLGE::Physic::SimulatedEntity camBody = physicsWorld.createEntity(sphere, GLGE::Physic::SimulatedEntity::BodyType::KINEMATIC);
 
     //load a cube model
@@ -137,11 +137,11 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
         }
     );
 
-    const size_t cubeCount = 20000;
+    const size_t cubeCount = 100;
     std::vector<std::pair<GLGE::Object, GLGE::Physic::SimulatedEntity>> cubes(cubeCount);
     for (size_t i = 0; i < cubeCount; ++i) {
         //create the elements
-        cubes[i].second = physicsWorld.createEntity(box, GLGE::Physic::SimulatedEntity::BodyType::DYNAMIC, 1.f, 0.1, 0.f, false);
+        cubes[i].second = physicsWorld.createEntity(box, GLGE::Physic::SimulatedEntity::BodyType::DYNAMIC, 1.f, 0.1, 0.f);
         cubes[i].first = world.create<GLGE::Transform, GLGE::Physic::RigidBody, GLGE::Graphic::Component::Renderable>("Cube", 
             GLGE::Transform(GLGE::vec3(0,2+i,0), {1,0,0,0}, GLGE::vec3(0.5,0.5,0.5)), 
             GLGE::Physic::RigidBody{.entity = &cubes[i].second}, 
