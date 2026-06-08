@@ -30,6 +30,8 @@
 #include "Profiler.h"
 //include references
 #include "Reference.h"
+//add meshes
+#include "Mesh.h"
 
 //include ordered maps
 #include "utils/OrderedMap.h"
@@ -58,5 +60,6 @@
 //add assets
 #include "CompoundAsset.h"
 #include "WorldAsset.h"
+#include "MeshAsset.h"
 
 #endif

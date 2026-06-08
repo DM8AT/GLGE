@@ -10,6 +10,8 @@
  */
 //add instances
 #include "Core/Instance.h"
+//add embree
+#include <embree4/rtcore.h>
 
 //use the libraries namespace
 using namespace GLGE;
@@ -190,6 +192,13 @@ void Instance::updateThread() {
     m_aliveUpdateThread.store(false, std::memory_order_release);
 }
 
+void Instance::nonTemplateCreate() {
+    //create the embree device
+    m_embreeDevice = rtcNewDevice(nullptr);
+    if (!m_embreeDevice) {
+        throw GLGE::Exception(rtcGetDeviceLastErrorMessage(reinterpret_cast<RTCDevice>(m_embreeDevice)), "GLGE::Instance::start");
+    }
+}
 
 Instance::~Instance() {
     GLGE_PROFILER_SCOPE();
@@ -198,6 +207,9 @@ Instance::~Instance() {
     shutdown();
     //and unbind the instance
     unbind();
+
+    //clean up the embree device
+    rtcReleaseDevice(reinterpret_cast<RTCDevice>(m_embreeDevice));
 }
 
 const Version& Instance::getGLGEVersion() noexcept 

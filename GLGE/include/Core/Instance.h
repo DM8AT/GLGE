@@ -253,6 +253,9 @@ namespace GLGE {
             //first, bind the instance
             bind();
 
+            //call the construction callback
+            nonTemplateCreate();
+
             //then, add all the attachment
             ((addExtension(extensions)), ...);
         }
@@ -741,6 +744,14 @@ namespace GLGE {
         inline u8 getPreferredMouseId() const noexcept
         {return m_preferredMouse;}
 
+        /**
+         * @brief Get the embree device
+         * 
+         * @return `void*` a pointer to the embree device
+         */
+        inline void* getEmbreeDevice() const noexcept
+        {return m_embreeDevice;}
+
 
 
 
@@ -802,6 +813,11 @@ namespace GLGE {
          * @brief tick the instance
          */
         void update();
+
+        /**
+         * @brief a function that is called during initialization
+         */
+        void nonTemplateCreate();
 
         /**
          * @brief the function that runs on the update thread
@@ -903,6 +919,11 @@ namespace GLGE {
          * @brief store all registered mice
          */
         std::vector<Mouse> m_mice;
+
+        /**
+         * @brief store the embree device
+         */
+        void* m_embreeDevice = nullptr;
 
         /**
          * @brief store the instance that is currently bound to this thread

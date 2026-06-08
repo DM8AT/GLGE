@@ -22,6 +22,12 @@ option(GLGE_ALLOW_DEBUG
     ON
 )
 
+# an option that makes GLGE fetch Embree from github
+option(GLGE_FETCH_EMBREE 
+    "Fetch Embree automatically" 
+    ON
+)
+
 # an option to disable GLGE Graphic
 option(GLGE_INCLUDE_GRAPHICS
     "Enable the GLGE Graphic extension"
@@ -145,6 +151,42 @@ FetchContent_Declare(
 set(TBB_TEST OFF CACHE BOOL "" FORCE)
 set(TBB_STRICT OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(oneTBB)
+
+# Mesh optimizer is used to optimize meshes
+# print a message
+message(STATUS "Fetching MeshOptimizer from GitHub")
+# use FetchContent to fetch meshoptimizer from github
+include(FetchContent)
+FetchContent_Declare(
+    meshoptimizer
+    GIT_REPOSITORY https://github.com/zeux/meshoptimizer.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(meshoptimizer)
+
+# If embree should be fetched, fetch it. Else, just re-use the installed version. 
+if(GLGE_FETCH_EMBREE)
+    # Embree is used for BVH construction and all CPU-Side rt functions
+    # print a message
+    message(STATUS "Fetching Embree from GitHub")
+    # use FetchContent to fetch Embree from github
+    include(FetchContent)
+    FetchContent_Declare(
+        embree
+        GIT_REPOSITORY https://github.com/RenderKit/embree.git
+        GIT_TAG v4.4.0
+    )
+    # setup the options for it
+    set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "" FORCE)
+    set(EMBREE_TUTORIALS OFF CACHE BOOL "" FORCE)
+    set(EMBREE_TESTING OFF CACHE BOOL "" FORCE)
+    set(EMBREE_BACKFACE_CULLING OFF CACHE BOOL "" FORCE)
+    set(EMBREE_MAX_ISA AVX2 CACHE STRING "" FORCE)
+    # add to the project
+    FetchContent_MakeAvailable(embree)
+else()
+    find_package(embree CONFIG REQUIRED)
+endif()
 
 # only required for GLGE Graphic
 if (GLGE_INCLUDE_GRAPHICS)
@@ -295,6 +337,8 @@ add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
     ${GLGE_SRC_DIR}/Core/utils/RecursiveThreadMutexShared.cpp
     ${GLGE_SRC_DIR}/Core/WorldAsset.cpp
     ${GLGE_SRC_DIR}/Core/Transform.cpp
+    ${GLGE_SRC_DIR}/Core/Mesh.cpp
+    ${GLGE_SRC_DIR}/Core/MeshAsset.cpp
     # External: Miniz
     ${GLGE_SRC_DIR}/external/miniz/miniz.c
 )
@@ -348,7 +392,7 @@ if (GLGE_ENABLE_TRACY )
 endif()
 
 # add libs
-target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm tbb)
+target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm tbb meshoptimizer embree)
 
 # compiler-specific release flags
 if(MSVC)

@@ -38,6 +38,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/io.hpp>
 
+//define stuff for aligned allocation / aligned freeing
+#ifdef _MSC_VER
+    #include <malloc.h>
+    #define GLGE_ALIGNED_ALLOC(alignment, size) _aligned_malloc((size), (alignment))
+    #define GLGE_ALIGNED_FREE(ptr) _aligned_free(ptr)
+#else
+    #include <stdlib.h>
+    #define GLGE_ALIGNED_ALLOC(alignment, size) std::aligned_alloc((alignment), (size))
+    #define GLGE_ALIGNED_FREE(ptr) free(ptr)
+#endif
+
 /**
  * @brief the namespace that contains everything related to GLGE
  */

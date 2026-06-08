@@ -59,7 +59,7 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
     //the descriptions need to be created here using the provided names
     auto gDescr = createGraphicBackendDescription(graphicBackendName);
     auto vDescr = createVideoBackendDescription(videoBackendName);
-    GLGE::Physic::Builtin::Bullet physics;
+    GLGE::Physic::Builtin::Jolt physics;
 
     //create the instance
     GLGE::Graphic::Instance gInst(gDescr.get(), vDescr.get());
@@ -69,6 +69,48 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
     //open a window
     GLGE::Graphic::Window win("Physic Example", {600, 600});
     GLGE::Graphic::RenderTarget window(&win);
+
+    struct alignas(GLGE::Mesh::VertexAttribute::getVertexAlignment()) Vertex {
+        GLGE::vec3 pos;
+        GLGE::vec3 normal;
+    };
+
+    GLGE::Mesh::VertexLayout _layout({
+        GLGE::Mesh::VertexAttribute(GLGE::Mesh::Type::vec3, GLGE::VertexAttribute::Position{}, offsetof(Vertex, Vertex::pos)),
+        GLGE::Mesh::VertexAttribute(GLGE::Mesh::Type::vec3, GLGE::VertexAttribute::Normal{}, offsetof(Vertex, Vertex::normal))
+    });
+    Vertex verts[] = {
+        Vertex {
+            .pos = {0,0,0},
+            .normal = {0,1,0}
+        },
+        Vertex {
+            .pos = {1,0,0},
+            .normal = {0,1,0}
+        },
+        Vertex {
+            .pos = {0,0,1},
+            .normal = {0,1,0}
+        },
+        Vertex {
+            .pos = {1,0,1},
+            .normal = {0,1,0}
+        }
+    };
+    //create a vertex and an index storage
+    GLGE::Mesh::LOD::Vertices vertices(verts, sizeof(verts)/sizeof(*verts), _layout);
+    GLGE::Mesh::LOD::Indices   indices({GLGE::Triangle{0,1,2}, GLGE::Triangle{1,2,3}});
+
+    GLGE::MeshAsset mAsset;
+    mAsset.import_from(nullptr, "assets/meshes/UtahTeapot.obj", GLGE::MeshAsset::ASSIMP);
+    std::shared_ptr<GLGE::Mesh> mesh = mAsset.getMesh();
+
+    for (size_t i = 0; i < mesh->getLODCount(); ++i) {
+    std::cout << "LOD " << i << ":\n";
+    std::cout << "    Vertex Count: " << mesh->getLOD(i).vertices().getCount() << "\n";
+    std::cout << "    Triangle Count:  " << mesh->getLOD(i).indices().getCount()/3  << "\n";
+    std::cout << "    Error: " << mesh->getLOD(i).getError() << "\n";
+    }
 
     //create the new ECS world
     GLGE::World world("World");
