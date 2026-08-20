@@ -220,7 +220,7 @@ void MeshManager::freeMesh(MeshHandle handle) {
 
         //release entry
         entry.alive = false;
-        entry.version++;
+        entry.version = (entry.version) & ~MESH_HANDLE_INDEX_MASK;
         entry.nextFree = m_freeTop;
         m_freeTop = idx;
     }
