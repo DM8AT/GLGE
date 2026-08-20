@@ -44,6 +44,8 @@
 #include "VertexLayout.h"
 #include "Material.h"
 #include "Renderer.h"
+#include "MeshManager.h"
+#include "GeometryPool.h"
 
 //define some pointers to frontend classes
 namespace GLGE::Graphic {
@@ -199,6 +201,15 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @return `Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>` a reference to the sampled texture
          */
         virtual Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Image>& texture, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler) = 0;
+
+        /**
+         * @brief Create a Geometry pool stream
+         * 
+         * @param initialSize the initial size of the stream
+         * @param isIbo `true` if this is an index buffer, `false` for a vertex buffer
+         * @return `GeometryPool::Stream*` a pointer to the stream
+         */
+        virtual GeometryPool::Stream* createGeometryPoolStream(u64 initialSize, bool isIbo) = 0;
 
         /**
          * @brief Create a Mesh Pool

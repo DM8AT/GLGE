@@ -309,18 +309,18 @@ GLGE::Mesh::LOD::LOD(LOD* from, float targetError)
 
     //update the vertices
     std::vector<u32> remap(from->getVertexCount());
-    size_t newVertCount = meshopt_generateVertexRemap(remap.data(), simplified.data(), simplified.size(), from->vertices().data(), from->vertices().getCount(), from->vertices().get(0).getLayout().getSize());
+    size_t newVertCount = meshopt_generateVertexRemap(remap.data(), simplified.data(), simplified.size(), from->vertices().data(), from->vertices().getCount(), from->vertices().get(0).getLayout().getVertexSize());
 
     //create the new vertex storage
     Vertices newVerts(nullptr, newVertCount, from->vertices().getLayout());
     //remap the data
-    meshopt_remapVertexBuffer(newVerts.data(), from->vertices().data(), from->vertices().getCount(), from->vertices().getLayout().getSize(), remap.data());
+    meshopt_remapVertexBuffer(newVerts.data(), from->vertices().data(), from->vertices().getCount(), from->vertices().getLayout().getVertexSize(), remap.data());
     //remap the index data
     meshopt_remapIndexBuffer(simplified.data(), simplified.data(), newIdxCount, remap.data());
 
     //optimize the mesh
     meshopt_optimizeVertexCache(simplified.data(), simplified.data(), newIdxCount, newVertCount);
-    meshopt_optimizeVertexFetch(newVerts.data(), simplified.data(), newIdxCount, newVerts.data(), newVertCount, m_vertices.get(0).getLayout().getSize());
+    meshopt_optimizeVertexFetch(newVerts.data(), simplified.data(), newIdxCount, newVerts.data(), newVertCount, m_vertices.get(0).getLayout().getVertexSize());
 
     //create the triangle index buffer
     std::vector<Triangle> triangles;

@@ -121,6 +121,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     u32 meshIdx = 0;
     for (const auto& [mat, meshes] : objs) {
         for (const auto& [mesh, obj] : meshes) {
+            #if 0
             //get the base LOD
             const auto& lod = mesh->getLODInfo(0);
             const auto& idx = mesh->getIndexSection();
@@ -137,6 +138,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
             m_entities.push_back(obj);
             //advance the mesh
             ++meshIdx;
+            #endif
         }
     }
     //re-create the corresponding GPU buffer

@@ -1,9 +1,9 @@
 /**
  * @file Mesh.h
  * @author DM8AT
- * @brief define what a mesh is
+ * @brief implement the geometry mesh frontend
  * @version 0.1
- * @date 2026-03-26
+ * @date 2026-06-14
  * 
  * @copyright Copyright (c) 2026
  * 
@@ -12,201 +12,122 @@
 #ifndef _GLGE_GRAPHIC_MESH_
 #define _GLGE_GRAPHIC_MESH_
 
-//add base classes
-#include "Core/BaseClass.h"
-//add core instances
-#include "Core/Instance.h"
+//add meshes
+#include "Core/Mesh.h"
+//add the mesh backend
+#include "Backend/Graphics/MeshManager.h"
 //add graphic instances
 #include "Instance.h"
+
+//add exceptions
+#include "Core/Exception.h"
 
 //use the libraries namespace
 namespace GLGE::Graphic {
 
     /**
-     * @brief store a mesh including a LOD chain
+     * @brief a mesh wrapper for graphic
      */
-    class Mesh : public BaseClass {
+    class Mesh {
     public:
-
-        /**
-         * @brief store information about the LOD structures
-         */
-        using LODInfo = GLGE::Graphic::Backend::Graphic::MeshPool::LODInfo;
 
         /**
          * @brief Construct a new Mesh
          * 
-         * @param vertices a pointer to the vertices to store
-         * @param vertexSize the size in bytes of a single vertex
-         * @param vertexCount the amount of vertices in the list
-         * @param indices a pointer to the indices to store
-         * @param indexCount the amount of indices in the list
-         * @param lod a pointer to the level of detail info array
-         * @param LODCount store the amount of level of detail info sets
-         * @param attributes a pointer to a continues array of attributes the mesh should use
-         * @param attributeCount the amount of vertex attributes of the mesh
+         * @param mesh the mesh to upload
+         * @param layout the layout to use for the mesh
          */
-        Mesh(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount)
-         : BaseClass(), m_pool(getInstance()->getExtension<GLGE::Graphic::Instance>()->getMeshPool()), 
-           m_id(m_pool->allocate(vertices, vertexSize, vertexCount, indices, indexCount, lod, LODCount, attributes, attributeCount))
-        {}
+        Mesh(const GLGE::Mesh& mesh, const GLGE::Graphic::VertexLayout& layout)
+         : m_inst(GLGE::Instance::getCurrentInstance()->getExtension<GLGE::Graphic::Instance>())
+        {
+            //in debug: sanity check that the instance is valid
+            #if GLGE_DEBUG
+            if (m_inst == nullptr) {throw GLGE::Exception("Cannot create a mesh without a graphic instance on the current instance", "GLGE::Graphic::Mesh::Mesh");}
+            #endif
+            //create the handle
+            m_handle = m_inst->meshManager().createMesh(mesh, layout);
+        }
+
+        /**
+         * @brief Construct a new Mesh
+         * 
+         * Move constructor
+         */
+        Mesh(Mesh&&) = default;
+        /**
+         * @brief Move assign operator
+         * 
+         * @return `Mesh&` a reference to the 
+         */
+        Mesh& operator=(Mesh&&) = default;
+
+        /**
+         * @brief Construct a new Mesh
+         * 
+         * Copy constructor
+         * 
+         * @param other the mesh to copy
+         */
+        Mesh(const Mesh& other) 
+         : m_inst(other.m_inst),
+           m_handle(other.m_handle)
+        {
+            //register the handle copy
+            m_inst->meshManager().copyHandle(m_handle);
+        }
+
+        /**
+         * @brief Copy assignment operator
+         * 
+         * @param other the mesh to copy
+         * @return `Mesh&` a reference to the mesh after copying
+         */
+        Mesh& operator=(const Mesh& other) {
+            //prevent copy to self
+            if (this == &other) {return *this;}
+
+            //copy the data over
+            m_inst = other.m_inst;
+            m_handle = other.m_handle;
+
+            //copy the handle
+            m_inst->meshManager().copyHandle(m_handle);
+        }
 
         /**
          * @brief Destroy the Mesh
          */
-        ~Mesh() 
-        {destroy();}
+        ~Mesh() {
+            //clean up the handle
+            m_inst->meshManager().freeMesh(m_handle);
+        }
 
         /**
-         * @brief re-create the stored mesh by dropping the old mesh and storing the new mesh
+         * @brief Get the Instance
          * 
-         * @param vertices a pointer to the vertices to store
-         * @param vertexSize the size in bytes of a single vertex
-         * @param vertexCount the amount of vertices in the list
-         * @param indices a pointer to the indices to store
-         * @param indexCount the amount of indices in the list
-         * @param lod a pointer to the level of detail info array
-         * @param LODCount store the amount of level of detail info sets
-         * @param attributes a pointer to a continues array of attributes the mesh should use
-         * @param attributeCount the amount of vertex attributes of the mesh
+         * @return `GLGE::Graphic::Instance*` a pointer to the instance that the mesh belongs to
          */
-        void recreate(const void* vertices, size_t vertexSize, size_t vertexCount, const u32* indices, size_t indexCount, const LODInfo* lod, u8 LODCount, const VertexAttribute* attributes, u64 attributeCount) 
-        {if (m_id != UINT64_MAX){destroy();} m_id = m_pool->allocate(vertices, vertexSize, vertexCount, indices, indexCount, lod, LODCount, attributes, attributeCount);}
+        inline GLGE::Graphic::Instance* getInstance() const noexcept
+        {return m_inst;}
 
         /**
-         * @brief destroy the stored mesh
+         * @brief Get the mesh handle to the stored mesh
+         * 
+         * @return `GLGE::Graphic::Backend::Graphic::MeshHandle` the wrapped handle
          */
-        void destroy()
-        {m_pool->destroy(m_id); m_id = UINT64_MAX;}
-
-        /**
-         * @brief get the ID of the mesh
-         * 
-         * @return `u64` the ID of the mesh
-         */
-        inline u64 getID() const noexcept
-        {return m_id;}
-
-        /**
-         * @brief Get the Pool
-         * 
-         * @return `Reference<GLGE::Graphic::Backend::Graphic::MeshPool>` a reference to the mesh pool
-         */
-        inline Reference<GLGE::Graphic::Backend::Graphic::MeshPool> getPool() const noexcept
-        {return m_pool;}
-
-        /**
-         * @brief get the LOD count of the mesh
-         * 
-         * @return `u8` the amount of LODs the mesh has
-         */
-        inline u8 getLODCount() const noexcept
-        {return m_pool->getLODCount(m_id);}
-
-        /**
-         * @brief Get information about the level of detail of the mesh
-         * 
-         * @param lod the index of the level of detail to get
-         * @return `LODInfo` the level of detail information of the mesh
-         */
-        inline LODInfo getLODInfo(u8 lod) const noexcept
-        {return m_pool->getLODInfo(m_id, lod);}
-
-        /**
-         * @brief Get the amount of vertices the mesh has in total
-         * 
-         * This is the sum of all level of detail's vertices
-         * 
-         * @return `u64` the total vertex count of the mesh
-         */
-        inline u64 getVertexCount() const noexcept
-        {return m_pool->getVertexCount(m_id);}
-
-        /**
-         * @brief Get the vertex data
-         * 
-         * @return `const void*` the vertex data of the mesh
-         */
-        inline const void* getVertexData() const noexcept
-        {return m_pool->getVertexData(m_id);}
-
-        /**
-         * @brief Get the size of a single vertex in bytes
-         * 
-         * @return `u64` the size of a single vertex in bytes
-         */
-        inline u64 getVertexElementSize() const noexcept
-        {return m_pool->getVertexSize(m_id);}
-
-        /**
-         * @brief Get the amount of total indices of the mesh
-         * 
-         * This is the sum of all level of detail's indices
-         * 
-         * @return `u64` the amount of total indices owned by the mesh
-         */
-        inline u64 getIndexCount() const noexcept
-        {return m_pool->getIndexCount(m_id);}
-
-        /**
-         * @brief Get the index data of the mesh
-         * 
-         * @return `const void*` a pointer to the index data of the mesh
-         */
-        inline const void* getIndexData() const noexcept
-        {return m_pool->getIndexData(m_id);}
-
-        /**
-         * @brief Get the size of the index type in bytes
-         * 
-         * @return `u8` the size of the index type in bytes
-         */
-        inline u8 getIndexTypeSize() const noexcept
-        {return m_pool->getIndexTypeSize(m_id);}
-
-        /**
-         * @brief Get the index section
-         * 
-         * @return `const LODInfo::Section&` a constant reference to the whole index section
-         */
-        inline const LODInfo::Section& getIndexSection() const noexcept
-        {return m_pool->getIndexSection(m_id);}
-
-        /**
-         * @brief Get the vertex section
-         * 
-         * @return `const LODInfo::Section&` a constant reference to the whole vertex section
-         */
-        inline const LODInfo::Section& getVertexSection() const noexcept
-        {return m_pool->getVertexSection(m_id);}
-
-        /**
-         * @brief Get the amount of vertex attributes in use
-         * 
-         * @return `u64` the amount of vertex attributes in use
-         */
-        inline u64 getVertexAttributeCount() const noexcept
-        {return m_pool->getVertexAttributeCount(m_id);}
-
-        /**
-         * @brief Get the vertex attribute
-         * 
-         * @param attribute the index of the attribute to get
-         * @return `VertexAttribute` the vertex attribute at the index
-         */
-        inline VertexAttribute getVertexAttribute(u64 attribute) const noexcept
-        {return m_pool->getVertexAttribute(m_id, attribute);}
+        inline GLGE::Graphic::Backend::Graphic::MeshHandle getHandle() const noexcept
+        {return m_handle;}
 
     protected:
 
         /**
-         * @brief store the mesh pool reference
+         * @brief store a pointer to the instance the mesh belongs to
          */
-        Reference<GLGE::Graphic::Backend::Graphic::MeshPool> m_pool;
+        GLGE::Graphic::Instance* m_inst;
         /**
-         * @brief store the mesh ID
+         * @brief store a handle for the mesh
          */
-        u64 m_id = 0;
+        GLGE::Graphic::Backend::Graphic::MeshHandle m_handle;
 
     };
 

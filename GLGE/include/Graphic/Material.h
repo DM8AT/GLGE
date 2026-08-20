@@ -59,8 +59,8 @@ namespace GLGE::Graphic {
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          */
-        Material(const Shader& shader, const VertexLayout& layout, Framebuffer& fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
-         : BaseClass(), m_material(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createMaterial(shader.getBackend(), layout.getLayout(), fbuff.getBackend(), cullMode, depthMode, depthWrite))
+        Material(const Shader& shader, const GLGE::Graphic::VertexLayout& layout, Framebuffer& fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
+         : BaseClass(), m_material(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createMaterial(shader.getBackend(), GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout>(), fbuff.getBackend(), cullMode, depthMode, depthWrite))
         {}
 
         /**

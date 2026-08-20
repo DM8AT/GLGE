@@ -37,8 +37,10 @@ inline std::unique_ptr<GLGE::Graphic::Backend::Graphic::Description> createGraph
     //switch over known names
     if (std::strcmp(name, "OpenGL") == 0)
     {return std::make_unique<GLGE::Graphic::Builtin::Graphics::OpenGL>();}
+    #if GLGE_GRAPHICS_HAS_VULKAN
     if (std::strcmp(name, "Vulkan") == 0)
     {return std::make_unique<GLGE::Graphic::Builtin::Graphics::Vulkan>();}
+    #endif
     //throw on unknown argument
     throw std::invalid_argument(std::string("Unknown graphic backend: ") + name);
 }

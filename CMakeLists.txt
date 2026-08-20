@@ -86,25 +86,29 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src/Testing/UnitTestSystem/Test)
 # add the default example
 if(EXAMPLE_PLUGIN_BUILD_DEFAULT)
     # Default
-    add_example_plugin(ExamplePlugin_DefaultExample DefaultExample
-        src/Examples/Plugins/DefaultExample.cpp
-    )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
-    # Windows
-    add_example_plugin(ExamplePlugin_WindowExample WindowExample
-        src/Examples/Plugins/WindowExample.cpp
-    )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
+    # add_example_plugin(ExamplePlugin_DefaultExample DefaultExample
+    #     src/Examples/Plugins/DefaultExample.cpp
+    # )
+    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
+    # # Windows
+    # add_example_plugin(ExamplePlugin_WindowExample WindowExample
+    #     src/Examples/Plugins/WindowExample.cpp
+    # )
+    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
     # Assets
     add_example_plugin(ExamplePlugin_AssetExample AssetExample
         src/Examples/Plugins/AssetExample.cpp
     )
     list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_AssetExample)
-    # Physics
-    add_example_plugin(ExamplePlugin_PhysicsExample PhysicsExample
-        src/Examples/Plugins/PhysicsExample.cpp
+    add_example_plugin(ExamplePlugin_NewMeshExample NewMeshExample
+        src/Examples/Plugins/NewMeshExample.cpp
     )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_PhysicsExample)
+    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_NewMeshExample)
+    # Physics
+    # add_example_plugin(ExamplePlugin_PhysicsExample PhysicsExample
+    #     src/Examples/Plugins/PhysicsExample.cpp
+    # )
+    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_PhysicsExample)
 endif()
 
 # add unit tests

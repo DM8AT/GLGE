@@ -358,7 +358,7 @@ void GLGE::MeshAsset::store(std::vector<u8>& data) {
 
     //write vertex layout
     //write the attribute count
-    appendToVector<u64>(genData, m_mesh->getLayout().getSize());
+    appendToVector<u64>(genData, m_mesh->getLayout().getVertexSize());
     //write all the attributes
     for (size_t i = 0; i < m_mesh->getLayout().getAttributeCount(); ++i) {
         const auto& attr = m_mesh->getLayout().getAttribute(i);
@@ -381,7 +381,7 @@ void GLGE::MeshAsset::store(std::vector<u8>& data) {
 
         //write the header
         appendToVector<u64>(dat, HeaderSize);
-        u64 vertSectionSize = lod.vertices().getCount()*m_mesh->getLayout().getSize();
+        u64 vertSectionSize = lod.vertices().getCount()*m_mesh->getLayout().getVertexSize();
         appendToVector<u64>(dat, vertSectionSize);
         appendToVector<u64>(dat, lod.vertices().getCount());
 

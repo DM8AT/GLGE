@@ -220,6 +220,15 @@ namespace Graphics {
         virtual Reference<GLGE::Graphic::Backend::Graphic::Renderer> createRenderer(World& world, Object* camera, RenderTarget target) override;
 
         /**
+         * @brief Create a Geometry pool stream
+         * 
+         * @param initialSize the initial size of the stream
+         * @param isIbo `true` if this is an index buffer, `false` for a vertex buffer
+         * @return `GeometryPool::Stream*` a pointer to the stream
+         */
+        virtual GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* createGeometryPoolStream(u64 initialSize, bool isIbo) override;
+
+        /**
          * @brief get the API used by the backend
          * 
          * @return `GLGE::Graphic::GraphicAPI` the graphic API that is used by the backend

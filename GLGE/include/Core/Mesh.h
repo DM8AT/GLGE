@@ -22,6 +22,8 @@
 #include "AABB.h"
 //add base classes
 #include "BaseClass.h"
+//add UUIDs
+#include "UUID.h"
 
 //add type info for type information
 #include <typeinfo>
@@ -493,6 +495,47 @@ namespace GLGE {
             };
 
             /**
+             * @brief define the iterator type for a vertex layout
+             */
+            using iterator = std::vector<VertexAttribute>::iterator;
+            /**
+             * @brief define the constant iterator type for a vertex layout
+             */
+            using const_iterator = std::vector<VertexAttribute>::const_iterator;
+            /**
+             * @brief define the reverse iterator type for a vertex layout
+             */
+            using reverse_iterator = std::vector<VertexAttribute>::reverse_iterator;
+            /**
+             * @brief define the constant reverse iterator type for a vertex layout
+             */
+            using const_reverse_iterator = std::vector<VertexAttribute>::const_reverse_iterator;
+            /**
+             * @brief define the size type for a vertex layout
+             */
+            using size_type = size_t;
+            /**
+             * @brief define the iterator difference type
+             */
+            using difference_type = ptrdiff_t;
+            /**
+             * @brief define the pointer type for the vertex layout
+             */
+            using pointer = VertexAttribute*;
+            /**
+             * @brief define the const pointer type for the vertex layout
+             */
+            using const_pointer = const VertexAttribute*;
+            /**
+             * @brief define the reference type for the vertex layout
+             */
+            using reference = VertexAttribute&;
+            /**
+             * @brief define the constant reference type for the vertex layout
+             */
+            using const_reference = const VertexAttribute&;
+
+            /**
              * @brief use the same type enum as the attribute
              */
             using Type = VertexAttribute::Type;
@@ -603,9 +646,9 @@ namespace GLGE {
              * 
              * @warning This is NOT the total amount of USED attributes. There may be unused elements in between slots. 
              * 
-             * @return `size_t` the amount of attributes allocated for the layout
+             * @return `size_type` the amount of attributes allocated for the layout
              */
-            inline size_t getAttributeCount() const noexcept
+            inline size_type getAttributeCount() const noexcept
             {return m_attributes.size();}
 
             /**
@@ -618,13 +661,21 @@ namespace GLGE {
             {return m_attributes[idx];}
 
             /**
-             * @brief Get the Attribute
+             * @brief Get the attribute index of an attribute that has a specific usage
              * 
-             * @param idx the index to query the attribute from
-             * @return `const VertexAttribute&` a constant reference to the vertex attribute
+             * @param usage the 64 bit FNV-1A hash of the full human readable type name of the usage tag type
+             * @return `u64` the index of the attribute or `UINT64_MAX` if no attribute of that usage exists 
              */
-            inline const VertexAttribute& operator[](size_t idx) const noexcept
-            {return getAttribute(idx);}
+            inline u64 getIdxOfUsage(u64 usage) const noexcept {
+                //try to find it
+                for (size_t i = 0; i < m_attributes.size(); ++i) {
+                    if (m_attributes[i].usage == usage)
+                    {return i;}
+                }
+                //on failure, return UINT64_MAx
+                return UINT64_MAX;
+
+            }
 
             /**
              * @brief Get the attribute index of an attribute that has a specific usage
@@ -633,15 +684,8 @@ namespace GLGE {
              * @return `u64` the index of the attribute or `UINT64_MAX` if no attribute of that usage exists
              */
             template <typename T>
-            inline u64 getIdxOfUsage() const noexcept {
-                //try to find it
-                for (size_t i = 0; i < m_attributes.size(); ++i) {
-                    if (m_attributes[i].usage == getTypeHash64<T>())
-                    {return i;}
-                }
-                //on failure, return UINT64_MAx
-                return UINT64_MAX;
-            }
+            inline u64 getIdxOfUsage() const noexcept 
+            {return getIdxOfUsage(getTypeHash64<T>());}
 
             /**
              * @brief check if an element of the usage exists
@@ -652,6 +696,15 @@ namespace GLGE {
             template <typename T>
             inline bool hasUsage() const noexcept
             {return getIdxOfUsage<T>() != UINT64_MAX;}
+
+            /**
+             * @brief check if an element of the usage exists
+             * 
+             * @param usage the 64 bit FNV-1A hash of the full human readable type name of the usage tag type
+             * @return `true` if an attribute with that usage exists, `false` if not
+             */
+            inline bool hasUsage(u64 usage) const noexcept
+            {return getIdxOfUsage(usage) != UINT64_MAX;}
 
             /**
              * @brief Get an attribute of a specific usage
@@ -670,8 +723,108 @@ namespace GLGE {
              * 
              * @return `u64` the size of a single vertex
              */
-            inline u64 getSize() const noexcept
+            inline u64 getVertexSize() const noexcept
             {return m_size;}
+
+            /**
+             * @brief get the amount of attributes in the vertex
+             * 
+             * @return `size_type` the amount of stored attributes
+             */
+            inline size_type size() const noexcept
+            {return static_cast<size_type>(m_attributes.size());}
+
+            /**
+             * @brief get a pointer to the attributes
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @return `const_pointer` a constant pointer to the data
+             */
+            inline const_pointer data() const noexcept
+            {return m_attributes.data();}
+
+            /**
+             * @brief get an iterator to the first element
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @return `const_iterator` a constant iterator to the first element
+             */
+            inline const_iterator begin() const noexcept
+            {return m_attributes.begin();}
+
+            /**
+             * @brief get a reversed iterator to the reversed begin (the end);
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @return `const_reverse_iterator` a constant iterator pointing to the reversed end
+             */
+            inline const_reverse_iterator rbegin() const noexcept
+            {return m_attributes.rbegin();}
+
+            /**
+             * @brief get an iterator to the last element
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @return `const_iterator` a constant iterator to the last element
+             */
+            inline const_iterator end() const noexcept
+            {return m_attributes.end();}
+
+            /**
+             * @brief get a reversed iterator to the reversed end (the beginning)
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @return `const_reverse_iterator` a constant reversed iterator pointing to the reversed end
+             */
+            inline const_reverse_iterator rend() const noexcept
+            {return m_attributes.rend();}
+
+            /**
+             * @brief get a constant reference to the first attribute
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @return `const_reference` a constant reference to the first attribute
+             */
+            inline const_reference front() const noexcept
+            {return m_attributes.front();}
+
+            /**
+             * @brief get a constant reference to the last attribute
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @return `const_reference` a constant reference to the last attribute
+             */
+            inline const_reference back() const noexcept
+            {return m_attributes.back();}
+
+            /**
+             * @brief get a specific attribute via index
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @param idx the index of the attribute to fetch
+             * @return `const_reference` a constant reference to the attribute
+             */
+            inline const_reference at(size_type idx) const noexcept
+            {return m_attributes.at(idx);}
+
+            /**
+             * @brief get a specific attribute via index
+             * 
+             * @warning In contrast to many stl container, there is NO non-const version of this function
+             * 
+             * @param idx the index of the attribute to fetch
+             * @return `const_reference` a constant reference to the attribute
+             */
+            inline const_reference operator[](size_type idx) const noexcept
+            {return m_attributes[idx];}
 
         protected:
 
@@ -805,6 +958,23 @@ namespace GLGE {
             }
 
             /**
+             * @brief get a specific attribute
+             * 
+             * @param usage the hash of the usage tag type to get the usage for
+             * @return `const T*` a constant pointer to the data
+             */
+            inline const void* get(u64 usage) const noexcept {
+                //get the attribute index (for UB safety)
+                u64 idx = m_layout->getIdxOfUsage(usage);
+                //sanity check
+                if (idx == UINT64_MAX) {return nullptr;}
+                //it exists -> get the actual attribute
+                const auto& attr = m_layout->getAttribute(idx);
+                //extract the data pointer
+                return reinterpret_cast<void*>(reinterpret_cast<u8*>(m_dataPtr) + attr.offset);
+            }
+
+            /**
              * @brief Get the Attribute
              * 
              * @tparam Usage the type to get the usage for
@@ -893,7 +1063,7 @@ namespace GLGE {
              */
             inline Vertex& operator++() noexcept {
                 //update, then return the reference
-                m_dataPtr = reinterpret_cast<u8*>(m_dataPtr) + m_layout->getSize();
+                m_dataPtr = reinterpret_cast<u8*>(m_dataPtr) + m_layout->getVertexSize();
                 return *this;
             }
 
@@ -904,7 +1074,7 @@ namespace GLGE {
              */
             inline Vertex& operator--() noexcept {
                 //update, then return the reference
-                m_dataPtr = reinterpret_cast<u8*>(m_dataPtr) - m_layout->getSize();
+                m_dataPtr = reinterpret_cast<u8*>(m_dataPtr) - m_layout->getVertexSize();
                 return *this;
             }
 
@@ -940,7 +1110,7 @@ namespace GLGE {
              */
             inline Vertex& operator+=(ptrdiff_t count) noexcept {
                 //move the data by the amount to move times the size of a vertex
-                m_dataPtr = reinterpret_cast<u8*>(m_dataPtr) + count * static_cast<ptrdiff_t>(m_layout->getSize());
+                m_dataPtr = reinterpret_cast<u8*>(m_dataPtr) + count * static_cast<ptrdiff_t>(m_layout->getVertexSize());
                 return *this;
             }
 
@@ -987,7 +1157,7 @@ namespace GLGE {
              */
             inline ptrdiff_t operator-(const Vertex& other) const noexcept {
                 //directly update, then return
-                return (reinterpret_cast<const u8*>(m_dataPtr) - reinterpret_cast<const u8*>(other.m_dataPtr)) / static_cast<ptrdiff_t>(m_layout->getSize());
+                return (reinterpret_cast<const u8*>(m_dataPtr) - reinterpret_cast<const u8*>(other.m_dataPtr)) / static_cast<ptrdiff_t>(m_layout->getVertexSize());
             }
 
             /**
@@ -1254,7 +1424,7 @@ namespace GLGE {
                  * @param vertexCount the amount of vertices to store
                  * @param layout a constant reference to the layout of the vertices
                  */
-                Vertices(void* vertexData, u64 vertexCount, const VertexLayout& layout) 
+                Vertices(const void* vertexData, u64 vertexCount, const VertexLayout& layout) 
                  : m_layout(&layout)
                 {
                     //validate the layout
@@ -1268,7 +1438,7 @@ namespace GLGE {
                     if (vertexCount == 0) {return;}
                     //allocate the vertex data, make sure the data is alignable
                     //the computed size must be aligned (aligned size * count always returns aligned-up size)
-                    void* dat = GLGE_ALIGNED_ALLOC(VertexAttribute::getVertexAlignment(), vertexCount*layout.getSize());
+                    void* dat = GLGE_ALIGNED_ALLOC(VertexAttribute::getVertexAlignment(), vertexCount*layout.getVertexSize());
                     //sanity check
                     if (!dat) {
                         //clean up
@@ -1278,7 +1448,7 @@ namespace GLGE {
                     }
                     //copy the data over
                     if (vertexData)
-                    {memcpy(dat, vertexData, vertexCount*layout.getSize());}
+                    {memcpy(dat, vertexData, vertexCount*layout.getVertexSize());}
                     //store the data
                     m_vertexData = dat;
                     m_vertexCount = vertexCount;
@@ -1355,9 +1525,9 @@ namespace GLGE {
                  */
                 inline Mesh::Vertex get(u64 idx) const noexcept
                 {return Mesh::Vertex(
-                    reinterpret_cast<void*>(reinterpret_cast<u8*>(m_vertexData) + idx*m_layout->getSize()), 
+                    reinterpret_cast<void*>(reinterpret_cast<u8*>(m_vertexData) + idx*m_layout->getVertexSize()), 
                     *m_layout, 
-                    reinterpret_cast<void*>(reinterpret_cast<u8*>(m_vertexData) + m_vertexCount*m_layout->getSize())
+                    reinterpret_cast<void*>(reinterpret_cast<u8*>(m_vertexData) + m_vertexCount*m_layout->getVertexSize())
                 );}
 
                 /**
@@ -1598,7 +1768,7 @@ namespace GLGE {
              * @param error the error the LOD has against the original mesh
              * @param createBVH `true` to create the BVH, `false` to not
              */
-            LOD(void* vertexData, u64 vertexCount, const std::vector<Triangle>& indices, const VertexLayout& layout, float error, bool createBVH)
+            LOD(const void* vertexData, u64 vertexCount, const std::vector<Triangle>& indices, const VertexLayout& layout, float error, bool createBVH)
              : m_vertices(vertexData, vertexCount, layout), m_indices(indices), m_error(error)
             {
                 //create the BVH
@@ -1862,6 +2032,10 @@ namespace GLGE {
          : Mesh(layout)
         {m_lod.reserve(targetLODCount);}
 
+        //a mesh cannot be copied
+        Mesh(const Mesh&) = delete;
+        Mesh& operator=(const Mesh&) = delete;
+
         /**
          * @brief create a new level of detail
          * 
@@ -1939,6 +2113,14 @@ namespace GLGE {
         inline const VertexLayout& getLayout() const noexcept
         {return m_layout;}
 
+        /**
+         * @brief get the UUID
+         * 
+         * @return `UUID` the UUID of the mesh
+         */
+        inline UUID getUUID() const noexcept
+        {return m_uuid;}
+
     protected:
 
         /**
@@ -1955,6 +2137,11 @@ namespace GLGE {
         }
 
         /**
+         * @brief store an UUID for the mesh
+         */
+        UUID m_uuid = ms_registry.generate();
+
+        /**
          * @brief store the vertex layout of the mesh
          * 
          * The mesh owns the canonical layout of a vertex. 
@@ -1965,6 +2152,11 @@ namespace GLGE {
          * @brief store the levels of details of the mesh
          */
         std::vector<LOD> m_lod;
+
+        /**
+         * @brief store the UUID registry
+         */
+        inline static UUIDRegistry ms_registry;
 
     };
 

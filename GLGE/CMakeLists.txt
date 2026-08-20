@@ -43,7 +43,7 @@ option(GLGE_GRAPHICS_INCLUDE_OPENGL
 # an option to include the builtin Vulkan backend
 option(GLGE_GRAPHICS_INCLUDE_VULKAN
     "Enable if the builtin Vulkan backend should be included"
-    ON
+    OFF
 )
 
 # an option to make command overriding possible
@@ -164,6 +164,24 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(meshoptimizer)
 
+#### Assimp
+# Force Assimp to build static no matter what
+set(ASSIMP_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
+# print a message
+message(STATUS "Fetching assimp from GitHub")
+# use FetchContent to fetch SDL3 from github
+include(FetchContent)
+FetchContent_Declare(
+    assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp
+    GIT_TAG "v6.0.4"
+)
+FetchContent_MakeAvailable(assimp)
+    
 # If embree should be fetched, fetch it. Else, just re-use the installed version. 
 if(GLGE_FETCH_EMBREE)
     # Embree is used for BVH construction and all CPU-Side rt functions
@@ -202,23 +220,6 @@ if (GLGE_INCLUDE_GRAPHICS)
     )
     FetchContent_MakeAvailable(SDL3)
 
-    #### Assimp
-    # Force Assimp to build static no matter what
-    set(ASSIMP_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
-    # print a message
-    message(STATUS "Fetching assimp from GitHub")
-    # use FetchContent to fetch SDL3 from github
-    include(FetchContent)
-    FetchContent_Declare(
-        assimp
-        GIT_REPOSITORY https://github.com/assimp/assimp
-        GIT_TAG "v6.0.4"
-    )
-    FetchContent_MakeAvailable(assimp)
-    
     #### SPIRV-Reflect
     # set the option for a static library
     option(SPIRV_REFLECT_STATIC_LIB FORCE ON)
@@ -259,7 +260,6 @@ if (GLGE_INCLUDE_GRAPHICS)
 
         # FetchContent exposes VMA source dir here
         set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
-
     endif()
 endif()
 
@@ -392,7 +392,7 @@ if (GLGE_ENABLE_TRACY )
 endif()
 
 # add libs
-target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm tbb meshoptimizer embree)
+target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm tbb meshoptimizer embree assimp)
 
 # compiler-specific release flags
 if(MSVC)
@@ -444,6 +444,8 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/CommandTable.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/CommandBuffer.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/Framebuffer.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/GeometryPool.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/MeshManager.cpp
 
         # Frontend
         ${GLGE_SRC_DIR}/Graphic/DisplaySetup.cpp
@@ -457,7 +459,6 @@ if (GLGE_INCLUDE_GRAPHICS)
         # Assets
         ${GLGE_SRC_DIR}/Graphic/Assets/ImageCPUAsset.cpp
         ${GLGE_SRC_DIR}/Graphic/Assets/TextureCPUAsset.cpp
-        ${GLGE_SRC_DIR}/Graphic/Assets/MeshAsset.cpp
         # External: Miniz
         ${GLGE_SRC_DIR}/external/miniz/miniz.c
     )
@@ -486,6 +487,7 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Material.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.cpp
             # Builtin::OpenGL::GLAD
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/glad/src/glad.c
             # Builtin::OpenGL::Translator
@@ -527,7 +529,7 @@ if (GLGE_INCLUDE_GRAPHICS)
     add_library(${GLGE_GRAPHIC_NAME} ${GLGE_GRAPHIC_LIBRARY_TYPE} ${GLGE_GRAPHIC_SOURCE})
 
     # add SDL3, assimp and spirv reflect
-    target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE SDL3::SDL3 assimp spirv-reflect-static ${GLGE_CORE_NAME})
+    target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE SDL3::SDL3 spirv-reflect-static ${GLGE_CORE_NAME})
 
     # if vulkan was requested link the vulkan SDK
     if (GLGE_GRAPHICS_INCLUDE_VULKAN)
@@ -632,16 +634,26 @@ if (GLGE_INCLUDE_PHYSICS)
     )
 
     # link the library to the interface
+    target_link_libraries(${GLGE_PHYSICS_NAME} PUBLIC ${GLGE_CORE_NAME})
     target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_PHYSICS_NAME})
     
 endif()
 
+# set the definitions
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_HAS_GRAPHICS=$<BOOL:${GLGE_INCLUDE_GRAPHICS}>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_HAS_PHYSICS=$<BOOL:${GLGE_INCLUDE_PHYSICS}>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_GRAPHICS_HAS_OPENGL=$<AND:$<BOOL:${GLGE_GRAPHICS_INCLUDE_OPENGL}>,$<BOOL:${GLGE_INCLUDE_GRAPHICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_GRAPHICS_HAS_VULKAN=$<AND:$<BOOL:${GLGE_GRAPHICS_INCLUDE_VULKAN}>,$<BOOL:${GLGE_INCLUDE_GRAPHICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_PHYSX=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_PHYSX}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_JOLT=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_JOLT}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_BULLET=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_BULLET}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
+
 # set whole archive flags
-if (MSVC)
-    # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
-else()
-    target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
-                                                    "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
-                                                    "-Wl,--no-whole-archive"
-                                                    )
-endif()
+# if (MSVC)
+#     # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
+# else()
+#     target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
+#                                                     "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
+#                                                     "-Wl,--no-whole-archive"
+#                                                     )
+# endif()

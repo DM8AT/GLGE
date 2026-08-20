@@ -42,10 +42,10 @@
 #include "SampledTexture.h"
 //add vertex layouts
 #include "VertexLayout.h"
-//add meshes
-#include "Mesh.h"
 //add render targets
 #include "RenderTarget.h"
+//add meshes
+#include "Mesh.h"
 
 //add raw buffers
 #include "Buffer.h"
@@ -55,14 +55,17 @@
 //include the assets
 #include "Assets/ImageCPUAsset.h"
 #include "Assets/TextureCPUAsset.h"
-#include "Assets/MeshAsset.h"
 
 //include the backend stuff
 #include "Backend/Graphics/BackendDescription.h"
 
 //include the builtin descriptions
+#if GLGE_GRAPHICS_HAS_OPENGL
 #include "Backend/Builtin/Graphics/OpenGL/Description.h"
+#endif
+#if GLGE_GRAPHICS_HAS_VULKAN
 #include "Backend/Builtin/Graphics/Vulkan/Description.h"
+#endif
 #include "Backend/Builtin/Video/SDL3/Description.h"
 
 //add materials
