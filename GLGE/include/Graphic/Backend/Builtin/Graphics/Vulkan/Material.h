@@ -47,17 +47,8 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief bind the material
          * 
          * @param buffer the buffer to bind to
-         * @param VBOOffset the VBO offset from 0 in bytes
          */
-        virtual void bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) override;
-
-        /**
-         * @brief a function to re-bind the material to update the VBO offset
-         * 
-         * @param buffer the buffer to bind to
-         * @param VBOOffset the VBO offset from 0 in bytes
-         */
-        virtual void rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) override;
+        virtual void bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer) override;
 
         /**
          * @brief Get the Pipeline

@@ -43,7 +43,7 @@ option(GLGE_GRAPHICS_INCLUDE_OPENGL
 # an option to include the builtin Vulkan backend
 option(GLGE_GRAPHICS_INCLUDE_VULKAN
     "Enable if the builtin Vulkan backend should be included"
-    OFF
+    ON
 )
 
 # an option to make command overriding possible
@@ -519,6 +519,7 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.cpp
         )
     endif()
 

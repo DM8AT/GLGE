@@ -30,7 +30,6 @@
 #include "Graphic/Mesh.h"
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/MeshPool.h"
 #include "Graphic/Backend/Video/Window.h"
 
 //add Vulkan buffers
@@ -102,23 +101,23 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
     u32 meshIdx = 0;
     for (const auto& [mat, meshes] : objs) {
         for (const auto& [mesh, obj] : meshes) {
-            //get the base LOD
-            const auto& lod = mesh->getLODInfo(0);
-            const auto& idx = mesh->getIndexSection();
-            const auto& vtx = mesh->getVertexSection();
-            //create the draw information
-            drawCommands.push_back(VkDrawIndexedIndirectCommand{
-                    .indexCount = static_cast<u32>(lod.index.count),
-                    .instanceCount = 1,
-                    .firstIndex = static_cast<u32>(idx.offset/idx.size + lod.index.offset/lod.index.size), //due to alignment this division is guaranteed to produce a valid integer
-                    .vertexOffset = static_cast<i32>(vtx.offset/vtx.size + lod.vertex.offset/lod.vertex.size), //see above
-                    .firstInstance = meshIdx
-                }
-            );
-            //store the object
-            m_entities.push_back(obj);
-            //advance the mesh
-            ++meshIdx;
+            // //get the base LOD
+            // const auto& lod = mesh->getLODInfo(0);
+            // const auto& idx = mesh->getIndexSection();
+            // const auto& vtx = mesh->getVertexSection();
+            // //create the draw information
+            // drawCommands.push_back(VkDrawIndexedIndirectCommand{
+            //         .indexCount = static_cast<u32>(lod.index.count),
+            //         .instanceCount = 1,
+            //         .firstIndex = static_cast<u32>(idx.offset/idx.size + lod.index.offset/lod.index.size), //due to alignment this division is guaranteed to produce a valid integer
+            //         .vertexOffset = static_cast<i32>(vtx.offset/vtx.size + lod.vertex.offset/lod.vertex.size), //see above
+            //         .firstInstance = meshIdx
+            //     }
+            // );
+            // //store the object
+            // m_entities.push_back(obj);
+            // //advance the mesh
+            // ++meshIdx;
         }
     }
     //re-create the corresponding GPU buffer
@@ -165,29 +164,29 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
             //bind descriptor sets
             vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipelineLayout>(material->getPipelineLayout()), 0, sets.size(), sets.data(), 0, nullptr);
             //bind the vertex and index buffer
-            auto* meshPool = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool*>(material->getVertexLayout()->getPool().get());
-            VkBuffer vbo = reinterpret_cast<VkBuffer>(meshPool->getVbo());
-            VkDeviceSize offs = 0;
-            vkCmdBindVertexBuffers(cb, 0, 1, &vbo, &offs);
-            VkBuffer ibo = reinterpret_cast<VkBuffer>(meshPool->getIbo());
-            vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
-            //start the pipeline
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipeline>(material->getPipeline()));
-            //set the dynamic states
-            VkViewport viewport {};
-            viewport.x = 0;
-            viewport.y = 0;
-            viewport.minDepth = 0.f;
-            viewport.maxDepth = 1.f;
-            viewport.width = size.x;
-            viewport.height = size.y;
-            vkCmdSetViewport(cb, 0, 1, &viewport);
-            VkRect2D scissor {};
-            scissor.offset = {0,0};
-            scissor.extent = {size.x, size.y};
-            vkCmdSetScissor(cb, 0, 1, &scissor);
-            //draw all the meshes
-            vkCmdDrawIndexedIndirect(cb, indirectBuffer, 0, meshes.size(), sizeof(VkDrawIndexedIndirectCommand));
+            // auto* meshPool = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool*>(material->getVertexLayout()->getPool().get());
+            // VkBuffer vbo = reinterpret_cast<VkBuffer>(meshPool->getVbo());
+            // VkDeviceSize offs = 0;
+            // vkCmdBindVertexBuffers(cb, 0, 1, &vbo, &offs);
+            // VkBuffer ibo = reinterpret_cast<VkBuffer>(meshPool->getIbo());
+            // vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
+            // //start the pipeline
+            // vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipeline>(material->getPipeline()));
+            // //set the dynamic states
+            // VkViewport viewport {};
+            // viewport.x = 0;
+            // viewport.y = 0;
+            // viewport.minDepth = 0.f;
+            // viewport.maxDepth = 1.f;
+            // viewport.width = size.x;
+            // viewport.height = size.y;
+            // vkCmdSetViewport(cb, 0, 1, &viewport);
+            // VkRect2D scissor {};
+            // scissor.offset = {0,0};
+            // scissor.extent = {size.x, size.y};
+            // vkCmdSetScissor(cb, 0, 1, &scissor);
+            // //draw all the meshes
+            // vkCmdDrawIndexedIndirect(cb, indirectBuffer, 0, meshes.size(), sizeof(VkDrawIndexedIndirectCommand));
 
             //finish the render pass
             vkCmdEndRenderPass(cb);
