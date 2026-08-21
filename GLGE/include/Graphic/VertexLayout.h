@@ -148,6 +148,32 @@ namespace GLGE::Graphic {
         }
 
         /**
+         * @brief Construct a new Vertex Layout
+         * 
+         * Copy constructor
+         */
+        VertexLayout(const VertexLayout&) = default;
+        /**
+         * @brief Construct a new Vertex Layout
+         * 
+         * Move constructor
+         */
+        VertexLayout(VertexLayout&&) = default;
+
+        /**
+         * @brief Copy assignment operator
+         * 
+         * @return `VertexLayout&` a reference to the layout after copying
+         */
+        VertexLayout& operator=(const VertexLayout&) = default;
+        /**
+         * @brief Move assignment operator
+         * 
+         * @return `VertexLayout&` a reference the layout after moving
+         */
+        VertexLayout& operator=(VertexLayout&&) = default;
+
+        /**
          * @brief Get the Attribute Count
          * 
          * @return `size_t` the amount of attributes in the layout

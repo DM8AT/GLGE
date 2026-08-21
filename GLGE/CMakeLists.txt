@@ -482,8 +482,6 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Shader.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/SampledTexture.cpp
-            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/MeshPool.cpp
-            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/VertexLayout.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Material.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.cpp
@@ -517,7 +515,6 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.cpp
-            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/MeshPool.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Material.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.cpp

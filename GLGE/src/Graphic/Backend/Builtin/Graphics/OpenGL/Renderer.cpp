@@ -28,7 +28,6 @@
 #include "Graphic/Material.h"
 #include "Graphic/Mesh.h"
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/MeshPool.h"
 #include "Graphic/Backend/Video/Window.h"
 
 //add OpenGL buffers
@@ -165,7 +164,7 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     for (auto& [mat, meshes] : objs) {
         //bind the material
         GLGE::Graphic::Backend::Graphic::OpenGL::Material* material = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Material*>(mat->getBackend().get());
-        material->bind(&cmdBuff, 0);
+        material->bind(&cmdBuff);
 
         //draw the mesh
         cmdBuff.addCommand(drawer, ptr, meshes.size());

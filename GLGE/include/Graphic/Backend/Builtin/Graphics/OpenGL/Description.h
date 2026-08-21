@@ -177,26 +177,6 @@ namespace Graphics {
         virtual Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Image>& image, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler) override;
 
         /**
-         * @brief Create a Mesh Pool
-         * 
-         * @param instance a pointer to the instance that will own the mesh pool
-         * 
-         * @return `Reference<GLGE::Graphic::Backend::Graphic::MeshPool>` a reference to the new mesh pool
-         */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::MeshPool> createMeshPool(GLGE::Graphic::Instance* instance) override;
-
-        /**
-         * @brief Create a Vertex Layout
-         * 
-         * @param ptr the pointer to the beginning of a continues array of attributes
-         * @param size the amount of attributes in the array
-         * @param stride the byte size of a single vertex
-         * @param pool a reference to the mesh pool the layout attaches to
-         * @return `Reference<GLGE::Graphic::Backend::Graphic::VertexLayout>` a reference to the new vertex layout
-         */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> createVertexLayout(const VertexAttribute* ptr, size_t size, size_t stride, Reference<GLGE::Graphic::Backend::Graphic::MeshPool> pool) override;
-
-        /**
          * @brief Create a Material
          * 
          * @param shader a reference to the used shader backend
@@ -207,7 +187,7 @@ namespace Graphics {
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Material>` a reference to the new material
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Material> createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite) override;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Material> createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite) override;
 
         /**
          * @brief Create a Material

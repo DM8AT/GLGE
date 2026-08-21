@@ -24,8 +24,6 @@
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
 //add the OpenGL shader implementation
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
-//add the OpenGL mesh pool
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/MeshPool.h"
 
 //add the shader frontend
 #include "Graphic/Shader.h"

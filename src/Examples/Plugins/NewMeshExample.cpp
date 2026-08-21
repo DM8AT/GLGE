@@ -30,7 +30,7 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
 
     //create a window to make the graphic instance valid
     GLGE::Graphic::WindowSettings settings;
-    GLGE::Graphic::Window win("\"Hidden\" window", {1,1}, settings);
+    GLGE::Graphic::Window win("Window", {600, 600}, settings);
 
     auto ass = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Cube.fbx", GLGE::MeshAsset::ASSIMP);
     
@@ -43,11 +43,42 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
         std::pair{GLGE::VertexAttribute::Normal {}, GLGE::u64(1)}       //Normal -> stream 1
     );
 
-    GLGE::Graphic::Mesh m{*ass.reference()->getMesh(), layout};
+    GLGE::Graphic::Mesh cube{*ass.reference()->getMesh(), layout};
+
+    GLGE::Graphic::Image renCol0(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
+    GLGE::Graphic::Image renDepth(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT);
+    GLGE::Graphic::Framebuffer renderFBuff({&renCol0}, {&renDepth}, {});
+    GLGE::Graphic::RenderTarget renderTarget(&renderFBuff);
+
+    GLGE::World world("Scene 1");
+    GLGE::Object camera = world.create<GLGE::Graphic::Component::Camera, GLGE::Transform>(
+        "Camera", 
+        GLGE::Graphic::Component::Camera{90,0.1,1000, GLGE::vec3(0,0,0)}, 
+        GLGE::Transform{GLGE::vec3(-3,0,0), GLGE::Quaternion(GLGE::vec3(0,0,0)), GLGE::vec3(1,1,1)}
+    );
+    GLGE::Graphic::Renderer renderer(world, &camera, renderTarget);
+
+    GLGE::Graphic::Shader meshShader {
+        std::pair{"Vertex", "assets/shader/simple.vert.spv"},
+        std::pair{"Fragment", "assets/shader/simple.frag.spv"}
+    };
+    GLGE::Graphic::ResourceSet renderSet(meshShader.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()}, 
+        std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}
+    );
+    meshShader.setResources(0, &renderSet);
+
+    GLGE::Graphic::Material mat(meshShader, layout, renderFBuff, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
+
+    GLGE::Object cubeObj = world.create<GLGE::Transform, GLGE::Graphic::Component::Renderable>("Cube", 
+        GLGE::Transform({0,0,0}, {1,0,0,0}, GLGE::vec3{0.5f}),
+        GLGE::Graphic::Component::Renderable(&cube, &mat, true)
+    );
 
     GLGE::Graphic::RenderTarget target(&win);
     auto pipe = GLGE::Graphic::RenderPipeline::create(&win, 
-        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, target, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))}
+        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, renderTarget, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
+        //TODO: Implement draw command
+        std::pair{"Flush", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, renderTarget, GLGE::u8(0), target, GLGE::u8(0), false, false)}
     );
     pipe.record();
 
@@ -55,6 +86,11 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
 
     while (!win.isClosingRequested()) {
         inst.startMainTick();
+
+        if (win.didResize()) {
+            renderFBuff.resize(win.getResolution());
+            pipe.record();
+        }
 
         pipe.play();
 

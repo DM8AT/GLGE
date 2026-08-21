@@ -29,12 +29,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
 //add buffers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
-//add mesh pools
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/MeshPool.h"
 //add materials
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
-//add vertex layouts
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/VertexLayout.h"
 //add renderers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.h"
 //add samplers
@@ -108,13 +104,7 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> Vulkan::createS
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> Vulkan::createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Image>& image, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(new GLGE::Graphic::Backend::Graphic::Vulkan::SampledTexture(image, sampler), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool> Vulkan::createMeshPool(GLGE::Graphic::Instance* instance) 
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool>(new GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool(instance), false);}
-
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> Vulkan::createVertexLayout(const VertexAttribute* ptr, size_t size, size_t stride, Reference<GLGE::Graphic::Backend::Graphic::MeshPool> pool)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout>(new GLGE::Graphic::Backend::Graphic::Vulkan::VertexLayout(ptr, size, stride, pool), false);}
-
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> Vulkan::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> Vulkan::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material>(new GLGE::Graphic::Backend::Graphic::Vulkan::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> Vulkan::createRenderer(World& world, Object* camera, RenderTarget target)

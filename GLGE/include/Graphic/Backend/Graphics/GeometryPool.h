@@ -385,6 +385,24 @@ namespace GLGE::Graphic::Backend::Graphic {
         public:
 
             /**
+             * @brief store an entry in the stream array
+             */
+            struct StreamEntry {
+                /**
+                 * @brief store the data tag
+                 */
+                StreamDataTag tag;
+                /**
+                 * @brief store the actual stream
+                 */
+                std::unique_ptr<Stream> stream;
+                /**
+                 * @brief `true` if in use, `false` if not
+                 */
+                bool active = false;
+            };
+
+            /**
              * @brief Construct a new Archetype
              * 
              * @param instance a pointer to the instance the archetype belongs to
@@ -429,25 +447,39 @@ namespace GLGE::Graphic::Backend::Graphic {
             inline u32 getId() const noexcept
             {return m_id;}
 
-        protected:
+            /**
+             * @brief access a specific stream
+             * 
+             * @warning Only modify if you know what you're doing
+             * 
+             * @param streamId the identifier of the stream to access
+             * @return `StreamEntry&` a reference to the requested stream entry
+             */
+            inline StreamEntry& accessStream(u8 streamId) 
+            {return m_vertexPools[streamId];}
 
             /**
-             * @brief store an entry in the stream array
+             * @brief access a specific stream
+             * 
+             * @warning Only modify if you know what you're doing
+             * 
+             * @param streamId the identifier of the stream to access
+             * @return `const StreamEntry&` a constant reference to the requested stream entry
              */
-            struct StreamEntry {
-                /**
-                 * @brief store the data tag
-                 */
-                StreamDataTag tag;
-                /**
-                 * @brief store the actual stream
-                 */
-                std::unique_ptr<Stream> stream;
-                /**
-                 * @brief `true` if in use, `false` if not
-                 */
-                bool active = false;
-            };
+            inline const StreamEntry& accessStream(u8 streamId) const
+            {return m_vertexPools[streamId];}
+
+            /**
+             * @brief Get the Index Stream
+             * 
+             * @warning Only modify if you know what you're doing
+             * 
+             * @return `Stream*` a pointer to the index stream
+             */
+            inline Stream* getIndexStream() const noexcept
+            {return m_indexPool.get();}
+
+        protected:
 
             /**
              * @brief store all the pools and their usage

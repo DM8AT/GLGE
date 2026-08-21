@@ -49,6 +49,14 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          */
         virtual void onFlush() override;
 
+        /**
+         * @brief Get the Buffer
+         * 
+         * @return `u32` the wrapped buffer
+         */
+        inline u32 getBuffer() const noexcept
+        {return m_buff;}
+
     protected:
 
         /**

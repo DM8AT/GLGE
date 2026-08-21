@@ -43,7 +43,7 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param cmdBuff the buffer to record the drawing to
          */
-        virtual void record(CommandBuffer& cmdBuff) override;
+        virtual void record(Backend::Graphic::CommandBuffer& cmdBuff) override;
 
         /**
          * @brief update the internal data buffers
