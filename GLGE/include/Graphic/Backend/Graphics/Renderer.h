@@ -41,12 +41,13 @@ namespace GLGE::Graphic::Backend::Graphic {
         /**
          * @brief Construct a new Renderer
          * 
+         * @param instance a pointer to the graphic instance the renderer will belong to
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
          * @param target the target to adapt to
          */
-        Renderer(World& world, Object* camera, RenderTarget target)
-         : m_world(&world), m_camera(camera), m_target(target)
+        Renderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target)
+         : m_inst(instance), m_world(&world), m_camera(camera), m_target(target)
         {}
 
         /**
@@ -293,6 +294,11 @@ namespace GLGE::Graphic::Backend::Graphic {
              */
             vec3 scale;
         };
+
+        /**
+         * @brief store a pointer to the backend graphic instance the renderer belongs to
+         */
+        GLGE::Graphic::Instance* m_inst = nullptr;
 
         /**
          * @brief store a buffer for the camera

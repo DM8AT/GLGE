@@ -75,8 +75,8 @@ static constexpr GLGE::u64 __compressQuaternion(const GLGE::Quaternion& quaterni
           (packFloat(quaternion.z)<<32) | (packFloat(quaternion.w)<<48);
 }
 
-GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::Renderer(World& world, Object* camera, RenderTarget target) 
- : GLGE::Graphic::Backend::Graphic::Renderer(world, camera, target)
+GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::Renderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target) 
+ : GLGE::Graphic::Backend::Graphic::Renderer(instance, world, camera, target)
 {
     //transformation information
     m_cameraBuffer = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::UNIFORM, nullptr, sizeof(CameraData), GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
@@ -103,12 +103,18 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::~Renderer() {
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cmdBuff) {
     //store all objects sorted by the materials
-    std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<Mesh*, Object>>> objs;
+    std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<MeshHandle, Object>>> objs;
     size_t total = 0;
-    auto reg = [&objs, &total](Tiny::ECS::Entity ent, const Component::Renderable& render) {
+    auto reg = [&objs, &total](Tiny::ECS::Entity ent, const Component::Renderable& renderer) {
         //only add the mesh if it is enabled
-        if (render.enabled) 
-        {objs[render.material].emplace_back(render.mesh, Object(ent)); ++total;}
+        if (renderer.enabled) {
+            auto* m = renderer.mesh;
+            //interpret null mesh as disabled
+            if (m == nullptr) {return;}
+
+            //set mesh -> active
+            objs[renderer.material].emplace_back(m->getHandle(), Object(ent)); ++total;
+        }
     };
     m_world->each<Component::Renderable>(reg);
     
@@ -120,6 +126,29 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     u32 meshIdx = 0;
     for (const auto& [mat, meshes] : objs) {
         for (const auto& [mesh, obj] : meshes) {
+            //get the allocation
+            const auto& alloc = m_inst->meshManager().getAllocationOf(mesh);
+            //discard if the handle is invalid
+            if (alloc.size() == 0) 
+            {continue;}
+
+            //for now, just always assume LOD0
+            //the check above made sure that 0 is a valid index
+            const auto& lod = alloc[0];
+
+            //store the draw command for LOD 0
+            drawCommands.emplace_back(
+                lod.indexCount * 3,
+                1,
+                lod.indexOffset * 3,
+                lod.vertexOffset,
+                meshIdx
+            );
+
+            //step mesh
+            m_entities.push_back(obj);
+            ++meshIdx;
+
             #if 0
             //get the base LOD
             const auto& lod = mesh->getLODInfo(0);
@@ -171,7 +200,6 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
         //advance the pointer
         ptr += meshes.size();
     }
-
 
     //gather up all the light sources
     m_pointLights.clear();

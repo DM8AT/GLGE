@@ -192,12 +192,13 @@ namespace Graphics {
         /**
          * @brief Create a Material
          * 
+         * @param instance a pointer to the graphic instance the renderer will belong to
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
          * @param target the target to adapt to
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Renderer>` a reference to the new renderer
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Renderer> createRenderer(World& world, Object* camera, RenderTarget target) override;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Renderer> createRenderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target) override;
 
         /**
          * @brief Create a Geometry pool stream

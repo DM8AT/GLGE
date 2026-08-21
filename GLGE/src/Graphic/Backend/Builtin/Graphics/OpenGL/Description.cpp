@@ -113,8 +113,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> OpenGL::createS
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> OpenGL::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material>(new GLGE::Graphic::Backend::Graphic::OpenGL::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> OpenGL::createRenderer(World& world, Object* camera, RenderTarget target)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Renderer(world, camera, target), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> OpenGL::createRenderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Renderer(instance, world, camera, target), false);}
 
 GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* OpenGL::createGeometryPoolStream(u64 initialSize, bool isIbo) 
 {return new GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream(initialSize, isIbo);}

@@ -221,7 +221,7 @@ GLGE::Graphic::Backend::Graphic::GeometryPool::Allocation GLGE::Graphic::Backend
 
 void GLGE::Graphic::Backend::Graphic::GeometryPool::Archetype::free(Allocation& allocation) {
     //free the vertex allocation
-    Region r(allocation.indexOffset * sizeof(u32), allocation.indexCount  * sizeof(u32));
+    Region r(allocation.indexOffset * sizeof(Triangle), allocation.indexCount * sizeof(Triangle));
     m_indexPool->free(r);
 
     //iterate over all pools and free the allocation
@@ -265,7 +265,9 @@ void GLGE::Graphic::Backend::Graphic::GeometryPool::Archetype::write(const Alloc
         //get the type information
         auto typeInfo = GLGE::Mesh::VertexLayout::VertexAttribute::getTypeInfo(static_cast<GLGE::Mesh::Type>(info.attributes[idx].type));
         //write
-        pool->write(Region((allocation.vertexOffset + offset)*info.stride, count*info.stride), data, localOffset, count*typeInfo.size);
+        for (size_t j = 0; j < count; ++j) {
+            pool->write(Region((allocation.vertexOffset + offset + j)*info.stride, info.stride), reinterpret_cast<const u8*>(data) + j*info.stride, localOffset, info.stride);
+        }
         pool->onFlush();
         //stop
         return;

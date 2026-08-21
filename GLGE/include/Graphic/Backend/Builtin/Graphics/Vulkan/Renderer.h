@@ -27,11 +27,12 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         /**
          * @brief Construct a new Renderer
          * 
+         * @param instance a pointer to the graphic instance the renderer will belong to
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
          * @param target the target to adapt to
          */
-        Renderer(World& world, Object* camera, RenderTarget target);
+        Renderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target);
 
         /**
          * @brief Destroy the Renderer

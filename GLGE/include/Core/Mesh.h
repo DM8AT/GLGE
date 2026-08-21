@@ -96,6 +96,250 @@ namespace GLGE {
             u8 _unused;
         };
 
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 0. 
+         */
+        struct Color0 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 1. 
+         */
+        struct Color1 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 2. 
+         */
+        struct Color2 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 3. 
+         */
+        struct Color3 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 4. 
+         */
+        struct Color4 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 5. 
+         */
+        struct Color5 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 6. 
+         */
+        struct Color6 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a color
+         * 
+         * A single vertex may have multiple attributes named "color". This referrs to the color at color-element index 7. 
+         */
+        struct Color7 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief helper to map the color at index 0 to a general color
+         */
+        using Color = Color0;
+
+        /**
+         * @brief store the amount of built-in color attribute identifiers
+         */
+        inline static constexpr u8 COLOR_ATTRIBUTE_MAX = 8;
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 0. 
+         */
+        struct UV0 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 1. 
+         */
+        struct UV1 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 2. 
+         */
+        struct UV2 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 3. 
+         */
+        struct UV3 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 4. 
+         */
+        struct UV4 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 5. 
+         */
+        struct UV5 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 6. 
+         */
+        struct UV6 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief define that an attribute is a texture uv position
+         * 
+         * A single vertex may have multiple attributes named "uv". This referrs to the uv at uv-element index 7. 
+         */
+        struct UV7 {
+            /**
+             * @brief store an unused blob
+             * 
+             * This is required for MSVC
+             */
+            u8 _unused;
+        };
+
+        /**
+         * @brief helper to map the uv at index 0 to a general uv
+         */
+        using UV = UV0;
+
+        /**
+         * @brief store the amount of built-in uv attribute identifiers
+         */
+        inline static constexpr u8 UV_ATTRIBUTE_MAX = 8;
+
     }
 
     /**

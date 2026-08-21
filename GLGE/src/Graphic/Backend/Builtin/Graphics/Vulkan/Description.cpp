@@ -107,8 +107,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> Vulkan::createS
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> Vulkan::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material>(new GLGE::Graphic::Backend::Graphic::Vulkan::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> Vulkan::createRenderer(World& world, Object* camera, RenderTarget target)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::Vulkan::Renderer(world, camera, target), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> Vulkan::createRenderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::Vulkan::Renderer(instance, world, camera, target), false);}
 
 GLGE::Graphic::GraphicAPI Vulkan::getAPI() const noexcept
 {return GLGE::Graphic::GraphicAPI::VULKAN;}

@@ -164,6 +164,30 @@ namespace GLGE::Graphic::Backend::Graphic {
         inline const Reference<Backend::Graphic::Buffer>& getLODMetaBuffer() const noexcept 
         {return m_lodBuff;}
 
+        /**
+         * @brief Get the Archetype of a specific mesh
+         * 
+         * @param handle the handle to query the archetype for
+         * @return `u32` the archetype ID of the mesh, `UINT32_MAX` if the handle is invalid
+         */
+        u32 getArchetypeOf(MeshHandle handle);
+
+        /**
+         * @brief Get the LOD metadata of the mesh
+         * 
+         * @param handle the handle to get the LOD metadata for
+         * @return `LODMeta` the LOD meta-data, returns all-zero if the handle is invalid
+         */
+        LODMeta getLodMetaOf(MeshHandle handle);
+
+        /**
+         * @brief Get the Allocation Of a specific mesh
+         * 
+         * @param handle the handle of the mesh to get the allocation for
+         * @return `const std::vector<GeometryPool::Allocation>&` a list of the allocations for all LODs, empty if the handle is invalid
+         */
+        const std::vector<GeometryPool::Allocation>& getAllocationOf(MeshHandle handle);
+
     private:
 
         /**
@@ -311,6 +335,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief store a pointer ot hte instance that the mesh manager belongs to
          */
         GLGE::Graphic::Instance* m_inst = nullptr;
+
+        /**
+         * @brief define a vector to use if a handle is invalid
+         */
+        inline static const std::vector<GeometryPool::Allocation> ms_failureAllocVec = {};
     };
 }
 

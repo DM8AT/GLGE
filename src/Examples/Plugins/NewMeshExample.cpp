@@ -16,6 +16,46 @@ struct VertAttr_UV {
     GLGE::u8 _unused = 0;
 };
 
+struct FirstPersonController {GLGE::u8 filler;};
+
+static void updateFirstPersonController(GLGE::Transform& transform, GLGE::Graphic::Component::Camera& camera, FirstPersonController) {
+    GLGE::Instance* inst = GLGE::Instance::getCurrentInstance();
+
+    float speed = 0.0125 * inst->mainLimiter().getCurrentDeltaTime();
+    //compute forward, right and up vector
+    GLGE::Quaternion quat(camera.eulerAngles);
+    GLGE::vec3 forward = quat * GLGE::vec3(0,0,-speed);
+    GLGE::vec3 right = quat * GLGE::vec3(speed,0,0);
+    GLGE::vec3 up = quat * GLGE::vec3(0,speed,0);
+
+    if (inst->getKeyboard().pressed()['w'])
+    {transform.pos += forward;}
+    if (inst->getKeyboard().pressed()['s'])
+    {transform.pos -= forward;}
+    if (inst->getKeyboard().pressed()['a'])
+    {transform.pos -= right;}
+    if (inst->getKeyboard().pressed()['d'])
+    {transform.pos += right;}
+    if (inst->getKeyboard().pressed()[GLGE::Key::Space])
+    {transform.pos += up;}
+    if (inst->getKeyboard().pressed()[GLGE::Key::LeftShift])
+    {transform.pos -= up;}
+
+    float rotSpeed = glm::radians(0.125) * inst->mainLimiter().getCurrentDeltaTime();
+    if (inst->getKeyboard().pressed()[GLGE::Key::ArrowLeft])
+    {camera.eulerAngles.y += rotSpeed;}
+    if (inst->getKeyboard().pressed()[GLGE::Key::ArrowRight])
+    {camera.eulerAngles.y -= rotSpeed;}
+    if (inst->getKeyboard().pressed()[GLGE::Key::ArrowUp])
+    {camera.eulerAngles.x += rotSpeed;}
+    if (inst->getKeyboard().pressed()[GLGE::Key::ArrowDown])
+    {camera.eulerAngles.x -= rotSpeed;}
+    if (inst->getKeyboard().pressed()[GLGE::Key::PageUp])
+    {camera.eulerAngles.z += rotSpeed;}
+    if (inst->getKeyboard().pressed()[GLGE::Key::PageDown])
+    {camera.eulerAngles.z -= rotSpeed;}
+}
+
 GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackendName) {
     //initialize
     GLGE::Instance::init();
@@ -32,18 +72,16 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
     GLGE::Graphic::WindowSettings settings;
     GLGE::Graphic::Window win("Window", {600, 600}, settings);
 
-    auto ass = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Cube.fbx", GLGE::MeshAsset::ASSIMP);
-    
-    //print information about the layout of the mesh
-    for (const auto& attr : ass.reference()->getMesh()->getLayout()) 
-    {std::cout << "Found attribute with usage: " << attr.usage << " at offset " << attr.offset << " with type " << static_cast<GLGE::u32>(attr.type) << "\n";}
+    auto ass = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Suzanne.glb", GLGE::MeshAsset::ASSIMP);
+    const GLGE::Mesh& mesh = *ass.reference()->getMesh();
 
-    GLGE::Graphic::VertexLayout layout(ass.reference()->getMesh()->getLayout(), 
+    GLGE::Graphic::VertexLayout layout(mesh.getLayout(), 
         std::pair{GLGE::VertexAttribute::Position {}, GLGE::u64(0)},    //Pos    -> stream 0
-        std::pair{GLGE::VertexAttribute::Normal {}, GLGE::u64(1)}       //Normal -> stream 1
+        std::pair{GLGE::VertexAttribute::UV {},       GLGE::u64(1)},    //UV     -> stream 1
+        std::pair{GLGE::VertexAttribute::Normal {},   GLGE::u64(1)}     //Normal -> stream 1
     );
 
-    GLGE::Graphic::Mesh cube{*ass.reference()->getMesh(), layout};
+    GLGE::Graphic::Mesh cube{mesh, layout};
 
     GLGE::Graphic::Image renCol0(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM);
     GLGE::Graphic::Image renDepth(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT);
@@ -51,10 +89,11 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
     GLGE::Graphic::RenderTarget renderTarget(&renderFBuff);
 
     GLGE::World world("Scene 1");
-    GLGE::Object camera = world.create<GLGE::Graphic::Component::Camera, GLGE::Transform>(
+    GLGE::Object camera = world.create<GLGE::Graphic::Component::Camera, GLGE::Transform, FirstPersonController>(
         "Camera", 
         GLGE::Graphic::Component::Camera{90,0.1,1000, GLGE::vec3(0,0,0)}, 
-        GLGE::Transform{GLGE::vec3(-3,0,0), GLGE::Quaternion(GLGE::vec3(0,0,0)), GLGE::vec3(1,1,1)}
+        GLGE::Transform{GLGE::vec3(0,0,10), GLGE::Quaternion(GLGE::vec3(0,0,0)), GLGE::vec3(1,1,1)},
+        FirstPersonController {}
     );
     GLGE::Graphic::Renderer renderer(world, &camera, renderTarget);
 
@@ -73,12 +112,16 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
         GLGE::Transform({0,0,0}, {1,0,0,0}, GLGE::vec3{0.5f}),
         GLGE::Graphic::Component::Renderable(&cube, &mat, true)
     );
+    GLGE::Object skylight = world.create<GLGE::Transform, GLGE::Graphic::Component::DirectionalLight>("Skylight",
+        GLGE::Transform({0,0,0}, GLGE::Quaternion({0, glm::radians(45.f), glm::radians(45.f)}), {1,1,1}),
+        GLGE::Graphic::Component::DirectionalLight{GLGE::vec3(0.908, 0.912, 0.894), 1.f, 0}
+    );
 
     GLGE::Graphic::RenderTarget target(&win);
     auto pipe = GLGE::Graphic::RenderPipeline::create(&win, 
-        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, renderTarget, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
-        //TODO: Implement draw command
-        std::pair{"Flush", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, renderTarget, GLGE::u8(0), target, GLGE::u8(0), false, false)}
+        std::pair{"Clear",  GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, renderTarget, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
+        std::pair{"Render", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
+        std::pair{"Flush",  GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, renderTarget, GLGE::u8(0), target, GLGE::u8(0), false, false)}
     );
     pipe.record();
 
@@ -91,6 +134,11 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
             renderFBuff.resize(win.getResolution());
             pipe.record();
         }
+
+        //update transforms
+        world.each<GLGE::Transform, GLGE::Graphic::Component::Camera, FirstPersonController>(updateFirstPersonController);
+        GLGE::System::BakeTransforms(world);
+        renderer.update();
 
         pipe.play();
 

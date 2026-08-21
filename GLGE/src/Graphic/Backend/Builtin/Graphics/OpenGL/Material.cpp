@@ -151,6 +151,22 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Material::updateVAO() {
     u32 newVao = 0;
     glCreateVertexArrays(1, &newVao);
 
+    //write the vertex attributes
+    for (size_t i = 0; i < m_layout->getAttributeCount(); ++i) {
+        //get the attribute
+        const auto& attr = m_layout->getAttribute(i);
+        
+        //get the OpenGL type
+        GlTypeInfo t = __toGLType(attr.type);
+
+        //activate the attribute
+        glEnableVertexArrayAttrib(newVao, i);
+        //set the attribute format
+        glVertexArrayAttribFormat(newVao, i, t.elementCount, t.type, t.normalized, attr.streamOffset);
+        //bind to the correct stream
+        glVertexArrayAttribBinding(newVao, i, attr.streamId);
+    }
+
     //enable all required streams
     for (u8 streamId = 0; streamId < Backend::Graphic::GeometryPool::MAX_STREAM_COUNT; ++streamId) {
         auto& stream = arch.accessStream(streamId);
@@ -171,22 +187,6 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Material::updateVAO() {
 
         //bind the VBO for the index
         glVertexArrayVertexBuffer(newVao, streamId, vbo->getBuffer(), 0, stride);
-    }
-
-    //write the vertex attributes
-    for (size_t i = 0; i < m_layout->getAttributeCount(); ++i) {
-        //get the attribute
-        const auto& attr = m_layout->getAttribute(i);
-        
-        //get the OpenGL type
-        GlTypeInfo t = __toGLType(attr.type);
-
-        //activate the attribute
-        glEnableVertexArrayAttrib(newVao, i);
-        //set the attribute format
-        glVertexArrayAttribFormat(newVao, i, t.elementCount, t.type, t.normalized, attr.streamOffset);
-        //bind to the correct stream
-        glVertexArrayAttribBinding(newVao, i, attr.streamId);
     }
 
     //attach the IBO

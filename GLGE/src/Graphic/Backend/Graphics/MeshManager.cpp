@@ -102,11 +102,11 @@ MeshHandle MeshManager::createMesh(const GLGE::Mesh& mesh, const GLGE::Graphic::
         m_gPool.write(alloc, indexIdent, lod.indices().data(), 0, lod.getIndexCount(), 0);
 
         //split vertex data into streams on CPU, upload full stream to GPU
-        for (size_t k = 0; k < layout.getStreamCount(); ++k) {
+        for (size_t z = 0; z < layout.getStreamCount(); ++z) {
             //compute the stream size
             size_t elSize = 0;
             for (const auto& attr : identifiers) {
-                if (attr.stream == k) {
+                if (attr.stream == z) {
                     const auto& a = layout.getAttribute(layout.getIdxOfUsage(attr.usage));
                     size_t cap = a.streamOffset + GLGE::Mesh::VertexAttribute::getTypeInfo(a.type).size;
                     elSize = std::max<size_t>(elSize, cap);
@@ -120,13 +120,15 @@ MeshHandle MeshManager::createMesh(const GLGE::Mesh& mesh, const GLGE::Graphic::
             for (size_t k = 0; k < lod.vertices().getCount(); ++k) {
                 for (size_t j = 0; j < identifiers.size(); ++j) {
                     const auto& a = layout.getAttribute(layout.getIdxOfUsage(identifiers[j].usage));
-                    //write the data
-                    memcpy(ptr.get() + (k * elSize) + a.streamOffset, lod.vertices().get(k).get(a.usage), GLGE::Mesh::VertexAttribute::getTypeInfo(a.type).size);
+                    if (a.streamId == z) {
+                        //write the data
+                        memcpy(ptr.get() + (k * elSize) + a.streamOffset, lod.vertices().get(k).get(a.usage), GLGE::Mesh::VertexAttribute::getTypeInfo(a.type).size);
+                    }
                 }
             }
 
             //write the filled stream to the GPU
-            m_gPool.write(alloc, identifiers[k], ptr.get(), 0, lod.vertices().getCount(), 0);
+            m_gPool.write(alloc, identifiers[z], ptr.get(), 0, lod.vertices().getCount(), 0);
         }
     }
 
@@ -164,7 +166,9 @@ MeshHandle MeshManager::createMesh(const GLGE::Mesh& mesh, const GLGE::Graphic::
     entry.lodAllocations = std::move(lodAllocations);
 
     //update GPU meta buffers incrementally
-    AABB aabb = mesh.getLOD(0).getBVH().getNode(0).aabb;
+    AABB aabb {{0,0,0}, {0,0,0}};
+    if (mesh.getLOD(0).getBVH().getNodeCount() > 0) 
+    {aabb = mesh.getLOD(0).getBVH().getNode(0).aabb;}
     MeshMeta meta {
         .lodOffset = currentLodOffset,
         .lodCount = lodCount,
@@ -224,4 +228,61 @@ void MeshManager::freeMesh(MeshHandle handle) {
         entry.nextFree = m_freeTop;
         m_freeTop = idx;
     }
+}
+
+
+GLGE::u32 GLGE::Graphic::Backend::Graphic::MeshManager::getArchetypeOf(MeshHandle handle) {
+    //get the index of the mesh and the meshes' version
+    u32 idx = handle & MESH_HANDLE_INDEX_MASK;
+    u8 version = static_cast<u8>((handle & ~MESH_HANDLE_INDEX_MASK) >> MESH_HANDLE_VERSION_SHIFT);
+
+    //sanity check the handle
+    if (idx >= m_entries.size()) return std::numeric_limits<u32>::max();
+    MeshEntry& entry = m_entries[idx];
+    if (!entry.alive || entry.version != version) return std::numeric_limits<u32>::max();
+
+    //return the actual archetype ID
+    return m_entries[idx].archetypeId;
+}
+
+GLGE::Graphic::Backend::Graphic::MeshManager::LODMeta GLGE::Graphic::Backend::Graphic::MeshManager::getLodMetaOf(MeshHandle handle) {
+    //get the index of the mesh and the meshes' version
+    u32 idx = handle & MESH_HANDLE_INDEX_MASK;
+    u8 version = static_cast<u8>((handle & ~MESH_HANDLE_INDEX_MASK) >> MESH_HANDLE_VERSION_SHIFT);
+
+    //sanity check the handle
+    if (idx >= m_entries.size()) return LODMeta {
+        .indexOffset = 0,
+        .indexCount = 0,
+        .vertexOffset = 0,
+        .vertexCount = 0,
+        .error = 0.f
+    };
+    MeshEntry& entry = m_entries[idx];
+    if (!entry.alive || entry.version != version) return LODMeta {
+        .indexOffset = 0,
+        .indexCount = 0,
+        .vertexOffset = 0,
+        .vertexCount = 0,
+        .error = 0.f
+    };
+
+    //return the LOD meta data
+    LODMeta meta {};
+    m_lodBuff->read(&meta, sizeof(meta), sizeof(meta) * entry.lodOffset);
+    return meta;
+}
+
+const std::vector<GLGE::Graphic::Backend::Graphic::GeometryPool::Allocation>& GLGE::Graphic::Backend::Graphic::MeshManager::getAllocationOf(MeshHandle handle) {
+    //get the index of the mesh and the meshes' version
+    u32 idx = handle & MESH_HANDLE_INDEX_MASK;
+    u8 version = static_cast<u8>((handle & ~MESH_HANDLE_INDEX_MASK) >> MESH_HANDLE_VERSION_SHIFT);
+
+    //sanity check the handle
+    if (idx >= m_entries.size()) return ms_failureAllocVec;
+    MeshEntry& entry = m_entries[idx];
+    if (!entry.alive || entry.version != version) return ms_failureAllocVec;
+
+    //valid -> return the actual allocation
+    return m_entries[idx].lodAllocations;
 }

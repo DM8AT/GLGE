@@ -38,7 +38,7 @@ namespace GLGE::Graphic {
          * @param target a target to adapt to - this determines the aspect, but it can be rendered to other targets of the same aspect too
          */
         Renderer(World& world, Object* camera, RenderTarget target)
-         : BaseClass(), m_renderer(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createRenderer(world, camera, target))
+         : BaseClass(), m_renderer(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createRenderer(world.getInstance()->getExtension<GLGE::Graphic::Instance>(), world, camera, target))
         {}
 
         /**

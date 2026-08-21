@@ -57,8 +57,8 @@ static constexpr GLGE::u64 __compressQuaternion(const GLGE::Quaternion& quaterni
           (packFloat(quaternion.z)<<32) | (packFloat(quaternion.w)<<48);
 }
 
-GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::Renderer(World& world, Object* camera, RenderTarget target) 
- : GLGE::Graphic::Backend::Graphic::Renderer(world, camera, target)
+GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::Renderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target) 
+ : GLGE::Graphic::Backend::Graphic::Renderer(instance, world, camera, target)
 {
     //transformation information
     m_cameraBuffer = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::UNIFORM, nullptr, sizeof(CameraData), GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
