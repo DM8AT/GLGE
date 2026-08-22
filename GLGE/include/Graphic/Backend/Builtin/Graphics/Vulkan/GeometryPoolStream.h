@@ -101,8 +101,8 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @param size size of the range
          */
         void addDirtyRange(
-            VkDeviceSize offset,
-            VkDeviceSize size
+            u64 offset,
+            u64 size
         );
 
         //NOTE: All types are "vulkan-erased" to ensure that no vulkan-types are leaked. 
