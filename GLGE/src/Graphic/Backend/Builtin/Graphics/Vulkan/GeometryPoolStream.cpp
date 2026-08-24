@@ -37,13 +37,6 @@ GeometryPoolStream::GeometryPoolStream(u64 size, bool isIbo, GLGE::Graphic::Back
             //create the synchronizing fence
             VkFenceCreateInfo fenceInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
             vkCreateFence(device, &fenceInfo, nullptr, reinterpret_cast<VkFence*>(&m_fence));
-
-            //allocate upload command buffer from transfer queue pool
-            VkCommandBufferAllocateInfo allocInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
-            allocInfo.commandPool = static_cast<VkCommandPool>(vkInst->getTransferQueue().singleUsePool);
-            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            allocInfo.commandBufferCount = 1;
-            vkAllocateCommandBuffers(device, &allocInfo, reinterpret_cast<VkCommandBuffer*>(&m_uploadCmdBuff));
         }
     }
 
@@ -61,14 +54,6 @@ GeometryPoolStream::~GeometryPoolStream() {
         if (m_fence) {
             vkDestroyFence(device, static_cast<VkFence>(m_fence), nullptr);
             m_fence = nullptr;
-        }
-
-        if (m_uploadCmdBuff && m_inst) {
-            auto* vkInst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_inst);
-            VkCommandPool pool = static_cast<VkCommandPool>(vkInst->getTransferQueue().singleUsePool);
-            VkCommandBuffer cmd = static_cast<VkCommandBuffer>(m_uploadCmdBuff);
-            vkFreeCommandBuffers(device, pool, 1, &cmd);
-            m_uploadCmdBuff = nullptr;
         }
     }
 }
@@ -103,7 +88,7 @@ void GeometryPoolStream::destroyResources() {
 
     //after that, delete the staging buffer
     if (m_stagingBuffer) {
-        //Note: Don't manually unmap since the buffer was not manually
+        //Note: Don't manually unmap since the buffer was not manually mapped
         vmaDestroyBuffer(allocator, static_cast<VkBuffer>(m_stagingBuffer), static_cast<VmaAllocation>(m_stagingBufferAlloc));
         m_stagingBuffer = nullptr;
         m_stagingBufferAlloc = nullptr;
@@ -141,8 +126,16 @@ void GeometryPoolStream::onResize(u64 newSize) {
     vmaCreateBuffer(allocator, &stagingInfo, &stagingAllocInfo, &newStaging, &newStagingAlloc, &stagingResult);
 
     //migrate existing data via GPU-to-GPU copy
-    if (m_buffer && m_uploadCmdBuff && m_inst) {
-        VkCommandBuffer cmd = static_cast<VkCommandBuffer>(m_uploadCmdBuff);
+    if (m_buffer && m_inst) {
+        //create the command buffer
+        VkCommandBufferAllocateInfo cmdAlloc {};
+        auto pool = reinterpret_cast<VkCommandPool>(static_cast<Vulkan::Instance*>(m_inst)->getTransferQueue().singleUsePool);
+        cmdAlloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cmdAlloc.commandPool = pool;
+        cmdAlloc.commandBufferCount = 1;
+        cmdAlloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        VkCommandBuffer cmd;
+        vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(m_device), &cmdAlloc, &cmd);
         
         VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -154,7 +147,8 @@ void GeometryPoolStream::onResize(u64 newSize) {
         VkBufferCopy copyRegion{};
         copyRegion.srcOffset = 0;
         copyRegion.dstOffset = 0;
-        copyRegion.size = oldAllocInfo.size;
+        //clamp copy range to ensure buffer size bounds are not violated during shrink
+        copyRegion.size = std::min(static_cast<u64>(oldAllocInfo.size), newSize); 
         
         vkCmdCopyBuffer(cmd, static_cast<VkBuffer>(m_buffer), newBuffer, 1, &copyRegion);
         vkEndCommandBuffer(cmd);
@@ -169,6 +163,9 @@ void GeometryPoolStream::onResize(u64 newSize) {
         
         m_uploadInFlight = true;
         waitForUpload();
+
+        //clean up the buffer
+        vkFreeCommandBuffers(reinterpret_cast<VkDevice>(m_device), pool, 1, &cmd);
     }
 
     //cleanup and reassign
@@ -181,23 +178,24 @@ void GeometryPoolStream::onResize(u64 newSize) {
 }
 
 void GeometryPoolStream::addDirtyRange(u64 offset, u64 size) {
-    //compute the end position of this dirty range
-    //this makes checking for continuity easier
     u64 end = offset + size;
-    //check if some regions can be merged
-    for (auto& range : m_dirtyRanges) {
-        u64 rangeEnd = range.offset + range.size;
-        //merge contiguous or overlapping dirty ranges
-        if (offset <= rangeEnd && end >= range.offset) {
-            u64 newOffset = std::min(offset, range.offset);
-            u64 newEnd = std::max(end, rangeEnd);
-            range.offset = newOffset;
-            range.size = newEnd - newOffset;
-            return;
+    
+    //evaluate and collapse cascading overlaps by scanning fully
+    for (auto it = m_dirtyRanges.begin(); it != m_dirtyRanges.end(); ) {
+        u64 rangeEnd = it->offset + it->size;
+        
+        if (offset <= rangeEnd && end >= it->offset) {
+            //found overlap: expand the current block bounds and remove the old element
+            offset = std::min(offset, it->offset);
+            end = std::max(end, rangeEnd);
+            it = m_dirtyRanges.erase(it);
+        } else {
+            ++it;
         }
     }
-    //no merge possible, just add it to the end
-    m_dirtyRanges.push_back({offset, size});
+    
+    //no remaining overlaps, push standard range
+    m_dirtyRanges.push_back({offset, end - offset});
 }
 
 void GeometryPoolStream::onWrite(Region region, const void* data, u64 offset, u64 size) {
@@ -213,13 +211,22 @@ void GeometryPoolStream::onWrite(Region region, const void* data, u64 offset, u6
 
 void GeometryPoolStream::onFlush() {
     //sanity check that the buffers exist
-    if (m_dirtyRanges.empty() || !m_uploadCmdBuff || !m_device || !m_inst) return;
+    if (m_dirtyRanges.empty() || !m_device || !m_inst) return;
 
     //finish all uploads
     waitForUpload();
 
+    //create the command buffer
+    VkCommandBufferAllocateInfo cmdAlloc {};
+    auto pool = reinterpret_cast<VkCommandPool>(static_cast<Vulkan::Instance*>(m_inst)->getTransferQueue().singleUsePool);
+    cmdAlloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    cmdAlloc.commandPool = pool;
+    cmdAlloc.commandBufferCount = 1;
+    cmdAlloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    VkCommandBuffer cmd;
+    vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(m_device), &cmdAlloc, &cmd);
+
     //start upload cmd buff
-    VkCommandBuffer cmd = static_cast<VkCommandBuffer>(m_uploadCmdBuff);
     VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     vkBeginCommandBuffer(cmd, &beginInfo);
@@ -247,4 +254,7 @@ void GeometryPoolStream::onFlush() {
 
     //wait for the upload to be done
     waitForUpload();
+
+    //clean up the buffer
+    vkFreeCommandBuffers(reinterpret_cast<VkDevice>(m_device), pool, 1, &cmd);
 }
