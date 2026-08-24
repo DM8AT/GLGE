@@ -21,7 +21,7 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
     /**
      * @brief define a geometry pool stream class
      */
-    class GeometryPoolStream : public GeometryPool::Stream {
+    class GeometryPoolStream : public Graphic::GeometryPool::Stream {
     public:
 
         /**
@@ -34,8 +34,9 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * 
          * @param size the inital size of the Stream
          * @param isIbo `true` if this is an index buffer, `false` for a vertex buffer
+         * @param instance a pointer to the instance the stream will belong to
          */
-        GeometryPoolStream(u64 size, bool isIbo);
+        GeometryPoolStream(u64 size, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Geometry Pool Stream
@@ -100,10 +101,7 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @param offset beginning of the range
          * @param size size of the range
          */
-        void addDirtyRange(
-            VkDeviceSize offset,
-            VkDeviceSize size
-        );
+        void addDirtyRange(u64 offset, u64 size);
 
         //NOTE: All types are "vulkan-erased" to ensure that no vulkan-types are leaked. 
 

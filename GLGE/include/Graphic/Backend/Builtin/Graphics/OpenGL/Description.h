@@ -205,9 +205,10 @@ namespace Graphics {
          * 
          * @param initialSize the initial size of the stream
          * @param isIbo `true` if this is an index buffer, `false` for a vertex buffer
+         * @param instance a pointer to the graphic instance backend
          * @return `GeometryPool::Stream*` a pointer to the stream
          */
-        virtual GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* createGeometryPoolStream(u64 initialSize, bool isIbo) override;
+        virtual GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* createGeometryPoolStream(u64 initialSize, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance) override;
 
         /**
          * @brief get the API used by the backend

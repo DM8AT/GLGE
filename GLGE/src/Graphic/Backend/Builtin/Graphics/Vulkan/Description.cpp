@@ -37,6 +37,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
 //add texture samplers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.h"
+//add geometry streams
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -110,8 +112,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> Vulkan::createMateria
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> Vulkan::createRenderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::Vulkan::Renderer(instance, world, camera, target), false);}
 
-GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* Vulkan::createGeometryPoolStream(u64 initialSize, bool isIbo) 
-{return nullptr;}
+GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* Vulkan::createGeometryPoolStream(u64 initialSize, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance) 
+{return new GLGE::Graphic::Backend::Graphic::Vulkan::GeometryPoolStream(initialSize, isIbo, instance);}
 
 GLGE::Graphic::GraphicAPI Vulkan::getAPI() const noexcept
 {return GLGE::Graphic::GraphicAPI::VULKAN;}

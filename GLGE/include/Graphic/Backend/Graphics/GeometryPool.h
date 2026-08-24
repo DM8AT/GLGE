@@ -26,6 +26,9 @@ namespace GLGE::Graphic
 //use the backend namespace
 namespace GLGE::Graphic::Backend::Graphic {
 
+    //forward declaration
+    class Instance;
+
     /**
      * @brief store an abstract geometry pool
      */
@@ -276,9 +279,10 @@ namespace GLGE::Graphic::Backend::Graphic {
              * 
              * @param size the inital size of the Stream
              * @param isIbo `true` if this is an index buffer, `false` for a vertex buffer
+             * @param instance a pointer to the instance the stream will belong to
              */
-            Stream(u64 size, bool isIbo)
-             : m_size(size), m_free{Region{0, size}}, m_isIBO(isIbo)
+            Stream(u64 size, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance)
+             : m_size(size), m_free{Region{0, size}}, m_isIBO(isIbo), m_inst(instance)
             {}
 
             /**
@@ -356,6 +360,11 @@ namespace GLGE::Graphic::Backend::Graphic {
              * @brief store if this is an index buffer
              */
             bool m_isIBO = false;
+            
+            /**
+             * @brief store a pointer to the backend instance the stream belongs to
+             */
+            GLGE::Graphic::Backend::Graphic::Instance* m_inst;
 
         };
 

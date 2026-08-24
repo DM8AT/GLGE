@@ -21,7 +21,7 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
     /**
      * @brief define a geometry pool stream class
      */
-    class GeometryPoolStream : public GeometryPool::Stream {
+    class GeometryPoolStream : public Graphic::GeometryPool::Stream {
     public:
 
         /**
@@ -34,8 +34,9 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param size the inital size of the Stream
          * @param isIbo `true` if this is an index buffer, `false` for a vertex buffer
+         * @param instance a pointer to the instance the stream will belong to
          */
-        GeometryPoolStream(u64 size, bool isIbo);
+        GeometryPoolStream(u64 size, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Geometry Pool Stream

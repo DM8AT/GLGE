@@ -176,12 +176,12 @@ GLGE::Graphic::Backend::Graphic::GeometryPool::Archetype::Archetype(GLGE::Graphi
         //store the vertex data tag
         m_vertexPools[stream].tag.attributes = attrs;
         m_vertexPools[stream].tag.stride = sum;
-        m_vertexPools[stream].stream = std::unique_ptr<Stream>(m_inst->getGraphicDescription()->createGeometryPoolStream(INITIAL_SIZE, false));
+        m_vertexPools[stream].stream = std::unique_ptr<Stream>(m_inst->getGraphicDescription()->createGeometryPoolStream(INITIAL_SIZE, false, m_inst->getGraphicBackendInstance().get()));
         m_vertexPools[stream].active = true;
     }
 
     //create the index pool
-    m_indexPool = std::unique_ptr<Stream>(m_inst->getGraphicDescription()->createGeometryPoolStream(INITIAL_SIZE, true));
+    m_indexPool = std::unique_ptr<Stream>(m_inst->getGraphicDescription()->createGeometryPoolStream(INITIAL_SIZE, true, m_inst->getGraphicBackendInstance().get()));
 }
 
 GLGE::Graphic::Backend::Graphic::GeometryPool::Allocation GLGE::Graphic::Backend::Graphic::GeometryPool::Archetype::allocate(u32 vertexCount, u32 indexCount) {

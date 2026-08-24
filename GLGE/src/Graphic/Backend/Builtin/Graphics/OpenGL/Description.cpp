@@ -116,8 +116,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> OpenGL::createMateria
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> OpenGL::createRenderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Renderer(instance, world, camera, target), false);}
 
-GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* OpenGL::createGeometryPoolStream(u64 initialSize, bool isIbo) 
-{return new GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream(initialSize, isIbo);}
+GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* OpenGL::createGeometryPoolStream(u64 initialSize, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance) 
+{return new GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream(initialSize, isIbo, instance);}
 
 GLGE::Graphic::GraphicAPI OpenGL::getAPI() const noexcept
 {return GLGE::Graphic::GraphicAPI::OPEN_GL;}

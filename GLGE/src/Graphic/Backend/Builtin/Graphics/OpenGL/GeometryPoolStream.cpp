@@ -13,8 +13,8 @@
 //add GLAD
 #include "glad/glad.h"
 
-GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream::GeometryPoolStream(u64 size, bool isIbo) 
- : GeometryPool::Stream(size, isIbo)
+GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream::GeometryPoolStream(u64 size, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance) 
+ : GeometryPool::Stream(size, isIbo, instance)
 {
     //set the target
     m_target = m_isIBO ? GL_ELEMENT_ARRAY_BUFFER : GL_ARRAY_BUFFER;
