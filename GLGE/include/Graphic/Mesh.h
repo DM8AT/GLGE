@@ -52,14 +52,40 @@ namespace GLGE::Graphic {
          * @brief Construct a new Mesh
          * 
          * Move constructor
+         * 
+         * @param other the mesh to move from
          */
-        Mesh(Mesh&&) = default;
+        Mesh(Mesh&& other) 
+         : m_inst(other.m_inst), m_handle(other.m_handle)
+        {
+            //invalidate the other
+            other.m_handle = UINT32_MAX;
+            other.m_inst = nullptr;
+        }
         /**
          * @brief Move assign operator
          * 
-         * @return `Mesh&` a reference to the 
+         * @param other the mesh to move from
+         * @return `Mesh&` a reference to the mesh after moving
          */
-        Mesh& operator=(Mesh&&) = default;
+        Mesh& operator=(Mesh&& other) {
+            //prevent move to self
+            if (this == &other) {return *this;}
+
+            //free the old handle
+            if (m_inst)
+            {m_inst->meshManager().freeMesh(m_handle);}
+
+            //copy the data over
+            m_inst = other.m_inst;
+            m_handle = other.m_handle;
+            //invalidate other
+            other.m_handle = UINT32_MAX;
+            other.m_inst = nullptr;
+
+            //return a reference to self
+            return *this;
+        } 
 
         /**
          * @brief Construct a new Mesh
@@ -86,12 +112,19 @@ namespace GLGE::Graphic {
             //prevent copy to self
             if (this == &other) {return *this;}
 
+            //conditionally clean up old handle
+            if (m_inst)
+            {m_inst->meshManager().freeMesh(m_handle);}
+
             //copy the data over
             m_inst = other.m_inst;
             m_handle = other.m_handle;
 
             //copy the handle
             m_inst->meshManager().copyHandle(m_handle);
+
+            //return a reference to this
+            return *this;
         }
 
         /**
@@ -99,7 +132,8 @@ namespace GLGE::Graphic {
          */
         ~Mesh() {
             //clean up the handle
-            m_inst->meshManager().freeMesh(m_handle);
+            if (m_inst)
+            {m_inst->meshManager().freeMesh(m_handle);}
         }
 
         /**
@@ -123,11 +157,11 @@ namespace GLGE::Graphic {
         /**
          * @brief store a pointer to the instance the mesh belongs to
          */
-        GLGE::Graphic::Instance* m_inst;
+        GLGE::Graphic::Instance* m_inst = nullptr;
         /**
          * @brief store a handle for the mesh
          */
-        GLGE::Graphic::Backend::Graphic::MeshHandle m_handle;
+        GLGE::Graphic::Backend::Graphic::MeshHandle m_handle = UINT32_MAX;
 
     };
 
