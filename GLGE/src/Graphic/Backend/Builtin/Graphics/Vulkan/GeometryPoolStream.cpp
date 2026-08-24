@@ -244,4 +244,7 @@ void GeometryPoolStream::onFlush() {
     //mark that uploads are in progress, but no regions are dirty
     m_uploadInFlight = true;
     m_dirtyRanges.clear();
+
+    //wait for the upload to be done
+    waitForUpload();
 }

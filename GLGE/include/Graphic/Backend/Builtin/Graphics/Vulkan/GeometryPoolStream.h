@@ -50,6 +50,14 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          */
         virtual void onFlush() override;
 
+        /**
+         * @brief Get the Buffer
+         * 
+         * @return `void*` the wrapped vulkan buffer
+         */
+        inline void* getBuffer() const noexcept
+        {return m_buffer;}
+
     protected:
 
         /**
