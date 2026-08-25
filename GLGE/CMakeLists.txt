@@ -339,6 +339,7 @@ add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
     ${GLGE_SRC_DIR}/Core/Transform.cpp
     ${GLGE_SRC_DIR}/Core/Mesh.cpp
     ${GLGE_SRC_DIR}/Core/MeshAsset.cpp
+    ${GLGE_SRC_DIR}/Core/RayCasting.cpp
     # External: Miniz
     ${GLGE_SRC_DIR}/external/miniz/miniz.c
 )

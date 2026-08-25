@@ -73,7 +73,7 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
     GLGE::Graphic::Window win("Window", {600, 600}, settings);
 
     auto ass = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Suzanne.glb", GLGE::MeshAsset::ASSIMP);
-    const GLGE::Mesh& mesh = *ass.reference()->getMesh();
+    GLGE::Mesh& mesh = *ass.reference()->getMesh();
 
     GLGE::Graphic::VertexLayout layout(mesh.getLayout(), 
         std::pair{GLGE::VertexAttribute::Position {}, GLGE::u64(0)},    //Pos    -> stream 0
@@ -108,9 +108,10 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
 
     GLGE::Graphic::Material mat(meshShader, layout, renderFBuff, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
 
-    GLGE::Object cubeObj = world.create<GLGE::Transform, GLGE::Graphic::Component::Renderable>("Cube", 
-        GLGE::Transform({0,0,0}, {1,0,0,0}, GLGE::vec3{0.5f}),
-        GLGE::Graphic::Component::Renderable(&cube, &mat, true)
+    GLGE::Object cubeObj = world.create<GLGE::Transform, GLGE::Graphic::Component::Renderable, GLGE::MeshComponent>("Cube", 
+        GLGE::Transform({0,0,0}, GLGE::Quaternion({0,0,0}), GLGE::vec3{0.5f}),
+        GLGE::Graphic::Component::Renderable(&cube, &mat, true),
+        GLGE::MeshComponent {&mesh}
     );
     GLGE::Object skylight = world.create<GLGE::Transform, GLGE::Graphic::Component::DirectionalLight>("Skylight",
         GLGE::Transform({0,0,0}, GLGE::Quaternion({0, glm::radians(45.f), glm::radians(45.f)}), {1,1,1}),
@@ -124,6 +125,18 @@ GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackend
         std::pair{"Flush",  GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, renderTarget, GLGE::u8(0), target, GLGE::u8(0), false, false)}
     );
     pipe.record();
+
+    GLGE::System::BakeTransforms(world);
+
+    //ray casting test
+    GLGE::Ray r {
+        {0,0,10},
+        {0,0,-1}
+    };
+    auto hit = GLGE::System::CastRay(world, r);
+    std::cout << "Has Hit?: " << (hit.has_value() ? "true" : "false") << "\n";
+    if (hit.has_value()) 
+    {std::cout << "Hit:\n    Position: " << hit->position << "\n    Distance: " << hit->distance << "\n";}
 
     inst.start();
 

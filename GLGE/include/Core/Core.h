@@ -32,6 +32,8 @@
 #include "Reference.h"
 //add meshes
 #include "Mesh.h"
+//add raycasting
+#include "RayCasting.h"
 
 //include ordered maps
 #include "utils/OrderedMap.h"

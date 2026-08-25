@@ -2018,6 +2018,8 @@ namespace GLGE {
                 //create the BVH
                 if (createBVH)
                 {m_bvh = BVH(this, true, 4, 16);}
+                //build the ray tracing acceleration structure
+                buildAccelerationStructure();
             }
 
             /**
@@ -2035,6 +2037,8 @@ namespace GLGE {
                 //create the BVH
                 if (createBVH)
                 {m_bvh = BVH(this, true, 4, 16);}
+                //build the ray tracing acceleration structure
+                buildAccelerationStructure();
             }
 
             /**
@@ -2066,6 +2070,8 @@ namespace GLGE {
 
                 //update the BVH
                 m_bvh.setReferenceLOD(this);
+                //build the ray tracing acceleration structure
+                buildAccelerationStructure();
             }
 
             /**
@@ -2090,6 +2096,9 @@ namespace GLGE {
                 //update the BVH
                 m_bvh.setReferenceLOD(this);
 
+                //build the ray tracing acceleration structure
+                buildAccelerationStructure();
+
                 //return a reference to self
                 return *this;
             }
@@ -2097,7 +2106,7 @@ namespace GLGE {
             /**
              * @brief Destroy the LOD
              */
-            ~LOD() = default;
+            ~LOD();
 
             /**
              * @brief Get the Vertex Count
@@ -2189,7 +2198,20 @@ namespace GLGE {
             inline const BVH& getBVH() const noexcept
             {return m_bvh;}
 
+            /**
+             * @brief Get the Acceleration Structure
+             * 
+             * @return `void*` an opaque pointer to the acceleration structure
+             */
+            inline void* getAccelerationStructure() const noexcept
+            {return m_accelerationStructure;}
+
         protected:
+
+            /**
+             * @brief build the ray tracing acceleration structure
+             */
+            void buildAccelerationStructure();
 
             /**
              * @brief store all the vertices
@@ -2211,6 +2233,10 @@ namespace GLGE {
              * @brief store the error of the LOD relative to the original mesh
              */
             float m_error = 0.f;
+            /**
+             * @brief store the ray tracing acceleration structure
+             */
+            void* m_accelerationStructure = nullptr;
 
         };
 
