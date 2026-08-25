@@ -59,9 +59,17 @@ namespace GLGE::Graphic {
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          */
-        Material(const Shader& shader, const VertexLayout& layout, Framebuffer& fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
-         : BaseClass(), m_material(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createMaterial(shader.getBackend(), layout.getLayout(), fbuff.getBackend(), cullMode, depthMode, depthWrite))
+        Material(const Shader& shader, const GLGE::Graphic::VertexLayout& layout, Framebuffer& fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
+         : BaseClass(), m_layout(layout), m_material(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createMaterial(shader.getBackend(), &m_layout, fbuff.getBackend(), cullMode, depthMode, depthWrite))
         {}
+
+        /**
+         * @brief Get the Vertex Layout expected by the material
+         * 
+         * @return `const VertexLayout&` a constant reference to the material's vertex layout
+         */
+        inline const VertexLayout& getLayout() const noexcept
+        {return m_layout;}
 
         /**
          * @brief Get the Backend
@@ -73,6 +81,10 @@ namespace GLGE::Graphic {
 
     protected:
 
+        /**
+         * @brief store a copy of the vertex layout expected by the material
+         */
+        VertexLayout m_layout;
         /**
          * @brief store a reference to the material backend
          */

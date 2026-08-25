@@ -132,7 +132,7 @@ void uiSelector() {
     };
     //if `RETRY` is enabled try to loop when the example crashes
     while (!success) {
-        try {
+        // try {
             const char* graphicBackendName = GRAPHIC_BACKEND_MAP[graphicApiId].second;
             const char* videoBackendName = VIDEO_BACKEND_MAP[videoApiId].second;
 
@@ -155,21 +155,22 @@ void uiSelector() {
                 //step
                 stepHelper();
             }
-        } catch (const std::exception& exception) {
-            //print that the example closed via exception
-            std::cout << "------------------EXAMPLE THREW EXCEPTION------------------\n";
-            //check if retries are allowed
-            if (RETRY) {
-                //print it but ignore it
-                std::cout << "[ERROR] Failed to run the selected example in the current configuration. An exception was thrown. What:\n";
-                std::cout << exception.what() << "\n";
-                //step
-                stepHelper();
-            } else {
-                //just re-throw the exception
-                throw;
-            }
-        }
+        //} 
+        // catch (const std::exception& exception) {
+        //     //print that the example closed via exception
+        //     std::cout << "------------------EXAMPLE THREW EXCEPTION------------------\n";
+        //     //check if retries are allowed
+        //     if (RETRY) {
+        //         //print it but ignore it
+        //         std::cout << "[ERROR] Failed to run the selected example in the current configuration. An exception was thrown. What:\n";
+        //         std::cout << exception.what() << "\n";
+        //         //step
+        //         stepHelper();
+        //     } else {
+        //         //just re-throw the exception
+        //         throw;
+        //     }
+        // }
     }
 }
 
@@ -190,9 +191,6 @@ int runExamples() {
         } catch (const std::invalid_argument& exception) {
             //input error - print and re-try
             std::cout << "----------------\n" << exception.what() << "\n----------------\n";
-        } catch (...) {
-            //re-throw
-            throw;
         }
     }
     //return the return value

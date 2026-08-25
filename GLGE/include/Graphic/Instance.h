@@ -21,8 +21,8 @@
 //include backend instances
 #include "Backend/Graphics/Instance.h"
 #include "Backend/Video/Instance.h"
-//add mesh pools
-#include "Backend/Graphics/MeshPool.h"
+//add the mesh manager
+#include "Backend/Graphics/MeshManager.h"
 
 //use the libraries namespace
 namespace GLGE {
@@ -189,12 +189,20 @@ namespace Graphic {
         const GLGE::Graphic::DisplaySetup& getDisplaySetup() const noexcept;
 
         /**
-         * @brief Get the Mesh Pool
+         * @brief get the mesh manager
          * 
-         * @return `Reference<GLGE::Graphic::Backend::MeshPool>` a reference to the backend mesh pool
+         * @return `GLGE::Graphic::Backend::Graphic::MeshManager&` a modifiable reference to the mesh manager
          */
-        inline Reference<GLGE::Graphic::Backend::Graphic::MeshPool> getMeshPool() const noexcept
-        {return m_meshPool;}
+        inline GLGE::Graphic::Backend::Graphic::MeshManager& meshManager() noexcept
+        {return m_meshManager.value();}
+
+        /**
+         * @brief get the mesh manager
+         * 
+         * @return `const GLGE::Graphic::Backend::Graphic::MeshManager&` a constant reference to the mesh manager
+         */
+        inline const GLGE::Graphic::Backend::Graphic::MeshManager& meshManager() const noexcept
+        {return m_meshManager.value();}
 
         /**
          * @brief get the name of the GPU
@@ -246,9 +254,9 @@ namespace Graphic {
         Backend::Video::Instance* m_vInst = nullptr;
 
         /**
-         * @brief store a reference to the mesh pool
+         * @brief store the mesh manager
          */
-        Reference<Backend::Graphic::MeshPool> m_meshPool;
+        std::optional<Backend::Graphic::MeshManager> m_meshManager;
 
         /**
          * @brief store all the windows

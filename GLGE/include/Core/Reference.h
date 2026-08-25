@@ -227,6 +227,14 @@ namespace GLGE {
         U* operator->() const noexcept
         {return m_ptr;}
 
+        /**
+         * @brief drop the reference
+         * 
+         * This resets the reference
+         */
+        void drop() noexcept
+        {reset(nullptr);}
+
     private:
 
         /**

@@ -15,85 +15,13 @@
 
 //add common stuff
 #include "Common.h"
+//add constexpr strings
+#include "ConstexprString.h"
 
 /**
  * @brief use the libraries namespace
  */
 namespace GLGE {
-
-    /**
-     * @brief Helper: constexpr find substring (returns npos if not found)
-     * 
-     * @param s the string view to search
-     * @param needle the needle to find
-     * @param start the starting position to search at
-     * @return `constexpr size_t` the position of the found element or std::string_view::npos if the element was not found
-     */
-    inline consteval size_t __cexpr_find(std::string_view s, std::string_view needle, std::size_t start = 0) noexcept {
-        //sanity check if the needle would even fit into the string
-        if (needle.empty() || s.size() < needle.size()) return std::string_view::npos;
-        //iterate over all elements the element could possibly be
-        for (size_t i = start; i + needle.size() <= s.size(); ++i) {
-            //store if the string is ok so far (start by assuming it is found)
-            bool ok = true;
-            //check if the strings match
-            for (size_t j = 0; j < needle.size(); ++j) {
-                if (s[i + j] != needle[j]) { ok = false; break; }
-            }
-            //if the string is fully ok, return it
-            if (ok) 
-            {return i;}
-        }
-        //if the element was not found, return npos
-        return std::string_view::npos;
-    }
-
-    /**
-     * @brief Helper: constexpr find one of characters
-     * 
-     * @param s the string to search in
-     * @param chars a collection of string elements to find ONE from
-     * @param start the element to start the search at
-     * @return `constexpr size_t` the position of the found element or std::string_view::npos if it was not found
-     */
-    inline consteval std::size_t __cexpr_find_one_of(std::string_view s, const char* chars, std::size_t start = 0) noexcept {
-        //iterate over all elements to find it
-        for (std::size_t i = start; i < s.size(); ++i) {
-            //check for the symbols
-            for (const char* p = chars; *p; ++p) {
-                //if it is correct, return the position
-                if (s[i] == *p) return i;
-            }
-        }
-        //if the element is not found, return npos as error symbol
-        return std::string_view::npos;
-    }
-
-    /**
-     * @brief Helper: constexpr find last of characters
-     * 
-     * @param s the string to search in
-     * @param chars a collection of string elements to find ONE from
-     * @param start the element to start the search at
-     * @return `consteval size_t` the position of the found element or std::string_view::npos
-     */
-    inline consteval size_t __cexpr_find_last_of(std::string_view s, const char* chars, std::size_t start = std::string_view::npos) noexcept {
-        //sanity check if the string is filled
-        if (s.empty()) return std::string_view::npos;
-
-        //start from end if no start position given and the loop till the loop returns or till the start is hit
-        size_t i = (start == std::string_view::npos ? s.size() : start);
-        while (i-- > 0)
-        {
-            for (const char* p = chars; *p; ++p) {
-                if (s[i] == *p)
-                    return i;
-            }
-        }
-
-        //not found : return npos
-        return std::string_view::npos;
-    }
 
     /**
      * @brief get the raw name of a templated function
@@ -102,7 +30,7 @@ namespace GLGE {
      * @return `constexpr std::string_view` the name of the templated function
      */
     template <typename T>
-    inline consteval std::string_view __raw_func_name() noexcept {
+    inline consteval std::string_view __glge__raw_func_name() noexcept {
         //return the correct string depending on the compiler
         //throw an error if the compiler is not supported
         #if defined(_MSC_VER)
@@ -118,67 +46,78 @@ namespace GLGE {
     /**
      * @brief get the name of a type
      * 
-     * @tparam T the type to get the name from
-     * @return `consteval std::string_view` the name of the type
+     * @tparam T the type to get the name for
+     * @return `consteval auto` the name of the type
      */
-    template<typename T>
-    inline consteval std::string_view getTypeName() noexcept {
-        //use compile time caching//use compile time caching
-        static constexpr std::string_view result = [] {
-            //first, get the raw name of the function with the template name
-            constexpr std::string_view pf = __raw_func_name<T>();
+    template <typename T>
+    inline consteval auto getTypeName() noexcept {
+        //first, get the raw name of the function with the template name
+        constexpr std::string_view pf = __glge__raw_func_name<T>();
 
-            //check for different compiler semantics that are commonly used
+        //convert to an owning string
+        BasicConstexprString<pf.size()> pfStr(pf);
 
-            #if defined(__clang__) || defined(__GNUC__)
-                //1) GCC/Clang usually include "T = <typename>" in the pretty function
-                //so search for something that resembles this structure and extract the type name that is stored in between
-                constexpr std::string_view marker1 = "T = ";
-                if (const std::size_t pos = __cexpr_find(pf, marker1); pos != std::string_view::npos) {
-                    const std::size_t start = pos + marker1.size();
-                    //usually ends with ']' or ';' depending on compiler context, check common terminators
-                    //make sure not to check for > or , as they may appear in templated type names
-                    constexpr const char terminators[] = "];";
-                    const std::size_t end = __cexpr_find_one_of(pf, terminators, start);
-                    //sanity check
-                    if (end != std::string_view::npos && end > start)
-                        return pf.substr(start, end - start);
+        //remove all spaces
+        size_t removedSpaceCount = 0;
+        for (size_t i = 0; i < pfStr.size(); ++i) {
+            if (pfStr[i] == ' ') 
+            {++removedSpaceCount;}
+            else 
+            {pfStr[i - removedSpaceCount] = pfStr[i];}
+        }
+        //convert to a substring of one self
+        pfStr = pfStr.substr(0, pfStr.size() - removedSpaceCount);
+
+        #if defined(__clang__) || defined(__GNUC__)
+            //1) GCC/Clang usually include "T = <typename>" in the pretty function
+            //so search for something that resembles this structure and extract the type name that is stored in between
+            constexpr std::string_view marker1 = "T=";
+            if (const std::size_t pos = pfStr.find(marker1.data()); pos != pfStr.npos) {
+                const std::size_t start = pos + marker1.size();
+                //usually ends with ']' or ';' depending on compiler context, check common terminators
+                //make sure not to check for > or , as they may appear in templated type names
+                constexpr const char terminators[] = "];";
+                const std::size_t end = pfStr.find_first_of(terminators, start);
+                //sanity check
+                if (end != std::string_view::npos && end > start) {
+                    return pfStr.substr(start, end - start);
+                } else {
                     //else return to end
-                    return pf.substr(start);
+                    return pfStr.substr(start);
                 }
-            #elif defined(_MSC_VER)
-                //2) MSVC layout is "... func_name<type>(...)" so extract the type between '<' and the matching '>'
-                //first, find the last < symbol before the initializer list (known to be void)
-                const std::size_t paren = __cexpr_find(pf, "(void)");
-                const std::size_t lt = __cexpr_find_last_of(pf.substr(0, paren), "<");
-                //then extract the string from that symbol to the corresponding > symbol
-                if (lt != std::string_view::npos) {
-                    //store the current nesting depth
-                    std::size_t depth = 0;
-                    //store the position of the matching '>'
-                    std::size_t gt = std::string_view::npos;
-                    //iterate until the correct closing bracket is found, tracking nested '<'
-                    for (std::size_t i = lt + 1; i < pf.size(); ++i) {
-                        const char c = pf[i];
-                        if (c == '<') ++depth;
-                        else if (c == '>') {
-                            if (depth == 0) { gt = i; break; }
-                            else --depth;
-                        }
+            }
+        #elif defined(_MSC_VER)
+            //2) MSVC layout is "... func_name<type>(...)" so extract the type between '<' and the matching '>'
+            //first, find the last < symbol before the initializer list (known to be void)
+            const std::size_t paren = pfStr.find("(void)");
+            const std::size_t lt = pfStr.substr(0, paren).find_last_of("<");
+            //then extract the string from that symbol to the corresponding > symbol
+            if (lt != pfStr.npos) {
+                //store the current nesting depth
+                std::size_t depth = 0;
+                //store the position of the matching '>'
+                std::size_t gt = pfStr.npos;
+                //iterate until the correct closing bracket is found, tracking nested '<'
+                for (std::size_t i = lt + 1; i < pfStr.size(); ++i) {
+                    const char c = pfStr[i];
+                    if (c == '<') 
+                    {++depth;}
+                    else if (c == '>') {
+                        if (depth == 0) {gt = i; break;}
+                        else --depth;
                     }
-                    //sanity check before returning the name
-                    if (gt != std::string_view::npos && gt > lt + 1)
-                        return pf.substr(lt + 1, gt - (lt + 1));
                 }
-            #else
-                //3) Unsupported compiler -> error
-                #error "The compiler you are compiling on is not supported. Please contact the GLGE maintainers."
-            #endif
+                //sanity check before returning the name
+                if (gt != std::string_view::npos && gt > lt + 1)
+                {return pfStr.substr(lt + 1, gt - (lt + 1));}
+            }
+        #else
+            //Unsupported compiler -> error
+            #error "The compiler you are compiling on is not supported. Please contact the GLGE maintainers."
+        #endif
 
-            // final fallback: return the whole pretty/function string if parsing failed
-            return pf;
-        }();
-        return result;
+        //something went terribly wrong
+        return BasicConstexprString<pf.size()>("This should not happen");
     }
 
     /**
@@ -192,7 +131,7 @@ namespace GLGE {
         //run the FNV-1a 64-bit hash
         u64 hash = 1469598103934665603ull;
         for (unsigned char c : string)
-            hash = (hash ^ c) * 1099511628211ull;
+        {hash = (hash ^ c) * 1099511628211ull;}
         return hash;
     }
 
@@ -207,9 +146,9 @@ namespace GLGE {
     template <typename T>
     inline consteval u64 getTypeHash64() noexcept {
         //get the type name
-        constexpr std::string_view name = getTypeName<T>();
+        constexpr auto name = getTypeName<T>();
         //return the hashed name
-        return __FNV_1A_64_HASH(name);
+        return __FNV_1A_64_HASH(name.view());
     }
 
     /**
@@ -239,7 +178,7 @@ namespace GLGE {
     template <typename T>
     inline consteval u32 getTypeHash32() noexcept {
         //get the type name
-        constexpr std::string_view name = getTypeName<T>();
+        constexpr auto name = getTypeName<T>();
         //FNV-1a 64-bit hash
         u64 hash = 1469598103934665603ull;
         for (unsigned char c : name)
@@ -247,8 +186,96 @@ namespace GLGE {
         return __hash_fold64to32(hash);
     }
 
+    /**
+     * @brief store the tag for a type
+     */
+    struct TypeTag {
+        /**
+         * @brief store the hash of the type
+         */
+        const u64 hash = 0;
+        /**
+         * @brief the full name length
+         */
+        const u16 fullNameLen = 0;
+
+        /**
+         * @brief create a new type tag
+         * 
+         * @warning for large N values the name may be truncated
+         * 
+         * @param _name the name of the type to tag
+         */
+        template <std::size_t N>
+        constexpr TypeTag(const BasicConstexprString<N>& _name)
+         : hash(__FNV_1A_64_HASH(_name.view())), fullNameLen(static_cast<u16>(_name.size()))
+        {}
+
+        /**
+         * @brief check if two type tags are identical
+         * 
+         * @warning This is technically not fully identical. It is possible for two unrelated types to collide, but this is considered to be very, very, very unlikely. 
+         * 
+         * @details
+         * Equality is determined by the hash of the complete type name and the
+         * length of the complete type name. This is not a mathematically perfect
+         * identity check, but collisions are considered sufficiently improbable
+         * for runtime type identification purposes.
+         * 
+         * @param other the type tag to compare against
+         * @return `true` if the type tags are identical, `false` if not
+         */
+        inline constexpr bool operator==(const TypeTag& other) const noexcept {
+            //check the hashes and name sizes
+            bool res = (hash == other.hash) && (fullNameLen == other.fullNameLen);
+            //return the result
+            return res;
+        }
+    };
+
+    /**
+     * @brief Get the type tag of a specific type
+     * 
+     * @tparam T the type to get the tag for
+     * @return `TypeTag` the type tag of the type
+     */
+    template <typename T>
+    inline consteval TypeTag getTypeTag() noexcept {
+        //get the name
+        static constexpr auto name = getTypeName<T>();
+        //create the tag
+        static constexpr TypeTag tag = TypeTag(name);
+        //return the tag
+        return tag;
+    };
+
 }
 
+/**
+ * @brief specialize the hash for type tags
+ * 
+ * @tparam specialized to GLGE::TypeTag
+ */
+template <>
+struct std::hash<GLGE::TypeTag> {
+    /**
+     * @brief hash a type tag
+     * 
+     * @param tag the type tag to hash
+     * @return `std::size_t` the hash of the type
+     */
+    std::size_t operator()(const GLGE::TypeTag& tag) const noexcept {
+        //the hash is cached, just re-use it (that's fast)
+        return tag.hash;
+    }
+};
+
+//sanity check name getting
+static_assert(GLGE::getTypeName<int>().view() == std::string_view("int"), "Invalid name query. Make sure you are using one of the following compilers: MSVC, GCC or Clang");
+static_assert(GLGE::getTypeName<float>().view() == std::string_view("float"), "Invalid name query. Make sure you are using one of the following compilers: MSVC, GCC or Clang");
+static_assert(GLGE::getTypeName<std::vector<int>>().view() == std::string_view("std::vector<int>"), "Invalid name query. Make sure you are using one of the following compilers: MSVC, GCC or Clang");
+static_assert(GLGE::getTypeName<std::vector<std::vector<std::vector<float>>>>().view() == std::string_view("std::vector<std::vector<std::vector<float>>>"), "Invalid name query. Make sure you are using one of the following compilers: MSVC, GCC or Clang");
+static_assert(GLGE::getTypeName<GLGE::TypeTag>().view() == std::string_view("TypeTag"), "Invalid name query. Make sure you are using one of the following compilers: MSVC, GCC or Clang");
 //sanity check the hash function
 static_assert(GLGE::getTypeHash64<int>() != GLGE::getTypeHash64<float>(), "Invalid hashing. Please check your compiler settings.");
 static_assert(GLGE::getTypeHash32<int>() != GLGE::getTypeHash64<float>(), "Invalid hashing that results in problems during folding. Please check your compiler settings.");

@@ -124,7 +124,7 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
     GLGE::Physic::SimulatedEntity camBody = physicsWorld.createEntity(sphere, GLGE::Physic::SimulatedEntity::BodyType::KINEMATIC);
 
     //load a cube model
-    auto cube = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Cube.fbx", GLGE::Graphic::Asset::Mesh::Format::ASSIMP);
+    auto cube = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Cube.fbx", GLGE::MeshAsset::ASSIMP);
     auto cubeRef = cube.reference();
 
     GLGE::Object camera = world.create<GLGE::Transform, GLGE::Graphic::Component::Camera, FirstPersonController, GLGE::Physic::RigidBody>("Camera", 
@@ -146,13 +146,12 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
     GLGE::Graphic::RenderTarget target(&fbuff);
 
     //define a vertex layout
-    GLGE::Graphic::VertexLayout layout {{
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Position, GLGE::Graphic::VertexAttribute::Format::vec3, 0,  0),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::UV,       GLGE::Graphic::VertexAttribute::Format::vec2, 12, 1),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Normal,   GLGE::Graphic::VertexAttribute::Format::vec3, 20, 2),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Tangent,  GLGE::Graphic::VertexAttribute::Format::vec3, 32, 3),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Color,    GLGE::Graphic::VertexAttribute::Format::vec4, 44, 4)
-    }, 60};
+    GLGE::Graphic::VertexLayout layout {cubeRef->getMesh()->getLayout(), 
+        std::pair{GLGE::VertexAttribute::Position {}, GLGE::u64(0)},    //Pos    -> stream 0
+        std::pair{GLGE::VertexAttribute::UV {},       GLGE::u64(1)},    //UV     -> stream 1
+        std::pair{GLGE::VertexAttribute::Normal {},   GLGE::u64(1)}     //Normal -> stream 1
+    };
+    auto gpuCube = GLGE::Graphic::Mesh(*cubeRef->getMesh(), layout);
 
     //create the renderer
     GLGE::Graphic::Renderer renderer(world, &camera, target);
@@ -173,7 +172,7 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
         GLGE::Transform(GLGE::vec3(0,-5,0), {1,0,0,0}, GLGE::vec3(100,5,100)), 
         GLGE::Physic::RigidBody{.entity = &floor}, 
         GLGE::Graphic::Component::Renderable {
-            .mesh = &cubeRef->mesh(),
+            .mesh = &gpuCube,
             .material = &mat,
             .enabled = true
         }
@@ -188,7 +187,7 @@ GLGE::u8 physicExample(const char *graphicBackendName, const char *videoBackendN
             GLGE::Transform(GLGE::vec3(0,2+i,0), {1,0,0,0}, GLGE::vec3(0.5,0.5,0.5)), 
             GLGE::Physic::RigidBody{.entity = &cubes[i].second}, 
             GLGE::Graphic::Component::Renderable {
-                .mesh = &cubeRef->mesh(),
+                .mesh = &gpuCube,
                 .material = &mat,
                 .enabled = true
             }

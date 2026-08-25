@@ -61,11 +61,11 @@ const GLGE::Graphic::DisplaySetup& Instance::getDisplaySetup() const noexcept
 {return m_vInst->getDisplaySetup();}
 
 void GLGE::Graphic::Instance::onGraphicBackendInit() {
-    //create the mesh pool
-    m_meshPool = m_gDesc->createMeshPool(this);
+    //create the mesh manager
+    m_meshManager.emplace(this);
 }
 
 void GLGE::Graphic::Instance::onGraphicBackendDestroy() {
-    //delete the mesh pool
-    m_meshPool.~Reference();
+    //delete the mesh manager
+    m_meshManager.reset();
 }

@@ -309,18 +309,18 @@ GLGE::Mesh::LOD::LOD(LOD* from, float targetError)
 
     //update the vertices
     std::vector<u32> remap(from->getVertexCount());
-    size_t newVertCount = meshopt_generateVertexRemap(remap.data(), simplified.data(), simplified.size(), from->vertices().data(), from->vertices().getCount(), from->vertices().get(0).getLayout().getSize());
+    size_t newVertCount = meshopt_generateVertexRemap(remap.data(), simplified.data(), simplified.size(), from->vertices().data(), from->vertices().getCount(), from->vertices().get(0).getLayout().getVertexSize());
 
     //create the new vertex storage
     Vertices newVerts(nullptr, newVertCount, from->vertices().getLayout());
     //remap the data
-    meshopt_remapVertexBuffer(newVerts.data(), from->vertices().data(), from->vertices().getCount(), from->vertices().getLayout().getSize(), remap.data());
+    meshopt_remapVertexBuffer(newVerts.data(), from->vertices().data(), from->vertices().getCount(), from->vertices().getLayout().getVertexSize(), remap.data());
     //remap the index data
     meshopt_remapIndexBuffer(simplified.data(), simplified.data(), newIdxCount, remap.data());
 
     //optimize the mesh
     meshopt_optimizeVertexCache(simplified.data(), simplified.data(), newIdxCount, newVertCount);
-    meshopt_optimizeVertexFetch(newVerts.data(), simplified.data(), newIdxCount, newVerts.data(), newVertCount, m_vertices.get(0).getLayout().getSize());
+    meshopt_optimizeVertexFetch(newVerts.data(), simplified.data(), newIdxCount, newVerts.data(), newVertCount, m_vertices.get(0).getLayout().getVertexSize());
 
     //create the triangle index buffer
     std::vector<Triangle> triangles;
@@ -340,4 +340,73 @@ GLGE::Mesh::LOD::LOD(LOD* from, float targetError)
 
     //store the actual error
     m_error = actualError;
+
+    //build the ray tracing acceleration structure
+    buildAccelerationStructure();
+}
+
+void GLGE::Mesh::LOD::buildAccelerationStructure() {
+    //create the RTC Scene for the mesh
+    RTCDevice dev = reinterpret_cast<RTCDevice>(getInstance()->getEmbreeDevice());
+    RTCScene scene = rtcNewScene(dev);
+    if (!scene) {throw GLGE::Exception("Failed to create the RT acceleration structure for a mesh", "GLGE::Mesh::LOD");}
+    //create the geometry for the LOD
+    RTCGeometry geom = rtcNewGeometry(dev, RTC_GEOMETRY_TYPE_TRIANGLE);
+    if (!geom) {
+        rtcReleaseScene(scene);
+        throw GLGE::Exception("Failed to create the RT acceleration geometry for a mesh", "GLGE::Mesh::LOD");
+    }
+
+    //convert vertex buffer to position-only one
+    struct EmbreeVert {f32 x, y, z;};
+    EmbreeVert* verts = reinterpret_cast<EmbreeVert*>(rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(EmbreeVert), m_vertices.getCount()));
+    if (!verts) {
+        rtcReleaseGeometry(geom);
+        rtcReleaseScene(scene);
+        throw GLGE::Exception("Failed to allocate RT acceleration vertex buffer", "GLGE::Mesh::LOD");
+    }
+    //populate with positions
+    GLGE::Mesh::Type type = m_vertices.get(0).getLayout().getAttribute<GLGE::VertexAttribute::Position>().type;
+    for (size_t i = 0; i < m_vertices.getCount(); ++i) {
+        vec3 p = getPositionFromVertex(m_vertices.get(i), type);
+        verts[i].x = p.x;
+        verts[i].y = p.y;
+        verts[i].z = p.z;
+    }
+    //crete triangle index buffer
+    struct EmbreeTriangle {uint a, b, c;};
+    EmbreeTriangle* tries = reinterpret_cast<EmbreeTriangle*>(rtcSetNewGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(EmbreeTriangle), m_indices.getCount()));
+    if (!tries) {
+        rtcReleaseGeometry(geom);
+        rtcReleaseScene(scene);
+        throw GLGE::Exception("Failed to allocate RT acceleration index buffer", "GLGE::Mesh::LOD");
+    }
+    //convert tries to embree tries
+    for (size_t i = 0; i < m_indices.getCount(); ++i) {
+        const auto& t = m_indices.get(i);
+        tries[i].a = t.a;
+        tries[i].b = t.b;
+        tries[i].c = t.c;
+    }
+
+    //finish geometry
+    rtcCommitGeometry(geom);
+    //attach it to the scene
+    uint geomId = rtcAttachGeometry(scene, geom);
+    //geom ref no longer required
+    rtcReleaseGeometry(geom);
+
+    //build the scene
+    rtcCommitScene(scene);
+
+    //store the scene as the acceleration structure
+    m_accelerationStructure = scene;
+}
+
+GLGE::Mesh::LOD::~LOD() {
+    //release the embree scene
+    if (m_accelerationStructure) {
+        rtcReleaseScene(reinterpret_cast<RTCScene>(m_accelerationStructure));
+        m_accelerationStructure = nullptr;
+    }
 }

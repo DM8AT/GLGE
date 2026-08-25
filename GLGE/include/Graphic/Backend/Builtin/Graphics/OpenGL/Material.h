@@ -34,9 +34,7 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          */
-        Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
-         : GLGE::Graphic::Backend::Graphic::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite)
-        {}
+        Material(GLGE::Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, Graphic::Material::CullMode cullMode, Graphic::Material::DepthMode depthMode, bool depthWrite);
 
         /**
          * @brief Destroy the Material
@@ -47,17 +45,28 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * @brief bind the material
          * 
          * @param buffer the buffer to bind to
-         * @param VBOOffset the VBO offset from 0 in bytes
          */
-        virtual void bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) override;
+        virtual void bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer) override;
 
         /**
-         * @brief a function to re-bind the material to update the VBO offset
+         * @brief Get the VAO of the material
          * 
-         * @param buffer the buffer to bind to
-         * @param VBOOffset the VBO offset from 0 in bytes
+         * @return `u32` the VAO object of the material
          */
-        virtual void rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) override;
+        inline u32 getVao() const noexcept
+        {return m_vao;}
+
+    protected:
+
+        /**
+         * @brief a function to build / re-build the internal VAO
+         */
+        void updateVAO();
+
+        /**
+         * @brief store the VAO of the material
+         */
+        u32 m_vao = 0;
 
     };
 

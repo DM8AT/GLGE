@@ -36,7 +36,7 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * 
          * @param buffer a pointer to the command buffer to bind the set to
          */
-        void bind(CommandBuffer* buffer) override;
+        void bind(Backend::Graphic::CommandBuffer* buffer) override;
 
         /**
          * @brief register a binder function for a resource

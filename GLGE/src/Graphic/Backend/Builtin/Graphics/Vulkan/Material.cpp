@@ -23,33 +23,30 @@
 /**
  * @brief a helper function to get the vertex attribute format
  * 
- * @param f the format to map
- * @return `VkFormat` the format
+ * @param t the type to map
+ * @return `VkFormat` the corresponding format
  */
-inline static VkFormat __toVkFormat(GLGE::Graphic::VertexAttribute::Format f) {
-    switch (f) {
-        case GLGE::Graphic::VertexAttribute::Format::Float:  return VK_FORMAT_R32_SFLOAT;
-        case GLGE::Graphic::VertexAttribute::Format::vec2:   return VK_FORMAT_R32G32_SFLOAT;
-        case GLGE::Graphic::VertexAttribute::Format::vec3:   return VK_FORMAT_R32G32B32_SFLOAT;
-        case GLGE::Graphic::VertexAttribute::Format::vec4:   return VK_FORMAT_R32G32B32A32_SFLOAT;
+inline static VkFormat __toVkFormat(GLGE::Graphic::VertexLayout::Type t) {
+    switch (t) {
+        case GLGE::Graphic::VertexLayout::Type::Float:  return VK_FORMAT_R32_SFLOAT;
+        case GLGE::Graphic::VertexLayout::Type::vec2:   return VK_FORMAT_R32G32_SFLOAT;
+        case GLGE::Graphic::VertexLayout::Type::vec3:   return VK_FORMAT_R32G32B32_SFLOAT;
+        case GLGE::Graphic::VertexLayout::Type::vec4:   return VK_FORMAT_R32G32B32A32_SFLOAT;
 
-        case GLGE::Graphic::VertexAttribute::Format::Int:    return VK_FORMAT_R32_SINT;
-        case GLGE::Graphic::VertexAttribute::Format::ivec2:  return VK_FORMAT_R32G32_SINT;
-        case GLGE::Graphic::VertexAttribute::Format::ivec3:  return VK_FORMAT_R32G32B32_SINT;
-        case GLGE::Graphic::VertexAttribute::Format::ivec4:  return VK_FORMAT_R32G32B32A32_SINT;
+        case GLGE::Graphic::VertexLayout::Type::Int:    return VK_FORMAT_R32_SINT;
+        case GLGE::Graphic::VertexLayout::Type::ivec2:  return VK_FORMAT_R32G32_SINT;
+        case GLGE::Graphic::VertexLayout::Type::ivec3:  return VK_FORMAT_R32G32B32_SINT;
+        case GLGE::Graphic::VertexLayout::Type::ivec4:  return VK_FORMAT_R32G32B32A32_SINT;
 
-        case GLGE::Graphic::VertexAttribute::Format::UInt:   return VK_FORMAT_R32_UINT;
-        case GLGE::Graphic::VertexAttribute::Format::uvec2:  return VK_FORMAT_R32G32_UINT;
-        case GLGE::Graphic::VertexAttribute::Format::uvec3:  return VK_FORMAT_R32G32B32_UINT;
-        case GLGE::Graphic::VertexAttribute::Format::uvec4:  return VK_FORMAT_R32G32B32A32_UINT;
+        case GLGE::Graphic::VertexLayout::Type::UInt:   return VK_FORMAT_R32_UINT;
 
-        case GLGE::Graphic::VertexAttribute::Format::unorm_u8x1: return VK_FORMAT_R8_UNORM;
-        case GLGE::Graphic::VertexAttribute::Format::unorm_u8x2: return VK_FORMAT_R8G8_UNORM;
-        case GLGE::Graphic::VertexAttribute::Format::unorm_u8x4: return VK_FORMAT_R8G8B8A8_UNORM;
+        case GLGE::Graphic::VertexLayout::Type::unorm_u8x1: return VK_FORMAT_R8_UNORM;
+        case GLGE::Graphic::VertexLayout::Type::unorm_u8x2: return VK_FORMAT_R8G8_UNORM;
+        case GLGE::Graphic::VertexLayout::Type::unorm_u8x4: return VK_FORMAT_R8G8B8A8_UNORM;
 
-        case GLGE::Graphic::VertexAttribute::Format::snorm_u8x1: return VK_FORMAT_R8_SNORM;
-        case GLGE::Graphic::VertexAttribute::Format::snorm_u8x2: return VK_FORMAT_R8G8_SNORM;
-        case GLGE::Graphic::VertexAttribute::Format::snorm_u8x4: return VK_FORMAT_R8G8B8A8_SNORM;
+        case GLGE::Graphic::VertexLayout::Type::snorm_u8x1: return VK_FORMAT_R8_SNORM;
+        case GLGE::Graphic::VertexLayout::Type::snorm_u8x2: return VK_FORMAT_R8G8_SNORM;
+        case GLGE::Graphic::VertexLayout::Type::snorm_u8x4: return VK_FORMAT_R8G8B8A8_SNORM;
 
         default: return VK_FORMAT_UNDEFINED;
     }
@@ -92,7 +89,7 @@ inline static VkCullModeFlags __toVkCullMode(GLGE::Graphic::Backend::Graphic::Ma
     }
 }
 
-GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
+GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, CullMode cullMode, DepthMode depthMode, bool depthWrite)
  : GLGE::Graphic::Backend::Graphic::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite)
 {
     //store the instance
@@ -151,27 +148,33 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Grap
     //create all bindings and attributes
     std::vector<VkVertexInputAttributeDescription> vertAttrDesc;
     vertAttrDesc.reserve(m_layout->getAttributeCount());
-    VkVertexInputBindingDescription vertBindDesc;
-    vertBindDesc.binding = 0;
-    vertBindDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    vertBindDesc.stride = static_cast<u32>(m_layout->getVertexSize());
+    std::vector<VkVertexInputBindingDescription> streams;
+    streams.reserve(m_layout->getStreamCount());
+    for (size_t i = 0; i < m_layout->getStreamCount(); ++i) {
+        //create the stream
+        VkVertexInputBindingDescription descr {};
+        descr.binding = i;
+        descr.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        descr.stride = m_layout->getStreamStride(i);
+        streams.push_back(descr);
+    }
     for (size_t i = 0; i < m_layout->getAttributeCount(); ++i) {
         //get the attribute
         const auto& attr = m_layout->getAttribute(i);
 
         //create the vertex attribute
         VkVertexInputAttributeDescription attrDesc {};
-        attrDesc.binding = 0;
-        attrDesc.format = __toVkFormat(attr.getFormat());
-        attrDesc.location = attr.getBinding();
-        attrDesc.offset = attr.getOffset();
+        attrDesc.binding = attr.streamId;
+        attrDesc.format = __toVkFormat(attr.type);
+        attrDesc.location = i;
+        attrDesc.offset = attr.streamOffset;
         vertAttrDesc.push_back(attrDesc);
     }
     //create the vertex input layout
     VkPipelineVertexInputStateCreateInfo vertInputCreate {};
     vertInputCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertInputCreate.vertexBindingDescriptionCount = 1;
-    vertInputCreate.pVertexBindingDescriptions = &vertBindDesc;
+    vertInputCreate.vertexBindingDescriptionCount = streams.size();
+    vertInputCreate.pVertexBindingDescriptions = streams.data();
     vertInputCreate.vertexAttributeDescriptionCount = vertAttrDesc.size();
     vertInputCreate.pVertexAttributeDescriptions = vertAttrDesc.data();
 
@@ -277,10 +280,6 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Material::~Material() {
     vkDestroyPipelineLayout(reinterpret_cast<VkDevice>(m_instance->getDevice()), reinterpret_cast<VkPipelineLayout>(m_pipeLayout), nullptr);
 }
 
-void GLGE::Graphic::Backend::Graphic::Vulkan::Material::bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) {
-
-}
-
-void GLGE::Graphic::Backend::Graphic::Vulkan::Material::rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) {
+void GLGE::Graphic::Backend::Graphic::Vulkan::Material::bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer) {
 
 }

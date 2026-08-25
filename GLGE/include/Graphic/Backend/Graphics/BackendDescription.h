@@ -40,16 +40,17 @@
 #include "Shader.h"
 #include "Buffer.h"
 #include "SampledTexture.h"
-#include "MeshPool.h"
-#include "VertexLayout.h"
 #include "Material.h"
 #include "Renderer.h"
+#include "MeshManager.h"
+#include "GeometryPool.h"
 
 //define some pointers to frontend classes
 namespace GLGE::Graphic {
     class Instance;
     class Window;
     class RenderPipeline;
+    class VertexLayout;
 }
 
 //use the library backend namespace
@@ -201,24 +202,14 @@ namespace GLGE::Graphic::Backend::Graphic {
         virtual Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Image>& texture, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler) = 0;
 
         /**
-         * @brief Create a Mesh Pool
+         * @brief Create a Geometry pool stream
          * 
-         * @param instance a pointer to the instance that will own the mesh pool
-         * 
-         * @return `Reference<GLGE::Graphic::Backend::Graphic::MeshPool>` a reference to the new mesh pool
+         * @param initialSize the initial size of the stream
+         * @param isIbo `true` if this is an index buffer, `false` for a vertex buffer
+         * @param instance a pointer to the graphic instance backend
+         * @return `GeometryPool::Stream*` a pointer to the stream
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::MeshPool> createMeshPool(GLGE::Graphic::Instance* instance) = 0;
-
-        /**
-         * @brief Create a Vertex Layout
-         * 
-         * @param ptr the pointer to the beginning of a continues array of attributes
-         * @param size the amount of attributes in the array
-         * @param stride the byte size of a single vertex
-         * @param pool a reference to the mesh pool the layout attaches to
-         * @return `Reference<GLGE::Graphic::Backend::Graphic::VertexLayout>` a reference to the new vertex layout
-         */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> createVertexLayout(const VertexAttribute* ptr, size_t size, size_t stride, Reference<GLGE::Graphic::Backend::Graphic::MeshPool> pool) = 0;
+        virtual GeometryPool::Stream* createGeometryPoolStream(u64 initialSize, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance) = 0;
 
         /**
          * @brief Create a Material
@@ -231,17 +222,18 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Material>` a reference to the new material
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Material> createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite) = 0;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Material> createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite) = 0;
 
         /**
          * @brief Create a Material
          * 
+         * @param instance a pointer to the graphic instance the renderer will belong to
          * @param world a reference to the world to render (reference -> cannot be null)
          * @param camera store a pointer to the object to use as a camera, this can be null
          * @param target the target to adapt to
          * @return `Reference<GLGE::Graphic::Backend::Graphic::Renderer>` a reference to the new renderer
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::Renderer> createRenderer(World& world, Object* camera, RenderTarget target) = 0;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::Renderer> createRenderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target) = 0;
 
         /**
          * @brief Get the Command Table of the backend

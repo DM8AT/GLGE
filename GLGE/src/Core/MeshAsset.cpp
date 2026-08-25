@@ -22,6 +22,36 @@
 //include files
 #include <fstream>
 
+static GLGE::u64 __getUVTypeForIdx(size_t idx) {
+    switch (idx) {
+        case 0: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+        case 1: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+        case 2: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+        case 3: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+        case 4: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+        case 5: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+        case 6: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+        case 7: return GLGE::getTypeHash64<GLGE::VertexAttribute::UV0>();
+
+        default: std::unreachable();
+    }
+}
+
+static GLGE::u64 __getColorTypeForIdx(size_t idx) {
+    switch (idx) {
+        case 0: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+        case 1: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+        case 2: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+        case 3: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+        case 4: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+        case 5: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+        case 6: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+        case 7: return GLGE::getTypeHash64<GLGE::VertexAttribute::Color0>();
+
+        default: std::unreachable();
+    }
+}
+
 /*
 General Assumptions:
 - Assume little endian
@@ -358,7 +388,7 @@ void GLGE::MeshAsset::store(std::vector<u8>& data) {
 
     //write vertex layout
     //write the attribute count
-    appendToVector<u64>(genData, m_mesh->getLayout().getSize());
+    appendToVector<u64>(genData, m_mesh->getLayout().getVertexSize());
     //write all the attributes
     for (size_t i = 0; i < m_mesh->getLayout().getAttributeCount(); ++i) {
         const auto& attr = m_mesh->getLayout().getAttribute(i);
@@ -381,7 +411,7 @@ void GLGE::MeshAsset::store(std::vector<u8>& data) {
 
         //write the header
         appendToVector<u64>(dat, HeaderSize);
-        u64 vertSectionSize = lod.vertices().getCount()*m_mesh->getLayout().getSize();
+        u64 vertSectionSize = lod.vertices().getCount()*m_mesh->getLayout().getVertexSize();
         appendToVector<u64>(dat, vertSectionSize);
         appendToVector<u64>(dat, lod.vertices().getCount());
 
@@ -463,7 +493,7 @@ void GLGE::MeshAsset::import_from(AssetManager* manager, const std::filesystem::
     } else if (format == Format::ASSIMP) {
         //load the file using assimp
         Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(file.string(), aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_ImproveCacheLocality);
+        const aiScene* scene = importer.ReadFile(file.string(), aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_ImproveCacheLocality | aiProcess_JoinIdenticalVertices);
         //sanity check that there is a mesh to load
         if (!scene) {throw Exception(importer.GetErrorString(), "GLGE::Graphic::Asset::Mesh::import_from");}
         if (!scene->HasMeshes()) {throw Exception("Succeeded to load the scene, but no mesh was found", "GLGE::Graphic::Asset::Mesh::import_from");}
@@ -480,19 +510,33 @@ void GLGE::MeshAsset::import_from(AssetManager* manager, const std::filesystem::
         std::vector<Mesh::VertexAttribute> attributes;
         size_t offset = 0;
         if (mesh->HasPositions()) {
-            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Position>(), 0);
+            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Position>(), offset);
             offset += Mesh::VertexAttribute::getTypeInfo(Mesh::Type::vec3).size;
         } else 
         {throw GLGE::Exception("Tried to import a mesh that has no positions", "GLGE::MeshAsset::import_from");}
         if (mesh->HasNormals()) {
-            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Normal>(), 0);
+            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Normal>(), offset);
             offset += Mesh::VertexAttribute::getTypeInfo(Mesh::Type::vec3).size;
         }
         if (mesh->HasTangentsAndBitangents()) {
-            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Tangent>(), 0);
+            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Tangent>(), offset);
             offset += Mesh::VertexAttribute::getTypeInfo(Mesh::Type::vec3).size;
-            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Bitangent>(), 0);
+            attributes.emplace_back(Mesh::Type::vec3, getTypeHash64<VertexAttribute::Bitangent>(), offset);
             offset += Mesh::VertexAttribute::getTypeInfo(Mesh::Type::vec3).size;
+        }
+        const size_t maxTexIdx = std::min<size_t>(GLGE::VertexAttribute::UV_ATTRIBUTE_MAX, AI_MAX_NUMBER_OF_TEXTURECOORDS);
+        for (size_t i = 0; i < maxTexIdx; ++i) {
+            if (mesh->HasTextureCoords(i)) {
+                attributes.emplace_back(Mesh::Type::vec2, __getUVTypeForIdx(i), offset);
+                offset += Mesh::VertexAttribute::getTypeInfo(Mesh::Type::vec2).size;
+            }
+        }
+        const size_t maxColIdx = std::min<size_t>(GLGE::VertexAttribute::COLOR_ATTRIBUTE_MAX, AI_MAX_NUMBER_OF_COLOR_SETS);
+        for (size_t i = 0; i < maxColIdx; ++i) {
+            if (mesh->HasVertexColors(i)) {
+                attributes.emplace_back(Mesh::Type::vec4, __getColorTypeForIdx(i), offset);
+                offset += Mesh::VertexAttribute::getTypeInfo(Mesh::Type::vec4).size;
+            }
         }
         Mesh::VertexLayout layout(attributes, 0);
 
@@ -516,7 +560,7 @@ void GLGE::MeshAsset::import_from(AssetManager* manager, const std::filesystem::
             //check if normals exist
             if (mesh->HasNormals()) {
                 //load the normals
-                *curr->get<vec3, VertexAttribute::Normal>() = vec3(mesh->mNormals[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+                *curr->get<vec3, VertexAttribute::Normal>() = vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
             }
             //check if tangents exist
             if (mesh->HasTangentsAndBitangents()) {
@@ -524,6 +568,42 @@ void GLGE::MeshAsset::import_from(AssetManager* manager, const std::filesystem::
                 *curr->get<vec3, VertexAttribute::Tangent>() = vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
                 //load the bitangents
                 *curr->get<vec3, VertexAttribute::Bitangent>() = vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
+            }
+            //check each texcoord set
+            const size_t maxTexIdx = std::min<size_t>(GLGE::VertexAttribute::UV_ATTRIBUTE_MAX, AI_MAX_NUMBER_OF_TEXTURECOORDS);
+            for (size_t j = 0; j < maxTexIdx; ++j) {
+                if (mesh->HasTextureCoords(j)) {
+                    switch (j) {
+                    case 0: *curr->get<vec2, VertexAttribute::UV0>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+                    case 1: *curr->get<vec2, VertexAttribute::UV1>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+                    case 2: *curr->get<vec2, VertexAttribute::UV2>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+                    case 3: *curr->get<vec2, VertexAttribute::UV3>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+                    case 4: *curr->get<vec2, VertexAttribute::UV4>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+                    case 5: *curr->get<vec2, VertexAttribute::UV5>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+                    case 6: *curr->get<vec2, VertexAttribute::UV6>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+                    case 7: *curr->get<vec2, VertexAttribute::UV7>() = vec2(mesh->mTextureCoords[j][i].x, mesh->mTextureCoords[j][i].y); break;
+
+                    default: std::unreachable();
+                    }
+                }
+            }
+            //check each color set
+            const size_t maxColIdx = std::min<size_t>(GLGE::VertexAttribute::COLOR_ATTRIBUTE_MAX, AI_MAX_NUMBER_OF_COLOR_SETS);
+            for (size_t j = 0; j < maxColIdx; ++j) {
+                if (mesh->HasVertexColors(j)) {
+                    switch (j) {
+                    case 0: *curr->get<vec4, VertexAttribute::Color0>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+                    case 1: *curr->get<vec4, VertexAttribute::Color1>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+                    case 2: *curr->get<vec4, VertexAttribute::Color2>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+                    case 3: *curr->get<vec4, VertexAttribute::Color3>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+                    case 4: *curr->get<vec4, VertexAttribute::Color4>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+                    case 5: *curr->get<vec4, VertexAttribute::Color5>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+                    case 6: *curr->get<vec4, VertexAttribute::Color6>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+                    case 7: *curr->get<vec4, VertexAttribute::Color7>() = vec4(mesh->mColors[j][i].r, mesh->mColors[j][i].g, mesh->mColors[j][i].b, mesh->mColors[j][i].a); break;
+
+                    default: std::unreachable();
+                    }
+                }
             }
         }
 

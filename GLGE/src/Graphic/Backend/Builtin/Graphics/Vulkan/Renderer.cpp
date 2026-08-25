@@ -30,8 +30,8 @@
 #include "Graphic/Mesh.h"
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/MeshPool.h"
 #include "Graphic/Backend/Video/Window.h"
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
 
 //add Vulkan buffers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
@@ -57,8 +57,8 @@ static constexpr GLGE::u64 __compressQuaternion(const GLGE::Quaternion& quaterni
           (packFloat(quaternion.z)<<32) | (packFloat(quaternion.w)<<48);
 }
 
-GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::Renderer(World& world, Object* camera, RenderTarget target) 
- : GLGE::Graphic::Backend::Graphic::Renderer(world, camera, target)
+GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::Renderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target) 
+ : GLGE::Graphic::Backend::Graphic::Renderer(instance, world, camera, target)
 {
     //transformation information
     m_cameraBuffer = new GLGE::Graphic::Buffer(GLGE::Graphic::Buffer::Type::UNIFORM, nullptr, sizeof(CameraData), GLGE::Graphic::Buffer::Usage::STREAMING_UPLOAD);
@@ -85,12 +85,18 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::~Renderer() {
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff) {
     //store all objects sorted by the materials
-    std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<Mesh*, Object>>> objs;
+    std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<MeshHandle, Object>>> objs;
     size_t total = 0;
-    auto reg = [&objs, &total](Tiny::ECS::Entity ent, const Component::Renderable& render) {
+    auto reg = [&objs, &total](Tiny::ECS::Entity ent, const Component::Renderable& renderer) {
         //only add the mesh if it is enabled
-        if (render.enabled) 
-        {objs[render.material].emplace_back(render.mesh, Object(ent)); ++total;}
+        if (renderer.enabled) {
+            auto* m = renderer.mesh;
+            //interpret null mesh as disabled
+            if (m == nullptr) {return;}
+
+            //set mesh -> active
+            objs[renderer.material].emplace_back(m->getHandle(), Object(ent)); ++total;
+        }
     };
     m_world->each<Component::Renderable>(reg);
     
@@ -102,22 +108,27 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
     u32 meshIdx = 0;
     for (const auto& [mat, meshes] : objs) {
         for (const auto& [mesh, obj] : meshes) {
-            //get the base LOD
-            const auto& lod = mesh->getLODInfo(0);
-            const auto& idx = mesh->getIndexSection();
-            const auto& vtx = mesh->getVertexSection();
-            //create the draw information
-            drawCommands.push_back(VkDrawIndexedIndirectCommand{
-                    .indexCount = static_cast<u32>(lod.index.count),
-                    .instanceCount = 1,
-                    .firstIndex = static_cast<u32>(idx.offset/idx.size + lod.index.offset/lod.index.size), //due to alignment this division is guaranteed to produce a valid integer
-                    .vertexOffset = static_cast<i32>(vtx.offset/vtx.size + lod.vertex.offset/lod.vertex.size), //see above
-                    .firstInstance = meshIdx
-                }
+            //get the allocation
+            const auto& alloc = m_inst->meshManager().getAllocationOf(mesh);
+            //discard if the handle is invalid
+            if (alloc.size() == 0) 
+            {continue;}
+
+            //for now, just always assume LOD0
+            //the check above made sure that 0 is a valid index
+            const auto& lod = alloc[0];
+
+            //store the draw command for LOD 0
+            drawCommands.emplace_back(
+                lod.indexCount * 3,
+                1,
+                lod.indexOffset * 3,
+                lod.vertexOffset,
+                meshIdx
             );
-            //store the object
+
+            //step mesh
             m_entities.push_back(obj);
-            //advance the mesh
             ++meshIdx;
         }
     }
@@ -164,13 +175,25 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
             vkCmdBeginRenderPass(cb, &renPassBeg, VK_SUBPASS_CONTENTS_INLINE);
             //bind descriptor sets
             vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipelineLayout>(material->getPipelineLayout()), 0, sets.size(), sets.data(), 0, nullptr);
-            //bind the vertex and index buffer
-            auto* meshPool = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::MeshPool*>(material->getVertexLayout()->getPool().get());
-            VkBuffer vbo = reinterpret_cast<VkBuffer>(meshPool->getVbo());
-            VkDeviceSize offs = 0;
-            vkCmdBindVertexBuffers(cb, 0, 1, &vbo, &offs);
-            VkBuffer ibo = reinterpret_cast<VkBuffer>(meshPool->getIbo());
+            //get the correct archetype
+            std::vector<GeometryPool::AttributeIdentifier> identifier;
+            identifier.reserve(mat->getLayout().getAttributeCount());
+            for (size_t i = 0; i < mat->getLayout().getAttributeCount(); ++i) {
+                const auto& attr = mat->getLayout().getAttribute(i);
+                identifier.push_back(GeometryPool::AttributeIdentifier (attr.usage, static_cast<u8>(attr.type), attr.streamId));
+            }
+            const auto& archetype = m_inst->meshManager().getPool().acquireArchetype(identifier);
+            //bind the index buffer
+            VkBuffer ibo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(archetype.getIndexStream())->getBuffer());
             vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
+            //iterate over all streams and bind the vertex buffers
+            for (size_t i = 0; i < GeometryPool::MAX_STREAM_COUNT; ++i) {
+                const auto& stream = archetype.accessStream(i);
+                if (stream.stream.get() == nullptr) {continue;}
+                VkBuffer vbo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(stream.stream.get())->getBuffer());
+                VkDeviceSize offs = 0;
+                vkCmdBindVertexBuffers(cb, i, 1, &vbo, &offs);
+            }
             //start the pipeline
             vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipeline>(material->getPipeline()));
             //set the dynamic states

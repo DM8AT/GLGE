@@ -33,7 +33,9 @@
 //for constant strings
 #include <string_view>
 
-//add GLM for fast math
+/**
+ * @brief add GLM for fast math
+ */
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/io.hpp>
@@ -41,11 +43,41 @@
 //define stuff for aligned allocation / aligned freeing
 #ifdef _MSC_VER
     #include <malloc.h>
+    /**
+     * @brief allocate a aligned memory block
+     * 
+     * @warning memory allocated with this may only be freed using the aligned free
+     * 
+     * @param alignment the byte alignment to align to
+     * @param size the size of the region to allocate
+     */
     #define GLGE_ALIGNED_ALLOC(alignment, size) _aligned_malloc((size), (alignment))
+    /**
+     * @brief free an aligned memory block
+     * 
+     * @warning `ptr` must've been allocated using aligned allocations. 
+     * 
+     * @param ptr the pointer to free
+     */
     #define GLGE_ALIGNED_FREE(ptr) _aligned_free(ptr)
 #else
     #include <stdlib.h>
+    /**
+     * @brief allocate a aligned memory block
+     * 
+     * @warning memory allocated with this may only be freed using the aligned free
+     * 
+     * @param alignment the byte alignment to align to
+     * @param size the size of the region to allocate
+     */
     #define GLGE_ALIGNED_ALLOC(alignment, size) std::aligned_alloc((alignment), (size))
+    /**
+     * @brief free an aligned memory block
+     * 
+     * @warning `ptr` must've been allocated using aligned allocations. 
+     * 
+     * @param ptr the pointer to free
+     */
     #define GLGE_ALIGNED_FREE(ptr) free(ptr)
 #endif
 

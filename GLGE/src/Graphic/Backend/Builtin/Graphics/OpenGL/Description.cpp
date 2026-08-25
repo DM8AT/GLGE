@@ -41,16 +41,14 @@
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
 //add sampled textures
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/SampledTexture.h"
-//add mesh pools
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/MeshPool.h"
-//add vertex layouts
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/VertexLayout.h"
 //add materials
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
 //add renderers
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.h"
 //add command buffers
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.h"
+//add geometry streams
+#include "Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.h"
 
 //add GLAD
 #include "glad/glad.h"
@@ -112,17 +110,14 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> OpenGL::createS
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture> OpenGL::createSampledTexture([[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Image>& image, [[maybe_unused]] const Reference<GLGE::Graphic::Backend::Graphic::Sampler>& sampler)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::SampledTexture>(new GLGE::Graphic::Backend::Graphic::OpenGL::SampledTexture(image, sampler), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool> OpenGL::createMeshPool(GLGE::Graphic::Instance* instance) 
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::MeshPool>(new GLGE::Graphic::Backend::Graphic::OpenGL::MeshPool(instance), false);}
-
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> OpenGL::createVertexLayout(const VertexAttribute* ptr, size_t size, size_t stride, Reference<GLGE::Graphic::Backend::Graphic::MeshPool> pool)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::VertexLayout>(new GLGE::Graphic::Backend::Graphic::OpenGL::VertexLayout(ptr, size, stride, pool), false);}
-
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> OpenGL::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material> OpenGL::createMaterial(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, GLGE::Graphic::Backend::Graphic::Material::CullMode cullMode, GLGE::Graphic::Backend::Graphic::Material::DepthMode depthMode, bool depthWrite)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Material>(new GLGE::Graphic::Backend::Graphic::OpenGL::Material(shader, layout, fbuff, cullMode, depthMode, depthWrite), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> OpenGL::createRenderer(World& world, Object* camera, RenderTarget target)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Renderer(world, camera, target), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer> OpenGL::createRenderer(GLGE::Graphic::Instance* instance, World& world, Object* camera, RenderTarget target)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Renderer>(new GLGE::Graphic::Backend::Graphic::OpenGL::Renderer(instance, world, camera, target), false);}
+
+GLGE::Graphic::Backend::Graphic::GeometryPool::Stream* OpenGL::createGeometryPoolStream(u64 initialSize, bool isIbo, GLGE::Graphic::Backend::Graphic::Instance* instance) 
+{return new GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream(initialSize, isIbo, instance);}
 
 GLGE::Graphic::GraphicAPI OpenGL::getAPI() const noexcept
 {return GLGE::Graphic::GraphicAPI::OPEN_GL;}

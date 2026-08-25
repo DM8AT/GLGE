@@ -68,7 +68,7 @@ public:
 
 };
 
-GLGE::u8 assetExample(const char *graphicBackendName, const char *videoBackendName) {
+GLGE::u8 newMeshExample(const char *graphicBackendName, const char *videoBackendName) {
     //initialize
     GLGE::Instance::init();
 
@@ -91,13 +91,15 @@ GLGE::u8 assetExample(const char *graphicBackendName, const char *videoBackendNa
     {img.reference()->export_as("Img.png", GLGE::Graphic::Asset::ImageCPU::PNG);}
 
     auto worldAss = ass.reference()->open<GLGE::WorldAsset>("worlds/Hello World");
-    GLGE::World& world = worldAss.reference()->world();
-    world.printTree(world.getRoot());
+    if (worldAss) {
+        GLGE::World& world = worldAss.reference()->world();
+        world.printTree(world.getRoot());
 
-    GLGE::Object first = world.getAllWithName("First").front();
-    std::cout << "Value from \"First\": " << world.get<ExampleComponent>(first)->value << "\n";
-    GLGE::Object third = world.getAllWithName("Third").front();
-    std::cout << "Value from \"Third\": " << world.get<ExampleComponent>(third)->value << "\n";
+        GLGE::Object first = world.getAllWithName("First").front();
+        std::cout << "Value from \"First\": " << world.get<ExampleComponent>(first)->value << "\n";
+        GLGE::Object third = world.getAllWithName("Third").front();
+        std::cout << "Value from \"Third\": " << world.get<ExampleComponent>(third)->value << "\n";
+    }
 
     return 0;
 }
@@ -113,5 +115,5 @@ extern "C" GLGE_EXAMPLE_PLUGIN_API void EXAMPLE_SYS_REGISTER_EXAMPLE_PLUGIN(Exam
 
     //add the example
     reg->addExample("Asset Example - This example makes extensive use of the asset API.",
-                    &assetExample);
+                    &newMeshExample);
 }

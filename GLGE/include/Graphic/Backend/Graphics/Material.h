@@ -16,12 +16,13 @@
 #include "Core/Reference.h"
 //add shader
 #include "Shader.h"
-//add vertex layouts
-#include "VertexLayout.h"
 //add command buffer
 #include "CommandBuffer.h"
 //add backend framebuffers
 #include "Framebuffer.h"
+
+//forward declaration
+namespace GLGE::Graphic {class VertexLayout;}
 
 //use the backend namespace
 namespace GLGE::Graphic::Backend::Graphic {
@@ -98,7 +99,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param depthMode the mode to use for depth compares
          * @param depthWrite `true` to enable depth writing, `false` to disable depth writing
          */
-        Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, 
+        Material(Reference<GLGE::Graphic::Backend::Graphic::Shader> shader, GLGE::Graphic::VertexLayout* layout, Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> fbuff, 
                  CullMode cullMode, DepthMode depthMode, bool depthWrite)
          : m_shader(shader), m_layout(layout), m_fbuff(fbuff), m_cullMode(cullMode), m_depthMode(depthMode), m_depthWrite(depthWrite)
         {}
@@ -112,17 +113,8 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief bind the material
          * 
          * @param buffer the buffer to bind to
-         * @param VBOOffset the VBO offset from 0 in bytes
          */
-        virtual void bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) = 0;
-
-        /**
-         * @brief a function to re-bind the material to update the VBO offset
-         * 
-         * @param buffer the buffer to bind to
-         * @param VBOOffset the VBO offset from 0 in bytes
-         */
-        virtual void rebindMesh(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer, size_t VBOOffset) = 0;
+        virtual void bind(GLGE::Graphic::Backend::Graphic::CommandBuffer* buffer) = 0;
 
         /**
          * @brief get the framebuffer the material uses
@@ -139,7 +131,7 @@ namespace GLGE::Graphic::Backend::Graphic {
         /**
          * @brief get the vertex layout the material uses
          */
-        inline Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> getVertexLayout() const noexcept
+        inline GLGE::Graphic::VertexLayout* getVertexLayout() const noexcept
         {return m_layout;}
 
     protected:
@@ -151,7 +143,7 @@ namespace GLGE::Graphic::Backend::Graphic {
         /**
          * @brief store a reference to the vertex layout the material is using
          */
-        Reference<GLGE::Graphic::Backend::Graphic::VertexLayout> m_layout;
+        GLGE::Graphic::VertexLayout* m_layout;
         /**
          * @brief store the framebuffer the material uses
          */

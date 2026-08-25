@@ -21,9 +21,13 @@
 #include "Core/Core.h"
 
 //add graphics
+#if GLGE_HAS_GRAPHICS
 #include "Graphic/Graphic.h"
+#endif
 
 //add physics
+#if GLGE_HAS_PHYSICS
 #include "Physics/Physics.h"
+#endif
 
 #endif
