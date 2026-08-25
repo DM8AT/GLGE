@@ -59,7 +59,7 @@ namespace Component {
         /**
          * @brief store a pointer to the mesh to use for rendering
          */
-        Mesh* mesh;
+        GLGE::Graphic::Mesh* mesh;
         /**
          * @brief store a pointer to the material to use for rendering
          */

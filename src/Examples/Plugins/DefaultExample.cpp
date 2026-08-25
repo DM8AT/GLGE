@@ -108,17 +108,19 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
 
-    GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> suzanne_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Suzanne.glb", GLGE::Graphic::Asset::Mesh::ASSIMP);
-    GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> cube_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Cube.fbx", GLGE::Graphic::Asset::Mesh::ASSIMP);
-    GLGE::AssetHandle<GLGE::Graphic::Asset::Mesh> plane_mesh = inst.assets().load<GLGE::Graphic::Asset::Mesh>("assets/meshes/Plane.fbx", GLGE::Graphic::Asset::Mesh::ASSIMP);
+    auto suzanne_mesh = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Suzanne.glb", GLGE::MeshAsset::ASSIMP);
+    auto cube_mesh = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Cube.fbx", GLGE::MeshAsset::ASSIMP);
+    auto plane_mesh = inst.assets().load<GLGE::MeshAsset>("assets/meshes/Plane.fbx", GLGE::MeshAsset::ASSIMP);
 
-    GLGE::Graphic::VertexLayout layout {{
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Position, GLGE::Graphic::VertexAttribute::Format::vec3, 0,  0),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::UV,       GLGE::Graphic::VertexAttribute::Format::vec2, 12, 1),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Normal,   GLGE::Graphic::VertexAttribute::Format::vec3, 20, 2),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Tangent,  GLGE::Graphic::VertexAttribute::Format::vec3, 32, 3),
-        GLGE::Graphic::VertexAttribute(GLGE::Graphic::VertexAttribute::Type::Color,    GLGE::Graphic::VertexAttribute::Format::vec4, 44, 4)
-    }, 60};
+    GLGE::Graphic::VertexLayout layout {suzanne_mesh.reference()->getMesh()->getLayout(), 
+        std::pair{GLGE::VertexAttribute::Position {}, GLGE::u64(0)},    //Pos    -> stream 0
+        std::pair{GLGE::VertexAttribute::UV {},       GLGE::u64(1)},    //UV     -> stream 1
+        std::pair{GLGE::VertexAttribute::Normal {},   GLGE::u64(1)}     //Normal -> stream 1
+    };
+
+    auto gpuSuzanneMesh = GLGE::Graphic::Mesh(*suzanne_mesh.reference()->getMesh(), layout);
+    auto gpuCubeMesh    = GLGE::Graphic::Mesh(*cube_mesh.reference()->getMesh(), layout);
+    auto gpuPlaneMesh   = GLGE::Graphic::Mesh(*plane_mesh.reference()->getMesh(), layout);
 
     GLGE::Graphic::Sampler sampler(GLGE::Graphic::SamplerCPU(
         GLGE::Graphic::SamplerCPU::ANISOTROPY_X1, GLGE::Graphic::SamplerCPU::FILTER_LINEAR, GLGE::Graphic::SamplerCPU::FILTER_LINEAR, 
@@ -184,23 +186,23 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
 
     GLGE::Object suzanne = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Suzanne", 
-        GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &mat, true}, 
+        GLGE::Graphic::Component::Renderable{&gpuSuzanneMesh, &mat, true}, 
         GLGE::Transform{{0,0,0}, {{glm::radians(45.f),glm::radians(45.f),0}}, {1,1,1}}
     );
     GLGE::Object suzanne2 = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Suzanne 2", 
-        GLGE::Graphic::Component::Renderable{&suzanne_mesh.reference()->mesh(), &mat, true}, 
+        GLGE::Graphic::Component::Renderable{&gpuSuzanneMesh, &mat, true}, 
         GLGE::Transform{{0,0,0}, {{0,0,0}}, {1,1,1}}
     );
     GLGE::Object cube = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Cube", 
-        GLGE::Graphic::Component::Renderable{&cube_mesh.reference()->mesh(), &mat, true}, 
+        GLGE::Graphic::Component::Renderable{&gpuCubeMesh, &mat, true}, 
         GLGE::Transform{{-5,-1,-2}, {{0,0,0}}, {1,1,1}}
     );
     world.setParent(cube, suzanne);
     GLGE::Object plane = world.create<GLGE::Graphic::Component::Renderable, GLGE::Transform>(
         "Plane", 
-        GLGE::Graphic::Component::Renderable{&plane_mesh.reference()->mesh(), &mat, true}, 
+        GLGE::Graphic::Component::Renderable{&gpuPlaneMesh, &mat, true}, 
         GLGE::Transform{{0,-2,0}, {{glm::radians<float>(-90),0,0}}, {100,100,1}}
     );
     GLGE::Object light = world.create<GLGE::Graphic::Component::PointLight, GLGE::Transform>(
