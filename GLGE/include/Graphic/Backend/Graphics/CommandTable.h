@@ -16,11 +16,68 @@
 #ifndef _GLGE_GRAPHIC_BACKEND_GRAPHIC_COMMAND_TABLE_
 #define _GLGE_GRAPHIC_BACKEND_GRAPHIC_COMMAND_TABLE_
 
-//include the abstract commands from the frontend
-#include "Graphic/Command.h"
+//add common stuff
+#include "Core/Common.h"
 
 //use the library namespace
 namespace GLGE::Graphic::Backend::Graphic {
+
+    /**
+     * @brief store a table of command names to simplify readability
+     */
+    enum CommandType : u32 {
+        /**
+         * @brief a default / error value for the type
+         * 
+         * During execution this acts as a hard-coded NOOP value. 
+         */
+        COMMAND_UNKNOWN = 0,
+
+        /**
+         * @brief clear a render target with a solid color, a potential depth and a potential stencil value
+         * 
+         * @param target the render target to clear
+         * @param index `u8` the potential ID of the color attachment to clear, ignored if unused by the target type
+         * @param color a vec<f32, 4> that stores the clear color. x is the red channel, y the green channel, z the blue channel and w the alpha channel. 
+         * @param depth a float that defines the clear depth
+         * @param stencil a `u32` that defines the clear value for the stencil buffer
+         */
+        COMMAND_CLEAR = 2,
+
+        /**
+         * @brief copy the contents of one render target to another render target
+         * 
+         * @warning only one at maximum of the targets may be a window
+         * 
+         * @param from the render target to copy from
+         * @param from_idx `u8` the index of the image to copy from (only used if viable for render target)
+         * @param to the render target to copy to
+         * @param to_idx `u8` the index of the image to copy to (only used if viable for render target)
+         * @param copyDepth `true` to copy the depth / depth stencil attachment, `false` to discard it
+         * @param copyStencil `true` to copy the specific stencil attachment, `false` to discard it
+         */
+        COMMAND_COPY = 3,
+
+        /**
+         * @brief dispatch a compute shader
+         * 
+         * @param shader a pointer to the shader to dispatch
+         * @param invocations a 3D vector with the amount of instances to create per axis
+         */
+        COMMAND_DISPATCH_COMPUTE = 4,
+
+        /**
+         * @brief draw all objects that are enabled at the time of recording the buffer
+         * 
+         * @param renderer a pointer to the renderer to use to render the world
+         */
+        COMMAND_DRAW_WORLD = 5,
+
+        /**
+         * @brief a base value for custom commands. All custom commands must 
+         */
+        COMMAND_CUSTOM = 0xfff
+    };
 
     //command buffers and handles are defined somewhere else
     class CommandBuffer;
@@ -126,7 +183,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @return `true` if the ID belongs to the engines ID scope, `false` otherwise
          */
         inline static constexpr bool isEngineCommand(u32 id) noexcept 
-        {return (id < (u32)GLGE::Graphic::COMMAND_CUSTOM);}
+        {return (id < static_cast<u32>(GLGE::Graphic::Backend::Graphic::COMMAND_CUSTOM));}
 
     protected:
 
@@ -137,7 +194,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * as this is notes the minimum index for a custom command - and one above the maximum index of an engine command.
          * This matches the amount of valid engine commands as indexing is 0 based. 
          */
-        TableEntry m_engineTable[(u32)GLGE::Graphic::COMMAND_CUSTOM] = { 0 };
+        TableEntry m_engineTable[static_cast<u32>(GLGE::Graphic::Backend::Graphic::COMMAND_CUSTOM)] = { 0 };
         /**
          * @brief custom commands use an unordered map as the range of possible indices is too large for a pre-loaded array
          * 
