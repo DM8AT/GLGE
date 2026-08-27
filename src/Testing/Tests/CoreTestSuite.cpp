@@ -156,14 +156,14 @@ void referenceCountingTest(const TestContext* ctx, TestReport* report, const Tes
     msg.msg = "[INFO] Testing if the count is tracked correctly";
     (*(fn->log))(&msg);
 
-    Foo f = &alive;
-    if (f.getReferenceCount() == 1) {
+    GLGE::Reference<Foo> f = GLGE::Reference<Foo>(new Foo(&alive));
+    if (f->getReferenceCount() == 1) {
         assertHelper(
             "Expected that 1 reference to the test object exists",
             "1 reference exists",
             true, fn
         );
-    } else if (f.getReferenceCount() == 0) {
+    } else if (f->getReferenceCount() == 0) {
         assertHelper(
             "Expected that 1 reference to the test object exists",
             "No reference existed", 
@@ -185,10 +185,10 @@ void referenceCountingTest(const TestContext* ctx, TestReport* report, const Tes
 
     //reference the test object somewhere else, then delete the reference
     {
-        GLGE::Reference<Foo> fRef = &f;
-        doubleCount = f.getReferenceCount();
+        GLGE::Reference<Foo> fRef = f;
+        doubleCount = f->getReferenceCount();
     }
-    singleCount = f.getReferenceCount();
+    singleCount = f->getReferenceCount();
 
     //sanity check the results
     if (singleCount == 1 && doubleCount == 2) {

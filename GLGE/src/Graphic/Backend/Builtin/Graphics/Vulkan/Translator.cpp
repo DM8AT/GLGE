@@ -30,6 +30,7 @@
 namespace VkImpl {
 
 bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    #if 0
     //extract the actual arguments
     const auto& [target, idx, color, depth, stencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>();
 
@@ -96,11 +97,13 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
         }
     }
 
+    #endif
     //success
     return true;
 }
 
 bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    #if 0
     //get the command buffers
     const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
 
@@ -261,11 +264,13 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         }
     }
 
+    #endif
     //success
     return true;
 }
 
 bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    #if 0
     //get the command buffers
     const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
 
@@ -323,11 +328,13 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
 
     }
 
+    #endif
     //success
     return true;
 }
 
 bool drawWorld(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    #if 0
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawWorld");
 
     //extract all arguments
@@ -336,6 +343,7 @@ bool drawWorld(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
     //draw
     renderer->getBackend()->record(cmdBuff);
     
+    #endif
     //success
     return true;
 }

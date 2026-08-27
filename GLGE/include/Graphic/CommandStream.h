@@ -29,19 +29,57 @@
 namespace GLGE::Graphic {
 
     /**
-     * @brief define a class 
+     * @brief define an abstract class to define command wrappers
      */
     class Command {
     public:
 
+        /**
+         * @brief Get the command type of the command
+         * 
+         * The type determines the implementation function that is called
+         * 
+         * @return `Backend::Graphic::CommandType` the type of the command
+         */
         virtual Backend::Graphic::CommandType getType() const noexcept = 0;
 
+        /**
+         * @brief Get the a handle that contains the copied command arguments
+         * 
+         * Handles are used to parse data between the command frontend and the implementation functions
+         * in a type-save way
+         * 
+         * @return `Backend::Graphic::CommandHandle` a handle that contains the command arguments
+         */
         virtual Backend::Graphic::CommandHandle getHandle() const noexcept = 0;
 
     };
 
+    /**
+     * @brief a class to manage a list of commands
+     * 
+     * The order of the commands in the stream determines the order of operations. 
+     */
     class CommandStream {
     public:
+
+        /**
+         * @brief a structure to store all data for a single command entry
+         */
+        struct CommandEntry {
+            /**
+             * @brief store the command buffer for the entry
+             */
+            Reference<Backend::Graphic::CommandBuffer> cmdBuff;
+            /**
+             * @brief store the command callback
+             */
+            std::unique_ptr<Command> cmd;
+            /**
+             * @brief store if the command buffer is up to date
+             */
+            bool dirty = false;
+        };
 
         /**
          * @brief create a new command stream
@@ -95,22 +133,168 @@ namespace GLGE::Graphic {
          */
         void compile() {}
 
-    protected:
+        /**
+         * @brief get a specific command, but just assume that it exists
+         * 
+         * @throw std::out_of_range if the command does not exist
+         * 
+         * @tparam Cmd the type of the command to get
+         * @param name the name of the command to get
+         * @return `Cmd*` a pointer to the command
+         */
+        template <typename Cmd>
+        requires std::is_base_of_v<Command, Cmd>
+        inline Cmd* accessCmdUnsafe(const std::string& name) {
+            //do NOT sanity check, just let it throw
+            return static_cast<Cmd*>(m_entries[m_nameLookup.at(name)].cmd.get());
+        }
 
-        struct CommandEntry {
-            /**
-             * @brief store the command buffer for the entry
-             */
-            Reference<Backend::Graphic::CommandBuffer> cmdBuff;
-            /**
-             * @brief store the command callback
-             */
-            std::unique_ptr<Command> cmd;
-            /**
-             * @brief store if the command buffer is up to date
-             */
-            bool dirty = false;
-        };
+        /**
+         * @brief get a specific command
+         * 
+         * @tparam Cmd the type of the command to get
+         * @param name the name of the command to get
+         * @return `Cmd*` a pointer to the command, but `nullptr` if the command does not exist
+         */
+        template <typename Cmd>
+        requires std::is_base_of_v<Command, Cmd>
+        inline Cmd* accessCmd(const std::string& name) noexcept {
+            //before returning the pointer make sure that it exists
+            const auto it = m_nameLookup.find(name);
+            if (it == m_nameLookup.end()) {return nullptr;}
+            return static_cast<Cmd*>(m_entries[it->second].cmd.get());
+        }
+
+        /**
+         * @brief get a specific command, but sanity check the type
+         * 
+         * @tparam Cmd the type of the command to get
+         * @param name the name of the command to get
+         * @return `Cmd*` a pointer to the command, but `nullptr` if the types don't match or if the command does not exist
+         */
+        template <typename Cmd>
+        requires std::is_base_of_v<Command, Cmd>
+        inline Cmd* accessCmdSafe(const std::string& name) noexcept {
+            //before returning the pointer make sure that it exists
+            const auto it = m_nameLookup.find(name);
+            if (it == m_nameLookup.end()) {return nullptr;}
+            //this time make sure that the type fits
+            return dynamic_cast<Cmd*>(m_entries[it->second].cmd.get());
+        }
+
+        /**
+         * @brief get a specific command, but just assume that it exists
+         * 
+         * @throw std::out_of_range if the command does not exist
+         * 
+         * @tparam Cmd the type of the command to get
+         * @param name the name of the command to get
+         * @return `Cmd*` a pointer to the command
+         */
+        template <typename Cmd>
+        requires std::is_base_of_v<Command, Cmd>
+        inline const Cmd* accessCmdUnsafe(const std::string& name) const {
+            //do NOT sanity check, just let it throw
+            return static_cast<Cmd*>(m_entries[m_nameLookup.at(name)].cmd.get());
+        }
+
+        /**
+         * @brief get a specific command
+         * 
+         * @tparam Cmd the type of the command to get
+         * @param name the name of the command to get
+         * @return `Cmd*` a pointer to the command, but `nullptr` if the command does not exist
+         */
+        template <typename Cmd>
+        requires std::is_base_of_v<Command, Cmd>
+        inline const Cmd* accessCmd(const std::string& name) const noexcept {
+            //before returning the pointer make sure that it exists
+            const auto it = m_nameLookup.find(name);
+            if (it == m_nameLookup.end()) {return nullptr;}
+            return static_cast<Cmd*>(m_entries[it->second].cmd.get());
+        }
+
+        /**
+         * @brief get a specific command, but sanity check the type
+         * 
+         * @tparam Cmd the type of the command to get
+         * @param name the name of the command to get
+         * @return `Cmd*` a pointer to the command, but `nullptr` if the types don't match or if the command does not exist
+         */
+        template <typename Cmd>
+        requires std::is_base_of_v<Command, Cmd>
+        inline const Cmd* accessCmdSafe(const std::string& name) const noexcept {
+            //before returning the pointer make sure that it exists
+            const auto it = m_nameLookup.find(name);
+            if (it == m_nameLookup.end()) {return nullptr;}
+            //this time make sure that the type fits
+            return dynamic_cast<Cmd*>(m_entries[it->second].cmd.get());
+        }
+
+        /**
+         * @brief check if a command is dirty
+         * 
+         * @throw std::out_of_range if the command does not exist
+         * 
+         * @param name the name of the command to check
+         * @return `true` if the command is dirty, `false` if not
+         */
+        inline bool isDirtyUnsafe(const std::string& name) const 
+        {return m_entries[m_nameLookup.at(name)].dirty;}
+
+        /**
+         * @brief check if a command is dirty
+         * 
+         * @param name the name of the command state to query
+         * @return `true` if the command entry is marked dirty, `false` if not or if the command does not exist
+         */
+        inline bool isDirty(const std::string& name) const noexcept {
+            //before returning the pointer make sure that it exists
+            const auto it = m_nameLookup.find(name);
+            if (it == m_nameLookup.end()) {return false;}
+            return m_entries[it->second].dirty;
+        }
+
+        /**
+         * @brief Get the Command Buffer
+         * 
+         * @param name the name of the command to get the command buffer for
+         * @return `const Reference<Backend::Graphic::CommandBuffer>&` a constant reference to the backend command buffer
+         */
+        inline const Reference<Backend::Graphic::CommandBuffer>& getCommandBuffer(const std::string& name)
+        {return m_entries[m_nameLookup.at(name)].cmdBuff;}
+
+        /**
+         * @brief Get the Entries
+         * 
+         * @return `const std::vector<CommandEntry>&` a constant reference to all command entries
+         */
+        inline const std::vector<CommandEntry>& getEntries() const noexcept
+        {return m_entries;}
+
+        /**
+         * @brief a helper command to print the names of the commands in execution order
+         * 
+         * This command is intended to help developers to debug ordering issues with the command stream
+         * 
+         * @warning This command is not optimized. It may be slow
+         */
+        inline void debugPrint() const noexcept {
+            //ordered list to print
+            std::vector<std::string> toPrint(m_entries.size(), "");
+            //fill ordered list
+            for (const auto& [name, idx] : m_nameLookup)
+            {toPrint[idx] = name;}
+            //print
+            std::stringstream stream; //used to prevent ordering issues in multithreaded env
+            stream << "Debug print of command stream:\n";
+            size_t i = 0;
+            for (const auto& name : toPrint)
+            {stream << "    [" << (i++) << "] : " <<  << name << "\n";}
+            std::cout << stream.str();
+        }
+
+    protected:
 
         /**
          * @brief store the command entries

@@ -58,21 +58,21 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
     GLGE::Graphic::Window win("Window Example", {600, 600});
     GLGE::Graphic::RenderTarget window(&win);
 
-    GLGE::Graphic::RenderPipeline pipe = GLGE::Graphic::RenderPipeline::create(&win, 
-        std::pair("Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(0.4, 0.4, 0.4, 1), 0.f, GLGE::u32(0)))
-    );
-    pipe.record();
+    // GLGE::Graphic::RenderPipeline pipe = GLGE::Graphic::RenderPipeline::create(&win, 
+    //     std::pair("Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(0.4, 0.4, 0.4, 1), 0.f, GLGE::u32(0)))
+    // );
+    // pipe.record();
 
     //run while the window is open
     while (!win.isClosingRequested()) {
         inst.startMainTick();
 
         //potential re-record
-        if (win.didResize())
-        {pipe.record();}
+        // if (win.didResize())
+        // {pipe.record();}
 
         //playback
-        pipe.play();
+        // pipe.play();
 
         inst.endMainTick();
     }

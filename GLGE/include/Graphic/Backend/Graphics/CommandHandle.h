@@ -289,7 +289,7 @@ namespace GLGE::Graphic::Backend::Graphic {
             size_t alignment = 1;
             (
                 [&] {
-                    if constexpr (alignof(Args) > alignment)
+                    if (alignof(Args) > alignment)
                     {alignment = alignof(Args);}
                 }(),
                 ...

@@ -12,6 +12,7 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 
 //include render pipelines
+#if 0
 #include "Graphic/RenderPipeline.h"
 
 //include vulkan graphic instances
@@ -224,3 +225,4 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onPlay() {
     //step the frame
     m_frameIdx = (m_frameIdx + 1) % m_syncObjs.size();
 }
+#endif

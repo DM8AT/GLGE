@@ -9,6 +9,7 @@
  * 
  */
 //include the command buffer
+#if 0
 #include "Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.h"
 //include the render pipeline
 #include "Graphic/RenderPipeline.h"
@@ -36,3 +37,4 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::CommandBuffer::onBegin() {
     if (win)
     {win->getVideoWindow()->getBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::OpenGL>()->makeCurrent(win->getVideoWindow());}
 }
+#endif

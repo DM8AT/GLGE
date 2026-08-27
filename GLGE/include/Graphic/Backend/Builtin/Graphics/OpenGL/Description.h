@@ -71,6 +71,7 @@ namespace Graphics {
          */
         virtual Reference<GLGE::Graphic::Backend::Graphic::Window> createWindow(GLGE::Graphic::Window* window) override;
 
+#if 0
         /**
          * @brief Create a Command Buffer
          * 
@@ -78,6 +79,7 @@ namespace Graphics {
          * @return `Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>` a pointer to the new command buffer
          */
         virtual Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> createCommandBuffer(GLGE::Graphic::RenderPipeline* renderPipeline) override;
+#endif
 
         /**
          * @brief Create a Sampler

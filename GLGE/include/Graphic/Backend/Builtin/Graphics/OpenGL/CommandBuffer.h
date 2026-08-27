@@ -14,6 +14,7 @@
 
 //include the command buffer backend
 #include "Graphic/Backend/Graphics/CommandBuffer.h"
+#if 0
 
 //use the namespace
 namespace GLGE::Graphic::Backend::Graphic::OpenGL {
@@ -54,4 +55,5 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
 
 }
 
+#endif
 #endif

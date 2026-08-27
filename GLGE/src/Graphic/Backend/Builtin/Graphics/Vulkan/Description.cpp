@@ -54,10 +54,10 @@ using namespace GLGE::Graphic::Builtin::Graphics;
 
 Vulkan::Vulkan() 
  : Description(GLGE::Graphic::Backend::Graphic::CommandTable({
-        std::pair{GLGE::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(VkImpl::clear)},
-        std::pair{GLGE::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>(VkImpl::copy)},
-        std::pair{GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(VkImpl::dispatchCompute)},
-        std::pair{GLGE::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(VkImpl::drawWorld)}
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(VkImpl::clear)},
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>(VkImpl::copy)},
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(VkImpl::dispatchCompute)},
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(VkImpl::drawWorld)}
     }))
 {initialize();}
 
@@ -73,8 +73,10 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Instance> Vulkan::createInstanc
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window> Vulkan::createWindow(GLGE::Graphic::Window* window)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window>(new GLGE::Graphic::Backend::Graphic::Vulkan::Window(window), false);}
 
+#if 0
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCommandBuffer([[maybe_unused]]GLGE::Graphic::RenderPipeline* renderPipeline)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer(renderPipeline), false);}
+#endif
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> Vulkan::createSampler([[maybe_unused]] const GLGE::Graphic::SamplerCPU& sampler, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(new GLGE::Graphic::Backend::Graphic::Vulkan::Sampler(sampler, instance), false);}

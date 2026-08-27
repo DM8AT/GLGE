@@ -84,6 +84,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::~Renderer() {
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff) {
+    #if 0
     //store all objects sorted by the materials
     std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<MeshHandle, Object>>> objs;
     size_t total = 0;
@@ -216,6 +217,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
             vkCmdEndRenderPass(cb);
         }
     }
+    #endif
 
     //gather up all the light sources
     m_pointLights.clear();

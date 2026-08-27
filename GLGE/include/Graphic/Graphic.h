@@ -19,7 +19,9 @@
 //include displays
 #include "Display.h"
 //include render pipelines
+#if 0
 #include "RenderPipeline.h"
+#endif
 
 //add CPU images
 #include "ImageCPU.h"

@@ -11,6 +11,7 @@
 //header guard
 #ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_COMMAND_BUFFER_
 #define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_COMMAND_BUFFER_
+#if 0
 
 //add the default command buffer
 #include "Graphic/Backend/Graphics/CommandBuffer.h"
@@ -107,4 +108,5 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
 }
 
+#endif
 #endif
