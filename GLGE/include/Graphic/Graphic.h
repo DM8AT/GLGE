@@ -22,6 +22,10 @@
 #if 0
 #include "RenderPipeline.h"
 #endif
+//add command streams
+#include "CommandStream.h"
+//add default commands
+#include "CommandDefaults.h"
 
 //add CPU images
 #include "ImageCPU.h"

@@ -62,6 +62,10 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
     //     std::pair("Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(0.4, 0.4, 0.4, 1), 0.f, GLGE::u32(0)))
     // );
     // pipe.record();
+    GLGE::Graphic::CommandStream stream(
+        std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(&win, GLGE::vec4{0.5, 0.5, 0.5, 1})}
+    );
+    stream.debugPrint();
 
     //run while the window is open
     while (!win.isClosingRequested()) {

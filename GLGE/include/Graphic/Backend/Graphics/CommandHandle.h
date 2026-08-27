@@ -111,7 +111,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @return a command handle containing the arguments
          */
         template <typename... Args>
-        static CommandHandle create(Args&&... args) {
+        static CommandHandle create(const Args&... args) {
             //Store the resulting command handle
             CommandHandle result;
 
@@ -134,7 +134,7 @@ namespace GLGE::Graphic::Backend::Graphic {
             //Note: constructOne can throw. Use catch to clean up before re-throwing
             try {
                 (
-                constructOne<std::decay_t<Args>>(result.m_data.get(), offset, result.m_objects, std::forward<Args>(args)),
+                constructOne<std::decay_t<Args>>(result.m_data.get(), offset, result.m_objects, args),
                 ...
                 );
             }
@@ -309,12 +309,12 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param arg constructor argument
          */
         template <typename T, typename Arg>
-        static void constructOne(u8* ptr, size_t& offset, std::vector<ObjectInfo>& infos, Arg&& arg) {
+        static void constructOne(std::byte* ptr, size_t& offset, std::vector<ObjectInfo>& infos, const Arg& arg) {
             //align the location correctly
             offset = alignOffset(offset, alignof(T));
             void* location = ptr + offset;
             //construct helper
-            std::construct_at(static_cast<T*>(location), std::forward<Arg>(arg));
+            std::construct_at(static_cast<T*>(location), arg);
             //add type info
             infos.push_back({offset, &destroyOne<T>});
             //bookkeeping
