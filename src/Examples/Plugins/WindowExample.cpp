@@ -49,14 +49,14 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
     //create an instance
     GLGE::Instance inst("Window Example", GLGE::Version(0,1,0), std::pair("Graphics", &gInst));
 
+    //create a window
+    GLGE::Graphic::Window win("Window Example", {600, 600});
+    GLGE::Graphic::RenderTarget window(&win);
+
     //print some statistics
     std::cout << "Selected GPU: "           << gInst.getGPUName()          << "\n";
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
-
-    //create a window
-    GLGE::Graphic::Window win("Window Example", {600, 600});
-    GLGE::Graphic::RenderTarget window(&win);
 
     // GLGE::Graphic::RenderPipeline pipe = GLGE::Graphic::RenderPipeline::create(&win, 
     //     std::pair("Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(0.4, 0.4, 0.4, 1), 0.f, GLGE::u32(0)))
