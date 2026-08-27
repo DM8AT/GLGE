@@ -51,17 +51,8 @@
 
          /**
           * @brief Begin recording the secondary command buffer
-          *
-          * @param window an optional pointer to the window to operate on
           */
-         virtual void onBegin(GLGE::Graphic::Window* window) override;
-
-         /**
-          * @brief End the recording phase.
-          *
-          * @param window an optional pointer to the window to operate on
-          */
-         virtual void onEnd(GLGE::Graphic::Window* window) override;
+         virtual void onBegin() override;
 
          /**
           * @brief Finalize the secondary command buffer.

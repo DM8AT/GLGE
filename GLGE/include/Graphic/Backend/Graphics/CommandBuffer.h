@@ -126,17 +126,8 @@ namespace GLGE::Graphic::Backend::Graphic {
 
         /**
          * @brief a function used to say that a recording should start
-         * 
-         * @param window a pointer to the window to operate on, nullptr is valid
          */
-        virtual void onBegin(GLGE::Graphic::Window* window) {}
-
-        /**
-         * @brief a function used to say that a recording is ending
-         * 
-         * @param window a pointer to the window to swap, may be nullptr
-         */
-        virtual void onEnd(GLGE::Graphic::Window* window) {}
+        virtual void onBegin() {}
 
         /**
          * @brief finalize the recorded command buffer

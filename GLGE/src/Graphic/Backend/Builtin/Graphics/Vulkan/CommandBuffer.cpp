@@ -67,9 +67,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::~CommandBuffer() {
 }
 
 
-void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin(GLGE::Graphic::Window* window) {
-    //ignore the window
-    (void)window;
+void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin() {
     auto* secondary = reinterpret_cast<VkCommandBuffer>(m_cmdBuffer);
 
     //reset the command buffer
@@ -82,12 +80,6 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin(GLGE::Graph
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     if (vkBeginCommandBuffer(secondary, &beginInfo) != VK_SUCCESS) 
     {throw Exception("Failed to begin the secondary command buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin");}
-}
-
-
-void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onEnd(GLGE::Graphic::Window* window) {
-    //NOOP
-    (void)window;
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onFinalize() {
