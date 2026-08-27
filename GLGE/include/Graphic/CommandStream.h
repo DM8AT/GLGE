@@ -26,6 +26,10 @@
 //add the command backend
 #include "Backend/Graphics/CommandBuffer.h"
 
+//add instances
+#include "Instance.h"
+#include "Core/BaseClass.h"
+
 //use the library namespace
 namespace GLGE::Graphic {
 
@@ -34,7 +38,7 @@ namespace GLGE::Graphic {
      * 
      * The order of the commands in the stream determines the order of operations. 
      */
-    class CommandStream {
+    class CommandStream : public BaseClass {
     public:
 
         /**
@@ -74,7 +78,13 @@ namespace GLGE::Graphic {
          */
         template <typename... Cmds>
         requires (std::is_base_of_v<Command, Cmds> && ... && true)
-        CommandStream(std::pair<const char*, std::unique_ptr<Cmds>>... cmds) {
+        CommandStream(std::pair<const char*, std::unique_ptr<Cmds>>... cmds) 
+         : BaseClass(), m_instance(getInstance()->getExtension<GLGE::Graphic::Instance>())
+        {
+            //sanity check
+            #if GLGE_DEBUG
+            if (m_instance == nullptr) {throw GLGE::Exception("Cannot create a command stream without graphics", "GLGE::Graphic::CommandStream::CommandStream");}
+            #endif
             //pre-resize
             m_entries.reserve(sizeof...(Cmds));
             m_nameLookup.reserve(sizeof...(Cmds));
@@ -122,7 +132,7 @@ namespace GLGE::Graphic {
             #endif
             //add entry
             m_nameLookup[name] = m_entries.size();
-            m_entries.emplace_back(Reference<Backend::Graphic::CommandBuffer>(), std::move(cmd), true, true);
+            m_entries.emplace_back(m_instance->getGraphicDescription()->createCommandBuffer(m_instance), std::move(cmd), true, true);
         }
 
         /**
@@ -178,7 +188,7 @@ namespace GLGE::Graphic {
             if (m_nameLookup.contains(name)) {throw GLGE::Exception("Tried to add a name that allready exists", "GLGE::Graphic::CommandStream::addCmd");}
             if (idx >= (m_entries.size() + 1)) {throw GLGE::Exception("Cannot add a command at the specified index", "GLGE::Graphic::CommandStream::addCmd");}
             #endif
-            m_entries.insert((idx == m_entries.size()) ? m_entries.end() : (m_entries.begin() + idx), Reference<Backend::Graphic::CommandBuffer>(), std::move(cmd), true, true);
+            m_entries.insert((idx == m_entries.size()) ? m_entries.end() : (m_entries.begin() + idx), m_instance->getGraphicDescription()->createCommandBuffer(m_instance), std::move(cmd), true, true);
             for (auto& [_, i] : m_nameLookup) {if (i >= idx) {++i;}}
             m_nameLookup[name] = idx;
         }
@@ -225,7 +235,14 @@ namespace GLGE::Graphic {
         void compile() {
             for (auto& el : m_entries) {
                 if (el.cmd->isDirty() && el.allowRebuild) {
-                    #warning TODO
+                    //get the command invoker
+                    const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
+                    //if it is nullptr, skip, retry later
+                    if (cmd == nullptr) {continue;}
+                    cmd->func(*el.cmdBuff, el.cmd->getHandle());
+
+                    //cmd is no longer dirty
+                    el.cmd->m_dirty = false;
                 }
             }
         }
@@ -517,7 +534,7 @@ namespace GLGE::Graphic {
             stream << "Debug print of command stream:\n";
             size_t i = 0;
             for (const auto& name : toPrint)
-            {stream << "    [" << (i++) << "] : " << name << "\n";}
+            {stream << "    [" << i << "] : " << name << ", Dirty: " << (m_entries[i].cmd->isDirty() ? "true" : "false") << "\n"; ++i;}
             std::cout << stream.str();
         }
 
@@ -531,6 +548,10 @@ namespace GLGE::Graphic {
          * @brief store a table to look up a command via a name
          */
         std::unordered_map<std::string, size_t> m_nameLookup;
+        /**
+         * @brief store a pointer to the graphic instance the command stream belongs to
+         */
+        GLGE::Graphic::Instance* m_instance = nullptr;
 
     };
 

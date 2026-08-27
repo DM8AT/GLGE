@@ -96,15 +96,13 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         virtual Reference<GLGE::Graphic::Backend::Graphic::Window> createWindow([[maybe_unused]] GLGE::Graphic::Window* window) = 0;
 
-#if 0
         /**
          * @brief Create a Command Buffer
          * 
-         * @param renderPipeline the render pipeline that owns the command buffer
+         * @param instance a pointer to the instance the command buffer will belong to
          * @return `Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>` a reference to the new command buffer
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> createCommandBuffer([[maybe_unused]] GLGE::Graphic::RenderPipeline* renderPipeline) = 0;
-#endif
+        virtual Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> createCommandBuffer([[maybe_unused]] GLGE::Graphic::Instance* instance) = 0;
 
         /**
          * @brief Create a Sampler

@@ -66,6 +66,8 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
         std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(&win, GLGE::vec4{0.5, 0.5, 0.5, 1})}
     );
     stream.debugPrint();
+    stream.compile();
+    stream.debugPrint();
 
     //run while the window is open
     while (!win.isClosingRequested()) {

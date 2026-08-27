@@ -473,6 +473,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/ImageCPU.cpp
         ${GLGE_SRC_DIR}/Graphic/TextureCPU.cpp
         ${GLGE_SRC_DIR}/Graphic/Shader.cpp
+        ${GLGE_SRC_DIR}/Graphic/Command.cpp
 
         # Assets
         ${GLGE_SRC_DIR}/Graphic/Assets/ImageCPUAsset.cpp

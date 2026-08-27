@@ -43,8 +43,7 @@ namespace GLGE::Graphic {
         /**
          * @brief Destroy the Command
          */
-        virtual ~Command() 
-        {for (auto& inv : m_invalidator) {inv->removeCmd(this);}}
+        virtual ~Command();
 
         //cannot be moved nor copied
         Command(const Command&) = delete;
@@ -248,7 +247,6 @@ namespace GLGE::Graphic {
 
     };
 
-    //implement outside of class
     template <typename T>
     void Command::registerStoredArgument(T& arg) {
         if constexpr (std::is_base_of_v<CommandInvalidator, T>) {

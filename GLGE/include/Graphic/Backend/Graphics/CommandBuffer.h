@@ -21,10 +21,9 @@
 #include "Core/Reference.h"
 
 namespace GLGE::Graphic {
-    /**
-     * @brief render pipelines are defined somewhere else
-     */
-    class RenderPipeline;
+    //forward declarations
+    class Instance;
+    class Window;
 }
 
 //use the library namespace
@@ -46,8 +45,10 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief Construct a new Command Buffer
          * 
          * All command buffers are initialized in an empty state
+         * 
+         * @param instance a pointer to the instance the command buffer will belong to
          */
-        CommandBuffer(GLGE::Graphic::RenderPipeline* renderPipeline);
+        CommandBuffer(GLGE::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Command Buffer
@@ -125,8 +126,17 @@ namespace GLGE::Graphic::Backend::Graphic {
 
         /**
          * @brief a function used to say that a recording should start
+         * 
+         * @param window a pointer to the window to operate on, nullptr is valid
          */
-        virtual void onBegin() {}
+        virtual void onBegin(GLGE::Graphic::Window* window) {}
+
+        /**
+         * @brief a function used to say that a recording is ending
+         * 
+         * @param window a pointer to the window to swap, may be nullptr
+         */
+        virtual void onEnd(GLGE::Graphic::Window* window) {}
 
         /**
          * @brief finalize the recorded command buffer
@@ -164,12 +174,12 @@ namespace GLGE::Graphic::Backend::Graphic {
         void playback();
 
         /**
-         * @brief Get the Render Pipeline
+         * @brief Get the Instance
          * 
-         * @return `GLGE::Graphic::RenderPipeline*` a pointer to the render pipeline
+         * @return `GLGE::Graphic::Instance*` a pointer to the instance
          */
-        inline GLGE::Graphic::RenderPipeline* getRenderPipeline() const noexcept
-        {return m_renderPipeline;}
+        inline GLGE::Graphic::Instance* getInstance() const noexcept
+        {return m_instance;}
 
     private:
 
@@ -235,9 +245,9 @@ namespace GLGE::Graphic::Backend::Graphic {
         std::vector<u8> m_buffer;
 
         /**
-         * @brief store a pointer to the render pipeline
+         * @brief store a pointer to the instance
          */
-        GLGE::Graphic::RenderPipeline* m_renderPipeline = nullptr;
+        GLGE::Graphic::Instance* m_instance = nullptr;
 
     };
 

@@ -73,10 +73,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Instance> Vulkan::createInstanc
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window> Vulkan::createWindow(GLGE::Graphic::Window* window)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window>(new GLGE::Graphic::Backend::Graphic::Vulkan::Window(window), false);}
 
-#if 0
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCommandBuffer([[maybe_unused]]GLGE::Graphic::RenderPipeline* renderPipeline)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer(renderPipeline), false);}
-#endif
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCommandBuffer([[maybe_unused]]GLGE::Graphic::Instance* instance)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer(instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> Vulkan::createSampler([[maybe_unused]] const GLGE::Graphic::SamplerCPU& sampler, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(new GLGE::Graphic::Backend::Graphic::Vulkan::Sampler(sampler, instance), false);}
