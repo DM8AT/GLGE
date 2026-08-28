@@ -96,10 +96,21 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin() {
         if (vkResetCommandBuffer(secondary, 0) != VK_SUCCESS) 
         {throw Exception("Failed to reset the secondary command buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin");}
 
+        //inheritance is required for secondaries
+        VkCommandBufferInheritanceInfo inheritance{};
+        inheritance.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        inheritance.pNext = nullptr;
+        inheritance.renderPass = VK_NULL_HANDLE;
+        inheritance.subpass = 0;
+        inheritance.framebuffer = VK_NULL_HANDLE;
+        inheritance.occlusionQueryEnable = VK_FALSE;
+        inheritance.queryFlags = 0;
+        inheritance.pipelineStatistics = 0;
         //start the buffer
         VkCommandBufferBeginInfo beginInfo {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        beginInfo.pInheritanceInfo = &inheritance;
         if (vkBeginCommandBuffer(secondary, &beginInfo) != VK_SUCCESS) 
         {throw Exception("Failed to begin the secondary command buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin");}
     }

@@ -38,6 +38,8 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Gr
         //a single command buffer per swap-chain image is required
         size_t count = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get())->getImages().size();
         static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->setCommandBufferCount(count);
+        //restart of cmd buff is required
+        cBuff.onBegin();
     }
 
     //vulkan may record multiple command buffers -> iterate over them all
