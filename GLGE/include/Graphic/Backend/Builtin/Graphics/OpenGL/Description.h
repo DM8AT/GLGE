@@ -80,6 +80,14 @@ namespace Graphics {
         virtual Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> createCommandBuffer([[maybe_unused]] GLGE::Graphic::Instance* instance) override;
 
         /**
+         * @brief Create a Command Executor
+         * 
+         * @param window a pointer to the window to execute on
+         * @return `Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>` a reference to a new command executor
+         */
+        virtual Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> createCommandExecutor([[maybe_unused]] GLGE::Graphic::Window* window) override;
+
+        /**
          * @brief Create a Sampler
          * 
          * @param sampler the initial state of the sampler

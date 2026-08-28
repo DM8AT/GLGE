@@ -239,7 +239,11 @@ namespace GLGE::Graphic {
                     const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
                     //if it is nullptr, skip, retry later
                     if (cmd == nullptr) {continue;}
+                    //if a recording func exists, record
+                    if (el.cmdBuff->isRecorded()) {el.cmdBuff->clear();}
+                    el.cmdBuff->onBegin();
                     cmd->func(*el.cmdBuff, el.cmd->getHandle());
+                    el.cmdBuff->finalize();
 
                     //cmd is no longer dirty
                     el.cmd->m_dirty = false;

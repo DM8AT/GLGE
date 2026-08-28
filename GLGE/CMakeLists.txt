@@ -505,6 +505,7 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/CommandExecutor.cpp
             # Builtin::OpenGL::GLAD
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/glad/src/glad.c
             # Builtin::OpenGL::Translator
@@ -539,6 +540,7 @@ if (GLGE_INCLUDE_GRAPHICS)
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.cpp
             ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/CommandExecutor.cpp
         )
     endif()
 

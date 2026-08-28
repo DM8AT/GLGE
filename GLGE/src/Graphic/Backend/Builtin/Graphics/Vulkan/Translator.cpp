@@ -29,17 +29,21 @@
 
 namespace VkImpl {
 
-bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    #if 0
+bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     //extract the actual arguments
     const auto& [target, idx, color, depth, stencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>();
 
-    //get all command buffers
-    const auto& cmdBuffs = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+    //if the target is a window, update the command buffer size
+    if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+        //a single command buffer per swap-chain image is required
+        size_t count = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get())->getImages().size();
+        static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->setCommandBufferCount(count);
+    }
+
     //vulkan may record multiple command buffers -> iterate over them all
-    for (size_t i = 0; i < cmdBuffs.size(); ++i) {
+    for (size_t i = 0; i < static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBufferCount(); ++i) {
         //extract the vulkan command buffer
-        VkCommandBuffer cmdBuff = reinterpret_cast<VkCommandBuffer>(cmdBuffs[i]);
+        VkCommandBuffer cmdBuff = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBuffer(i));
 
         //check the type
         if (target.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
@@ -97,7 +101,6 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
         }
     }
 
-    #endif
     //success
     return true;
 }

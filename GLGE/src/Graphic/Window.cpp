@@ -71,6 +71,9 @@ void Window::notifyResolutionChange(const uvec2& newSize, const uvec2& newUsable
     //store the new resolutions
     m_theoreticalResolution = uvec2(m_size.x * m_pixelScale, m_size.y * m_pixelScale);
     m_resolution = resolution;
+
+    //invalidate the commands
+    invalidate();
 }
 
 bool Window::isHDRActive() const noexcept

@@ -71,7 +71,7 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
                 glClearNamedFramebufferfi(fbuff->getHandle(), GL_DEPTH_STENCIL, 0, depth, stencil);
             }
         };
-    #if 0
+        
     //extract the actual arguments
     const auto& [target, idx, color, depth, stencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>();
     //queue the actual command
@@ -80,13 +80,12 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
     else 
     {cmdBuff.addCommand(helper_fbuff, (GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*)(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend().get()), 
                         GLGE::u8(idx), (GLGE::vec4)color, (GLGE::f32)depth, (GLGE::u32)stencil);}
-    #endif
+
     //success
     return true;
 }
 
 bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    #if 0
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy");
 
     //store a helper function that is called when the copy is invoked
@@ -159,14 +158,12 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         throw GLGE::Exception("Failed to build command buffer: Invalid target combination for copy", "GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy");
         return false;
     }
-    #endif
 
     //success
     return true;
 }
 
 bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    #if 0
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::dispatchCompute");
 
     //store a helper function that is called when the dispatch is invoked
@@ -193,13 +190,11 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
 
     //queue the actual command
     cmdBuff.addCommand(helper, (GLGE::Graphic::Backend::Graphic::OpenGL::Shader*)shader->getBackend().get(), (GLGE::uvec3)invocations);
-    #endif
     //success
     return true;
 }
 
 bool drawWorld(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    #if 0
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawWorld");
 
     //extract all arguments
@@ -208,7 +203,6 @@ bool drawWorld(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
     //draw
     renderer->getBackend()->record(cmdBuff);
     
-    #endif
     //success
     return true;
 }

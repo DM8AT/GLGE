@@ -165,6 +165,9 @@ void Window::onResize(const uvec2& size, const uvec2& safeSize, float pixelScale
     } else {
         res = {size.x*pixelScale, size.y*pixelScale};
     }
+    //if the size and resolution are equal, just stop (nothing changed)
+    if (res.x == getWindow()->getResolution().x && res.y == getWindow()->getResolution().y && size.x == getWindow()->getSize().x && size.y == getWindow()->getSize().y)
+    {return;}
     //notify the graphic window of the resize
     if (getWindow()->getGraphicWindow().get())
     {getWindow()->getGraphicWindow()->onResolutionChange(size, safeSize, uvec2(res.x, res.y));}

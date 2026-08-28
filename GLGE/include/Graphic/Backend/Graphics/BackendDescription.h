@@ -44,6 +44,7 @@
 #include "Renderer.h"
 #include "MeshManager.h"
 #include "GeometryPool.h"
+#include "CommandExecutor.h"
 
 //define some pointers to frontend classes
 namespace GLGE::Graphic {
@@ -103,6 +104,14 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @return `Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>` a reference to the new command buffer
          */
         virtual Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> createCommandBuffer([[maybe_unused]] GLGE::Graphic::Instance* instance) = 0;
+
+        /**
+         * @brief Create a Command Executor
+         * 
+         * @param window a pointer to the window to execute on
+         * @return `Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>` a reference to a new command executor
+         */
+        virtual Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> createCommandExecutor([[maybe_unused]] GLGE::Graphic::Window* window) = 0;
 
         /**
          * @brief Create a Sampler

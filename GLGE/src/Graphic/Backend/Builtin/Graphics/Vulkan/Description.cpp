@@ -39,6 +39,8 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.h"
 //add geometry streams
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
+//add command executor
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandExecutor.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"
@@ -72,6 +74,9 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Instance> Vulkan::createInstanc
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window> Vulkan::createWindow(GLGE::Graphic::Window* window)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window>(new GLGE::Graphic::Backend::Graphic::Vulkan::Window(window), false);}
+
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> Vulkan::createCommandExecutor([[maybe_unused]]GLGE::Graphic::Window* window)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor(window), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCommandBuffer([[maybe_unused]]GLGE::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer(instance), false);}

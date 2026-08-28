@@ -26,6 +26,8 @@
 #include "CommandStream.h"
 //add default commands
 #include "CommandDefaults.h"
+//add command executor
+#include "CommandExecutor.h"
 
 //add CPU images
 #include "ImageCPU.h"
