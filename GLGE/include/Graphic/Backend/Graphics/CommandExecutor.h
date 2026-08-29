@@ -14,6 +14,8 @@
 
 //add refcounting
 #include "Core/Reference.h"
+//add graphic instances
+#include "Instance.h"
 
 //forward declarations
 namespace GLGE::Graphic {
@@ -34,9 +36,10 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief Construct a new Command Executor
          * 
          * @param win a pointer to the window to work on, nullptr is valid
+         * @param instance a pointer to the instance the command executor will belong to
          */
-        CommandExecutor(GLGE::Graphic::Window* win)
-         : m_window(win)
+        CommandExecutor(GLGE::Graphic::Window* win, GLGE::Graphic::Backend::Graphic::Instance* instance)
+         : m_window(win), m_inst(instance)
         {}
 
         /**
@@ -68,6 +71,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * This may be a nullptr
          */
         GLGE::Graphic::Window* m_window = nullptr;
+
+        /**
+         * @brief store a pointer to the backend instance the executor belongs to
+         */
+        GLGE::Graphic::Backend::Graphic::Instance* m_inst = nullptr;
 
     };
 

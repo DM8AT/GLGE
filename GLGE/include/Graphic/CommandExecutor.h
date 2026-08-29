@@ -42,7 +42,7 @@ namespace GLGE::Graphic {
          * @param window a pointer to the window to execute the commands on
          */
         CommandExecutor(Window* window)
-         : BaseClass(), m_executor(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createCommandExecutor(window))
+         : BaseClass(), m_executor(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createCommandExecutor(window, getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
         {}
 
         /**

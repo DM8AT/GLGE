@@ -82,8 +82,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window> OpenGL::createWindow(GL
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> OpenGL::createCommandBuffer([[maybe_unused]]GLGE::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::OpenGL::CommandBuffer(instance), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> OpenGL::createCommandExecutor([[maybe_unused]]GLGE::Graphic::Window* window)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>(new GLGE::Graphic::Backend::Graphic::OpenGL::CommandExecutor(window), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> OpenGL::createCommandExecutor([[maybe_unused]]GLGE::Graphic::Window* window, GLGE::Graphic::Backend::Graphic::Instance* instance)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>(new GLGE::Graphic::Backend::Graphic::OpenGL::CommandExecutor(window, instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler> OpenGL::createSampler([[maybe_unused]] const GLGE::Graphic::SamplerCPU& sampler, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Sampler>(new GLGE::Graphic::Backend::Graphic::OpenGL::Sampler(sampler, instance), false);}

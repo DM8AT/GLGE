@@ -75,8 +75,8 @@ GLGE::Reference<GLGE::Graphic::Backend::Graphic::Instance> Vulkan::createInstanc
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window> Vulkan::createWindow(GLGE::Graphic::Window* window)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::Window>(new GLGE::Graphic::Backend::Graphic::Vulkan::Window(window), false);}
 
-GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> Vulkan::createCommandExecutor([[maybe_unused]]GLGE::Graphic::Window* window)
-{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor(window), false);}
+GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> Vulkan::createCommandExecutor([[maybe_unused]]GLGE::Graphic::Window* window, GLGE::Graphic::Backend::Graphic::Instance* instance)
+{return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor(window, instance), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer> Vulkan::createCommandBuffer([[maybe_unused]]GLGE::Graphic::Instance* instance)
 {return GLGE::Reference<GLGE::Graphic::Backend::Graphic::CommandBuffer>(new GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer(instance), false);}

@@ -109,7 +109,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin() {
         //start the buffer
         VkCommandBufferBeginInfo beginInfo {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        beginInfo.flags = 0;
         beginInfo.pInheritanceInfo = &inheritance;
         if (vkBeginCommandBuffer(secondary, &beginInfo) != VK_SUCCESS) 
         {throw Exception("Failed to begin the secondary command buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin");}

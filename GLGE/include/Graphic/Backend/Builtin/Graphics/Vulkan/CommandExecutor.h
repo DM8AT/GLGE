@@ -23,13 +23,23 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
      */
     class CommandExecutor : public GLGE::Graphic::Backend::Graphic::CommandExecutor {
     public:
+    
+        /**
+         * @brief store the maximum amount of frames in flight
+         */
+        static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+        /**
+         * @brief store the maximum supported amount of frames in flight
+         */
+        static constexpr uint32_t MAX_SWAPCHAIN_IMAGES = 8;
 
         /**
          * @brief Construct a new Command Executor
          * 
          * @param win a pointer to the window to work on, nullptr is valid
+         * @param instance a pointer to the instance the command executor will belong to
          */
-        CommandExecutor(GLGE::Graphic::Window* win);
+        CommandExecutor(GLGE::Graphic::Window* win, GLGE::Graphic::Backend::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Command Executor
@@ -54,14 +64,35 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
     protected:
 
         /**
-         * @brief store the command buffer to operate on
+         * @brief store the command pool
          */
-        void* m_cmdBuff = nullptr;
+        void* m_cmdPool = nullptr;
         /**
-         * @brief store a fence to protect the buffer
+         * @brief store the primary command buffers to execute
          */
-        void* m_fence = nullptr;
-
+        void* m_cmdBuffs[MAX_FRAMES_IN_FLIGHT] = {nullptr};
+        /**
+         * @brief store a fence for each command buffer
+         */
+        void* m_fences[MAX_FRAMES_IN_FLIGHT] = {nullptr};
+        /**
+         * @brief for each fence store if it should be waited for
+         */
+        bool m_shouldWait[MAX_FRAMES_IN_FLIGHT] = {false};
+        
+        /**
+         * @brief for each command buffer store if the frame is in flight
+         */
+        void* m_imgAvailSems[MAX_FRAMES_IN_FLIGHT] = {nullptr};
+        /**
+         * @brief for each swapchain image store if the render is done
+         */
+        void* m_renderDoneSems[MAX_SWAPCHAIN_IMAGES] = {nullptr};
+        
+        /**
+         * @brief store the current command buffer to use
+         */
+        uint32_t m_currentFrame = 0;
     };
 
 }

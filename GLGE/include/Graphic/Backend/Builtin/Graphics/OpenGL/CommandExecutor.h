@@ -28,9 +28,10 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          * @brief Construct a new Command Executor
          * 
          * @param win a pointer to the window to work on, nullptr is valid
+         * @param instance a pointer to the instance the command executor will belong to
          */
-        CommandExecutor(GLGE::Graphic::Window* win)
-         : Backend::Graphic::CommandExecutor(win)
+        CommandExecutor(GLGE::Graphic::Window* win, GLGE::Graphic::Backend::Graphic::Instance* instance)
+         : Backend::Graphic::CommandExecutor(win, instance)
         {}
 
         /**

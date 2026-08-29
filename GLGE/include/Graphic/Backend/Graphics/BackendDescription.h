@@ -109,9 +109,10 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @brief Create a Command Executor
          * 
          * @param window a pointer to the window to execute on
+         * @param instance a pointer to the instance the command executor will belong to
          * @return `Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor>` a reference to a new command executor
          */
-        virtual Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> createCommandExecutor([[maybe_unused]] GLGE::Graphic::Window* window) = 0;
+        virtual Reference<GLGE::Graphic::Backend::Graphic::CommandExecutor> createCommandExecutor([[maybe_unused]] GLGE::Graphic::Window* window, [[maybe_unused]] GLGE::Graphic::Backend::Graphic::Instance* instance) = 0;
 
         /**
          * @brief Create a Sampler
