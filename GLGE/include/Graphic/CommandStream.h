@@ -30,6 +30,9 @@
 #include "Instance.h"
 #include "Core/BaseClass.h"
 
+//add threading
+#include <thread>
+
 //use the library namespace
 namespace GLGE::Graphic {
 
@@ -233,22 +236,52 @@ namespace GLGE::Graphic {
          * @brief compile all dirty elements
          */
         void compile() {
-            for (auto& el : m_entries) {
-                if (el.cmd->isDirty() && el.allowRebuild) {
-                    //get the command invoker
-                    const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
-                    //if it is nullptr, skip, retry later
-                    if (cmd == nullptr) {continue;}
-                    //if a recording func exists, record
-                    if (el.cmdBuff->isRecorded()) {el.cmdBuff->clear();}
-                    el.cmdBuff->onBegin();
-                    cmd->func(*el.cmdBuff, el.cmd->getHandle());
-                    el.cmdBuff->finalize();
+            //compute some constants
+            const std::size_t count = m_entries.size();
+            const std::size_t workers = std::min<size_t>(std::thread::hardware_concurrency(), count);
+            const std::size_t chunkSize = (count + workers - 1) / workers;
 
-                    //cmd is no longer dirty
-                    el.cmd->m_dirty = false;
-                }
+            //store all jobs that are to do
+            std::vector<std::thread> jobs;
+            jobs.reserve(workers);
+
+            //iterate over all workers
+            for (std::size_t i = 0; i < workers; ++i) {
+                //get a roughly equal-sized section of the buffer
+                const std::size_t begin = i * chunkSize;
+                const std::size_t end = std::min(begin + chunkSize, count);
+
+                //stop on null section
+                if (begin >= end) {break;}
+
+                //add a job
+                jobs.emplace_back([this, begin, end]() {
+                    for (std::size_t j = begin; j < end; ++j) {
+                        auto& el = m_entries[j];
+
+                        //stop if cannot compute
+                        if (!el.cmd->isDirty() || !el.allowRebuild) {continue;}
+
+                        //get the actual command
+                        const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
+                        //skip on nullptr
+                        if (cmd == nullptr) {continue;}
+
+                        //else, record
+                        if (el.cmdBuff->isRecorded()) {el.cmdBuff->clear();}
+                        el.cmdBuff->onBegin();
+                        cmd->func(*el.cmdBuff, el.cmd->getHandle());
+                        el.cmdBuff->finalize();
+
+                        //now it's clean
+                        el.cmd->m_dirty = false;
+                    }
+                });
             }
+
+            //
+            for (auto& job : jobs) 
+            {job.join();}
         }
 
         /**
