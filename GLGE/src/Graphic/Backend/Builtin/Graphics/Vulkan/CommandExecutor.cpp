@@ -136,13 +136,16 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::dispatch(GLGE::Gr
     }
 
     //then add all secondaries
+    std::vector<VkCommandBuffer> buffers;
+    buffers.reserve(stream->getEntries().size());
     for (const auto& cmd : stream->getEntries()) {
         if (!cmd.cmd->isDirty() && cmd.enabled) {
             auto* b = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(cmd.cmdBuff.get());
             VkCommandBuffer sec = reinterpret_cast<VkCommandBuffer>(b->getBuffer((b->getBufferCount() == 1) ? 0 : buff));
-            vkCmdExecuteCommands(cbuff, 1, &sec);
+            buffers.push_back(sec);
         }
     }
+    vkCmdExecuteCommands(cbuff, buffers.size(), buffers.data());
 
     //if a window exists, transition it back for presentation
     if (m_window) {
