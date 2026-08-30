@@ -25,14 +25,19 @@
 
 //add the texture backend
 #include "Backend/Graphics/Texture.h"
+//add commands
+#include "Command.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
 
+    //forward declaration
+    class SampledTexture;
+
     /**
      * @brief a class to wrap a texture in a safe container
      */
-    class Texture : public BaseClass {
+    class Texture : public BaseClass, CommandInvalidator {
     public:
 
         /**
@@ -65,6 +70,20 @@ namespace GLGE::Graphic {
          */
         inline Reference<GLGE::Graphic::Backend::Graphic::Texture> getBackend() const noexcept
         {return m_texture;}
+
+        /**
+         * @brief register a sampled texture for this texture
+         * 
+         * @param st a pointer to the sampler texture pair
+         */
+        void registerSampler(SampledTexture* st);
+
+        /**
+         * @brief remove a sampler texture pair
+         * 
+         * @param st a pointer to the pair to remove
+         */
+        void removeSampler(SampledTexture* st);
 
     protected:
 

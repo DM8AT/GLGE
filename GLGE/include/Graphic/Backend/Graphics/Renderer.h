@@ -25,6 +25,8 @@
 #include "CommandBuffer.h"
 //add buffers
 #include "Buffer.h"
+//add commands
+#include "Graphic/Command.h"
 
 //graphic frontend classes can only exist as forward declarations
 namespace GLGE::Graphic {class Buffer; class Mesh; class Material;}
@@ -35,7 +37,7 @@ namespace GLGE::Graphic::Backend::Graphic {
     /**
      * @brief the abstract backend renderer interface
      */
-    class Renderer : public Referable {
+    class Renderer : public Referable, public CommandInvalidator {
     public:
 
         /**
@@ -222,6 +224,14 @@ namespace GLGE::Graphic::Backend::Graphic {
              */
             float intensity;
         };
+
+        /**
+         * @brief register a frontent
+         * 
+         * @param frontent a reference to the invalidator frontent
+         */
+        void registerFrontend(CommandInvalidator& frontent)
+        {attachInvalidator(frontent);}
 
     protected:
 

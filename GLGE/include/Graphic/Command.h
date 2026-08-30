@@ -165,7 +165,7 @@ namespace GLGE::Graphic {
         /**
          * @brief Whether this command needs to be rebuilt/re-recorded
          */
-        bool m_dirty = false;
+        bool m_dirty = true;
 
     };
 

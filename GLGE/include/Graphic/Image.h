@@ -27,6 +27,9 @@
 //use the library namespace
 namespace GLGE::Graphic {
 
+    //forward declaration
+    class SampledTexture;
+
     /**
      * @brief An image stores a 2D grid of pixels on the GPU
      */
@@ -78,7 +81,7 @@ namespace GLGE::Graphic {
          * @param size the requested size for the image
          */
         void resizeAndClear(const uvec2& size)
-        {m_image->resizeAndClear(size);}
+        {m_image->resizeAndClear(size); invalidate();}
 
         /**
          * @brief a function to read the image back to the CPU
@@ -169,6 +172,20 @@ namespace GLGE::Graphic {
             //others are valid
             return nullptr;
         }
+
+        /**
+         * @brief register a sampled texture for this texture
+         * 
+         * @param st a pointer to the sampler texture pair
+         */
+        void registerSampler(SampledTexture* st);
+
+        /**
+         * @brief remove a sampler texture pair
+         * 
+         * @param st a pointer to the pair to remove
+         */
+        void removeSampler(SampledTexture* st);
 
     protected:
 

@@ -20,6 +20,7 @@
 #include "ColorInfo.h"
 #include "Framebuffer.h"
 #include "RenderTarget.h"
+#include "Shader.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -64,8 +65,8 @@ namespace GLGE::Graphic {
              * @param depth the depth to clear it with, default is 1
              * @param stencil the stencil value to clear to, default is 0
              */
-            Clear(Window* win, const vec4& col, float depth = 1.f, u32 stencil = 0)
-             : Command(*win, col, depth, stencil), m_storage(win), m_sType(StorageType::WINDOW), m_targetIdx(0), m_color(col), m_depth(depth), m_stencil(stencil)
+            Clear(Window& win, const vec4& col, float depth = 1.f, u32 stencil = 0)
+             : Command(win, col, depth, stencil), m_storage(&win), m_sType(StorageType::WINDOW), m_targetIdx(0), m_color(col), m_depth(depth), m_stencil(stencil)
             {markDirty();}
 
             /**
@@ -264,12 +265,10 @@ namespace GLGE::Graphic {
              *
              * @param from The source window
              * @param to The destination window
-             * @param copyDepth Whether to copy the depth buffer
-             * @param copyStencil Whether to copy the stencil buffer
              */
-            Copy(Window* from, Window* to, bool copyDepth = false, bool copyStencil = false)
-             : Command(*from, *to), 
-               m_from(from), m_fromType(StorageType::WINDOW), m_to(to), m_toType(StorageType::WINDOW), m_fromIdx(0), m_toIdx(0), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+            Copy(Window& from, Window& to)
+             : Command(from, to), 
+               m_from(&from), m_fromType(StorageType::WINDOW), m_to(&to), m_toType(StorageType::WINDOW), m_fromIdx(0), m_toIdx(0)
             {markDirty();}
 
             /**
@@ -280,12 +279,10 @@ namespace GLGE::Graphic {
              * @param from The source framebuffer
              * @param to The destination window
              * @param fromIdx The source color attachment
-             * @param copyDepth Whether to copy the depth buffer
-             * @param copyStencil Whether to copy the stencil buffer
              */
-            Copy(Framebuffer& from, Window* to, u8 fromIdx = 0, bool copyDepth = false, bool copyStencil = false)
-             : Command(from, *to), 
-               m_from(from), m_fromType(StorageType::FRAMEBUFFER), m_to(to), m_toType(StorageType::WINDOW), m_fromIdx(fromIdx), m_toIdx(0), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+            Copy(Framebuffer& from, Window& to, u8 fromIdx = 0)
+             : Command(from, to), 
+               m_from(from), m_fromType(StorageType::FRAMEBUFFER), m_to(&to), m_toType(StorageType::WINDOW), m_fromIdx(fromIdx), m_toIdx(0)
             {markDirty();}
 
             /**
@@ -296,12 +293,10 @@ namespace GLGE::Graphic {
              * @param from The source window
              * @param to The destination framebuffer
              * @param toIdx The destination color attachment
-             * @param copyDepth Whether to copy the depth buffer
-             * @param copyStencil Whether to copy the stencil buffer
              */
-            Copy(Window* from, Framebuffer& to, u8 toIdx = 0, bool copyDepth = false, bool copyStencil = false)
-             : Command(*from, to), 
-               m_from(from), m_fromType(StorageType::WINDOW), m_to(to), m_toType(StorageType::FRAMEBUFFER), m_fromIdx(0), m_toIdx(toIdx), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+            Copy(Window& from, Framebuffer& to, u8 toIdx = 0)
+             : Command(from, to), 
+               m_from(&from), m_fromType(StorageType::WINDOW), m_to(to), m_toType(StorageType::FRAMEBUFFER), m_fromIdx(0), m_toIdx(toIdx)
             {markDirty();}
 
             /**
@@ -313,12 +308,10 @@ namespace GLGE::Graphic {
              * @param to The destination framebuffer
              * @param fromIdx The source color attachment
              * @param toIdx The destination color attachment
-             * @param copyDepth Whether to copy the depth buffer
-             * @param copyStencil Whether to copy the stencil buffer
              */
-            Copy(Framebuffer& from, u8 fromIdx, Framebuffer& to, u8 toIdx, bool copyDepth = false, bool copyStencil = false)
+            Copy(Framebuffer& from, u8 fromIdx, Framebuffer& to, u8 toIdx)
              : Command(from, to), 
-               m_from(from), m_fromType(StorageType::FRAMEBUFFER), m_to(to), m_toType(StorageType::FRAMEBUFFER), m_fromIdx(fromIdx), m_toIdx(toIdx), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+               m_from(from), m_fromType(StorageType::FRAMEBUFFER), m_to(to), m_toType(StorageType::FRAMEBUFFER), m_fromIdx(fromIdx), m_toIdx(toIdx)
             {markDirty();}
 
             /**
@@ -399,42 +392,6 @@ namespace GLGE::Graphic {
             {return m_toIdx;}
 
             /**
-             * @brief Set whether depth should be copied
-             *
-             * @param copyDepth Whether to copy the depth buffer
-             */
-            inline void setCopyDepth(bool copyDepth) noexcept {
-                m_copyDepth = copyDepth;
-                markDirty();
-            }
-
-            /**
-             * @brief Get whether depth should be copied
-             *
-             * @return `bool` Whether the depth buffer is copied
-             */
-            [[nodiscard]] inline bool getCopyDepth() const noexcept
-            {return m_copyDepth;}
-
-            /**
-             * @brief Set whether stencil should be copied
-             *
-             * @param copyStencil Whether to copy the stencil buffer
-             */
-            inline void setCopyStencil(bool copyStencil) noexcept {
-                m_copyStencil = copyStencil;
-                markDirty();
-            }
-
-            /**
-             * @brief Get whether stencil should be copied
-             *
-             * @return `bool` Whether the stencil buffer is copied
-             */
-            [[nodiscard]] inline bool getCopyStencil() const noexcept
-            {return m_copyStencil;}
-
-            /**
              * @brief Get the command type
              *
              * @return `Backend::Graphic::CommandType`
@@ -453,7 +410,7 @@ namespace GLGE::Graphic {
                 //Create owning render targets from the stored frontend objects
                 RenderTarget fromTarget = (m_fromType == StorageType::WINDOW) ? RenderTarget(std::get<Window*>(m_from)) : RenderTarget(&std::get<Framebuffer>(m_from));
                 RenderTarget toTarget = (m_toType == StorageType::WINDOW) ? RenderTarget(std::get<Window*>(m_to)) : RenderTarget(&std::get<Framebuffer>(m_to));
-                return Backend::Graphic::CommandHandle::create<RenderTarget, u8, RenderTarget, u8, bool, bool>(std::move(fromTarget), m_fromIdx, std::move(toTarget), m_toIdx, m_copyDepth, m_copyStencil);
+                return Backend::Graphic::CommandHandle::create<RenderTarget, u8, RenderTarget, u8>(std::move(fromTarget), m_fromIdx, std::move(toTarget), m_toIdx);
             }
 
         protected:
@@ -483,14 +440,98 @@ namespace GLGE::Graphic {
              * @brief Define the index to copy to
              */
             u8 m_toIdx = 0;
+
+        };
+
+        /**
+         * @brief define a command to dispatch a compute shader
+         */
+        class DispatchCompute : public GLGE::Graphic::Command {
+        public:
+
             /**
-             * @brief Define whether to copy the depth buffer
+             * @brief Construct a new Dispatch Compute
+             * 
+             * @warning The shader must remain valid for the lifetime of the command
+             * 
+             * @param shader a reference to the shader to use
+             * @param extent the extent of the compute shader to use
              */
-            bool m_copyDepth = false;
+            DispatchCompute(Shader& shader, const uvec3& extent)
+             : Command(shader), m_extent(extent), m_shader(&shader)
+            {
+                #if !GLGE_DEBUG
+                if (!m_shader->isValidComputeShader())
+                {throw GLGE::Exception("Cannot use non-compute shader for dispatch compute", "GLGE::Graphic::Cmd::DispatchCompute::DispatchCompute");}
+                #endif
+            }
+
             /**
-             * @brief Define whether to copy the stencil buffer
+             * @brief Destroy the Dispatch Compute
              */
-            bool m_copyStencil = false;
+            virtual ~DispatchCompute() {}
+
+            /**
+             * @brief Get the Shader that the command uses
+             * 
+             * @return `Shader*` a pointer to the shader
+             */
+            inline Shader* getShader() const noexcept
+            {return m_shader;}
+
+            /**
+             * @brief Set the Extent
+             * 
+             * @param extent the new extent
+             */
+            inline void setExtent(const uvec3& extent) noexcept {
+                //update only if not matching
+                if ((extent.x != m_extent.x) || (extent.y != m_extent.y) || (extent.z != m_extent.z)) {
+                    m_extent = extent;
+                    onInvalidate();
+                }
+            }
+
+            /**
+             * @brief Get the Extent
+             * 
+             * @return `const uvec3&` the extent of the dispatch command
+             */
+            inline const uvec3& getExtent() const noexcept
+            {return m_extent;}
+
+            /**
+             * @brief Get the command type
+             *
+             * @return `Backend::Graphic::CommandType`
+             */
+            [[nodiscard]]virtual Backend::Graphic::CommandType getType() const noexcept override
+            {return Backend::Graphic::COMMAND_DISPATCH_COMPUTE;}
+
+            /**
+             * @brief Get a handle containing the copied command arguments
+             *
+             * Handles are owning, ensuring that all data remains valid while the command is being recorded
+             *
+             * @return `Backend::Graphic::CommandHandle`
+             */
+            [[nodiscard]] virtual Backend::Graphic::CommandHandle getHandle() noexcept {
+                //Create owning render targets from the stored frontend objects
+                return Backend::Graphic::CommandHandle::create<GLGE::Graphic::Shader*, GLGE::uvec3>(m_shader, m_extent);
+            }
+
+        protected:
+
+            /**
+             * @brief store a pointer to the shader to dispatch
+             */
+            Shader* m_shader = nullptr;
+
+            /**
+             * @brief define the extent of the shader to run
+             */
+            uvec3 m_extent;
+
         };
 
     }

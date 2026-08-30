@@ -86,10 +86,10 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src/Testing/UnitTestSystem/Test)
 # add the default example
 if(EXAMPLE_PLUGIN_BUILD_DEFAULT)
     # Default
-    # add_example_plugin(ExamplePlugin_DefaultExample DefaultExample
-    #     src/Examples/Plugins/DefaultExample.cpp
-    # )
-    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
+    add_example_plugin(ExamplePlugin_DefaultExample DefaultExample
+        src/Examples/Plugins/DefaultExample.cpp
+    )
+    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
     # Windows
     add_example_plugin(ExamplePlugin_WindowExample WindowExample
         src/Examples/Plugins/WindowExample.cpp

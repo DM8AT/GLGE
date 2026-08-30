@@ -109,7 +109,7 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Gr
 
 bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     //extract the actual arguments
-    const auto& [from, from_idx, to, to_idx, copyDepth, copyStencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>();
+    const auto& [from, from_idx, to, to_idx] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8>();
     
     //if the target is a window, update the command buffer size
     if (from.getType() == GLGE::Graphic::RenderTarget::WINDOW || to.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
@@ -169,11 +169,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Gra
             ImgInfo() = default;
         };
         ImgInfo fromInfo(from, from_idx, i, false);
-        ImgInfo fromDepth;
-        if (copyDepth || copyStencil) {fromDepth = ImgInfo(from, from_idx, i, true);}
         ImgInfo toInfo(to, to_idx, i, false);
-        ImgInfo toDepth;
-        if (copyDepth || copyStencil) {toDepth = ImgInfo(to, to_idx, i, true);}
 
         //sanity checks for debug
         #if GLGE_DEBUG
@@ -207,22 +203,6 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Gra
             vkCmdResolveImage(cb, fromInfo.image, fromInfo.layout, fromInfo.resImage, VK_IMAGE_LAYOUT_GENERAL, 1, &resolve);
             //replace the copy image with the resolved image
             fromInfo.image = fromInfo.resImage;
-
-            //run the depth pass
-            if (fromDepth.pass != VK_NULL_HANDLE) {
-                //start the render pass
-                VkRenderPassBeginInfo rpBegin{};
-                rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-                rpBegin.renderPass = fromDepth.pass;
-                rpBegin.framebuffer = fromDepth.fbuff;
-                rpBegin.renderArea.offset = {0, 0};
-                rpBegin.renderArea.extent = {fromDepth.size.x, fromDepth.size.y};
-                vkCmdBeginRenderPass(cb, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
-                //directly end it
-                vkCmdEndRenderPass(cb);
-                //now, use the resolved img
-                fromDepth.image = fromDepth.resImage;
-            }
         }
 
         //use blit to copy from one image to another
@@ -248,42 +228,15 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Gra
         reg.dstSubresource.mipLevel = 0;
         reg.dstSubresource.layerCount = 1;
         vkCmdBlitImage(cb, fromInfo.image, fromInfo.layout, toInfo.image, toInfo.layout, 1, &reg, VK_FILTER_NEAREST);
-
-        //if depth data exists, do the same for the depth
-        if (fromDepth.image != VK_NULL_HANDLE && toDepth.image != VK_NULL_HANDLE) {
-            VkImageBlit reg {};
-            reg.srcOffsets[0].x = 0;
-            reg.srcOffsets[1].x = fromDepth.size.x;
-            reg.srcOffsets[0].y = 0;
-            reg.srcOffsets[1].y = fromDepth.size.y;
-            reg.srcOffsets[0].z = 0;
-            reg.srcOffsets[1].z = 1;
-            reg.srcSubresource.aspectMask = fromDepth.aspects;
-            reg.srcSubresource.baseArrayLayer = 0;
-            reg.srcSubresource.mipLevel = 0;
-            reg.srcSubresource.layerCount = 1;
-            reg.dstOffsets[0].x = 0;
-            reg.dstOffsets[1].x = toDepth.size.x;
-            reg.dstOffsets[0].y = 0;
-            reg.dstOffsets[1].y = toDepth.size.y;
-            reg.dstOffsets[0].z = 0;
-            reg.dstOffsets[1].z = 1;
-            reg.dstSubresource.aspectMask = toDepth.aspects;
-            reg.dstSubresource.baseArrayLayer = 0;
-            reg.dstSubresource.mipLevel = 0;
-            reg.dstSubresource.layerCount = 1;
-            vkCmdBlitImage(cb, fromDepth.image, fromDepth.layout, toDepth.image, toDepth.layout, 1, &reg, VK_FILTER_NEAREST);
-        }
     }
 
     //success
     return true;
 }
 
-bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    #if 0
-    //get the command buffers
-    const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    //get the command buffer
+    VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBuffer(0));
 
     //extract the actual arguments
     const auto& [compute, size] = handle.getArguments<GLGE::Graphic::Shader*, GLGE::uvec3>();
@@ -294,52 +247,44 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
     VkPipelineLayout layout = reinterpret_cast<VkPipelineLayout>(computeShader->getComputePipelineLayout());
     VkDescriptorSet set = reinterpret_cast<VkDescriptorSet>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(compute->getResources(0)->getBackend().get())->getDescriptorSet());
 
-    //iterate over all command buffers for recording
-    for (const auto& buff : buffs) {
-        //get the actual command buffer
-        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(buff);
+    //prepare the dispatch
+    VkMemoryBarrier barrierInit {};
+    barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+    barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
 
-        //prepare the dispatch
-        VkMemoryBarrier barrierInit {};
-        barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
+    //bind the compute pipeline
+    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, pipe);
 
-        //bind the compute pipeline
-        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, pipe);
-
-        //prepare resources
-        for (const auto& resource : compute->getResources(0)->resources()) {
-            //depending on the type do different stuff
-            switch (resource->getType())
-            {
-            case GLGE::Graphic::ResourceType::IMAGE: {
-                    //nothing to do for images - images are always stored in general layout
-                }
-                break;
-            
-            default:
-                break;
+    //prepare resources
+    for (const auto& resource : compute->getResources(0)->resources()) {
+        //depending on the type do different stuff
+        switch (resource->getType())
+        {
+        case GLGE::Graphic::ResourceType::IMAGE: {
+                //nothing to do for images - images are always stored in general layout
             }
+            break;
+        
+        default:
+            break;
         }
-
-        //bind the descriptor set
-        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0, 1, &set, 0, nullptr);
-
-        //dispatch the compute shader
-        vkCmdDispatch(cb, size.x, size.y, size.z);
-
-        //prepare the dispatch
-        VkMemoryBarrier barrierFinalize {};
-        barrierFinalize.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        barrierFinalize.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        barrierFinalize.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrierFinalize, 0, nullptr, 0, nullptr);
-
     }
 
-    #endif
+    //bind the descriptor set
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0, 1, &set, 0, nullptr);
+
+    //dispatch the compute shader
+    vkCmdDispatch(cb, size.x, size.y, size.z);
+
+    //prepare the dispatch
+    VkMemoryBarrier barrierFinalize {};
+    barrierFinalize.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+    barrierFinalize.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    barrierFinalize.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrierFinalize, 0, nullptr, 0, nullptr);
+
     //success
     return true;
 }

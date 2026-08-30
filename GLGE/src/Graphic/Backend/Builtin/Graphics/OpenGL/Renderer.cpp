@@ -102,7 +102,6 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::~Renderer() {
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cmdBuff) {
-    #if 0
     //store all objects sorted by the materials
     std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<MeshHandle, Object>>> objs;
     size_t total = 0;
@@ -201,7 +200,6 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
         //advance the pointer
         ptr += meshes.size();
     }
-    #endif
 
     //gather up all the light sources
     m_pointLights.clear();

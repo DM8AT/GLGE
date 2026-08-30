@@ -89,8 +89,8 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy");
 
     //store a helper function that is called when the copy is invoked
-    static void (*helper_f_to_w)(GLGE::Graphic::Backend::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8, bool, bool) = 
-        [](GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff, GLGE::Graphic::Window* win, GLGE::u8 idx, bool copyDepth, bool copyStencil) {
+    static void (*helper_f_to_w)(GLGE::Graphic::Backend::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8) = 
+        [](GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff, GLGE::Graphic::Window* win, GLGE::u8 idx) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy");
             //then, copy the actual data
             {
@@ -103,11 +103,11 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                 glDrawBuffer(GL_BACK);
                 glBlitFramebuffer(0, 0, fbuff->getColorAttachment(0)->getSize().x, fbuff->getColorAttachment(0)->getSize().y, 
                                   0, 0, win->getResolution().x, win->getResolution().y, 
-                                  GL_COLOR_BUFFER_BIT | (copyDepth ? GL_DEPTH_BUFFER_BIT : 0) | (copyStencil ? GL_STENCIL_BUFFER_BIT : 0), GL_NEAREST);
+                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
             }
         };
-    static void (*helper_f_to_f)(GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*, GLGE::u8, GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*, GLGE::u8, bool, bool) = 
-        [](GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer* from, GLGE::u8 from_idx, GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer* to, GLGE::u8 to_idx, bool copyDepth, bool copyStencil) {
+    static void (*helper_f_to_f)(GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*, GLGE::u8, GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*, GLGE::u8) = 
+        [](GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer* from, GLGE::u8 from_idx, GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer* to, GLGE::u8 to_idx) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy");
             GLGE::u32 f = from->getHandle();
             GLGE::u32 t = to->getHandle();
@@ -118,10 +118,10 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             glBlitNamedFramebuffer(f, t, 
                                     0, 0, from->getColorAttachment(0)->getSize().x, from->getColorAttachment(0)->getSize().y, 
                                     0, 0, to->getColorAttachment(0)->getSize().x, to->getColorAttachment(0)->getSize().y, 
-                                    GL_COLOR_BUFFER_BIT | (copyDepth ? GL_DEPTH_BUFFER_BIT : 0) | (copyStencil ? GL_STENCIL_BUFFER_BIT : 0), GL_NEAREST);
+                                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
         };
-    static void (*helper_w_to_f)(GLGE::Graphic::Backend::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8, bool, bool) = 
-        [](GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff, GLGE::Graphic::Window* win, GLGE::u8 idx, bool copyDepth, bool copyStencil) {
+    static void (*helper_w_to_f)(GLGE::Graphic::Backend::Graphic::Framebuffer*, GLGE::Graphic::Window*, GLGE::u8) = 
+        [](GLGE::Graphic::Backend::Graphic::Framebuffer* fbuff, GLGE::Graphic::Window* win, GLGE::u8 idx) {
             GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy::copy");
             //then, copy the actual data
             {
@@ -134,25 +134,24 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
                 glDrawBuffer(GL_COLOR_ATTACHMENT0 + idx);
                 glBlitFramebuffer(0, 0, win->getResolution().x, win->getResolution().y, 
                                   0, 0, fbuff->getColorAttachment(0)->getSize().x, fbuff->getColorAttachment(0)->getSize().y, 
-                                  GL_COLOR_BUFFER_BIT | (copyDepth ? GL_DEPTH_BUFFER_BIT : 0) | (copyStencil ? GL_STENCIL_BUFFER_BIT : 0), GL_NEAREST);
+                                  GL_COLOR_BUFFER_BIT, GL_NEAREST);
             }
         };
     //extract the actual arguments
-    const auto& [from, from_idx, to, to_idx, copyDepth, copyStencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>();
+    const auto& [from, from_idx, to, to_idx] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8>();
     
     //use the correct copy implementation
     if ((from.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) && (to.getType() == GLGE::Graphic::RenderTarget::WINDOW)) {
         cmdBuff.addCommand(helper_f_to_w, reinterpret_cast<GLGE::Graphic::Backend::Graphic::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(from.getTarget())->getBackend().get()),
-                           reinterpret_cast<GLGE::Graphic::Window*>(to.getTarget()), GLGE::u8(from_idx), copyDepth, copyStencil);
+                           reinterpret_cast<GLGE::Graphic::Window*>(to.getTarget()), GLGE::u8(from_idx));
     } else if ((from.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) && (to.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER)) {
         cmdBuff.addCommand(helper_f_to_f, 
                            reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(from.getTarget())->getBackend().get()), GLGE::u8(from_idx),
-                           reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(to.getTarget())->getBackend().get()),   GLGE::u8(to_idx), 
-                           copyDepth, copyStencil);
+                           reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(to.getTarget())->getBackend().get()),   GLGE::u8(to_idx));
 
     } else if ((from.getType() == GLGE::Graphic::RenderTarget::WINDOW) && (to.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER)) {
         cmdBuff.addCommand(helper_w_to_f, reinterpret_cast<GLGE::Graphic::Backend::Graphic::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(to.getTarget())->getBackend().get()),
-                           reinterpret_cast<GLGE::Graphic::Window*>(from.getTarget()), GLGE::u8(to_idx), copyDepth, copyStencil);
+                           reinterpret_cast<GLGE::Graphic::Window*>(from.getTarget()), GLGE::u8(to_idx));
     } else {
         //invalid combination
         throw GLGE::Exception("Failed to build command buffer: Invalid target combination for copy", "GLGE::Graphic::Backend::Graphic::OpenGL::Translators::copy");

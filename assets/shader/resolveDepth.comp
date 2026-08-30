@@ -1,0 +1,25 @@
+#version 460 core
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+layout(binding = 0) uniform sampler2DMS sourceDepth;
+layout(binding = 1, r32f) uniform writeonly image2D destinationDepth;
+
+void main() {
+    ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+
+    ivec2 size = imageSize(destinationDepth);
+
+    //sanity range check
+    if (pixel.x >= size.x || pixel.y >= size.y)
+    {return;}
+
+    int samples = textureSamples(sourceDepth);
+    float depth = 0.0;
+
+    for (int s = 0; s < samples; ++s) {
+        depth = max(depth, texelFetch(sourceDepth, pixel, s).r);
+    }
+
+    imageStore(destinationDepth, pixel, vec4(depth));
+}

@@ -15,6 +15,8 @@ glslc culling.comp -o culling.comp.spv
 ret=$(($ret + $?))
 glslc simple.comp -o simple.comp.spv
 ret=$(($ret + $?))
+glslc resolveDepth.comp -o resolveDepth.comp.spv
+ret=$(($ret + $?))
 
 # return the sum of failures
 exit $ret

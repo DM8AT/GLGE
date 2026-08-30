@@ -474,6 +474,10 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/TextureCPU.cpp
         ${GLGE_SRC_DIR}/Graphic/Shader.cpp
         ${GLGE_SRC_DIR}/Graphic/Command.cpp
+        ${GLGE_SRC_DIR}/Graphic/Resource.cpp
+        ${GLGE_SRC_DIR}/Graphic/Image.cpp
+        ${GLGE_SRC_DIR}/Graphic/Texture.cpp
+        ${GLGE_SRC_DIR}/Graphic/Sampler.cpp
 
         # Assets
         ${GLGE_SRC_DIR}/Graphic/Assets/ImageCPUAsset.cpp

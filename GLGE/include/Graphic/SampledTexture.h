@@ -41,9 +41,9 @@ namespace GLGE::Graphic {
          * @param texture a reference to the texture to sample
          * @param sampler a reference to the sampler to use
          */
-        SampledTexture(const Texture& texture, const Sampler& sampler)
+        SampledTexture(Texture& texture, Sampler& sampler)
          : BaseClass(), Resource(), m_sampledTexture(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createSampledTexture(texture.getBackend(), sampler.getBackend()))
-        {}
+        {texture.registerSampler(this); sampler.registerSampler(this);}
 
         /**
          * @brief Construct a new Sampled Texture
@@ -51,9 +51,9 @@ namespace GLGE::Graphic {
          * @param image a reference to the image to sample
          * @param sampler a reference to the sampler to use
          */
-        SampledTexture(const Image& image, const Sampler& sampler)
+        SampledTexture(Image& image, Sampler& sampler)
          : BaseClass(), Resource(), m_sampledTexture(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createSampledTexture(image.getBackend(), sampler.getBackend()))
-        {}
+        {image.registerSampler(this); sampler.registerSampler(this);}
 
         /**
          * @brief Destroy the Sampled Texture

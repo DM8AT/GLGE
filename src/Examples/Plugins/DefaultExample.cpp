@@ -128,8 +128,8 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
     ));
 
     GLGE::Graphic::Image colBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT);
-    GLGE::Graphic::Image depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT);
-    GLGE::Graphic::Framebuffer fbuff({&colBuff}, {&depthBuff});
+    GLGE::Graphic::Image depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_R_32_FLOAT); //NOTE: Not an actual depth buffer
+    GLGE::Graphic::Framebuffer fbuff({&colBuff, &depthBuff});
 
     GLGE::Graphic::Image multiSample_colBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT, 16);
     GLGE::Graphic::Image multiSample_depthBuff(win.getResolution(), GLGE::Graphic::PIXEL_FORMAT_DEPTH_32_FLOAT, 16);
@@ -146,11 +146,6 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
     GLGE::Graphic::ResourceSet ldrSet(finalize.getSet(0), std::pair{"imgInput", &sampled}, std::pair{"imgOutput", &ldrOut}, std::pair{"params", &buff});
     finalize.setResources(0, &ldrSet);
 
-    GLGE::Graphic::RenderTarget window(&win);
-    GLGE::Graphic::RenderTarget LDR_Target(&ldrFbuff);
-    GLGE::Graphic::RenderTarget HDR_Target(&fbuff);
-    GLGE::Graphic::RenderTarget HDR_MultiSampleTarget(&multiSample_fbuff);
-
     GLGE::World world("Scene 1");
     GLGE::Object camera = world.create<GLGE::Graphic::Component::Camera, GLGE::Transform, FirstPersonController>(
         "Camera", 
@@ -158,7 +153,7 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
         GLGE::Transform{GLGE::vec3(-2,0,4), GLGE::Quaternion(GLGE::vec3(0,0,0)), GLGE::vec3(1,1,1)},
         FirstPersonController{0}
     );
-    GLGE::Graphic::Renderer renderer(world, &camera, HDR_MultiSampleTarget);
+    GLGE::Graphic::Renderer renderer(world, &camera, {&multiSample_fbuff});
 
     GLGE::Graphic::Shader cull({std::pair{"Compute", "assets/shader/culling.comp.spv"}});
     GLGE::Graphic::ResourceSet cullSet(cull.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()},
@@ -181,6 +176,13 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
         std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}
     );
     meshShader.setResources(0, &renderSet);
+
+    GLGE::Graphic::Shader resolveDepth {
+        std::pair{"Compute", "assets/shader/resolveDepth.comp.spv"}
+    };
+    GLGE::Graphic::SampledTexture sampledMultiDepth(multiSample_depthBuff, sampler);
+    GLGE::Graphic::ResourceSet resolveDepthSet(resolveDepth.getSet(0), std::pair{"sourceDepth", &sampledMultiDepth}, std::pair{"destinationDepth", &depthBuff});
+    resolveDepth.setResources(0, &resolveDepthSet);
 
     GLGE::Graphic::Material mat(meshShader, layout, multiSample_fbuff, GLGE::Graphic::Material::CullMode::BACK, GLGE::Graphic::Material::DepthMode::DEPTH_COMPARE_LESS, true);
 
@@ -252,18 +254,20 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
         }
     );
 
-    auto pipe = GLGE::Graphic::RenderPipeline::create(&win, 
-        std::pair{"Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, HDR_MultiSampleTarget, GLGE::u8(0), GLGE::vec4(GLGE::vec3(0.4f),1), GLGE::f32(1), GLGE::u32(0))},
-        std::pair{"Cull", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &cull, GLGE::uvec3(1))},
-        std::pair{"Draw", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DRAW_WORLD, &renderer)},
-        std::pair{"Flatten multi sample", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, HDR_MultiSampleTarget, GLGE::u8(0), HDR_Target, GLGE::u8(0), true, false)},
-        std::pair{"Compute", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &rt_comp, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
-        std::pair{"Finalize", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_DISPATCH_COMPUTE, &finalize, GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1))},
-        std::pair{"Copy", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_COPY, LDR_Target, GLGE::u8(0), window, GLGE::u8(0), false, false)}
+    //record the commands
+    GLGE::uvec3 extent = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
+    GLGE::Graphic::CommandStream stream(
+        std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(multiSample_fbuff, 0, GLGE::vec4{0.5, 0.5, 0.5, 1})},
+        std::pair{"Cull",  std::make_unique<GLGE::Graphic::Cmd::DispatchCompute>(cull, GLGE::uvec3(1))},
+        //TODO: Actual rendering
+        std::pair{"Flatten multi-sample", std::make_unique<GLGE::Graphic::Cmd::Copy>(multiSample_fbuff, 0, fbuff, 0)},
+        std::pair{"Resolve msaa depth", std::make_unique<GLGE::Graphic::Cmd::DispatchCompute>(resolveDepth, extent)},
+        std::pair{"Ray trace sphere", std::make_unique<GLGE::Graphic::Cmd::DispatchCompute>(rt_comp, extent)},
+        std::pair{"Finalize", std::make_unique<GLGE::Graphic::Cmd::DispatchCompute>(finalize, extent)},
+        std::pair{"Present", std::make_unique<GLGE::Graphic::Cmd::Copy>(ldrFbuff, win, 0)}
     );
-    pipe.record();
-    *pipe.getCommand("Cull")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(renderer.getObjectCount()/256.f), 1, 1);
-    pipe.record();
+    //define a structure to execute commands that operate on the main window
+    GLGE::Graphic::CommandExecutor exec(&win);
 
     inst.start();
 
@@ -276,17 +280,14 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
             multiSample_fbuff.resize(win.getResolution());
             fbuff.resize(win.getResolution());
             ldrFbuff.resize(win.getResolution());
-            *pipe.getCommand("Compute")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
-            *pipe.getCommand("Finalize")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
-
-            //re-record the pipeline to make it aware of the changes
-            pipe.record();
-            *pipe.getCommand("Cull")->access<GLGE::uvec3>(sizeof(void*)) = GLGE::uvec3(glm::ceil(renderer.getObjectCount()/256.f), 1, 1);
-            pipe.record();
+            extent = GLGE::uvec3(glm::ceil(colBuff.getSize().x/16.f), glm::ceil(colBuff.getSize().y/16.f), 1);
+            stream.accessCmd<GLGE::Graphic::Cmd::DispatchCompute>("Resolve msaa depth")->setExtent(extent);
+            stream.accessCmd<GLGE::Graphic::Cmd::DispatchCompute>("Ray trace sphere")->setExtent(extent);
+            stream.accessCmd<GLGE::Graphic::Cmd::DispatchCompute>("Finalize")->setExtent(extent);
         }
 
         //play back the pipeline (to render a frame)
-        pipe.play();
+        exec.dispatch(stream);
         //apply some crude animation
         world.each<GLGE::Transform, GLGE::Graphic::Component::Camera, FirstPersonController>(updateFirstPersonController);
         world.get<GLGE::Transform>(suzanne)->pos.y = glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);

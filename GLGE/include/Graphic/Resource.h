@@ -14,6 +14,8 @@
 
 //add common stuff
 #include "Core/Common.h"
+//add commands
+#include "Command.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -59,7 +61,7 @@ namespace GLGE::Graphic {
     /**
      * @brief a base class that all resources must inherit from
      */
-    class Resource {
+    class Resource : public CommandInvalidator {
     public:
 
         /**
@@ -71,6 +73,21 @@ namespace GLGE::Graphic {
          * @brief Destroy the Resource
          */
         virtual ~Resource() = default;
+
+        /**
+         * @brief build a binding from the resource to a resource set
+         * 
+         * @param set the resource set to attach to
+         * @param unit the unit to bind at
+         */
+        void buildBinding(ResourceSet* set, u32 unit);
+
+        /**
+         * @brief remove a binding to a resource
+         * 
+         * @param set a pointer to the resource set to drop the binding with
+         */
+        void removeBinding(ResourceSet* set);
         
         /**
          * @brief a function that is called to build a binding of the resource to a unit in the resource set

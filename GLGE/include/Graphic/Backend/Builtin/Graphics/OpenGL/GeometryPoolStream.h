@@ -82,6 +82,10 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
          */
         u32 m_buff = 0;
         /**
+         * @brief store the size of the buffer
+         */
+        u32 m_buffSize = 0;
+        /**
          * @brief store the target type
          */
         u32 m_target = 0;

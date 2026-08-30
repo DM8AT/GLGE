@@ -229,7 +229,7 @@ namespace GLGE::Graphic {
          * @param preserve `true` This expands the data with 0 or cuts off the data, `false` discards the old data and fills it with 0
          */
         inline void resize(size_t size, bool preserve = false)
-        {m_backend->resize(size*sizeof(T), preserve);}
+        {m_backend->resize(size*sizeof(T), preserve); invalidate();}
 
         /**
          * @brief fill the buffer with a pattern

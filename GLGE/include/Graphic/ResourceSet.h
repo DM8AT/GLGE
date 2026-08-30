@@ -30,6 +30,8 @@
 
 //add the resource base
 #include "Resource.h"
+//add commands
+#include "Command.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -396,7 +398,7 @@ namespace GLGE::Graphic {
     /**
      * @brief store a set of resources that can be bound and unbound
      */
-    class ResourceSet : public BaseClass {
+    class ResourceSet : public BaseClass, public CommandInvalidator {
     public:
 
         /**
@@ -424,7 +426,7 @@ namespace GLGE::Graphic {
                 Resource* res = m_resources[m_nameLut.at(binding.getNameHash())];
 
                 //build the binding
-                res->onBuildBinding(this, binding.getUnit());
+                res->buildBinding(this, binding.getUnit());
             }
         }
 
@@ -485,18 +487,18 @@ namespace GLGE::Graphic {
                 Resource* res = m_resources[m_nameLut.at(binding.getNameHash())];
 
                 //build the binding
-                res->onBuildBinding(this, binding.getUnit());
+                res->buildBinding(this, binding.getUnit());
             }
         }
 
         /**
          * @brief Destroy the Resource Set
          */
-        ~ResourceSet() {
+        virtual ~ResourceSet() {
             //remove all bindings
             for (const auto& resource : m_resources) {
                 //drop the binding
-                resource->onRemoveBinding(this);
+                resource->removeBinding(this);
             }
         }
 

@@ -21,9 +21,11 @@
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::CommandExecutor::dispatch(GLGE::Graphic::CommandStream* stream) {
     //iterate over all commands and dispatch them
+    size_t idx = 0;
     for (const auto& el : stream->getEntries()) {
         if (!el.cmd->isDirty() && el.enabled)
         {el.cmdBuff->play();}
+        ++idx;
     }
 
     //if a window is set, flip it

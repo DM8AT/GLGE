@@ -53,9 +53,6 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
     GLGE::Graphic::Window win("Window Example", {600, 600});
     GLGE::Graphic::RenderTarget window(&win);
 
-    GLGE::Graphic::Image colBuff(win.getSize(), GLGE::Graphic::PIXEL_FORMAT_RGBA_16_FLOAT);
-    GLGE::Graphic::Framebuffer hdrBuff({&colBuff});
-
     //print some statistics
     std::cout << "Selected GPU: "           << gInst.getGPUName()          << "\n";
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
@@ -63,8 +60,7 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
 
     //record the commands
     GLGE::Graphic::CommandStream stream(
-        std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(hdrBuff, 0, GLGE::vec4{0.5, 0.5, 0.5, 1})},
-        std::pair{"Copy",  std::make_unique<GLGE::Graphic::Cmd::Copy>(hdrBuff, &win, 0)}
+        std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(win, GLGE::vec4{0.5, 0.5, 0.5, 1})}
     );
     //define a structure to execute commands that operate on the main window
     GLGE::Graphic::CommandExecutor exec(&win);
@@ -72,9 +68,6 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
     //run while the window is open
     while (!win.isClosingRequested()) {
         inst.startMainTick();
-
-        if (win.didResize()) 
-        {hdrBuff.resize(win.getSize());}
 
         //run the commands
         //in contrast to the old system the frontend does NOT need to worry about re-compiling, that is now done by the backend

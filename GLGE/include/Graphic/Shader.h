@@ -30,6 +30,8 @@
 #include "Core/Instance.h"
 //add graphic instances
 #include "Instance.h"
+//add commands
+#include "Command.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -37,7 +39,7 @@ namespace GLGE::Graphic {
     /**
      * @brief define a class that stores a shader and reflects on its contents
      */
-    class Shader : public BaseClass {
+    class Shader : public BaseClass, public CommandInvalidator {
     public:
 
         /**

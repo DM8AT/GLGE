@@ -23,14 +23,19 @@
 
 //add the sampler backend
 #include "Backend/Graphics/Sampler.h"
+//add commands
+#include "Command.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
 
+    //forward declaration
+    class SampledTexture;
+
     /**
      * @brief store the frontend class for a GPU sampler object
      */
-    class Sampler : public BaseClass {
+    class Sampler : public BaseClass, public CommandInvalidator {
     public:
 
         /**
@@ -53,7 +58,7 @@ namespace GLGE::Graphic {
          * @brief update the internal sampler state
          */
         inline void update() 
-        {m_sampler->update();}
+        {m_sampler->update(); invalidate();}
 
         /**
          * @brief access the state of the internal sampler
@@ -80,6 +85,20 @@ namespace GLGE::Graphic {
          */
         inline Reference<GLGE::Graphic::Backend::Graphic::Sampler> getBackend() const noexcept
         {return m_sampler;}
+
+        /**
+         * @brief register a sampled texture for this texture
+         * 
+         * @param st a pointer to the sampler texture pair
+         */
+        void registerSampler(SampledTexture* st);
+
+        /**
+         * @brief remove a sampler texture pair
+         * 
+         * @param st a pointer to the pair to remove
+         */
+        void removeSampler(SampledTexture* st);
 
     protected:
 

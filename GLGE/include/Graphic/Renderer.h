@@ -20,6 +20,8 @@
 #include "Core/Instance.h"
 //add graphic instances
 #include "Instance.h"
+//add commands
+#include "Command.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -27,7 +29,7 @@ namespace GLGE::Graphic {
     /**
      * @brief define the renderer system for rendering an entire world
      */
-    class Renderer : public BaseClass {
+    class Renderer : public BaseClass, public CommandInvalidator {
     public:
 
         /**
@@ -39,7 +41,7 @@ namespace GLGE::Graphic {
          */
         Renderer(World& world, Object* camera, RenderTarget target)
          : BaseClass(), m_renderer(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createRenderer(world.getInstance()->getExtension<GLGE::Graphic::Instance>(), world, camera, target))
-        {}
+        {m_renderer->registerFrontend(*this);}
 
         /**
          * @brief Destroy the Renderer
@@ -50,7 +52,7 @@ namespace GLGE::Graphic {
          * @brief tick the renderer to update camera and object transforms
          */
         inline void update() 
-        {m_renderer->update();}
+        {m_renderer->update(); invalidate();}
 
         /**
          * @brief Get the backend
