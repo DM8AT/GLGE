@@ -25,6 +25,8 @@
 #include "Image.h"
 //add the framebuffer backend
 #include "Backend/Graphics/Framebuffer.h"
+//add commands
+#include "Command.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -32,7 +34,7 @@ namespace GLGE::Graphic {
     /**
      * @brief store a collection of images that can be rendered to
      */
-    class Framebuffer : public BaseClass {
+    class Framebuffer : public BaseClass, public CommandInvalidator {
     public:
 
         /**
@@ -69,6 +71,7 @@ namespace GLGE::Graphic {
                 colorAttachments.size(), _colorAttachments, depthAttachments.size(), _depthAttachments, stencilAttachments.size(), _stencilAttachments, depthStencil,
                 getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()
             );
+            attachInvalidator(*static_cast<GLGE::Graphic::CommandInvalidator*>(m_fbuff.get()));
         }
 
         /**

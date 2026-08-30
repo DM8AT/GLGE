@@ -77,7 +77,7 @@ namespace GLGE::Graphic {
              * @param depth the depth to clear it with, default is 1
              * @param stencil the stencil to clear to, default is 0
              */
-            Clear(const Framebuffer& fbuff, u8 attachmentIdx, const vec4& col, float depth = 1.f, u32 stencil = 0)
+            Clear(Framebuffer& fbuff, u8 attachmentIdx, const vec4& col, float depth = 1.f, u32 stencil = 0)
              : Command(fbuff, attachmentIdx, col, depth, stencil), m_storage(fbuff), m_sType(StorageType::FRAMEBUFFER), m_targetIdx(attachmentIdx), m_color(col), m_depth(depth), m_stencil(stencil)
             {markDirty();}
 
@@ -85,23 +85,6 @@ namespace GLGE::Graphic {
              * @brief Destroy the Clear Command
              */
             virtual ~Clear() {}
-
-            /**
-             * @brief set the target to clear
-             * 
-             * @param win the window to clear
-             */
-            inline void set(Window* win) noexcept
-            {m_storage = win; m_targetIdx = 0; m_sType = StorageType::WINDOW; markDirty();}
-
-            /**
-             * @brief set the target to clear
-             * 
-             * @param fbuff the framebuffer to clear
-             * @param attachmentIdx the index of the color attachment to clear
-             */
-            inline void set(const Framebuffer& fbuff, u8 attachmentIdx) noexcept
-            {m_storage = fbuff; m_targetIdx = attachmentIdx; m_sType = StorageType::FRAMEBUFFER; markDirty();}
 
             /**
              * @brief Get the Storage
@@ -243,6 +226,271 @@ namespace GLGE::Graphic {
              */
             u32 m_stencil = 0;
 
+        };
+        /**
+         * @brief define a command for a copy command
+         *
+         * Copies the contents of one render target to another.
+         */
+        class Copy : public GLGE::Graphic::Command {
+        public:
+
+            /**
+             * @brief define what the storage actually contains
+             */
+            enum StorageType {
+                /**
+                 * @brief the storage holds a window
+                 */
+                WINDOW,
+
+                /**
+                 * @brief the storage holds a framebuffer
+                 */
+                FRAMEBUFFER
+            };
+
+            /**
+             * @brief define the type used for storage
+             *
+             * @note In contrast to the other frontends, window is not just a thin wrapper
+             */
+            using Storage = std::variant<Window*, Framebuffer>;
+
+            /**
+             * @brief Construct a new Copy Command
+             *
+             * Copies from a window to a window
+             *
+             * @param from The source window
+             * @param to The destination window
+             * @param copyDepth Whether to copy the depth buffer
+             * @param copyStencil Whether to copy the stencil buffer
+             */
+            Copy(Window* from, Window* to, bool copyDepth = false, bool copyStencil = false)
+             : Command(*from, *to), 
+               m_from(from), m_fromType(StorageType::WINDOW), m_to(to), m_toType(StorageType::WINDOW), m_fromIdx(0), m_toIdx(0), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+            {markDirty();}
+
+            /**
+             * @brief Construct a new Copy Command
+             *
+             * Copies from a framebuffer to a window
+             *
+             * @param from The source framebuffer
+             * @param to The destination window
+             * @param fromIdx The source color attachment
+             * @param copyDepth Whether to copy the depth buffer
+             * @param copyStencil Whether to copy the stencil buffer
+             */
+            Copy(Framebuffer& from, Window* to, u8 fromIdx = 0, bool copyDepth = false, bool copyStencil = false)
+             : Command(from, *to), 
+               m_from(from), m_fromType(StorageType::FRAMEBUFFER), m_to(to), m_toType(StorageType::WINDOW), m_fromIdx(fromIdx), m_toIdx(0), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+            {markDirty();}
+
+            /**
+             * @brief Construct a new Copy Command
+             *
+             * Copies from a window to a framebuffer
+             *
+             * @param from The source window
+             * @param to The destination framebuffer
+             * @param toIdx The destination color attachment
+             * @param copyDepth Whether to copy the depth buffer
+             * @param copyStencil Whether to copy the stencil buffer
+             */
+            Copy(Window* from, Framebuffer& to, u8 toIdx = 0, bool copyDepth = false, bool copyStencil = false)
+             : Command(*from, to), 
+               m_from(from), m_fromType(StorageType::WINDOW), m_to(to), m_toType(StorageType::FRAMEBUFFER), m_fromIdx(0), m_toIdx(toIdx), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+            {markDirty();}
+
+            /**
+             * @brief Construct a new Copy Command
+             *
+             * Copies from one framebuffer to another
+             *
+             * @param from The source framebuffer
+             * @param to The destination framebuffer
+             * @param fromIdx The source color attachment
+             * @param toIdx The destination color attachment
+             * @param copyDepth Whether to copy the depth buffer
+             * @param copyStencil Whether to copy the stencil buffer
+             */
+            Copy(Framebuffer& from, u8 fromIdx, Framebuffer& to, u8 toIdx, bool copyDepth = false, bool copyStencil = false)
+             : Command(from, to), 
+               m_from(from), m_fromType(StorageType::FRAMEBUFFER), m_to(to), m_toType(StorageType::FRAMEBUFFER), m_fromIdx(fromIdx), m_toIdx(toIdx), m_copyDepth(copyDepth), m_copyStencil(copyStencil)
+            {markDirty();}
+
+            /**
+             * @brief Destroy the Copy Command
+             */
+            virtual ~Copy() {}
+
+            /**
+             * @brief Get the source storage
+             *
+             * @return `const Storage&` The source storage
+             */
+            [[nodiscard]] inline const Storage& getFrom() const noexcept
+            {return m_from;}
+
+            /**
+             * @brief Get the source storage type
+             *
+             * @return `StorageType` The source storage type
+             */
+            [[nodiscard]] inline StorageType getFromType() const noexcept
+            {return m_fromType;}
+
+            /**
+             * @brief Get the destination storage
+             *
+             * @return `const Storage&` The destination storage
+             */
+            [[nodiscard]] inline const Storage& getTo() const noexcept
+            {return m_to;}
+
+            /**
+             * @brief Get the destination storage type
+             *
+             * @return `StorageType` The destination storage type
+             */
+            [[nodiscard]] inline StorageType getToType() const noexcept
+            {return m_toType;}
+
+            /**
+             * @brief Set the source attachment index
+             *
+             * Ignored when the source is a window
+             *
+             * @param idx The source attachment index
+             */
+            inline void setFromAttachmentIndex(u8 idx) noexcept {
+                m_fromIdx = idx;
+                markDirty();
+            }
+
+            /**
+             * @brief Get the source attachment index
+             *
+             * @return `u8` The source attachment index
+             */
+            [[nodiscard]] inline u8 getFromAttachmentIndex() const noexcept
+            {return m_fromIdx;}
+
+            /**
+             * @brief Set the destination attachment index
+             *
+             * Ignored when the destination is a window
+             *
+             * @param idx The destination attachment index
+             */
+            inline void setToAttachmentIndex(u8 idx) noexcept {
+                m_toIdx = idx;
+                markDirty();
+            }
+
+            /**
+             * @brief Get the destination attachment index
+             *
+             * @return `u8` The destination attachment index
+             */
+            [[nodiscard]] inline u8 getToAttachmentIndex() const noexcept
+            {return m_toIdx;}
+
+            /**
+             * @brief Set whether depth should be copied
+             *
+             * @param copyDepth Whether to copy the depth buffer
+             */
+            inline void setCopyDepth(bool copyDepth) noexcept {
+                m_copyDepth = copyDepth;
+                markDirty();
+            }
+
+            /**
+             * @brief Get whether depth should be copied
+             *
+             * @return `bool` Whether the depth buffer is copied
+             */
+            [[nodiscard]] inline bool getCopyDepth() const noexcept
+            {return m_copyDepth;}
+
+            /**
+             * @brief Set whether stencil should be copied
+             *
+             * @param copyStencil Whether to copy the stencil buffer
+             */
+            inline void setCopyStencil(bool copyStencil) noexcept {
+                m_copyStencil = copyStencil;
+                markDirty();
+            }
+
+            /**
+             * @brief Get whether stencil should be copied
+             *
+             * @return `bool` Whether the stencil buffer is copied
+             */
+            [[nodiscard]] inline bool getCopyStencil() const noexcept
+            {return m_copyStencil;}
+
+            /**
+             * @brief Get the command type
+             *
+             * @return `Backend::Graphic::CommandType`
+             */
+            [[nodiscard]]virtual Backend::Graphic::CommandType getType() const noexcept override
+            {return Backend::Graphic::COMMAND_COPY;}
+
+            /**
+             * @brief Get a handle containing the copied command arguments
+             *
+             * Handles are owning, ensuring that all data remains valid while the command is being recorded
+             *
+             * @return `Backend::Graphic::CommandHandle`
+             */
+            [[nodiscard]] virtual Backend::Graphic::CommandHandle getHandle() noexcept {
+                //Create owning render targets from the stored frontend objects
+                RenderTarget fromTarget = (m_fromType == StorageType::WINDOW) ? RenderTarget(std::get<Window*>(m_from)) : RenderTarget(&std::get<Framebuffer>(m_from));
+                RenderTarget toTarget = (m_toType == StorageType::WINDOW) ? RenderTarget(std::get<Window*>(m_to)) : RenderTarget(&std::get<Framebuffer>(m_to));
+                return Backend::Graphic::CommandHandle::create<RenderTarget, u8, RenderTarget, u8, bool, bool>(std::move(fromTarget), m_fromIdx, std::move(toTarget), m_toIdx, m_copyDepth, m_copyStencil);
+            }
+
+        protected:
+
+            /**
+             * @brief Store the object to copy from
+             */
+            Storage m_from;
+            /**
+             * @brief Define the storage type for the from element
+             */
+            StorageType m_fromType;
+            /**
+             * @brief Store the object to copy to
+             */
+            Storage m_to;
+            /**
+             * @brief Define the storage type for the to element
+             */
+            StorageType m_toType;
+
+            /**
+             * @brief Define the index to copy from
+             */
+            u8 m_fromIdx = 0;
+            /**
+             * @brief Define the index to copy to
+             */
+            u8 m_toIdx = 0;
+            /**
+             * @brief Define whether to copy the depth buffer
+             */
+            bool m_copyDepth = false;
+            /**
+             * @brief Define whether to copy the stencil buffer
+             */
+            bool m_copyStencil = false;
         };
 
     }

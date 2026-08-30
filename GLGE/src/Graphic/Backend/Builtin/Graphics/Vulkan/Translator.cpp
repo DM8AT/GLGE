@@ -107,18 +107,25 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Gr
     return true;
 }
 
-bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    #if 0
-    //get the command buffers
-    const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
-
+bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     //extract the actual arguments
     const auto& [from, from_idx, to, to_idx, copyDepth, copyStencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>();
     
+    //if the target is a window, update the command buffer size
+    if (from.getType() == GLGE::Graphic::RenderTarget::WINDOW || to.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+        //a single command buffer per swap-chain image is required
+        size_t count = 0;
+        if (from.getType() == GLGE::Graphic::RenderTarget::WINDOW) {count = std::max<size_t>(count, static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(from.getTarget())->getGraphicWindow().get())->getImages().size());}
+        if (to.getType()   == GLGE::Graphic::RenderTarget::WINDOW) {count = std::max<size_t>(count, static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(to.getTarget())->getGraphicWindow().get())->getImages().size());}
+        static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->setCommandBufferCount(count);
+        //restart of cmd buff is required
+        cBuff.onBegin();
+    }
+
     //iterate over all buffers
-    for (size_t i = 0; i < buffs.size(); ++i) {
+    for (size_t i = 0; i < static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBufferCount(); ++i) {
         //get the command buffer
-        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(buffs[i]);
+        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBuffer(i));
 
         //get the vulkan objects
         struct ImgInfo {
@@ -269,7 +276,6 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         }
     }
 
-    #endif
     //success
     return true;
 }

@@ -204,6 +204,9 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::createFramebuffers() 
 
     //store the framebuffer
     m_vkFramebuffer = reinterpret_cast<void*>(fbuff);
+
+    //command must re-record
+    invalidate();
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer::destroyFramebuffers() {
