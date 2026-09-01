@@ -14,11 +14,19 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
 //add vulkan framebuffers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
+//add images
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add shader frontends
 #include "Graphic/Shader.h"
 
 //add shared stuff
 #include "Shared.h"
+
+#if GLGE_DEBUG
+#define CHECK_VULKAN(fun) {VkResult res = (fun); if (res != VK_SUCCESS) {std::stringstream stream; stream << #fun " : did not return VK_SUCCESS, result code: " << static_cast<i32>(res); throw GLGE::Exception(stream.str(), __ASSERT_FUNCTION);} }
+#else
+#define CHECK_VULKAN(fun) (fun);
+#endif
 
 /**
  * @brief a helper function to get the vertex attribute format
@@ -249,9 +257,22 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Grap
     colorBlendingStateCreate.attachmentCount = 1;
     colorBlendingStateCreate.pAttachments = &colorBlendAttachment;
 
+    //setup dynamic rendering
+    std::vector<VkFormat> colorAttachmentFormats;
+    colorAttachmentFormats.reserve(m_fbuff->getColorAttachmentCount());
+    for (size_t i = 0; i < m_fbuff->getColorAttachmentCount(); ++i) 
+    {colorAttachmentFormats.push_back(static_cast<VkFormat>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_fbuff->getColorAttachment(i))->getVkFormat()));}
+    VkPipelineRenderingCreateInfoKHR pipeRenderingCreate {};
+    pipeRenderingCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+    pipeRenderingCreate.colorAttachmentCount = m_fbuff->getColorAttachmentCount();
+    pipeRenderingCreate.pColorAttachmentFormats = colorAttachmentFormats.data();
+    pipeRenderingCreate.depthAttachmentFormat = m_fbuff->getDepthAttachmentCount() ? static_cast<VkFormat>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_fbuff->getDepthAttachment(0))->getVkFormat()) : VK_FORMAT_UNDEFINED;
+    pipeRenderingCreate.stencilAttachmentFormat = m_fbuff->getStencilAttachmentCount() ? static_cast<VkFormat>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(m_fbuff->getStencilAttachment(0))->getVkFormat()) : VK_FORMAT_UNDEFINED;
+
     //create the actual graphic pipeline
     VkGraphicsPipelineCreateInfo graphicsPipeCreate {};
     graphicsPipeCreate.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    graphicsPipeCreate.pNext = &pipeRenderingCreate;
     graphicsPipeCreate.stageCount = shaderStages.size();
     graphicsPipeCreate.pStages = shaderStages.data();
     graphicsPipeCreate.pVertexInputState = &vertInputCreate;
@@ -263,7 +284,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Material::Material(Reference<GLGE::Grap
     graphicsPipeCreate.pColorBlendState = &colorBlendingStateCreate;
     graphicsPipeCreate.pDepthStencilState = m_fbuff->getDepthAttachmentCount() ? &depthStencilCreate : nullptr;
     graphicsPipeCreate.layout = reinterpret_cast<VkPipelineLayout>(m_pipeLayout);
-    graphicsPipeCreate.renderPass = reinterpret_cast<VkRenderPass>(vkFbuff->getRenderPass());
+    graphicsPipeCreate.renderPass = VK_NULL_HANDLE;
     graphicsPipeCreate.subpass = 0;
     graphicsPipeCreate.basePipelineHandle = VK_NULL_HANDLE;
     VkPipeline pipe;

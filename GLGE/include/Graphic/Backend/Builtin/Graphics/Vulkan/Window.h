@@ -101,6 +101,14 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         {return m_imgViews;}
 
         /**
+         * @brief Get the Semaphores
+         * 
+         * @return `const std::vector<void*>&` a semaphore per swapchain image
+         */
+        inline const std::vector<void*>& getSemaphores() const noexcept
+        {return m_semaphores;}
+
+        /**
          * @brief Get the format
          * 
          * @return `i32` the image format enum value
@@ -133,6 +141,10 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief store views to the swapchain images
          */
         std::vector<void*> m_imgViews;
+        /**
+         * @brief store semaphores for presenting the images
+         */
+        std::vector<void*> m_semaphores;
 
         /**
          * @brief store the selected image format

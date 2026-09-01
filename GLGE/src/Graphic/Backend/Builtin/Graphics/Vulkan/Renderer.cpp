@@ -32,6 +32,7 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
 #include "Graphic/Backend/Video/Window.h"
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 
 //add Vulkan buffers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
@@ -84,11 +85,12 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::~Renderer() {
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff) {
-    #if 0
+    //sync
+    vkDeviceWaitIdle(reinterpret_cast<VkDevice>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getDevice()));
     //store all objects sorted by the materials
     std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<MeshHandle, Object>>> objs;
     size_t total = 0;
-    auto reg = [&objs, &total](Tiny::ECS::Entity ent, const Component::Renderable& renderer) {
+    auto reg = [&objs, &total, this](Tiny::ECS::Entity ent, const Component::Renderable& renderer) {
         //only add the mesh if it is enabled
         if (renderer.enabled) {
             auto* m = renderer.mesh;
@@ -141,83 +143,127 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
 
     //get the indirect buffer
     VkBuffer indirectBuffer = reinterpret_cast<VkBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(m_drawBuffer->getBackendReference().get())->getBuffer());
-    //iterate over all command buffers
-    auto cbuffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
-    for (size_t i = 0; i < cbuffs.size(); ++i) {
-        //extract the vulkan command buffer
-        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(cbuffs[i]);
+    //get the command buffer
+    VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffer(0));
 
-        //iterate over all materials
-        for (auto& [mat, meshes] : objs) {
-            //bind the material
-            GLGE::Graphic::Backend::Graphic::Vulkan::Material* material = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Material*>(mat->getBackend().get());
-            //get the vulkan framebuffer
-            auto* vkFbuff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer*>(material->getFbuff().get());
-            auto size = vkFbuff->getColorAttachmentCount() ? vkFbuff->getColorAttachment(0)->getSize() : vkFbuff->getDepthAttachment(0)->getSize();
-            //get the shader frontend
-            auto* shaderFrontend = material->getShader().get()->getFrontend();
+    //iterate over all materials
+    for (auto& [mat, meshes] : objs) {
+        //bind the material
+        GLGE::Graphic::Backend::Graphic::Vulkan::Material* material = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Material*>(mat->getBackend().get());
+        //get the vulkan framebuffer
+        auto* vkFbuff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer*>(material->getFbuff().get());
+        auto size = vkFbuff->getColorAttachmentCount() ? vkFbuff->getColorAttachment(0)->getSize() : vkFbuff->getDepthAttachment(0)->getSize();
+        //get the shader frontend
+        auto* shaderFrontend = material->getShader().get()->getFrontend();
 
-            //extract the resource sets
-            std::vector<VkDescriptorSet> sets;
-            sets.reserve(shaderFrontend->getSetCount());
-            for (size_t i = 0; i < shaderFrontend->getSetCount(); ++i) {
-                if (!shaderFrontend->hasSet(i)) {continue;}
-                auto* vkResourceSet = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(shaderFrontend->getResources(0)->getBackend().get());
-                sets.push_back(reinterpret_cast<VkDescriptorSet>(vkResourceSet->getDescriptorSet()));
-            }
-
-            //start the render pass
-            VkRenderPassBeginInfo renPassBeg {};
-            renPassBeg.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renPassBeg.framebuffer = reinterpret_cast<VkFramebuffer>(vkFbuff->getFramebuffer());
-            renPassBeg.renderPass = reinterpret_cast<VkRenderPass>(vkFbuff->getRenderPass());
-            renPassBeg.renderArea.offset = {0,0};
-            renPassBeg.renderArea.extent = {size.x, size.y};
-            vkCmdBeginRenderPass(cb, &renPassBeg, VK_SUBPASS_CONTENTS_INLINE);
-            //bind descriptor sets
-            vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipelineLayout>(material->getPipelineLayout()), 0, sets.size(), sets.data(), 0, nullptr);
-            //get the correct archetype
-            std::vector<GeometryPool::AttributeIdentifier> identifier;
-            identifier.reserve(mat->getLayout().getAttributeCount());
-            for (size_t i = 0; i < mat->getLayout().getAttributeCount(); ++i) {
-                const auto& attr = mat->getLayout().getAttribute(i);
-                identifier.push_back(GeometryPool::AttributeIdentifier (attr.usage, static_cast<u8>(attr.type), attr.streamId));
-            }
-            const auto& archetype = m_inst->meshManager().getPool().acquireArchetype(identifier);
-            //bind the index buffer
-            VkBuffer ibo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(archetype.getIndexStream())->getBuffer());
-            vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
-            //iterate over all streams and bind the vertex buffers
-            for (size_t i = 0; i < GeometryPool::MAX_STREAM_COUNT; ++i) {
-                const auto& stream = archetype.accessStream(i);
-                if (stream.stream.get() == nullptr) {continue;}
-                VkBuffer vbo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(stream.stream.get())->getBuffer());
-                VkDeviceSize offs = 0;
-                vkCmdBindVertexBuffers(cb, i, 1, &vbo, &offs);
-            }
-            //start the pipeline
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipeline>(material->getPipeline()));
-            //set the dynamic states
-            VkViewport viewport {};
-            viewport.x = 0;
-            viewport.y = 0;
-            viewport.minDepth = 0.f;
-            viewport.maxDepth = 1.f;
-            viewport.width = size.x;
-            viewport.height = size.y;
-            vkCmdSetViewport(cb, 0, 1, &viewport);
-            VkRect2D scissor {};
-            scissor.offset = {0,0};
-            scissor.extent = {size.x, size.y};
-            vkCmdSetScissor(cb, 0, 1, &scissor);
-            //draw all the meshes
-            vkCmdDrawIndexedIndirect(cb, indirectBuffer, 0, meshes.size(), sizeof(VkDrawIndexedIndirectCommand));
-
-            //finish the render pass
-            vkCmdEndRenderPass(cb);
+        //extract the resource sets
+        std::vector<VkDescriptorSet> sets;
+        sets.reserve(shaderFrontend->getSetCount());
+        for (size_t i = 0; i < shaderFrontend->getSetCount(); ++i) {
+            if (!shaderFrontend->hasSet(i)) {continue;}
+            auto* vkResourceSet = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(shaderFrontend->getResources(0)->getBackend().get());
+            sets.push_back(reinterpret_cast<VkDescriptorSet>(vkResourceSet->getDescriptorSet()));
         }
+
+        //start dynamic rendering
+        std::vector<VkRenderingAttachmentInfoKHR> colorAttachments;
+        colorAttachments.reserve(vkFbuff->getColorAttachmentCount());
+        for (size_t i = 0; i < vkFbuff->getColorAttachmentCount(); ++i) {
+            auto* att = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(vkFbuff->getColorAttachment(i));
+            VkRenderingAttachmentInfoKHR colorAttach {};
+            colorAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+            colorAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            colorAttach.imageView = static_cast<VkImageView>(att->getView());
+            colorAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            colorAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachments.push_back(colorAttach);
+        }
+        VkRenderingAttachmentInfoKHR depthAttach {};
+        auto* depthAtt = vkFbuff->getDepthAttachmentCount() ? static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(vkFbuff->getDepthAttachment(0)) : nullptr;
+        if (depthAtt) {
+            depthAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+            depthAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            depthAttach.imageView = static_cast<VkImageView>(depthAtt->getView());
+            depthAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            depthAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        }
+        VkRenderingAttachmentInfoKHR stencilAttach {};
+        auto* stencilAtt = vkFbuff->getStencilAttachmentCount() ? static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(vkFbuff->getStencilAttachment(0)) : nullptr;
+        if (stencilAtt) {
+            stencilAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+            stencilAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            stencilAttach.imageView = static_cast<VkImageView>(stencilAtt->getView());
+            stencilAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            stencilAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        }
+
+        //prepare the rendering
+        VkMemoryBarrier barrierInit {};
+        barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
+
+        VkRenderingInfoKHR renInfo {};
+        renInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+        renInfo.colorAttachmentCount = colorAttachments.size();
+        renInfo.pColorAttachments = colorAttachments.data();
+        renInfo.pDepthAttachment = depthAtt ? &depthAttach : nullptr;
+        renInfo.pStencilAttachment = stencilAtt ? &stencilAttach : nullptr;
+        renInfo.renderArea.offset = {0,0};
+        const uvec2& ext = vkFbuff->getColorAttachmentCount() ? vkFbuff->getColorAttachment(0)->getSize() : vkFbuff->getDepthAttachment(0)->getSize();
+        renInfo.renderArea.extent = {ext.x, ext.y};
+        renInfo.layerCount = 1;
+        renInfo.viewMask = 0;
+        (*reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getCommands().pfn_vkCmdBeginRenderingKHR))(cb, &renInfo);
+        
+        //bind descriptor sets
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipelineLayout>(material->getPipelineLayout()), 0, sets.size(), sets.data(), 0, nullptr);
+        //get the correct archetype
+        std::vector<GeometryPool::AttributeIdentifier> identifier;
+        identifier.reserve(mat->getLayout().getAttributeCount());
+        for (size_t i = 0; i < mat->getLayout().getAttributeCount(); ++i) {
+            const auto& attr = mat->getLayout().getAttribute(i);
+            identifier.push_back(GeometryPool::AttributeIdentifier (attr.usage, static_cast<u8>(attr.type), attr.streamId));
+        }
+        const auto& archetype = m_inst->meshManager().getPool().acquireArchetype(identifier);
+        //bind the index buffer
+        VkBuffer ibo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(archetype.getIndexStream())->getBuffer());
+        vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
+        //iterate over all streams and bind the vertex buffers
+        for (size_t i = 0; i < GeometryPool::MAX_STREAM_COUNT; ++i) {
+            const auto& stream = archetype.accessStream(i);
+            if (stream.stream.get() == nullptr) {continue;}
+            VkBuffer vbo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(stream.stream.get())->getBuffer());
+            VkDeviceSize offs = 0;
+            vkCmdBindVertexBuffers(cb, i, 1, &vbo, &offs);
+        }
+        //start the pipeline
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipeline>(material->getPipeline()));
+        //set the dynamic states
+        VkViewport viewport {};
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.minDepth = 0.f;
+        viewport.maxDepth = 1.f;
+        viewport.width = size.x;
+        viewport.height = size.y;
+        vkCmdSetViewport(cb, 0, 1, &viewport);
+        VkRect2D scissor {};
+        scissor.offset = {0,0};
+        scissor.extent = {size.x, size.y};
+        vkCmdSetScissor(cb, 0, 1, &scissor);
+        //draw all the meshes
+        vkCmdDrawIndexedIndirect(cb, indirectBuffer, 0, meshes.size(), sizeof(VkDrawIndexedIndirectCommand));
+
+        //finish rendering
+        (*reinterpret_cast<PFN_vkCmdEndRenderingKHR>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getCommands().pfn_vkCmdEndRenderingKHR))(cb);
+        VkMemoryBarrier barrierFin {};
+        barrierFin.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        barrierFin.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        barrierFin.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrierFin, 0, nullptr, 0, nullptr);
     }
-    #endif
 
     //gather up all the light sources
     m_pointLights.clear();
@@ -233,6 +279,9 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
     m_pointLightBuffer->resize(sizeof(PointLightData)*((m_pointLights.size() == 0) ? 1 : m_pointLights.size()), false);
     m_spotLightBuffer->resize(sizeof(SpotLightData)*((m_spotLights.size() == 0) ? 1 : m_spotLights.size()), false);
     m_dirLightBuffer->resize(sizeof(DirectionalLightData)*((m_directionalLights.size() == 0) ? 1 : m_directionalLights.size()), false);
+
+    //sync
+    vkDeviceWaitIdle(reinterpret_cast<VkDevice>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getDevice()));
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {

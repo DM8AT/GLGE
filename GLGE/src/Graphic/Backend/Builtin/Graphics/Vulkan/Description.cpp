@@ -152,7 +152,7 @@ void Vulkan::initialize() {
         .applicationVersion = VK_MAKE_VERSION(1,0,0),
         .pEngineName = "GLGE_VK_DEFAULT",
         .engineVersion = VK_MAKE_VERSION(0,1,0),
-        .apiVersion = VK_API_VERSION_1_0
+        .apiVersion = VK_API_VERSION_1_3
     };
 
     //create the instance

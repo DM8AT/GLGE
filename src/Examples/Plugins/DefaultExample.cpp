@@ -259,7 +259,7 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
     GLGE::Graphic::CommandStream stream(
         std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(multiSample_fbuff, 0, GLGE::vec4{0.5, 0.5, 0.5, 1})},
         std::pair{"Cull",  std::make_unique<GLGE::Graphic::Cmd::DispatchCompute>(cull, GLGE::uvec3(1))},
-        //TODO: Actual rendering
+        std::pair{"Render", std::make_unique<GLGE::Graphic::Cmd::Render>(renderer)},
         std::pair{"Flatten multi-sample", std::make_unique<GLGE::Graphic::Cmd::Copy>(multiSample_fbuff, 0, fbuff, 0)},
         std::pair{"Resolve msaa depth", std::make_unique<GLGE::Graphic::Cmd::DispatchCompute>(resolveDepth, extent)},
         std::pair{"Ray trace sphere", std::make_unique<GLGE::Graphic::Cmd::DispatchCompute>(rt_comp, extent)},
@@ -286,8 +286,6 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
             stream.accessCmd<GLGE::Graphic::Cmd::DispatchCompute>("Finalize")->setExtent(extent);
         }
 
-        //play back the pipeline (to render a frame)
-        exec.dispatch(stream);
         //apply some crude animation
         world.each<GLGE::Transform, GLGE::Graphic::Component::Camera, FirstPersonController>(updateFirstPersonController);
         world.get<GLGE::Transform>(suzanne)->pos.y = glm::sin(std::chrono::system_clock::now().time_since_epoch().count() * 1E-9);
@@ -297,6 +295,9 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
         GLGE::System::BakeTransforms(world);
         //update the renderer (update transformation state)
         renderer.update();
+
+        //render the scene
+        exec.dispatch(stream);
 
         //end the tick
         inst.endMainTick();

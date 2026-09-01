@@ -53,8 +53,14 @@ namespace GLGE::Graphic {
          * @param stream a reference to the command stream to execute
          */
         void dispatch(CommandStream& stream) {
-            //make sure that all commands are up to date
-            stream.compile();
+            //check if recording should be done
+            if (stream.requiresRecording()) {
+                //wait idle
+                m_executor->awaitFinish();
+                //make sure that all commands are up to date
+                stream.compile();
+                std::cout << std::flush;
+            }
 
             //dispatch the stream with the backend
             m_executor->dispatch(&stream);

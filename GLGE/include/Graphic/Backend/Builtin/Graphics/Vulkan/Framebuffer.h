@@ -65,52 +65,53 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         virtual void onImageUpdated(GLGE::Graphic::Backend::Graphic::Image* image) override;
 
         /**
-         * @brief Get the Render Pass
+         * @brief Get the Color Attachments
          * 
-         * @return `void*` the vulkan render pass
+         * @return `const std::vector<void*>&` the color attachments
          */
-        inline void* getRenderPass() const noexcept
-        {return m_renderPass;}
+        inline const std::vector<void*>& getVkColorAttachments() const noexcept
+        {return m_vkColorAttachments;}
 
         /**
-         * @brief Get the Framebuffer
+         * @brief Get the Depth Attachment
          * 
-         * @return `void*` the vulkan framebuffer
+         * @return `void*` the vulkan depth attachment
          */
-        inline void* getFramebuffer() const noexcept
-        {return m_vkFramebuffer;}
+        inline void* getVkDepthAttachment() const noexcept
+        {return m_vkDepthAttachment;}
 
+        /**
+         * @brief Get the Stencil Attachment
+         * 
+         * @return `void*` the vulkan stencil attachment
+         */
+        inline void* getVkStencilAttachment() const noexcept
+        {return m_vkStencilAttachment;}
+        
     protected:
 
         /**
-         * @brief Create a Render Pass
+         * @brief fill the attachments
          */
-        void createRenderPass();
-
+        void createInternals();
         /**
-         * @brief Destroy a render pass
+         * @brief clean the attachments
          */
-        void destroyRenderPass();
-
+        void destroyInternals();
+    
         /**
-         * @brief Create the Framebuffers
+         * @brief store the color attachments
          */
-        void createFramebuffers();
-
+        std::vector<void*> m_vkColorAttachments;
         /**
-         * @brief destroy the framebuffers
+         * @brief store the depth attachment
          */
-        void destroyFramebuffers();
-
+        void* m_vkDepthAttachment = nullptr;
         /**
-         * @brief store the vulkan framebuffer
+         * @brief store the stencil attachment
          */
-        void* m_vkFramebuffer = nullptr;
-        /**
-         * @brief store the render pass
-         */
-        void* m_renderPass = nullptr;
-
+        void* m_vkStencilAttachment = nullptr;
+        
     };
 
 }

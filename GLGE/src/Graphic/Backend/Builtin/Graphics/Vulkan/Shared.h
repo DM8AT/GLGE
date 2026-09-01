@@ -24,6 +24,12 @@
 //add exceptions
 #include "Core/Exception.h"
 
+#if GLGE_DEBUG
+#define DEBUG_LOG(msg) {std::stringstream __stream; __stream << msg << "\n"; std::cout << __stream.str();}
+#else
+#define DEBUG_LOG(msg) 
+#endif
+
 inline static VkFormat __pixelFormat_to_VkFormat(const GLGE::Graphic::PixelFormat& format) {
     //check for depth formats
     if (format.order == GLGE::Graphic::PixelFormat::Order::DEPTH) {
@@ -179,6 +185,8 @@ inline static VkCommandBuffer __beginSingleTimeCommands(VkDevice device, VkComma
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     vkBeginCommandBuffer(cmd, &beginInfo);
 
+    DEBUG_LOG("Started single time command buffer " << cmd)
+
     //give back the command buffer
     return cmd;
 }
@@ -210,6 +218,8 @@ inline static void __endSingleTimeCommands(VkDevice device, GLGE::Graphic::Backe
         vkQueueSubmit(q, 1, &submitInfo, VK_NULL_HANDLE);
     }
     vkQueueWaitIdle(q);
+
+    DEBUG_LOG("Finished single time command buffer " << cmd)
 
     //free the command buffer
     vkFreeCommandBuffers(device, pool, 1, &cmd);
@@ -264,6 +274,8 @@ inline static StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDevi
     //store the mapped pointer
     buff.mapped = allocRes.pMappedData;
 
+    DEBUG_LOG("Created staging buffer " << buff.buffer)
+
     //return the buffer
     return buff;
 }
@@ -275,6 +287,7 @@ inline static StagingBuffer __createStagingBuffer(VmaAllocator allocator, VkDevi
  * @param buffer the staging buffer to delete
  */
 inline static void __destroyStagingBuffer(VmaAllocator allocator, StagingBuffer& buffer) {
+    DEBUG_LOG("Destroying staging buffer " << buffer.buffer)
     //sanity check the input
     if (buffer.buffer == VK_NULL_HANDLE) {return;}
     //destroy the buffer
@@ -304,6 +317,7 @@ inline static void __transitionImage(VkDevice device, GLGE::Graphic::Backend::Gr
     //get a single-time command buffer
     VkCommandBuffer cmd = __beginSingleTimeCommands(device, pool);
 
+    DEBUG_LOG("Transitioning image layout for image " << image)
     //record an image memory barrier
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

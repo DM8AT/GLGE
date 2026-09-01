@@ -14,6 +14,8 @@
 
 //add the backend
 #include "Graphic/Backend/Graphics/CommandExecutor.h"
+//add command buffers
+#include "CommandBuffer.h"
 
 //use the library namespace
 namespace GLGE::Graphic::Backend::Graphic::Vulkan {
@@ -28,10 +30,6 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @brief store the maximum amount of frames in flight
          */
         static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-        /**
-         * @brief store the maximum supported amount of frames in flight
-         */
-        static constexpr uint32_t MAX_SWAPCHAIN_IMAGES = 8;
 
         /**
          * @brief Construct a new Command Executor
@@ -74,20 +72,12 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         /**
          * @brief store a fence for each command buffer
          */
-        void* m_fences[MAX_FRAMES_IN_FLIGHT] = {nullptr};
-        /**
-         * @brief for each fence store if it should be waited for
-         */
-        bool m_shouldWait[MAX_FRAMES_IN_FLIGHT] = {false};
+        void* m_fences[MAX_FRAMES_IN_FLIGHT] {};
         
         /**
          * @brief for each command buffer store if the frame is in flight
          */
         void* m_imgAvailSems[MAX_FRAMES_IN_FLIGHT] = {nullptr};
-        /**
-         * @brief for each swapchain image store if the render is done
-         */
-        void* m_renderDoneSems[MAX_SWAPCHAIN_IMAGES] = {nullptr};
         
         /**
          * @brief store the current command buffer to use

@@ -238,50 +238,112 @@ namespace GLGE::Graphic {
         void compile() {
             //compute some constants
             const std::size_t count = m_entries.size();
-            const std::size_t workers = std::min<size_t>(std::thread::hardware_concurrency(), count);
+            if (count == 0) {return;}
+            const std::size_t hardwareWorkers = std::thread::hardware_concurrency();
+            const std::size_t workers = std::min<std::size_t>(hardwareWorkers == 0 ? 1 : hardwareWorkers, count);
             const std::size_t chunkSize = (count + workers - 1) / workers;
 
-            //store all jobs that are to do
+            //First, compile everything that is not allowed to be
+            //recorded from another thread.
+            //
+            //This is deliberately done before spawning the worker threads,
+            //so we don't need to store these entries for later.
+            for (std::size_t j = 0; j < count; ++j) {
+                auto& el = m_entries[j];
+
+                //Stop if cannot compute
+                if (!el.cmd->isDirty() || !el.allowRebuild) {continue;}
+
+                //This command has to be recorded on the main thread.
+                if (!el.cmd->allowMultithreading()) {
+                    const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
+
+                    //Skip on nullptr
+                    if (cmd == nullptr) {continue;}
+
+                    //Record
+                    if (el.cmdBuff->isRecorded()) 
+                    {el.cmdBuff->clear();}
+
+                    el.cmdBuff->onBegin();
+                    cmd->func(*el.cmdBuff, el.cmd->getHandle());
+                    el.cmdBuff->finalize();
+
+                    //Now it's clean
+                    el.cmd->m_dirty = false;
+                }
+            }
+
+            //Function to record a section from a worker thread
+            auto recordSection = [this](std::size_t begin, std::size_t end) -> void {
+                for (std::size_t j = begin; j < end; ++j) {
+                    auto& el = m_entries[j];
+
+                    //Stop if cannot compute
+                    if (!el.cmd->isDirty() || !el.allowRebuild) 
+                    {continue;}
+
+                    //Commands that aren't allowed to be recorded from another
+                    //thread were already handled above.
+                    if (!el.cmd->allowMultithreading()) 
+                    {continue;}
+
+                    //Get the actual command
+                    const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
+
+                    //Skip on nullptr
+                    if (cmd == nullptr) 
+                    {continue;}
+
+                    //Record
+                    if (el.cmdBuff->isRecorded()) 
+                    {el.cmdBuff->clear();}
+
+                    std::stringstream stream;
+                    stream << "Recording command " << getNameForCmd(j) << "\n";
+                    std::cout << stream.str();
+                    el.cmdBuff->onBegin();
+                    cmd->func(*el.cmdBuff, el.cmd->getHandle());
+                    el.cmdBuff->finalize();
+
+                    //Now it's clean
+                    el.cmd->m_dirty = false;
+                }
+            };
+
+            //Store only the worker threads.
             std::vector<std::thread> jobs;
             jobs.reserve(workers);
 
-            //iterate over all workers
+            //Iterate over all workers
             for (std::size_t i = 0; i < workers; ++i) {
-                //get a roughly equal-sized section of the buffer
+                //Get a roughly equal-sized section of the buffer
                 const std::size_t begin = i * chunkSize;
                 const std::size_t end = std::min(begin + chunkSize, count);
 
-                //stop on null section
-                if (begin >= end) {break;}
+                //Stop on null section
+                if (begin >= end) 
+                {break;}
 
-                //add a job
-                jobs.emplace_back([this, begin, end]() {
-                    for (std::size_t j = begin; j < end; ++j) {
-                        auto& el = m_entries[j];
-
-                        //stop if cannot compute
-                        if (!el.cmd->isDirty() || !el.allowRebuild) {continue;}
-
-                        //get the actual command
-                        const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
-                        //skip on nullptr
-                        if (cmd == nullptr) {continue;}
-
-                        //else, record
-                        if (el.cmdBuff->isRecorded()) {el.cmdBuff->clear();}
-                        el.cmdBuff->onBegin();
-                        cmd->func(*el.cmdBuff, el.cmd->getHandle());
-                        el.cmdBuff->finalize();
-
-                        //now it's clean
-                        el.cmd->m_dirty = false;
-                    }
-                });
+                //Add a job
+                jobs.emplace_back(recordSection, begin, end);
             }
 
-            //
+            //Join the jobs
             for (auto& job : jobs) 
             {job.join();}
+        }
+
+        /**
+         * @brief check if any command requires recording
+         * 
+         * @return `true` if recording is appropriate, `false` if not
+         */
+        inline bool requiresRecording() const noexcept {
+            //check if ANY command is dirty and recordable
+            bool any = false;
+            for (const auto& el : m_entries) {any |= (el.cmd->isDirty() && el.allowRebuild);}
+            return any;
         }
 
         /**

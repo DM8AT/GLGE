@@ -28,6 +28,12 @@
 //add exceptions
 #include "Core/Exception.h"
 
+#if GLGE_DEBUG
+#define CHECK_VULKAN(fun) {VkResult res = (fun); if (res != VK_SUCCESS) {std::stringstream stream; stream << #fun " : did not return VK_SUCCESS, result code: " << static_cast<i32>(res); throw GLGE::Exception(stream.str(), __ASSERT_FUNCTION);} }
+#else
+#define CHECK_VULKAN(fun) (fun);
+#endif
+
 /**
  * @brief a function to convert a buffer usage flag to a vulkan buffer usage flag
  * 
@@ -95,6 +101,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::Buffer(Type type, const void* i
     VmaAllocationInfo allocInfo;
     if (vmaCreateBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), &buffCreate, &allocCreate, &buffer, &allocation, &allocInfo) != VK_SUCCESS)
     {throw Exception("Failed to allocate a buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::Buffer");}
+    DEBUG_LOG("Created vulkan buffer " << buffer << ", upload behaviour: " << static_cast<u32>(m_usage))
     //store the buffer and allocation
     m_buffer = reinterpret_cast<void*>(buffer);
     m_allocation = reinterpret_cast<void*>(allocation);
@@ -105,6 +112,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::Buffer(Type type, const void* i
         //write the initial data
         if (initial) 
         {memcpy(m_data, initial, m_size);}
+        DEBUG_LOG("Direct write to buffer " << m_buffer);
     } else if (initial) {
         //else, a staging buffer is required
         asyncUpload(initial, 0, m_size);
@@ -119,13 +127,16 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::~Buffer() {
     //get the instance
     auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
+    DEBUG_LOG("Destroying buffer " << m_buffer)
     //clean up vulkan stuff
     vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_buffer), reinterpret_cast<VmaAllocation>(m_allocation));
-    if (m_oldBuff) 
-    {vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_oldBuff), reinterpret_cast<VmaAllocation>(m_oldAlloc));}
+    if (m_oldBuff) {
+        vmaDestroyBuffer(reinterpret_cast<VmaAllocator>(inst->getAllocator()), reinterpret_cast<VkBuffer>(m_oldBuff), reinterpret_cast<VmaAllocation>(m_oldAlloc));
+    }
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::write(const void* data, size_t size, size_t offset) {
+    DEBUG_LOG("Writing to buffer " << m_buffer << "\n    Data: " << data << "\n    Size: " << size << "\n    Offset: " << offset);
     //if no data exists, nothing can be written
     if (!data || size == 0) {return;}
 
@@ -148,6 +159,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::write(const void* data, si
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::read(void* data, size_t size, size_t offset) {
+    DEBUG_LOG("Reading data from buffer " << m_buffer << "\n    Data: " << data << "\n    Size: " << size << "\n    Offset: " << offset);
     //sanity check the target buffer
     if (!data || size == 0) {return;}
 
@@ -192,6 +204,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::read(void* data, size_t si
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool preserve) {
+    DEBUG_LOG("Resizing buffer " << m_buffer << " from size " << m_size << " to size " << size << ", preserve?: " << (preserve ? "true" : "false"));
     //don't do stuff for a CPU only buffer
     if (m_usage == Usage::CPU_ONLY)
     {return;}
@@ -235,6 +248,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
     m_oldAlloc = m_allocation;
     m_buffer = reinterpret_cast<void*>(buffer);
     m_allocation = reinterpret_cast<void*>(allocation);
+    DEBUG_LOG("During buffer resize: Renamed buffer " << m_oldBuff << " to buffer " << m_buffer)
     //if a mapped pointer exists, use the mapped data for initialization
     if (allocInfo.pMappedData) {
         //store the mapped pointer
@@ -254,6 +268,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
     info.buffer = reinterpret_cast<VkBuffer>(m_buffer);
 
     //trigger updates on all resource sets
+    DEBUG_LOG("During buffer resize: updating descriptor sets: Update count: " << m_references.size())
     for (size_t i = 0; i < m_references.size(); ++i) {
         //build the write call
         VkWriteDescriptorSet write {};
@@ -273,6 +288,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::resize(size_t size, bool p
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::fill(const void* pattern, size_t patternSize, size_t n, size_t offset) {
+    DEBUG_LOG("Filling buffer " << m_buffer << " with pattern " << pattern << "\n    Pattern Size: " << patternSize << "\n    n: " << n << "\n    Offset: " << offset)
     //quick sanity check
     if (offset > m_size) {return;}
 
@@ -335,6 +351,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::onDropBinding(GLGE::Graphi
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::asyncUpload(const void* data, u64 offset, u64 size) {
+    DEBUG_LOG("Triggered async upload for buffer " << m_buffer << "\n    Data: " << data << "\n    Offset: " << offset << "\n    Size: " << size)
     //get the instance
     auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_instance);
 
@@ -361,14 +378,14 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::asyncUpload(const void* da
     //record the barrier
     VkBufferMemoryBarrier init_barrier {};
     init_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    init_barrier.srcAccessMask = 0;
+    init_barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
     init_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     init_barrier.srcQueueFamilyIndex = inst->getGraphicsQueue().familyIdx;
     init_barrier.dstQueueFamilyIndex = inst->getTransferQueue().familyIdx;
     init_barrier.buffer = reinterpret_cast<VkBuffer>(m_buffer);
     init_barrier.offset = offset;
     init_barrier.size = size;
-    vkCmdPipelineBarrier(init_transfer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &init_barrier, 0, nullptr);
+    vkCmdPipelineBarrier(init_transfer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 1, &init_barrier, 0, nullptr);
     
     //submit to graphics
     __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), init_transfer);
@@ -398,6 +415,8 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::asyncUpload(const void* da
     finalize_barrier.size = size;
     vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
 
+    //make sure that all graphics work that may involve the buffer is done
+    CHECK_VULKAN(vkDeviceWaitIdle(reinterpret_cast<VkDevice>(inst->getDevice())));
     //submit the command buffer
     __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getTransferQueue(), reinterpret_cast<VkCommandPool>(inst->getTransferQueue().singleUsePool), cmdBuff);
 

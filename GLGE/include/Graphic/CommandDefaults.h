@@ -21,6 +21,7 @@
 #include "Framebuffer.h"
 #include "RenderTarget.h"
 #include "Shader.h"
+#include "Renderer.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -531,6 +532,55 @@ namespace GLGE::Graphic {
              * @brief define the extent of the shader to run
              */
             uvec3 m_extent;
+
+        };
+
+        /**
+         * @brief a command used to render using a renderer
+         */
+        class Render : public GLGE::Graphic::Command {
+        public:
+
+            /**
+             * @brief Construct a new Render
+             * 
+             * @param renderer the renderer to render
+             */
+            Render(GLGE::Graphic::Renderer renderer)
+             : Command(renderer), m_renderer(renderer)
+            {m_allowMultithreading = false; /*OpenGL backend requires the main thread*/}
+
+            /**
+             * @brief Destroy the Renderer
+             */
+            virtual ~Render() {}
+
+            /**
+             * @brief Get the command type
+             *
+             * @return `Backend::Graphic::CommandType`
+             */
+            [[nodiscard]]virtual Backend::Graphic::CommandType getType() const noexcept override
+            {return Backend::Graphic::COMMAND_DRAW_WORLD;}
+
+            /**
+             * @brief Get a handle containing the copied command arguments
+             *
+             * Handles are owning, ensuring that all data remains valid while the command is being recorded
+             *
+             * @return `Backend::Graphic::CommandHandle`
+             */
+            [[nodiscard]] virtual Backend::Graphic::CommandHandle getHandle() noexcept {
+                //Create owning render targets from the stored frontend objects
+                return Backend::Graphic::CommandHandle::create<GLGE::Graphic::Renderer*>(&m_renderer);
+            }
+
+        protected:
+
+            /**
+             * @brief store the renderer to render
+             */
+            GLGE::Graphic::Renderer m_renderer;
 
         };
 

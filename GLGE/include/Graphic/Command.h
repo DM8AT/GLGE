@@ -102,6 +102,21 @@ namespace GLGE::Graphic {
         inline void markDirty() noexcept
         {m_dirty = true;}
 
+        /**
+         * @brief check if multithreaded recording is allowed
+         * 
+         * @return `true` for multithreaded recording, `false` for main thread required
+         */
+        inline bool allowMultithreading() const noexcept
+        {return m_allowMultithreading;}
+
+    protected:
+
+        /**
+         * @brief store if the task allows multi-threaded recording
+         */
+        bool m_allowMultithreading = true;
+
     private:
 
         /**

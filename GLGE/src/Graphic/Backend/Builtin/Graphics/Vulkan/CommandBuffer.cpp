@@ -17,6 +17,18 @@
 //add vulkan
 #include "vulkan/vulkan.h"
 
+#if GLGE_DEBUG
+#define CHECK_VULKAN(fun) {VkResult res = (fun); if (res != VK_SUCCESS) {std::stringstream stream; stream << #fun " : did not return VK_SUCCESS, result code: " << static_cast<i32>(res); throw GLGE::Exception(stream.str(), __ASSERT_FUNCTION);} }
+#else
+#define CHECK_VULKAN(fun) (fun);
+#endif
+
+#if GLGE_DEBUG
+#define DEBUG_LOG(msg) {std::stringstream __stream; __stream << msg << "\n"; std::cout << __stream.str();}
+#else
+#define DEBUG_LOG(msg) 
+#endif
+
 GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer(GLGE::Graphic::Instance* instance)
  : GLGE::Graphic::Backend::Graphic::CommandBuffer(instance)
 {
@@ -43,6 +55,7 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer(GLGE::Grap
         m_cmdPool = nullptr;
         throw Exception("Failed to allocate the secondary command buffer", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::CommandBuffer");
     }
+    DEBUG_LOG("Created command buffer with buffer count " << m_cmdBufferCount << " and command buffer pool " << m_cmdPool)
 }
 
 GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::~CommandBuffer() {
@@ -69,6 +82,8 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::setCommandBufferCou
     if (count > MAX_CMD_BUFFS) 
     {count = MAX_CMD_BUFFS;}
 
+    DEBUG_LOG("Changing command buffer for pool " << m_cmdPool << " to fit " << m_cmdBufferCount << " command buffers")
+
     //get the device
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getInstance()->getGraphicBackendInstance().get());
     VkDevice device = reinterpret_cast<VkDevice>(inst->getDevice());
@@ -89,6 +104,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::setCommandBufferCou
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin() {
+    DEBUG_LOG("Started recording for all command buffers belonging to pool " << m_cmdPool << ", current command buffer count: " << m_cmdBufferCount)
     for (size_t i = 0; i < m_cmdBufferCount; i++) {
         auto* secondary = reinterpret_cast<VkCommandBuffer>(m_cmdBuffers[i]);
 
@@ -117,6 +133,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onBegin() {
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer::onFinalize() {
+    DEBUG_LOG("Finished recording for all command buffers belonging to pool " << m_cmdPool << ", current command buffer count: " << m_cmdBufferCount)
     for (size_t i = 0; i < m_cmdBufferCount; i++) {
         auto* secondary = reinterpret_cast<VkCommandBuffer>(m_cmdBuffers[i]);
 
