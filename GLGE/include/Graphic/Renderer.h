@@ -52,7 +52,7 @@ namespace GLGE::Graphic {
          * @brief tick the renderer to update camera and object transforms
          */
         inline void update() 
-        {m_renderer->update(); invalidate();}
+        {m_renderer->update();}
 
         /**
          * @brief Get the backend

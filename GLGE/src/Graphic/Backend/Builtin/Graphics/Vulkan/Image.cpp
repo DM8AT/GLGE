@@ -472,6 +472,9 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Image::resizeAndClear(const uvec2&
     //framebuffer update required
     for (size_t i = 0; i < m_ref_framebuffers.size(); ++i) 
     {m_ref_framebuffers[i]->onImageUpdated(this);}
+
+    //invalidate the image
+    invalidate();
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Image::read(ImageCPU& out) const {

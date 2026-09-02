@@ -558,6 +558,22 @@ namespace GLGE::Graphic {
         inline const ResourceStructure& getStructure() const noexcept
         {return m_structure;}
 
+        /**
+         * @brief attach an invalidator to the resource set
+         * 
+         * @param invalidator a reference to the command invalidator to attach
+         */
+        inline void attachTo(CommandInvalidator& invalidator)
+        {attachInvalidator(invalidator);}
+
+        /**
+         * @brief remove an invalidator from the resource set
+         * 
+         * @param invalidator the invalidator to remove
+         */
+        inline void removeFrom(CommandInvalidator& invalidator)
+        {detachInvalidator(invalidator);}
+
     protected:
 
         /**

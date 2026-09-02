@@ -148,6 +148,11 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
 
     //iterate over all materials
     for (auto& [mat, meshes] : objs) {
+        //discover the material
+        for (size_t i = 0; i < mat->getBackend()->getShader()->getFrontend()->getSetCount(); ++i) {
+            mat->getBackend()->getShader()->getFrontend()->getResources(i)->attachTo(*static_cast<CommandInvalidator*>(this));
+            //attachInvalidator(*static_cast<CommandInvalidator*>(mat->getBackend()->getShader()->getFrontend()->getResources(i)));
+        }
         //bind the material
         GLGE::Graphic::Backend::Graphic::Vulkan::Material* material = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Material*>(mat->getBackend().get());
         //get the vulkan framebuffer

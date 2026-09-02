@@ -21,6 +21,8 @@
 
 //add the resource base
 #include "Graphic/Resource.h"
+//add commands
+#include "Graphic/Command.h"
 
 //use the backend namespace
 namespace GLGE::Graphic::Backend::Graphic {
@@ -31,7 +33,7 @@ namespace GLGE::Graphic::Backend::Graphic {
     /**
      * @brief define an API for all image classes
      */
-    class Image : public Referable {
+    class Image : public Referable, public CommandInvalidator {
     public:
 
         /**
@@ -141,6 +143,14 @@ namespace GLGE::Graphic::Backend::Graphic {
          */
         inline u8 getSamplesPerPixel() const noexcept
         {return m_samples;}
+
+        /**
+         * @brief register the frontend to the image
+         * 
+         * @param frontend a reference to the command invalidator
+         */
+        void attachFrontend(CommandInvalidator& frontend)
+        {attachInvalidator(frontend);}
 
     protected:
 

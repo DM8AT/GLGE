@@ -99,7 +99,7 @@ unsigned char defaultExample(const char* graphicBackendName, const char* videoBa
     std::cout << "Using video backend " << gInst.getVideoBackendName() << "\n";
 
     GLGE::Instance inst("OpenGL Instance", GLGE::Version(0, 1, 0), std::pair{"Graphics", &gInst});
-    inst.mainLimiter().setLimit(144);
+    inst.mainLimiter().setLimit(5);
 
     GLGE::Graphic::Window win("Hello from SDL3", {600, 600});
     win.setVSyncMode(GLGE::Graphic::VSYNC_ENABLED);
