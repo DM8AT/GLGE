@@ -407,13 +407,13 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::asyncUpload(const void* da
     VkBufferMemoryBarrier finalize_barrier {};
     finalize_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     finalize_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    finalize_barrier.dstAccessMask = 0;
+    finalize_barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
     finalize_barrier.srcQueueFamilyIndex = inst->getTransferQueue().familyIdx;
     finalize_barrier.dstQueueFamilyIndex = inst->getGraphicsQueue().familyIdx;
     finalize_barrier.buffer = reinterpret_cast<VkBuffer>(m_buffer);
     finalize_barrier.offset = offset;
     finalize_barrier.size = size;
-    vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
+    vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
 
     //make sure that all graphics work that may involve the buffer is done
     CHECK_VULKAN(vkDeviceWaitIdle(reinterpret_cast<VkDevice>(inst->getDevice())));
@@ -423,7 +423,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Buffer::asyncUpload(const void* da
     //graphics queue must re-obtain ownership for safe future usage
     //use another single time command buffer to obtain it
     VkCommandBuffer finalize_transfer = __beginSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool));
-    vkCmdPipelineBarrier(finalize_transfer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
+    vkCmdPipelineBarrier(finalize_transfer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 1, &finalize_barrier, 0, nullptr);
     __endSingleTimeCommands(reinterpret_cast<VkDevice>(inst->getDevice()), inst->getGraphicsQueue(), reinterpret_cast<VkCommandPool>(inst->getGraphicsQueue().singleUsePool), finalize_transfer);
 
     //clean up

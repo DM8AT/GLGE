@@ -191,6 +191,10 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     DrawElementsIndirectCommand* ptr = 0;
     //iterate over all materials to draw them one by one
     for (auto& [mat, meshes] : objs) {
+        //discover the material
+        for (size_t i = 0; i < mat->getBackend()->getShader()->getFrontend()->getSetCount(); ++i) 
+        {attachInvalidator(*static_cast<CommandInvalidator*>(mat->getBackend()->getShader()->getFrontend()->getResources(i)));}
+        
         //bind the material
         GLGE::Graphic::Backend::Graphic::OpenGL::Material* material = reinterpret_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Material*>(mat->getBackend().get());
         material->bind(&cmdBuff);
@@ -215,6 +219,9 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::record(CommandBuffer& cm
     m_pointLightBuffer->resize(sizeof(PointLightData)*((m_pointLights.size() == 0) ? 1 : m_pointLights.size()), false);
     m_spotLightBuffer->resize(sizeof(SpotLightData)*((m_spotLights.size() == 0) ? 1 : m_spotLights.size()), false);
     m_dirLightBuffer->resize(sizeof(DirectionalLightData)*((m_directionalLights.size() == 0) ? 1 : m_directionalLights.size()), false);
+
+    //make sure that the buffers contain valid data
+    update();
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Renderer::update() {

@@ -23,7 +23,7 @@
 #define CHECK_VULKAN(fun) (fun);
 #endif
 
-#if GLGE_DEBUG
+#if GLGE_DEBUG && (!GLGE_NO_DB_LOG)
 #define DEBUG_LOG(msg) {std::stringstream __stream; __stream << msg << "\n"; std::cout << __stream.str();}
 #else
 #define DEBUG_LOG(msg) 

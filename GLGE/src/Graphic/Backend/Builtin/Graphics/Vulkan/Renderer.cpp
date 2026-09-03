@@ -85,8 +85,6 @@ GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::~Renderer() {
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff) {
-    //sync
-    vkDeviceWaitIdle(reinterpret_cast<VkDevice>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getDevice()));
     //store all objects sorted by the materials
     std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<MeshHandle, Object>>> objs;
     size_t total = 0;
@@ -149,10 +147,8 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
     //iterate over all materials
     for (auto& [mat, meshes] : objs) {
         //discover the material
-        for (size_t i = 0; i < mat->getBackend()->getShader()->getFrontend()->getSetCount(); ++i) {
-            mat->getBackend()->getShader()->getFrontend()->getResources(i)->attachTo(*static_cast<CommandInvalidator*>(this));
-            //attachInvalidator(*static_cast<CommandInvalidator*>(mat->getBackend()->getShader()->getFrontend()->getResources(i)));
-        }
+        for (size_t i = 0; i < mat->getBackend()->getShader()->getFrontend()->getSetCount(); ++i) 
+        {attachInvalidator(*static_cast<CommandInvalidator*>(mat->getBackend()->getShader()->getFrontend()->getResources(i)));}
         //bind the material
         GLGE::Graphic::Backend::Graphic::Vulkan::Material* material = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Material*>(mat->getBackend().get());
         //get the vulkan framebuffer
@@ -285,8 +281,8 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
     m_spotLightBuffer->resize(sizeof(SpotLightData)*((m_spotLights.size() == 0) ? 1 : m_spotLights.size()), false);
     m_dirLightBuffer->resize(sizeof(DirectionalLightData)*((m_directionalLights.size() == 0) ? 1 : m_directionalLights.size()), false);
 
-    //sync
-    vkDeviceWaitIdle(reinterpret_cast<VkDevice>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getDevice()));
+    //make sure that all buffers contain valid data
+    update();
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
