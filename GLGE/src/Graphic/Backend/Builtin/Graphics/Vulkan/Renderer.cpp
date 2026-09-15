@@ -286,6 +286,33 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
+    //check if the cache is up to date
+    size_t foundElCount = 0;
+    bool valid = true;
+    auto check = [&](Tiny::ECS::Entity ent, const Component::Renderable& renderer) -> void {
+        //only count the mesh if it is enabled
+        if (renderer.enabled) {
+            auto* m = renderer.mesh;
+            //interpret null mesh as disabled
+            if (m == nullptr) {return;}
+
+            //increase the amount of found elements
+            ++foundElCount;
+            //check if the object is known
+            for (size_t i = 0; i < m_entities.size(); ++i) {
+                if (ent == Tiny::ECS::Entity(m_entities[i])) {return;}
+            }
+            //not found -> mark list as invalid
+            valid = false;
+        }
+    };
+    m_world->each<Component::Renderable>(check);
+    //mark list as invalid if counts do not match
+    valid = valid && (foundElCount == m_entities.size());
+
+    //if invalid: request re-recording and stop
+    if (!valid) {invalidate(); return;}
+
     //update the camera data depending on if a camera exists
     bool isCam = false;
     Component::Camera* cam = nullptr;
