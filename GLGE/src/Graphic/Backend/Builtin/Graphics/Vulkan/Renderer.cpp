@@ -436,7 +436,20 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //write the data
         m_transformBuffer->write(&data, sizeof(data), sizeof(TransformData) * i);
+    }
 
+    //count the amount of point lights, resize if required
+    size_t plCount = 0;
+    auto pl_Count = [&](const Tiny::ECS::Entity& entity, const Component::PointLight&) -> void {
+        //only count is important
+        ++plCount;
+    };
+    //only do point light stuff if point lights exist
+    if (plCount > 0) {
+        if (plCount != (m_pointLightBuffer->getSize() / sizeof(PointLightData))) {
+            //resize
+            m_pointLightBuffer->resize(plCount * sizeof(PointLightData));
+        }
     }
 
     //convert a color to a packed color
@@ -449,25 +462,19 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
     //the minimum intensity before culling
     const constexpr float e = 1E-4;
     //iterate over all point lights
-    for (const auto& obj : m_pointLights) {
+    auto pl_Update = [&](const Tiny::ECS::Entity& obj, const Component::PointLight& light) -> void {
         //next light
         ++lightId;
 
         //store the GPU data
         PointLightData data;
 
-        //extract the point light data
-        Component::PointLight* light = m_world->get<Component::PointLight>(obj);
-
-        //only continue of point light data exists
-        if (!light) {continue;}
-
         //store the light data
-        data.color = col(light->color);
-        data.intensity = light->intensity;
-        data.radius = light->radius;
-        data.fallof_linear = light->fallof_linear;
-        data.fallof_quadratic = light->fallof_quadratic;
+        data.color = col(light.color);
+        data.intensity = light.intensity;
+        data.radius = light.radius;
+        data.fallof_linear = light.fallof_linear;
+        data.fallof_quadratic = light.fallof_quadratic;
         //compute the culling distance
         /*
         Intensity computation: Intensity(Distance) = Intensity / (1 + fallof_linear * Distance + fallof_quadratic * Distance*Distance)
@@ -478,7 +485,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         Let's solve for Distance (and use the positive evaluation since the distance is never negative):
         Distance = (sqrt(4 * Intensity * e * fallof_quadratic + e^2 * fallof_linear^2) - e * fallof_linear) / (2 * e * fallof_quadratic)
         */
-        float cullDistance = (glm::sqrt(4.f * light->intensity * e * light->fallof_quadratic + e*e * light->fallof_linear*light->fallof_linear) - e * light->fallof_linear) / (2 * e * light->fallof_quadratic);
+        float cullDistance = (glm::sqrt(4.f * light.intensity * e * light.fallof_quadratic + e*e * light.fallof_linear*light.fallof_linear) - e * light.fallof_linear) / (2 * e * light.fallof_quadratic);
         //store the cull distance
         data.cullDistance = cullDistance;
 
@@ -501,30 +508,39 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //upload the data
         m_pointLightBuffer->write(&data, sizeof(data), sizeof(data)*lightId);
+    };
+    m_world->each<Component::PointLight>(pl_Update);
+
+    //count the amount of spot lights, resize if required
+    size_t slCount = 0;
+    auto sl_Count = [&](const Tiny::ECS::Entity& entity, const Component::SpotLight&) -> void {
+        //only count is important
+        ++slCount;
+    };
+    if (slCount > 0) {
+        if (slCount != (m_spotLightBuffer->getSize() / sizeof(SpotLightData))) {
+            //resize
+            m_spotLightBuffer->resize(slCount * sizeof(SpotLightData));
+        }
     }
+
     //iterate over all spot lights
     lightId = SIZE_MAX;
-    for (const auto& obj : m_spotLights) {
+    auto sl_Update = [&](const Tiny::ECS::Entity& obj, const Component::SpotLight& light) -> void {
         //next light
         ++lightId;
 
         //store the GPU data
         SpotLightData data;
 
-        //extract the spot light data
-        Component::SpotLight* light = m_world->get<Component::SpotLight>(obj);
-
-        //only continue of spot light data exists
-        if (!light) {continue;}
-
         //store the light data
-        data.color = col(light->color);
-        data.intensity = light->intensity;
-        data.fallof_linear = light->fallof_linear;
-        data.fallof_quadratic = light->fallof_quadratic;
+        data.color = col(light.color);
+        data.intensity = light.intensity;
+        data.fallof_linear = light.fallof_linear;
+        data.fallof_quadratic = light.fallof_quadratic;
         //store the cosines of the angles
-        data.cos_cone_inner = glm::cos(light->cone_inner);
-        data.cos_cone_outer = glm::cos(light->cone_outer);
+        data.cos_cone_inner = glm::cos(light.cone_inner);
+        data.cos_cone_outer = glm::cos(light.cone_outer);
 
         //compute the culling distance
         /*
@@ -536,7 +552,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         Let's solve for Distance (and use the positive evaluation since the distance is never negative):
         Distance = (sqrt(4 * Intensity * e * fallof_quadratic + e^2 * fallof_linear^2) - e * fallof_linear) / (2 * e * fallof_quadratic)
         */
-        float cullDistance = (glm::sqrt(4.f * light->intensity * e * light->fallof_quadratic + e*e * light->fallof_linear*light->fallof_linear) - e * light->fallof_linear) / (2 * e * light->fallof_quadratic);
+        float cullDistance = (glm::sqrt(4.f * light.intensity * e * light.fallof_quadratic + e*e * light.fallof_linear*light.fallof_linear) - e * light.fallof_linear) / (2 * e * light.fallof_quadratic);
         //store the cull distance
         data.cullDistance = cullDistance;
 
@@ -565,25 +581,34 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //upload the data
         m_spotLightBuffer->write(&data, sizeof(data), sizeof(data)*lightId);
+    };
+    m_world->each<Component::SpotLight>(sl_Update);
+
+    //count the amount of directional lights, resize if required
+    size_t dlCount = 0;
+    auto dl_Count = [&](const Tiny::ECS::Entity& entity, const Component::DirectionalLight&) -> void {
+        //only count is important
+        ++dlCount;
+    };
+    if (dlCount > 0) {
+        if (dlCount != (m_dirLightBuffer->getSize() / sizeof(DirectionalLightData))) {
+            //resize
+            m_dirLightBuffer->resize(dlCount * sizeof(DirectionalLightData));
+        }
     }
+
     //iterate over all directional lights
     lightId = SIZE_MAX;
-    for (const auto& obj : m_directionalLights) {
+    auto dl_Update = [&](const Tiny::ECS::Entity& obj, const Component::DirectionalLight& light) -> void {
         //next light
         ++lightId;
 
         //store the GPU data
         DirectionalLightData data;
 
-        //extract the directional light data
-        Component::DirectionalLight* light = m_world->get<Component::DirectionalLight>(obj);
-
-        //only continue of directional light data exists
-        if (!light) {continue;}
-
         //store the light data
-        data.color = col(light->color);
-        data.intensity = light->intensity;
+        data.color = col(light.color);
+        data.intensity = light.intensity;
 
         //fill in the position
         WorldTransform* transf = m_world->get<WorldTransform>(obj);
@@ -604,5 +629,6 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //upload the light data
         m_dirLightBuffer->write(&data, sizeof(data), sizeof(data) * lightId);
-    }
+    };
+    m_world->each<Component::DirectionalLight>(dl_Update);
 }
