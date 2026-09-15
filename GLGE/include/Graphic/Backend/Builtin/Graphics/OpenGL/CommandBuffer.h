@@ -27,21 +27,16 @@ namespace GLGE::Graphic::Backend::Graphic::OpenGL {
         /**
          * @brief Construct a new Command Buffer
          * 
+         * @param instance a pointer to the instance the command buffer belongs to
+         * 
          * All command buffers are initialized in an empty state
          */
-        CommandBuffer(GLGE::Graphic::RenderPipeline* renderPipeline)
-         : GLGE::Graphic::Backend::Graphic::CommandBuffer(renderPipeline)
-        {}
+        CommandBuffer(GLGE::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Command Buffer
          */
         virtual ~CommandBuffer() {}
-
-        /**
-         * @brief a function used to say that a recording should start
-         */
-        virtual void onBegin() override;
 
     protected:
 

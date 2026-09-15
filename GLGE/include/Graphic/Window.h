@@ -25,6 +25,9 @@
 //add graphic instances
 #include "Instance.h"
 
+//add commands
+#include "Command.h"
+
 //use the library namespace
 namespace GLGE::Graphic {
 
@@ -34,8 +37,10 @@ namespace GLGE::Graphic {
 
     /**
      * @brief a class to manage a window
+     * 
+     * @note Windows can invalidate commands when they are resized
      */
-    class Window : public GLGE::BaseClass {
+    class Window : public GLGE::BaseClass, public CommandInvalidator {
     public:
 
         /**

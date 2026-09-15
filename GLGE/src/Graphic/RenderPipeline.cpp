@@ -8,7 +8,8 @@
  * @copyright Copyright (c) 2026
  * 
  */
-//include the render pipeline
+#if 0
+ //include the render pipeline
 #include "Graphic/RenderPipeline.h"
 //add profiling
 #include "Core/Profiler.h"
@@ -76,3 +77,4 @@ void RenderPipeline::record(bool allowThreading) {
     //finalize the command buffer
     m_cmdBuff->finalize();
 }
+#endif

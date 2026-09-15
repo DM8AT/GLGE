@@ -27,6 +27,9 @@
 //use the library namespace
 namespace GLGE::Graphic {
 
+    //forward declaration
+    class SampledTexture;
+
     /**
      * @brief An image stores a 2D grid of pixels on the GPU
      */
@@ -42,7 +45,7 @@ namespace GLGE::Graphic {
          */
         Image(const uvec2& size, PixelFormat format, u8 samples = 1)
          : BaseClass(), Resource(), m_image(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createImage(size, format, samples, getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get()))
-        {m_image->clear();}
+        {m_image->clear(); m_image->attachFrontend(*this);}
 
         /**
          * @brief Construct a new Image
@@ -120,16 +123,14 @@ namespace GLGE::Graphic {
          * @param set a pointer to the set to bind to
          * @param unit the unit to bind to
          */
-        virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override
-        {m_image->onBuildBinding(set, unit);}
+        virtual void onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) override;
         
         /**
          * @brief a function that is called when a resource set holding a reference to this resource is destroyed
          * 
          * @param set a pointer to the resource set that was destroyed
          */
-        virtual void onRemoveBinding(ResourceSet* set) override
-        {m_image->onDropBinding(set);}
+        virtual void onRemoveBinding(ResourceSet* set) override;
 
         /**
          * @brief Get the type of resource this is
@@ -169,6 +170,20 @@ namespace GLGE::Graphic {
             //others are valid
             return nullptr;
         }
+
+        /**
+         * @brief register a sampled texture for this texture
+         * 
+         * @param st a pointer to the sampler texture pair
+         */
+        void registerSampler(SampledTexture* st);
+
+        /**
+         * @brief remove a sampler texture pair
+         * 
+         * @param st a pointer to the pair to remove
+         */
+        void removeSampler(SampledTexture* st);
 
     protected:
 

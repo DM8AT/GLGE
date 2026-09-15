@@ -49,30 +49,29 @@ unsigned char windowExample(const char* graphicBackendName, const char* videoBac
     //create an instance
     GLGE::Instance inst("Window Example", GLGE::Version(0,1,0), std::pair("Graphics", &gInst));
 
+    //create a window
+    GLGE::Graphic::Window win("Window Example", {600, 600});
+    GLGE::Graphic::RenderTarget window(&win);
+
     //print some statistics
     std::cout << "Selected GPU: "           << gInst.getGPUName()          << "\n";
     std::cout << "    GPU Vendor: "         << gInst.getGPUVendorName()    << "\n";
     std::cout << "    GPU Driver Version: " << gInst.getGPUDriverVersion() << "\n";
 
-    //create a window
-    GLGE::Graphic::Window win("Window Example", {600, 600});
-    GLGE::Graphic::RenderTarget window(&win);
-
-    GLGE::Graphic::RenderPipeline pipe = GLGE::Graphic::RenderPipeline::create(&win, 
-        std::pair("Clear", GLGE::Graphic::Command(GLGE::Graphic::COMMAND_CLEAR, window, GLGE::u8(0), GLGE::vec4(0.4, 0.4, 0.4, 1), 0.f, GLGE::u32(0)))
+    //record the commands
+    GLGE::Graphic::CommandStream stream(
+        std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(win, GLGE::vec4{0.5, 0.5, 0.5, 1})}
     );
-    pipe.record();
+    //define a structure to execute commands that operate on the main window
+    GLGE::Graphic::CommandExecutor exec(&win);
 
     //run while the window is open
     while (!win.isClosingRequested()) {
         inst.startMainTick();
 
-        //potential re-record
-        if (win.didResize())
-        {pipe.record();}
-
-        //playback
-        pipe.play();
+        //run the commands
+        //in contrast to the old system the frontend does NOT need to worry about re-compiling, that is now done by the backend
+        exec.dispatch(stream);
 
         inst.endMainTick();
     }

@@ -70,7 +70,7 @@ mat3 quatToMat3(vec4 q) {
 layout (local_size_x = 256) in;
 void main() {
     //if the ID is out of range, stop
-    if (gl_GlobalInvocationID.x > transforms.transf.length()) {return;}
+    if (gl_GlobalInvocationID.x >= transforms.transf.length()) {return;}
     
     //compute the distance between the camera and the object
     vec3 camPos = vec3(cam.x, cam.y, cam.z);

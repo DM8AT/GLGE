@@ -117,6 +117,20 @@ namespace Vulkan {
         };
 
         /**
+         * @brief store loaded commands
+         */
+        struct LoadedCommands {
+            /**
+             * @brief a pointer to the command to begin rendering
+             */
+            void* pfn_vkCmdBeginRenderingKHR = nullptr;
+            /**
+             * @brief a pointer to the command to end rendering
+             */
+            void* pfn_vkCmdEndRenderingKHR = nullptr;
+        };
+
+        /**
          * @brief Construct a new Instance for OpenGL
          * 
          * @param instance a pointer to the frontend instance to attach to
@@ -226,6 +240,14 @@ namespace Vulkan {
         i32 getDepthAveragingModes() const noexcept
         {return m_validDepthAveraging;}
 
+        /**
+         * @brief Get dynamically loaded commands
+         * 
+         * @return `const LoadedCommands&` the loaded commands
+         */
+        inline const LoadedCommands& getCommands() const noexcept
+        {return m_loadedCmds;}
+
     protected:
 
         /**
@@ -279,6 +301,11 @@ namespace Vulkan {
          * @brief store the depth averaging modes
          */
         i32 m_validDepthAveraging = 0;
+
+        /**
+         * @brief store loaded commands
+         */
+        LoadedCommands m_loadedCmds;
 
     };
 

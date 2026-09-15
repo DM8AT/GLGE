@@ -19,7 +19,15 @@
 //include displays
 #include "Display.h"
 //include render pipelines
+#if 0
 #include "RenderPipeline.h"
+#endif
+//add command streams
+#include "CommandStream.h"
+//add default commands
+#include "CommandDefaults.h"
+//add command executor
+#include "CommandExecutor.h"
 
 //add CPU images
 #include "ImageCPU.h"

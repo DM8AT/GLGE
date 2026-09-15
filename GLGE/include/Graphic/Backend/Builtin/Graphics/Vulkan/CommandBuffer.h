@@ -1,37 +1,39 @@
 /**
  * @file CommandBuffer.h
  * @author DM8AT
- * @brief overload command buffers for vulkan
+ * @brief Wrap Vulkan secondary command buffers
  * @version 0.1
  * @date 2026-05-08
- * 
+ *
  * @copyright Copyright (c) 2026
- * 
+ *
  */
-//header guard
 #ifndef _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_COMMAND_BUFFER_
 #define _GLGE_GRAPHIC_BACKEND_BUILTIN_GRAPHICS_VK_COMMAND_BUFFER_
-
-//add the default command buffer
+//add the backend
 #include "Graphic/Backend/Graphics/CommandBuffer.h"
+//for size_t
+#include <cstddef>
 
-//use the namespace
+//use the library namespace
 namespace GLGE::Graphic::Backend::Graphic::Vulkan {
 
     /**
-     * @brief store a vulkan command buffer
+     * @brief the default command buffer for vulkan
      */
     class CommandBuffer : public GLGE::Graphic::Backend::Graphic::CommandBuffer {
     public:
+        /**
+         * @brief Define the maximum number of allowed command buffers.
+         */
+        static constexpr size_t MAX_CMD_BUFFS = 4;
 
         /**
-         * @brief Construct a new Command Buffer
-         * 
-         * @param pipeline a pointer to the render pipeline the command buffer belongs to
-         * 
-         * All command buffers are initialized in an empty state
+         * @brief Construct a new Command Buffer.
+         *
+         * @param instance a pointer to the instance the command buffer belongs to
          */
-        CommandBuffer(GLGE::Graphic::RenderPipeline* pipeline);
+        CommandBuffer(GLGE::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Command Buffer
@@ -39,72 +41,58 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         virtual ~CommandBuffer();
 
         /**
-         * @brief Get the vulkan command buffers
-         * 
-         * @return `const std::vector<void*>&` the vulkan command buffers
+         * @brief adjusts the number of allocated secondary command buffers.
+         *
+         * @param count the number of buffers to allocate (clamped to MAX_CMD_BUFFS).
          */
-        inline const std::vector<void*>& getBuffers() const noexcept
-        {return m_cmdBuffers;}
+        void setCommandBufferCount(size_t count);
+
+        /**
+         * @brief Get a specific Vulkan secondary command buffer
+         *
+         * @param index The index of the buffer to fetch (defaults to 0)
+         * @return `void*` the Vulkan command buffer, or nullptr if out of bounds
+         */
+        inline void* getBuffer(size_t index = 0) const noexcept {
+            if (index < m_cmdBufferCount) return m_cmdBuffers[index];
+            return nullptr; 
+        }
+
+        /**
+         * @brief Get the Buffer Count
+         * 
+         * @return `size_t` the amount of used buffers
+         */
+        inline size_t getBufferCount() const noexcept
+        {return m_cmdBufferCount;}
 
     protected:
 
         /**
-         * @brief a function used to say that a recording should start
+         * @brief a function that is called when the command buffer is started
          */
         virtual void onBegin() override;
-
         /**
-         * @brief a function used to finalize the recorded command buffer
+         * @brief a function that is called when the command buffer is finalized
          */
         virtual void onFinalize() override;
-
         /**
-         * @brief a function used to play back the recorded command buffer
+         * @brief a function that is called when the buffer is executed
          */
         virtual void onPlay() override;
-
-        /**
-         * @brief store the maximum amount of frames in flight
-         */
-        u8 m_framesInFlight = 0;
 
         /**
          * @brief store the command pool
          */
         void* m_cmdPool = nullptr;
         /**
-         * @brief store the vulkan command buffers
+         * @brief store the command buffers
          */
-        std::vector<void*> m_cmdBuffers;
-
+        void* m_cmdBuffers[MAX_CMD_BUFFS] = {nullptr};
         /**
-         * @brief store the sync objects
+         * @brief store the amount of used command buffers
          */
-        struct SyncObjects {
-            /**
-             * @brief store the semaphore to say that an image is available
-             */
-            void* m_semaphore_imgAvailable = nullptr;
-            /**
-             * @brief store a fence that says that a frame is in flight
-             */
-            void* m_fence_inFlight = nullptr;
-        };
-        /**
-         * @brief store the synchronization objects
-         */
-        std::vector<SyncObjects> m_syncObjs;
-        /**
-         * @brief store the render done semaphores
-         */
-        std::vector<void*> m_renderDones;
-        /**
-         * @brief store the wrapped frame index
-         */
-        u32 m_frameIdx = 0;
-
+        size_t m_cmdBufferCount = 1;
     };
-
 }
-
 #endif

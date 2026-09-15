@@ -25,12 +25,27 @@
 //add vulkan
 #include "vulkan/vulkan.h"
 
+#if GLGE_DEBUG
+#define CHECK_VULKAN(fun) {VkResult res = (fun); if (res != VK_SUCCESS) {std::stringstream stream; stream << #fun " : did not return VK_SUCCESS, result code: " << static_cast<i32>(res); throw GLGE::Exception(stream.str(), __ASSERT_FUNCTION);} }
+#else
+#define CHECK_VULKAN(fun) (fun);
+#endif
+
 //use the namespace
 using namespace GLGE::Graphic::Backend::Graphic::Vulkan;
 
 Window::Window(GLGE::Graphic::Window* window) 
  : GLGE::Graphic::Backend::Graphic::Window(window)
 {
+    //get the instance
+    auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get());
+
+    //get the window surface
+    getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->createWindowSurface(
+        inst->getInstance(), 
+        &m_surface,
+        getWindow()->getVideoWindow()
+    );
     //setup the window
     onWindowSetup();
 }
@@ -53,6 +68,10 @@ Window::~Window() {
     );
     //make sure the surface is gone
     vkDestroySurfaceKHR(reinterpret_cast<VkInstance>(inst->getInstance()), reinterpret_cast<VkSurfaceKHR>(m_surface), nullptr);
+    //clean up the semaphores
+    for (auto& sem : m_semaphores)
+    {vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(sem), nullptr);}
+    m_semaphores.clear();
 }
 
 void Window::onWindowSetup() {
@@ -92,7 +111,12 @@ void Window::recreateSwapchain() {
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get());
 
     //the queue must be idle before the window can delete the images
-    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
+    for (size_t i = 0; i < inst->getGraphicsQueue().queueCount; ++i)
+    {CHECK_VULKAN(vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[i].first)));}
+    //NOTE: This is more validation that should theoretically required. 
+    CHECK_VULKAN(vkDeviceWaitIdle(reinterpret_cast<VkDevice>(inst->getDevice())));
+
+    std::cout << "Recreating Swap Chain\n";
 
     //if image views exist, destroy them
     for (auto* views : m_imgViews) 
@@ -103,23 +127,28 @@ void Window::recreateSwapchain() {
     if (m_swapchain) 
     {vkDestroySwapchainKHR(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSwapchainKHR>(m_swapchain), nullptr);}
 
-    //destroy the window surface
-    getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->destroyWindowSurface(
-        reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get())->getInstance(), 
-        m_surface,
-        getWindow()->getVideoWindow()
-    );
+    //clean up the semaphores
+    for (auto& sem : m_semaphores)
+    {vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(sem), nullptr);}
+    m_semaphores.clear();
+
+    // //destroy the window surface
+    // getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->destroyWindowSurface(
+    //     reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get())->getInstance(), 
+    //     m_surface,
+    //     getWindow()->getVideoWindow()
+    // );
     
-    //get the window surface
-    getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->createWindowSurface(
-        inst->getInstance(), 
-        &m_surface,
-        getWindow()->getVideoWindow()
-    );
+    // //get the window surface
+    // getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->createWindowSurface(
+    //     inst->getInstance(), 
+    //     &m_surface,
+    //     getWindow()->getVideoWindow()
+    // );
 
     //get the properties of the surface
     VkSurfaceCapabilitiesKHR caps;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &caps);
+    CHECK_VULKAN(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &caps));
 
     //store the choosen image format
     VkFormat choosenFormat = VK_FORMAT_B8G8R8A8_UNORM;
@@ -128,9 +157,9 @@ void Window::recreateSwapchain() {
 
     //get the supported present modes
     u32 presentModeCount = 0;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &presentModeCount, nullptr);
+    CHECK_VULKAN(vkGetPhysicalDeviceSurfacePresentModesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &presentModeCount, nullptr));
     std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    vkGetPhysicalDeviceSurfacePresentModesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &presentModeCount, presentModes.data());
+    CHECK_VULKAN(vkGetPhysicalDeviceSurfacePresentModesKHR(reinterpret_cast<VkPhysicalDevice>(inst->getPhysicalDevice()), reinterpret_cast<VkSurfaceKHR>(m_surface), &presentModeCount, presentModes.data()));
 
     //store the selected present mode
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -172,10 +201,13 @@ void Window::recreateSwapchain() {
     }
 
     //create the swapchain
+    u32 imageCount = caps.minImageCount + 1;
+    if (caps.maxImageCount > 0 && imageCount > caps.maxImageCount)
+    {imageCount = caps.maxImageCount;}
     VkSwapchainCreateInfoKHR swapCreate {};
     swapCreate.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapCreate.surface = reinterpret_cast<VkSurfaceKHR>(m_surface);
-    swapCreate.minImageCount = caps.minImageCount + 1;
+    swapCreate.minImageCount = imageCount;
     swapCreate.imageFormat = choosenFormat;
     swapCreate.imageColorSpace = colorSpace;
     swapCreate.imageExtent.width = m_resolution.x;
@@ -190,9 +222,9 @@ void Window::recreateSwapchain() {
 
     //get all the swapchain images
     u32 imgCount = 0;
-    vkGetSwapchainImagesKHR(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSwapchainKHR>(m_swapchain), &imgCount, nullptr);
+    CHECK_VULKAN(vkGetSwapchainImagesKHR(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSwapchainKHR>(m_swapchain), &imgCount, nullptr));
     m_imgs.resize(imgCount);
-    vkGetSwapchainImagesKHR(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSwapchainKHR>(m_swapchain), &imgCount, reinterpret_cast<VkImage*>(m_imgs.data()));
+    CHECK_VULKAN(vkGetSwapchainImagesKHR(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSwapchainKHR>(m_swapchain), &imgCount, reinterpret_cast<VkImage*>(m_imgs.data())));
 
     //create image views for all images
     m_imgViews.reserve(m_imgs.size());
@@ -217,6 +249,15 @@ void Window::recreateSwapchain() {
         {throw Exception("Failed to create an image view", "GLGE::Graphic::Backend::Graphic::Vulkan::Window");}
         m_imgViews.push_back(reinterpret_cast<void*>(view));
     }
+    //create semaphores for all images
+    for (size_t i = 0; i < m_imgs.size(); ++i) {
+        VkSemaphoreCreateInfo semCreate {};
+        semCreate.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        VkSemaphore sem = VK_NULL_HANDLE;
+        if (vkCreateSemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), &semCreate, nullptr, &sem) != VK_SUCCESS)
+        {throw Exception("Failed to create the semaphore for a swapchain image", "GLGE::Graphic::Backend::Graphic::Vulkan::Window");}
+        m_semaphores.push_back(sem);
+    }
     
     //use a temporary command pool and command buffer to set the layout of the images correctly
     VkCommandPool tempPool;
@@ -232,7 +273,7 @@ void Window::recreateSwapchain() {
     cmdBuffAlloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     cmdBuffAlloc.commandPool = tempPool;
     VkCommandBuffer cmdBuff;
-    vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(inst->getDevice()), &cmdBuffAlloc, &cmdBuff);
+    CHECK_VULKAN(vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(inst->getDevice()), &cmdBuffAlloc, &cmdBuff));
 
     //create a dummy render pass to just clear the windows
     VkAttachmentDescription attachDescr {};
@@ -283,7 +324,7 @@ void Window::recreateSwapchain() {
     //record the command buffer
     VkCommandBufferBeginInfo cmdBuffBeg {};
     cmdBuffBeg.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    vkBeginCommandBuffer(cmdBuff, &cmdBuffBeg);
+    CHECK_VULKAN(vkBeginCommandBuffer(cmdBuff, &cmdBuffBeg));
 
     //run a dummy render pass for each image
     for (size_t i = 0; i < m_imgs.size(); ++i) {
@@ -303,7 +344,7 @@ void Window::recreateSwapchain() {
     }
 
     //finalize the command buffer
-    vkEndCommandBuffer(cmdBuff);
+    CHECK_VULKAN(vkEndCommandBuffer(cmdBuff));
 
     //submit to the graphics queue
     VkSubmitInfo subInfo {};
@@ -312,11 +353,11 @@ void Window::recreateSwapchain() {
     subInfo.pCommandBuffers = &cmdBuff;
     {
         auto queueRef = inst->getGraphicsQueue().acquire();
-        vkQueueSubmit(reinterpret_cast<VkQueue>(queueRef.queue), 1, &subInfo, VK_NULL_HANDLE);
-    }
+        CHECK_VULKAN(vkQueueSubmit(reinterpret_cast<VkQueue>(queueRef.queue), 1, &subInfo, VK_NULL_HANDLE));
 
-    //TODO: Better
-    vkQueueWaitIdle(reinterpret_cast<VkQueue>(inst->getGraphicsQueue().queues[0].first));
+        //TODO: Better
+        CHECK_VULKAN(vkQueueWaitIdle(reinterpret_cast<VkQueue>(queueRef.queue)));
+    }
 
     //clean up
     vkDestroyCommandPool(reinterpret_cast<VkDevice>(inst->getDevice()), tempPool, nullptr);

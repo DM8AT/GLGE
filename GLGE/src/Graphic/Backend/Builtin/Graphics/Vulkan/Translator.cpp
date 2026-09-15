@@ -29,16 +29,23 @@
 
 namespace VkImpl {
 
-bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     //extract the actual arguments
     const auto& [target, idx, color, depth, stencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>();
 
-    //get all command buffers
-    const auto& cmdBuffs = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+    //if the target is a window, update the command buffer size
+    if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+        //a single command buffer per swap-chain image is required
+        size_t count = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(target.getTarget())->getGraphicWindow().get())->getImages().size();
+        static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->setCommandBufferCount(count);
+        //restart of cmd buff is required
+        cBuff.onBegin();
+    }
+
     //vulkan may record multiple command buffers -> iterate over them all
-    for (size_t i = 0; i < cmdBuffs.size(); ++i) {
+    for (size_t i = 0; i < static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBufferCount(); ++i) {
         //extract the vulkan command buffer
-        VkCommandBuffer cmdBuff = reinterpret_cast<VkCommandBuffer>(cmdBuffs[i]);
+        VkCommandBuffer cmdBuff = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBuffer(i));
 
         //check the type
         if (target.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
@@ -49,6 +56,23 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
                 //extract the image
                 auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(fbuff->getColorAttachment(i));
                 VkImage vkImg = reinterpret_cast<VkImage>(img->getImage());
+
+                //syncing
+                VkImageMemoryBarrier barrier {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.image = vkImg;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
                 //clear the image
                 VkClearColorValue clearValue = {{color.r, color.g, color.b, color.w}};
@@ -65,6 +89,23 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
                 //extract the image
                 auto* img = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(fbuff->getDepthAttachment(i));
                 VkImage vkImg = reinterpret_cast<VkImage>(img->getImage());
+
+                //syncing
+                VkImageMemoryBarrier barrier {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.image = vkImg;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | (fbuff->usesDepthStencil() ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
                 //clear the image
                 VkClearDepthStencilValue ds {};
@@ -84,6 +125,23 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
 
             //this is a swapchain image -> it must be a color attachment
 
+            //syncing
+            VkImageMemoryBarrier barrier {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = img;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            vkCmdPipelineBarrier(cmdBuff, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
             //clear the image
             VkClearColorValue clearValue = {{color.r, color.g, color.b, color.w}};
             VkImageSubresourceRange range {};
@@ -100,17 +158,25 @@ bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::
     return true;
 }
 
-bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    //get the command buffers
-    const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
-
+bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
     //extract the actual arguments
-    const auto& [from, from_idx, to, to_idx, copyDepth, copyStencil] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>();
+    const auto& [from, from_idx, to, to_idx] = handle.getArguments<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8>();
     
+    //if the target is a window, update the command buffer size
+    if (from.getType() == GLGE::Graphic::RenderTarget::WINDOW || to.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+        //a single command buffer per swap-chain image is required
+        size_t count = 0;
+        if (from.getType() == GLGE::Graphic::RenderTarget::WINDOW) {count = std::max<size_t>(count, static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(from.getTarget())->getGraphicWindow().get())->getImages().size());}
+        if (to.getType()   == GLGE::Graphic::RenderTarget::WINDOW) {count = std::max<size_t>(count, static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(to.getTarget())->getGraphicWindow().get())->getImages().size());}
+        static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->setCommandBufferCount(count);
+        //restart of cmd buff is required
+        cBuff.onBegin();
+    }
+
     //iterate over all buffers
-    for (size_t i = 0; i < buffs.size(); ++i) {
+    for (size_t i = 0; i < static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBufferCount(); ++i) {
         //get the command buffer
-        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(buffs[i]);
+        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBuffer(i));
 
         //get the vulkan objects
         struct ImgInfo {
@@ -154,11 +220,7 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             ImgInfo() = default;
         };
         ImgInfo fromInfo(from, from_idx, i, false);
-        ImgInfo fromDepth;
-        if (copyDepth || copyStencil) {fromDepth = ImgInfo(from, from_idx, i, true);}
         ImgInfo toInfo(to, to_idx, i, false);
-        ImgInfo toDepth;
-        if (copyDepth || copyStencil) {toDepth = ImgInfo(to, to_idx, i, true);}
 
         //sanity checks for debug
         #if GLGE_DEBUG
@@ -193,21 +255,17 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
             //replace the copy image with the resolved image
             fromInfo.image = fromInfo.resImage;
 
-            //run the depth pass
-            if (fromDepth.pass != VK_NULL_HANDLE) {
-                //start the render pass
-                VkRenderPassBeginInfo rpBegin{};
-                rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-                rpBegin.renderPass = fromDepth.pass;
-                rpBegin.framebuffer = fromDepth.fbuff;
-                rpBegin.renderArea.offset = {0, 0};
-                rpBegin.renderArea.extent = {fromDepth.size.x, fromDepth.size.y};
-                vkCmdBeginRenderPass(cb, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
-                //directly end it
-                vkCmdEndRenderPass(cb);
-                //now, use the resolved img
-                fromDepth.image = fromDepth.resImage;
-            }
+            //re-validate
+            VkImageMemoryBarrier barrier {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = fromInfo.image;
+            barrier.oldLayout = fromInfo.layout;
+            barrier.newLayout = fromInfo.layout;
+            barrier.subresourceRange.aspectMask = fromInfo.aspects;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+            vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
         }
 
         //use blit to copy from one image to another
@@ -233,41 +291,15 @@ bool copy(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::G
         reg.dstSubresource.mipLevel = 0;
         reg.dstSubresource.layerCount = 1;
         vkCmdBlitImage(cb, fromInfo.image, fromInfo.layout, toInfo.image, toInfo.layout, 1, &reg, VK_FILTER_NEAREST);
-
-        //if depth data exists, do the same for the depth
-        if (fromDepth.image != VK_NULL_HANDLE && toDepth.image != VK_NULL_HANDLE) {
-            VkImageBlit reg {};
-            reg.srcOffsets[0].x = 0;
-            reg.srcOffsets[1].x = fromDepth.size.x;
-            reg.srcOffsets[0].y = 0;
-            reg.srcOffsets[1].y = fromDepth.size.y;
-            reg.srcOffsets[0].z = 0;
-            reg.srcOffsets[1].z = 1;
-            reg.srcSubresource.aspectMask = fromDepth.aspects;
-            reg.srcSubresource.baseArrayLayer = 0;
-            reg.srcSubresource.mipLevel = 0;
-            reg.srcSubresource.layerCount = 1;
-            reg.dstOffsets[0].x = 0;
-            reg.dstOffsets[1].x = toDepth.size.x;
-            reg.dstOffsets[0].y = 0;
-            reg.dstOffsets[1].y = toDepth.size.y;
-            reg.dstOffsets[0].z = 0;
-            reg.dstOffsets[1].z = 1;
-            reg.dstSubresource.aspectMask = toDepth.aspects;
-            reg.dstSubresource.baseArrayLayer = 0;
-            reg.dstSubresource.mipLevel = 0;
-            reg.dstSubresource.layerCount = 1;
-            vkCmdBlitImage(cb, fromDepth.image, fromDepth.layout, toDepth.image, toDepth.layout, 1, &reg, VK_FILTER_NEAREST);
-        }
     }
 
     //success
     return true;
 }
 
-bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
-    //get the command buffers
-    const std::vector<void*>& buffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
+bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    //get the command buffer
+    VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cBuff)->getBuffer(0));
 
     //extract the actual arguments
     const auto& [compute, size] = handle.getArguments<GLGE::Graphic::Shader*, GLGE::uvec3>();
@@ -278,50 +310,28 @@ bool dispatchCompute(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, co
     VkPipelineLayout layout = reinterpret_cast<VkPipelineLayout>(computeShader->getComputePipelineLayout());
     VkDescriptorSet set = reinterpret_cast<VkDescriptorSet>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(compute->getResources(0)->getBackend().get())->getDescriptorSet());
 
-    //iterate over all command buffers for recording
-    for (const auto& buff : buffs) {
-        //get the actual command buffer
-        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(buff);
+    //prepare the dispatch
+    VkMemoryBarrier barrierInit {};
+    barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+    barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
 
-        //prepare the dispatch
-        VkMemoryBarrier barrierInit {};
-        barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
+    //bind the compute pipeline
+    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, pipe);
 
-        //bind the compute pipeline
-        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, pipe);
+    //bind the descriptor set
+    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0, 1, &set, 0, nullptr);
 
-        //prepare resources
-        for (const auto& resource : compute->getResources(0)->resources()) {
-            //depending on the type do different stuff
-            switch (resource->getType())
-            {
-            case GLGE::Graphic::ResourceType::IMAGE: {
-                    //nothing to do for images - images are always stored in general layout
-                }
-                break;
-            
-            default:
-                break;
-            }
-        }
+    //dispatch the compute shader
+    vkCmdDispatch(cb, size.x, size.y, size.z);
 
-        //bind the descriptor set
-        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0, 1, &set, 0, nullptr);
-
-        //dispatch the compute shader
-        vkCmdDispatch(cb, size.x, size.y, size.z);
-
-        //prepare the dispatch
-        VkMemoryBarrier barrierFinalize {};
-        barrierFinalize.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        barrierFinalize.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        barrierFinalize.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrierFinalize, 0, nullptr, 0, nullptr);
-
-    }
+    //prepare the dispatch
+    VkMemoryBarrier barrierFinalize {};
+    barrierFinalize.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+    barrierFinalize.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    barrierFinalize.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrierFinalize, 0, nullptr, 0, nullptr);
 
     //success
     return true;

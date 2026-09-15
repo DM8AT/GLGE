@@ -153,6 +153,8 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Image::resizeAndClear(const uvec2&
     //update all framebuffer references
     for (Framebuffer* fbuff : m_ref_framebuffers)
     {fbuff->onImageUpdated(this);}
+
+    invalidate();
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Image::read(ImageCPU& out) const {

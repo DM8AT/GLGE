@@ -32,6 +32,7 @@
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
 #include "Graphic/Backend/Video/Window.h"
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
+#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 
 //add Vulkan buffers
 #include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
@@ -87,7 +88,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
     //store all objects sorted by the materials
     std::unordered_map<GLGE::Graphic::Material*, std::vector<std::pair<MeshHandle, Object>>> objs;
     size_t total = 0;
-    auto reg = [&objs, &total](Tiny::ECS::Entity ent, const Component::Renderable& renderer) {
+    auto reg = [&objs, &total, this](Tiny::ECS::Entity ent, const Component::Renderable& renderer) {
         //only add the mesh if it is enabled
         if (renderer.enabled) {
             auto* m = renderer.mesh;
@@ -140,81 +141,129 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
 
     //get the indirect buffer
     VkBuffer indirectBuffer = reinterpret_cast<VkBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(m_drawBuffer->getBackendReference().get())->getBuffer());
-    //iterate over all command buffers
-    auto cbuffs = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffers();
-    for (size_t i = 0; i < cbuffs.size(); ++i) {
-        //extract the vulkan command buffer
-        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(cbuffs[i]);
+    //get the command buffer
+    VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff)->getBuffer(0));
 
-        //iterate over all materials
-        for (auto& [mat, meshes] : objs) {
-            //bind the material
-            GLGE::Graphic::Backend::Graphic::Vulkan::Material* material = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Material*>(mat->getBackend().get());
-            //get the vulkan framebuffer
-            auto* vkFbuff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer*>(material->getFbuff().get());
-            auto size = vkFbuff->getColorAttachmentCount() ? vkFbuff->getColorAttachment(0)->getSize() : vkFbuff->getDepthAttachment(0)->getSize();
-            //get the shader frontend
-            auto* shaderFrontend = material->getShader().get()->getFrontend();
+    //iterate over all materials
+    for (auto& [mat, meshes] : objs) {
+        //discover the material
+        for (size_t i = 0; i < mat->getBackend()->getShader()->getFrontend()->getSetCount(); ++i) 
+        {attachInvalidator(*static_cast<CommandInvalidator*>(mat->getBackend()->getShader()->getFrontend()->getResources(i)));}
+        //bind the material
+        GLGE::Graphic::Backend::Graphic::Vulkan::Material* material = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Material*>(mat->getBackend().get());
+        //get the vulkan framebuffer
+        auto* vkFbuff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer*>(material->getFbuff().get());
+        auto size = vkFbuff->getColorAttachmentCount() ? vkFbuff->getColorAttachment(0)->getSize() : vkFbuff->getDepthAttachment(0)->getSize();
+        //get the shader frontend
+        auto* shaderFrontend = material->getShader().get()->getFrontend();
 
-            //extract the resource sets
-            std::vector<VkDescriptorSet> sets;
-            sets.reserve(shaderFrontend->getSetCount());
-            for (size_t i = 0; i < shaderFrontend->getSetCount(); ++i) {
-                if (!shaderFrontend->hasSet(i)) {continue;}
-                auto* vkResourceSet = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(shaderFrontend->getResources(0)->getBackend().get());
-                sets.push_back(reinterpret_cast<VkDescriptorSet>(vkResourceSet->getDescriptorSet()));
-            }
-
-            //start the render pass
-            VkRenderPassBeginInfo renPassBeg {};
-            renPassBeg.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renPassBeg.framebuffer = reinterpret_cast<VkFramebuffer>(vkFbuff->getFramebuffer());
-            renPassBeg.renderPass = reinterpret_cast<VkRenderPass>(vkFbuff->getRenderPass());
-            renPassBeg.renderArea.offset = {0,0};
-            renPassBeg.renderArea.extent = {size.x, size.y};
-            vkCmdBeginRenderPass(cb, &renPassBeg, VK_SUBPASS_CONTENTS_INLINE);
-            //bind descriptor sets
-            vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipelineLayout>(material->getPipelineLayout()), 0, sets.size(), sets.data(), 0, nullptr);
-            //get the correct archetype
-            std::vector<GeometryPool::AttributeIdentifier> identifier;
-            identifier.reserve(mat->getLayout().getAttributeCount());
-            for (size_t i = 0; i < mat->getLayout().getAttributeCount(); ++i) {
-                const auto& attr = mat->getLayout().getAttribute(i);
-                identifier.push_back(GeometryPool::AttributeIdentifier (attr.usage, static_cast<u8>(attr.type), attr.streamId));
-            }
-            const auto& archetype = m_inst->meshManager().getPool().acquireArchetype(identifier);
-            //bind the index buffer
-            VkBuffer ibo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(archetype.getIndexStream())->getBuffer());
-            vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
-            //iterate over all streams and bind the vertex buffers
-            for (size_t i = 0; i < GeometryPool::MAX_STREAM_COUNT; ++i) {
-                const auto& stream = archetype.accessStream(i);
-                if (stream.stream.get() == nullptr) {continue;}
-                VkBuffer vbo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(stream.stream.get())->getBuffer());
-                VkDeviceSize offs = 0;
-                vkCmdBindVertexBuffers(cb, i, 1, &vbo, &offs);
-            }
-            //start the pipeline
-            vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipeline>(material->getPipeline()));
-            //set the dynamic states
-            VkViewport viewport {};
-            viewport.x = 0;
-            viewport.y = 0;
-            viewport.minDepth = 0.f;
-            viewport.maxDepth = 1.f;
-            viewport.width = size.x;
-            viewport.height = size.y;
-            vkCmdSetViewport(cb, 0, 1, &viewport);
-            VkRect2D scissor {};
-            scissor.offset = {0,0};
-            scissor.extent = {size.x, size.y};
-            vkCmdSetScissor(cb, 0, 1, &scissor);
-            //draw all the meshes
-            vkCmdDrawIndexedIndirect(cb, indirectBuffer, 0, meshes.size(), sizeof(VkDrawIndexedIndirectCommand));
-
-            //finish the render pass
-            vkCmdEndRenderPass(cb);
+        //extract the resource sets
+        std::vector<VkDescriptorSet> sets;
+        sets.reserve(shaderFrontend->getSetCount());
+        for (size_t i = 0; i < shaderFrontend->getSetCount(); ++i) {
+            if (!shaderFrontend->hasSet(i)) {continue;}
+            auto* vkResourceSet = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::ResourceSet*>(shaderFrontend->getResources(0)->getBackend().get());
+            sets.push_back(reinterpret_cast<VkDescriptorSet>(vkResourceSet->getDescriptorSet()));
         }
+
+        //start dynamic rendering
+        std::vector<VkRenderingAttachmentInfoKHR> colorAttachments;
+        colorAttachments.reserve(vkFbuff->getColorAttachmentCount());
+        for (size_t i = 0; i < vkFbuff->getColorAttachmentCount(); ++i) {
+            auto* att = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(vkFbuff->getColorAttachment(i));
+            VkRenderingAttachmentInfoKHR colorAttach {};
+            colorAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+            colorAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            colorAttach.imageView = static_cast<VkImageView>(att->getView());
+            colorAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            colorAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachments.push_back(colorAttach);
+        }
+        VkRenderingAttachmentInfoKHR depthAttach {};
+        auto* depthAtt = vkFbuff->getDepthAttachmentCount() ? static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(vkFbuff->getDepthAttachment(0)) : nullptr;
+        if (depthAtt) {
+            depthAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+            depthAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            depthAttach.imageView = static_cast<VkImageView>(depthAtt->getView());
+            depthAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            depthAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        }
+        VkRenderingAttachmentInfoKHR stencilAttach {};
+        auto* stencilAtt = vkFbuff->getStencilAttachmentCount() ? static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(vkFbuff->getStencilAttachment(0)) : nullptr;
+        if (stencilAtt) {
+            stencilAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+            stencilAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            stencilAttach.imageView = static_cast<VkImageView>(stencilAtt->getView());
+            stencilAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            stencilAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        }
+
+        //prepare the rendering
+        VkMemoryBarrier barrierInit {};
+        barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
+
+        VkRenderingInfoKHR renInfo {};
+        renInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+        renInfo.colorAttachmentCount = colorAttachments.size();
+        renInfo.pColorAttachments = colorAttachments.data();
+        renInfo.pDepthAttachment = depthAtt ? &depthAttach : nullptr;
+        renInfo.pStencilAttachment = stencilAtt ? &stencilAttach : nullptr;
+        renInfo.renderArea.offset = {0,0};
+        const uvec2& ext = vkFbuff->getColorAttachmentCount() ? vkFbuff->getColorAttachment(0)->getSize() : vkFbuff->getDepthAttachment(0)->getSize();
+        renInfo.renderArea.extent = {ext.x, ext.y};
+        renInfo.layerCount = 1;
+        renInfo.viewMask = 0;
+        (*reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getCommands().pfn_vkCmdBeginRenderingKHR))(cb, &renInfo);
+        
+        //bind descriptor sets
+        vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipelineLayout>(material->getPipelineLayout()), 0, sets.size(), sets.data(), 0, nullptr);
+        //get the correct archetype
+        std::vector<GeometryPool::AttributeIdentifier> identifier;
+        identifier.reserve(mat->getLayout().getAttributeCount());
+        for (size_t i = 0; i < mat->getLayout().getAttributeCount(); ++i) {
+            const auto& attr = mat->getLayout().getAttribute(i);
+            identifier.push_back(GeometryPool::AttributeIdentifier (attr.usage, static_cast<u8>(attr.type), attr.streamId));
+        }
+        const auto& archetype = m_inst->meshManager().getPool().acquireArchetype(identifier);
+        //bind the index buffer
+        VkBuffer ibo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(archetype.getIndexStream())->getBuffer());
+        vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
+        //iterate over all streams and bind the vertex buffers
+        for (size_t i = 0; i < GeometryPool::MAX_STREAM_COUNT; ++i) {
+            const auto& stream = archetype.accessStream(i);
+            if (stream.stream.get() == nullptr) {continue;}
+            VkBuffer vbo = reinterpret_cast<VkBuffer>(static_cast<Vulkan::GeometryPoolStream*>(stream.stream.get())->getBuffer());
+            VkDeviceSize offs = 0;
+            vkCmdBindVertexBuffers(cb, i, 1, &vbo, &offs);
+        }
+        //start the pipeline
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, reinterpret_cast<VkPipeline>(material->getPipeline()));
+        //set the dynamic states
+        VkViewport viewport {};
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.minDepth = 0.f;
+        viewport.maxDepth = 1.f;
+        viewport.width = size.x;
+        viewport.height = size.y;
+        vkCmdSetViewport(cb, 0, 1, &viewport);
+        VkRect2D scissor {};
+        scissor.offset = {0,0};
+        scissor.extent = {size.x, size.y};
+        vkCmdSetScissor(cb, 0, 1, &scissor);
+        //draw all the meshes
+        vkCmdDrawIndexedIndirect(cb, indirectBuffer, 0, meshes.size(), sizeof(VkDrawIndexedIndirectCommand));
+
+        //finish rendering
+        (*reinterpret_cast<PFN_vkCmdEndRenderingKHR>(static_cast<Vulkan::Instance*>(m_inst->getGraphicBackendInstance().get())->getCommands().pfn_vkCmdEndRenderingKHR))(cb);
+        VkMemoryBarrier barrierFin {};
+        barrierFin.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        barrierFin.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        barrierFin.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &barrierFin, 0, nullptr, 0, nullptr);
     }
 
     //gather up all the light sources
@@ -231,9 +280,39 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::record(GLGE::Graphic::Ba
     m_pointLightBuffer->resize(sizeof(PointLightData)*((m_pointLights.size() == 0) ? 1 : m_pointLights.size()), false);
     m_spotLightBuffer->resize(sizeof(SpotLightData)*((m_spotLights.size() == 0) ? 1 : m_spotLights.size()), false);
     m_dirLightBuffer->resize(sizeof(DirectionalLightData)*((m_directionalLights.size() == 0) ? 1 : m_directionalLights.size()), false);
+
+    //make sure that all buffers contain valid data
+    update();
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
+    //check if the cache is up to date
+    size_t foundElCount = 0;
+    bool valid = true;
+    auto check = [&](Tiny::ECS::Entity ent, const Component::Renderable& renderer) -> void {
+        //only count the mesh if it is enabled
+        if (renderer.enabled) {
+            auto* m = renderer.mesh;
+            //interpret null mesh as disabled
+            if (m == nullptr) {return;}
+
+            //increase the amount of found elements
+            ++foundElCount;
+            //check if the object is known
+            for (size_t i = 0; i < m_entities.size(); ++i) {
+                if (ent == Tiny::ECS::Entity(m_entities[i])) {return;}
+            }
+            //not found -> mark list as invalid
+            valid = false;
+        }
+    };
+    m_world->each<Component::Renderable>(check);
+    //mark list as invalid if counts do not match
+    valid = valid && (foundElCount == m_entities.size());
+
+    //if invalid: request re-recording and stop
+    if (!valid) {invalidate(); return;}
+
     //update the camera data depending on if a camera exists
     bool isCam = false;
     Component::Camera* cam = nullptr;
@@ -357,7 +436,20 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //write the data
         m_transformBuffer->write(&data, sizeof(data), sizeof(TransformData) * i);
+    }
 
+    //count the amount of point lights, resize if required
+    size_t plCount = 0;
+    auto pl_Count = [&](const Tiny::ECS::Entity& entity, const Component::PointLight&) -> void {
+        //only count is important
+        ++plCount;
+    };
+    //only do point light stuff if point lights exist
+    if (plCount > 0) {
+        if (plCount != (m_pointLightBuffer->getSize() / sizeof(PointLightData))) {
+            //resize
+            m_pointLightBuffer->resize(plCount * sizeof(PointLightData));
+        }
     }
 
     //convert a color to a packed color
@@ -370,25 +462,19 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
     //the minimum intensity before culling
     const constexpr float e = 1E-4;
     //iterate over all point lights
-    for (const auto& obj : m_pointLights) {
+    auto pl_Update = [&](const Tiny::ECS::Entity& obj, const Component::PointLight& light) -> void {
         //next light
         ++lightId;
 
         //store the GPU data
         PointLightData data;
 
-        //extract the point light data
-        Component::PointLight* light = m_world->get<Component::PointLight>(obj);
-
-        //only continue of point light data exists
-        if (!light) {continue;}
-
         //store the light data
-        data.color = col(light->color);
-        data.intensity = light->intensity;
-        data.radius = light->radius;
-        data.fallof_linear = light->fallof_linear;
-        data.fallof_quadratic = light->fallof_quadratic;
+        data.color = col(light.color);
+        data.intensity = light.intensity;
+        data.radius = light.radius;
+        data.fallof_linear = light.fallof_linear;
+        data.fallof_quadratic = light.fallof_quadratic;
         //compute the culling distance
         /*
         Intensity computation: Intensity(Distance) = Intensity / (1 + fallof_linear * Distance + fallof_quadratic * Distance*Distance)
@@ -399,7 +485,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         Let's solve for Distance (and use the positive evaluation since the distance is never negative):
         Distance = (sqrt(4 * Intensity * e * fallof_quadratic + e^2 * fallof_linear^2) - e * fallof_linear) / (2 * e * fallof_quadratic)
         */
-        float cullDistance = (glm::sqrt(4.f * light->intensity * e * light->fallof_quadratic + e*e * light->fallof_linear*light->fallof_linear) - e * light->fallof_linear) / (2 * e * light->fallof_quadratic);
+        float cullDistance = (glm::sqrt(4.f * light.intensity * e * light.fallof_quadratic + e*e * light.fallof_linear*light.fallof_linear) - e * light.fallof_linear) / (2 * e * light.fallof_quadratic);
         //store the cull distance
         data.cullDistance = cullDistance;
 
@@ -422,30 +508,39 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //upload the data
         m_pointLightBuffer->write(&data, sizeof(data), sizeof(data)*lightId);
+    };
+    m_world->each<Component::PointLight>(pl_Update);
+
+    //count the amount of spot lights, resize if required
+    size_t slCount = 0;
+    auto sl_Count = [&](const Tiny::ECS::Entity& entity, const Component::SpotLight&) -> void {
+        //only count is important
+        ++slCount;
+    };
+    if (slCount > 0) {
+        if (slCount != (m_spotLightBuffer->getSize() / sizeof(SpotLightData))) {
+            //resize
+            m_spotLightBuffer->resize(slCount * sizeof(SpotLightData));
+        }
     }
+
     //iterate over all spot lights
     lightId = SIZE_MAX;
-    for (const auto& obj : m_spotLights) {
+    auto sl_Update = [&](const Tiny::ECS::Entity& obj, const Component::SpotLight& light) -> void {
         //next light
         ++lightId;
 
         //store the GPU data
         SpotLightData data;
 
-        //extract the spot light data
-        Component::SpotLight* light = m_world->get<Component::SpotLight>(obj);
-
-        //only continue of spot light data exists
-        if (!light) {continue;}
-
         //store the light data
-        data.color = col(light->color);
-        data.intensity = light->intensity;
-        data.fallof_linear = light->fallof_linear;
-        data.fallof_quadratic = light->fallof_quadratic;
+        data.color = col(light.color);
+        data.intensity = light.intensity;
+        data.fallof_linear = light.fallof_linear;
+        data.fallof_quadratic = light.fallof_quadratic;
         //store the cosines of the angles
-        data.cos_cone_inner = glm::cos(light->cone_inner);
-        data.cos_cone_outer = glm::cos(light->cone_outer);
+        data.cos_cone_inner = glm::cos(light.cone_inner);
+        data.cos_cone_outer = glm::cos(light.cone_outer);
 
         //compute the culling distance
         /*
@@ -457,7 +552,7 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
         Let's solve for Distance (and use the positive evaluation since the distance is never negative):
         Distance = (sqrt(4 * Intensity * e * fallof_quadratic + e^2 * fallof_linear^2) - e * fallof_linear) / (2 * e * fallof_quadratic)
         */
-        float cullDistance = (glm::sqrt(4.f * light->intensity * e * light->fallof_quadratic + e*e * light->fallof_linear*light->fallof_linear) - e * light->fallof_linear) / (2 * e * light->fallof_quadratic);
+        float cullDistance = (glm::sqrt(4.f * light.intensity * e * light.fallof_quadratic + e*e * light.fallof_linear*light.fallof_linear) - e * light.fallof_linear) / (2 * e * light.fallof_quadratic);
         //store the cull distance
         data.cullDistance = cullDistance;
 
@@ -486,25 +581,34 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //upload the data
         m_spotLightBuffer->write(&data, sizeof(data), sizeof(data)*lightId);
+    };
+    m_world->each<Component::SpotLight>(sl_Update);
+
+    //count the amount of directional lights, resize if required
+    size_t dlCount = 0;
+    auto dl_Count = [&](const Tiny::ECS::Entity& entity, const Component::DirectionalLight&) -> void {
+        //only count is important
+        ++dlCount;
+    };
+    if (dlCount > 0) {
+        if (dlCount != (m_dirLightBuffer->getSize() / sizeof(DirectionalLightData))) {
+            //resize
+            m_dirLightBuffer->resize(dlCount * sizeof(DirectionalLightData));
+        }
     }
+
     //iterate over all directional lights
     lightId = SIZE_MAX;
-    for (const auto& obj : m_directionalLights) {
+    auto dl_Update = [&](const Tiny::ECS::Entity& obj, const Component::DirectionalLight& light) -> void {
         //next light
         ++lightId;
 
         //store the GPU data
         DirectionalLightData data;
 
-        //extract the directional light data
-        Component::DirectionalLight* light = m_world->get<Component::DirectionalLight>(obj);
-
-        //only continue of directional light data exists
-        if (!light) {continue;}
-
         //store the light data
-        data.color = col(light->color);
-        data.intensity = light->intensity;
+        data.color = col(light.color);
+        data.intensity = light.intensity;
 
         //fill in the position
         WorldTransform* transf = m_world->get<WorldTransform>(obj);
@@ -525,5 +629,6 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::Renderer::update() {
 
         //upload the light data
         m_dirLightBuffer->write(&data, sizeof(data), sizeof(data) * lightId);
-    }
+    };
+    m_world->each<Component::DirectionalLight>(dl_Update);
 }

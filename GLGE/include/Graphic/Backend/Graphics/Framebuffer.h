@@ -18,6 +18,8 @@
 #include "Core/Reference.h"
 //images are required for framebuffers
 #include "Image.h"
+//add commands
+#include "Graphic/Command.h"
 
 //use the backend namespace
 namespace GLGE::Graphic::Backend::Graphic {
@@ -25,7 +27,7 @@ namespace GLGE::Graphic::Backend::Graphic {
     /**
      * @brief an API for a framebuffer backend implementation
      */
-    class Framebuffer : public Referable {
+    class Framebuffer : public Referable, public CommandInvalidator {
     public:
 
         /**

@@ -1,0 +1,55 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="CsDNuQOQW3QKv0rfYd6g">
+    <mxGraphModel dx="615" dy="417" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-4" edge="1" parent="1" source="BPBB7JYh1Yt3Y-kXbVhW-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="BPBB7JYh1Yt3Y-kXbVhW-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="390" />
+              <mxPoint x="320" y="390" />
+            </Array>
+            <mxPoint x="320.21739130434787" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-7" edge="1" parent="1" source="BPBB7JYh1Yt3Y-kXbVhW-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="BPBB7JYh1Yt3Y-kXbVhW-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="370" />
+              <mxPoint x="440" y="370" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Typed frontent command" vertex="1">
+          <mxGeometry height="40" width="80" x="280" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-9" edge="1" parent="1" source="BPBB7JYh1Yt3Y-kXbVhW-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="BPBB7JYh1Yt3Y-kXbVhW-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Command ID" vertex="1">
+          <mxGeometry height="40" width="80" x="280" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-12" edge="1" parent="1" source="BPBB7JYh1Yt3Y-kXbVhW-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="BPBB7JYh1Yt3Y-kXbVhW-10">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="440" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Type-Erased payload" vertex="1">
+          <mxGeometry height="40" width="80" x="400" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-11" edge="1" parent="1" source="BPBB7JYh1Yt3Y-kXbVhW-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="BPBB7JYh1Yt3Y-kXbVhW-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Command function LUT" vertex="1">
+          <mxGeometry height="40" width="80" x="280" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="BPBB7JYh1Yt3Y-kXbVhW-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Reconstructed command payload" vertex="1">
+          <mxGeometry height="40" width="80" x="280" y="560" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

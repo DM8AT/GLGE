@@ -21,6 +21,12 @@
 #include <algorithm>
 #include <vector>
 
+#if GLGE_DEBUG
+#define CHECK_VULKAN(fun) {VkResult res = (fun); if (res != VK_SUCCESS) {std::stringstream stream; stream << #fun " : did not return VK_SUCCESS, result code: " << static_cast<i32>(res); throw GLGE::Exception(stream.str(), __ASSERT_FUNCTION);} }
+#else
+#define CHECK_VULKAN(fun) (fun);
+#endif
+
 //impl file, using namespace is ok
 using namespace GLGE::Graphic::Backend::Graphic::Vulkan;
 
@@ -36,7 +42,8 @@ GeometryPoolStream::GeometryPoolStream(u64 size, bool isIbo, GLGE::Graphic::Back
         if (device) {
             //create the synchronizing fence
             VkFenceCreateInfo fenceInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-            vkCreateFence(device, &fenceInfo, nullptr, reinterpret_cast<VkFence*>(&m_fence));
+            CHECK_VULKAN(vkCreateFence(device, &fenceInfo, nullptr, reinterpret_cast<VkFence*>(&m_fence)));
+            std::cout << "Created fence " << m_fence << " as a geometry pool stream fence\n";
         }
     }
 
@@ -65,8 +72,8 @@ void GeometryPoolStream::waitForUpload() {
         VkDevice device = static_cast<VkDevice>(m_device);
         VkFence fence = static_cast<VkFence>(m_fence);
         //then wait for the fence
-        vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
-        vkResetFences(device, 1, &fence);
+        CHECK_VULKAN(vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX));
+        CHECK_VULKAN(vkResetFences(device, 1, &fence));
         //fence finished
         m_uploadInFlight = false;
     }
@@ -135,11 +142,11 @@ void GeometryPoolStream::onResize(u64 newSize) {
         cmdAlloc.commandBufferCount = 1;
         cmdAlloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         VkCommandBuffer cmd;
-        vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(m_device), &cmdAlloc, &cmd);
+        CHECK_VULKAN(vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(m_device), &cmdAlloc, &cmd));
         
         VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(cmd, &beginInfo);
+        CHECK_VULKAN(vkBeginCommandBuffer(cmd, &beginInfo));
 
         VmaAllocationInfo oldAllocInfo;
         vmaGetAllocationInfo(allocator, static_cast<VmaAllocation>(m_allocation), &oldAllocInfo);
@@ -151,7 +158,7 @@ void GeometryPoolStream::onResize(u64 newSize) {
         copyRegion.size = std::min(static_cast<u64>(oldAllocInfo.size), newSize); 
         
         vkCmdCopyBuffer(cmd, static_cast<VkBuffer>(m_buffer), newBuffer, 1, &copyRegion);
-        vkEndCommandBuffer(cmd);
+        CHECK_VULKAN(vkEndCommandBuffer(cmd));
 
         VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
         submitInfo.commandBufferCount = 1;
@@ -159,7 +166,7 @@ void GeometryPoolStream::onResize(u64 newSize) {
 
         auto* vkInst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_inst);
         auto queueRef = vkInst->getTransferQueue().acquire();
-        vkQueueSubmit(static_cast<VkQueue>(queueRef.queue), 1, &submitInfo, static_cast<VkFence>(m_fence));
+        CHECK_VULKAN(vkQueueSubmit(static_cast<VkQueue>(queueRef.queue), 1, &submitInfo, static_cast<VkFence>(m_fence)));
         
         m_uploadInFlight = true;
         waitForUpload();
@@ -224,12 +231,12 @@ void GeometryPoolStream::onFlush() {
     cmdAlloc.commandBufferCount = 1;
     cmdAlloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     VkCommandBuffer cmd;
-    vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(m_device), &cmdAlloc, &cmd);
+    CHECK_VULKAN(vkAllocateCommandBuffers(reinterpret_cast<VkDevice>(m_device), &cmdAlloc, &cmd));
 
     //start upload cmd buff
     VkCommandBufferBeginInfo beginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    vkBeginCommandBuffer(cmd, &beginInfo);
+    CHECK_VULKAN(vkBeginCommandBuffer(cmd, &beginInfo));
 
     //copy all dirty ranges over
     std::vector<VkBufferCopy> copies;
@@ -237,7 +244,7 @@ void GeometryPoolStream::onFlush() {
     for (const auto& r : m_dirtyRanges) 
     {copies.push_back({r.offset, r.offset, r.size});}
     vkCmdCopyBuffer(cmd, static_cast<VkBuffer>(m_stagingBuffer), static_cast<VkBuffer>(m_buffer), static_cast<uint32_t>(copies.size()), copies.data());
-    vkEndCommandBuffer(cmd);
+    CHECK_VULKAN(vkEndCommandBuffer(cmd));
 
     //submit work
     VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
@@ -246,7 +253,7 @@ void GeometryPoolStream::onFlush() {
 
     auto* vkInst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_inst);
     auto queueRef = vkInst->getTransferQueue().acquire();
-    vkQueueSubmit(static_cast<VkQueue>(queueRef.queue), 1, &submitInfo, static_cast<VkFence>(m_fence));
+    CHECK_VULKAN(vkQueueSubmit(static_cast<VkQueue>(queueRef.queue), 1, &submitInfo, static_cast<VkFence>(m_fence)));
     
     //mark that uploads are in progress, but no regions are dirty
     m_uploadInFlight = true;

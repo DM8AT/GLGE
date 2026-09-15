@@ -77,6 +77,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     //dynamically pull the requested application version
     auto version = instance->getGraphicDescription()->getAPIVersion();
     appInfo.apiVersion = VK_MAKE_API_VERSION(0, version.getMajor(), version.getMinor(), version.getPatch());
+    appInfo.apiVersion = VK_API_VERSION_1_3;
     //use the instance's name as the app name
     appInfo.pApplicationName = instance->getInstance()->getName().data();
     //use the instance's version as the app version
@@ -228,7 +229,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
         VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME,
         VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
         VK_KHR_MAINTENANCE_2_EXTENSION_NAME,
-        VK_KHR_MULTIVIEW_EXTENSION_NAME
+        VK_KHR_MULTIVIEW_EXTENSION_NAME,
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
     };
     instance->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->getRequiredDeviceExtensions(devExt);
 
@@ -359,8 +361,11 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
         queueCreates.push_back(create);
     }
 
+    VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeature {};
+    dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
     VkPhysicalDeviceDescriptorIndexingFeatures indexing = {};
     indexing.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    indexing.pNext = &dynamicRenderingFeature;
     VkPhysicalDeviceFeatures2KHR features2 = {};
     features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     features2.pNext = &indexing;
@@ -373,6 +378,10 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     properties2.pNext = &resolveProps;
     vkGetPhysicalDeviceProperties2(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &properties2);
 
+    //query the physical device features
+    VkPhysicalDeviceFeatures features {};
+    vkGetPhysicalDeviceFeatures(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &features);
+
     //check if everything required is supported
     if (!(indexing.descriptorBindingStorageImageUpdateAfterBind && indexing.descriptorBindingSampledImageUpdateAfterBind && indexing.descriptorBindingStorageBufferUpdateAfterBind && indexing.descriptorBindingUniformBufferUpdateAfterBind))
     {throw Exception("The device must support all required update after binding types for descriptor sets", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
@@ -380,6 +389,10 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     {throw Exception("The multi draw indirect feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     if (!features2.features.sampleRateShading)
     {throw Exception("The sample rate shading feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!dynamicRenderingFeature.dynamicRendering)
+    {throw Exception("The dynamic rendering feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!features2.features.drawIndirectFirstInstance)
+    {throw Exception("The feature \"draw indirect first instance\" is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     //store the supported depth averaging modes
     if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_AVERAGE_BIT) 
     {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_AVERAGE_BIT);}
@@ -389,15 +402,18 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_MIN_BIT);}
     if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_SAMPLE_ZERO_BIT) 
     {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);}
+    dynamicRenderingFeature.dynamicRendering = VK_TRUE;
 
     //enable specific features
     VkPhysicalDeviceFeatures devFeatures {};
     devFeatures.multiDrawIndirect = VK_TRUE;
     devFeatures.sampleRateShading = VK_TRUE;
+    devFeatures.drawIndirectFirstInstance = VK_TRUE;
     devFeatures.samplerAnisotropy = features2.features.samplerAnisotropy;
     //enable descriptor update after binding
     indexing = {};
     indexing.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    indexing.pNext = &dynamicRenderingFeature;
     indexing.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
     indexing.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
     indexing.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
@@ -485,6 +501,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
 
     //load extension functions
     m_vkCreateRenderPass2KHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCreateRenderPass2KHR"));
+    m_loadedCmds.pfn_vkCmdBeginRenderingKHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdBeginRenderingKHR"));
+    m_loadedCmds.pfn_vkCmdEndRenderingKHR   = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdEndRenderingKHR"));
 }
 
 Instance::~Instance() {

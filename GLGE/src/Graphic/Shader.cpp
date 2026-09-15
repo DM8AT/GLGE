@@ -218,6 +218,13 @@ void GLGE::Graphic::Shader::setResources(u32 set, ResourceSet* resources) {
     if (!resources->matches(temp))
     {throw GLGE::Exception("Tried to bind a resource set with incompatible structure to a set of a shader", "GLGE::Graphic::Shader::setResources");}
 
+    //if an old set exists, detach it
+    if (m_sets[set]) {detachInvalidator(*static_cast<CommandInvalidator*>(m_sets[set]));}
     //structures match, so store the resource
     m_sets[set] = resources;
+
+    //add as a child
+    attachInvalidator(*static_cast<CommandInvalidator*>(resources));
+    //invalidate self
+    invalidate();
 }

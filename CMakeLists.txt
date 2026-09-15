@@ -90,25 +90,25 @@ if(EXAMPLE_PLUGIN_BUILD_DEFAULT)
         src/Examples/Plugins/DefaultExample.cpp
     )
     list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
-    # # Windows
+    # Windows
     add_example_plugin(ExamplePlugin_WindowExample WindowExample
         src/Examples/Plugins/WindowExample.cpp
     )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
+    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_WindowExample)
     # Assets
-    add_example_plugin(ExamplePlugin_AssetExample AssetExample
-        src/Examples/Plugins/AssetExample.cpp
-    )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_AssetExample)
-    add_example_plugin(ExamplePlugin_NewMeshExample NewMeshExample
-        src/Examples/Plugins/NewMeshExample.cpp
-    )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_NewMeshExample)
-    # Physics
-    add_example_plugin(ExamplePlugin_PhysicsExample PhysicsExample
-        src/Examples/Plugins/PhysicsExample.cpp
-    )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_PhysicsExample)
+    # add_example_plugin(ExamplePlugin_AssetExample AssetExample
+    #     src/Examples/Plugins/AssetExample.cpp
+    # )
+    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_AssetExample)
+    # add_example_plugin(ExamplePlugin_NewMeshExample NewMeshExample
+    #     src/Examples/Plugins/NewMeshExample.cpp
+    # )
+    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_NewMeshExample)
+    # # Physics
+    # add_example_plugin(ExamplePlugin_PhysicsExample PhysicsExample
+    #     src/Examples/Plugins/PhysicsExample.cpp
+    # )
+    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_PhysicsExample)
 endif()
 
 # add unit tests

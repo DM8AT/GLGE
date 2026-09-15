@@ -31,20 +31,19 @@ GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream::~GeometryPoolStream
 void GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream::onFlush() {
     //no-op
 }
-
 void GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream::onResize(u64 newSize) {
-    //create the new buffer
     u32 newBuff = 0;
     glCreateBuffers(1, &newBuff);
 
     //setup static storage
     glNamedBufferStorage(newBuff, newSize, nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-    //map the buffer
-    void* newMapping = glMapNamedBufferRange(newBuff, 0, newSize, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
-    //if old data exists, copy over
-    if (m_mapped) 
-    {memcpy(newMapping, m_mapped, glm::min(newSize, m_size));}
+    //if an old buffer exists, copy data on the GPU
+    if (m_buff) 
+    {glCopyNamedBufferSubData(m_buff, newBuff, 0, 0, glm::min<size_t>(newSize, m_buffSize));}
+
+    //map the new buffer
+    void* newMapping = glMapNamedBufferRange(newBuff, 0, newSize, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
     //cache old buffer
     u32 oldBuff = m_buff;
@@ -52,13 +51,12 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream::onResize(u64 n
     //update
     m_buff = newBuff;
     m_mapped = newMapping;
-    m_size = newSize;
+    m_buffSize = newSize;
 
     //if an old buffer exists, delete it
     if (oldBuff)
     {glDeleteBuffers(1, &oldBuff);}
 }
-
 void GLGE::Graphic::Backend::Graphic::OpenGL::GeometryPoolStream::onWrite(Region region, const void* data, u64 offset, u64 size) {
     //write
     memcpy(reinterpret_cast<u8*>(m_mapped) + region.offset + offset, data, size);
