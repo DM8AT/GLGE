@@ -16,3 +16,6 @@ CMakeSettings.json
 *.exe
 # ignore the test results
 Tests/*
+
+# ignore local stuff
+.hidden

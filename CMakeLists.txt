@@ -1,166 +1,685 @@
 cmake_minimum_required(VERSION 3.14)
-project(MAIN_PROJ)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set the name for the library
+set(GLGE_LIB_NAME GLGE)
+# set the name for the core library
+set(GLGE_CORE_NAME GLGE_CORE)
+# set the name for the graphic library
+set(GLGE_GRAPHIC_NAME GLGE_GRAPHIC)
+# set the name for the physics library
+set(GLGE_PHYSICS_NAME GLGE_PHYSICS)
+# set the name for the project
+set(GLGE_PROJ_NAME GLGE)
 
-# Static GLGE archives are embedded into shared example plugin modules.
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# set the path to the source directory
+set(GLGE_SRC_DIR src)
+# set the path to the include directory
+set(GLGE_INCLUDE_DIR include)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# an option that allows GLGE to be build in debug mode
+option(GLGE_ALLOW_DEBUG
+    "Enable optional debugging features"
+    ON
+)
 
-# ---------------------------------------------------------------------------
-# Example plugin configuration
-# ---------------------------------------------------------------------------
-option(EXAMPLE_PLUGIN_BUILD_DEFAULT "Build the DefaultExample plugin module" ON)
-option(UNIT_TEST_BUILD_DEFAULT "Build the unit test test modules" ON)
+# an option that makes GLGE fetch Embree from github
+option(GLGE_FETCH_EMBREE 
+    "Fetch Embree automatically" 
+    ON
+)
 
-# Extend with additional `option(...)` + `add_example_plugin(...)` pairs.
-set(EXAMPLE_PLUGIN_TARGETS "")
-# Extend with additional `option(...)` + `add_unit_test(...)` pairs.
-set(UNIT_TEST_TARGETS "")
+# an option to disable GLGE Graphic
+option(GLGE_INCLUDE_GRAPHICS
+    "Enable the GLGE Graphic extension"
+    ON
+)
 
-# a function to add an example plugin
-function(add_example_plugin target output_name)
-    set(sources ${ARGN})
-    if(sources STREQUAL "")
-        message(FATAL_ERROR "add_example_plugin(${target}): no sources given")
-    endif()
+# an option to include the builtin OpenGL backend
+option(GLGE_GRAPHICS_INCLUDE_OPENGL
+    "Enable if the builtin OpenGL backend should be included"
+    ON
+)
 
-    add_library(${target} MODULE ${sources})
-    set_target_properties(${target} PROPERTIES
-        CXX_STANDARD 23
-        CXX_STANDARD_REQUIRED ON
-        PREFIX ""
-        OUTPUT_NAME "${output_name}"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/plugins"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugins"
-    )
-    target_include_directories(${target} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Examples
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/Examples/Plugins
-        ${CMAKE_CURRENT_SOURCE_DIR}/GLGE/include
-    )
-    # say that this is a plugin build
-    target_compile_definitions(${target} PRIVATE EXAMPLE_PLUGIN_BUILD=1)
+# an option to include the builtin Vulkan backend
+option(GLGE_GRAPHICS_INCLUDE_VULKAN
+    "Enable if the builtin Vulkan backend should be included"
+    ON
+)
 
-    # link GLGE
-    target_link_libraries(${target} PRIVATE GLGE)
-endfunction()
+# an option to make command overriding possible
+option(GLGE_GRAPHIC_ALLOW_ENGINE_COMMAND_OVERRIDE
+    "Enable if the user may override engine-side commands with custom commands"
+    OFF
+)
 
-# a function to add a test
-function(add_unit_test target output_name)
-    set(sources ${ARGN})
-    if(sources STREQUAL "")
-        message(FATAL_ERROR "add_unit_test(${target}): no sources given")
-    endif()
+# an option to disable GLGE Physics
+option(GLGE_INCLUDE_PHYSICS
+    "Enable the GLGE Physics extension"
+    ON
+)
 
-    add_library(${target} MODULE ${sources})
-    set_target_properties(${target} PROPERTIES
-        CXX_STANDARD 23
-        CXX_STANDARD_REQUIRED ON
-        PREFIX ""
-        OUTPUT_NAME "${output_name}"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Tests"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Tests"
-    )
-    target_include_directories(${target} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src
-        ${CMAKE_SOURCE_DIR}/src/Examples
-        ${CMAKE_SOURCE_DIR}/src/Examples/Plugins
-        ${CMAKE_SOURCE_DIR}/GLGE/include
-    )
+# an option to disable the Jolt implementation
+option(GLGE_PHYSICS_INCLUDE_JOLT
+    "Enable Jolt backend"
+    ON
+)
 
-    # link GLGE
-    target_link_libraries(${target} PRIVATE GLGE)
-    # link testing
-    target_link_libraries(${target} PRIVATE TEST_LIB)
-endfunction()
+option(GLGE_PHYSICS_INCLUDE_PHYSX
+    "Enable PhysX backend"
+    OFF
+)
+# 
+option(GLGE_PHYSICS_INCLUDE_BULLET
+    "Enable Bullet backend"
+    ON
+)
 
-# add GLGE
-add_subdirectory(GLGE)
-# add unit testing
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/Testing/UnitTestSystem/Test)
+# Tracy profiling option
+option(GLGE_ENABLE_TRACY "Enable Tracy profiler integration" ON)
 
-# add the default example
-if(EXAMPLE_PLUGIN_BUILD_DEFAULT)
-    # Default
-    add_example_plugin(ExamplePlugin_DefaultExample DefaultExample
-        src/Examples/Plugins/DefaultExample.cpp
-    )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_DefaultExample)
-    # Windows
-    add_example_plugin(ExamplePlugin_WindowExample WindowExample
-        src/Examples/Plugins/WindowExample.cpp
-    )
-    list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_WindowExample)
-    # Assets
-    # add_example_plugin(ExamplePlugin_AssetExample AssetExample
-    #     src/Examples/Plugins/AssetExample.cpp
-    # )
-    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_AssetExample)
-    # add_example_plugin(ExamplePlugin_NewMeshExample NewMeshExample
-    #     src/Examples/Plugins/NewMeshExample.cpp
-    # )
-    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_NewMeshExample)
-    # # Physics
-    # add_example_plugin(ExamplePlugin_PhysicsExample PhysicsExample
-    #     src/Examples/Plugins/PhysicsExample.cpp
-    # )
-    # list(APPEND EXAMPLE_PLUGIN_TARGETS ExamplePlugin_PhysicsExample)
+# define the project
+project(${GLGE_PROJ_NAME})
+
+# Shared libraries are currently not supported unless the host enables GLGE_BUILD_SHARED_LIBS
+option(GLGE_BUILD_SHARED_LIBS "Build GLGE_CORE / GLGE_GRAPHIC as shared libraries (required for out-of-tree launcher plugins)" OFF)
+if(GLGE_BUILD_SHARED_LIBS)
+    set(GLGE_CORE_LIBRARY_TYPE SHARED)
+    set(GLGE_GRAPHIC_LIBRARY_TYPE SHARED)
+    set(GLGE_PHYSICS_LIBRARY_TYPE SHARED)
+else()
+    set(GLGE_CORE_LIBRARY_TYPE STATIC)
+    set(GLGE_GRAPHIC_LIBRARY_TYPE STATIC)
+    set(GLGE_PHYSICS_LIBRARY_TYPE STATIC)
 endif()
 
-# add unit tests
-if (UNIT_TEST_BUILD_DEFAULT)
-    # math test suite
-    add_unit_test(UnitTest_MathSuite MathTestSuite
-        src/Testing/Tests/MathTestSuite.cpp
-    )
-    list(APPEND UNIT_TEST_TARGETS UnitTest_MathSuite)
-    # core test suite
-    add_unit_test(UnitTest_CoreSuite CoreTestSuite
-        src/Testing/Tests/CoreTestSuite.cpp
-    )
-    list(APPEND UNIT_TEST_TARGETS UnitTest_MathSuite)
+# check if physics should be enabled
+set(GLGE_PHYSICS_ENABLED FALSE)
+# at least one backend must enabled
+if(GLGE_PHYSICS_INCLUDE_JOLT)
+    set(GLGE_PHYSICS_ENABLED TRUE)
+endif()
+if(GLGE_PHYSICS_INCLUDE_PHYSX)
+    set(GLGE_PHYSICS_ENABLED TRUE)
+endif()
+# if(GLGE_PHYSICS_INCLUDE_BULLET)
+#     set(GLGE_PHYSICS_ENABLED TRUE)
+# endif()
+if(NOT GLGE_PHYSICS_ENABLED)
+    set(GLGE_INCLUDE_PHYSICS OFF)
+    message(STATUS "No physics backends selected. Physics disabled.")
 endif()
 
-# define the launcher executable
-add_executable(MAIN src/main.cpp src/Examples/ExamplePluginLoader.cpp src/Testing/TestLauncher.cpp)
+###### DEPENDENCIES
 
-# setup the C++ standard to use
-set_target_properties(MAIN PROPERTIES
+# GLM is required for the core
+# print a message
+message(STATUS "Fetching GLM from GitHub")
+# use FetchContent to fetch GLM from github
+include(FetchContent)
+FetchContent_Declare(
+    GLM
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG "1.0.3"
+)
+FetchContent_MakeAvailable(GLM)
+
+# only download tracy in debug if tracy is enabled
+
+# Tracy is required for the core
+# print a message
+message(STATUS "Fetching Tracy from GitHub")
+# use FetchContent to fetch Tracy from github
+include(FetchContent)
+FetchContent_Declare(
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+    GIT_TAG "v0.13.1"
+)
+FetchContent_MakeAvailable(tracy)
+
+# oneTBB is used for advanced thread primitives
+# print a message
+message(STATUS "Fetching oneTBB from GitHub")
+# use FetchContent to fetch oneTBB from github
+include(FetchContent)
+FetchContent_Declare(
+    oneTBB
+    GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git 
+    GIT_TAG "v2022.2.0"
+)
+# Disable unnecessary components
+set(TBB_TEST OFF CACHE BOOL "" FORCE)
+set(TBB_STRICT OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(oneTBB)
+
+# Mesh optimizer is used to optimize meshes
+# print a message
+message(STATUS "Fetching MeshOptimizer from GitHub")
+# use FetchContent to fetch meshoptimizer from github
+include(FetchContent)
+FetchContent_Declare(
+    meshoptimizer
+    GIT_REPOSITORY https://github.com/zeux/meshoptimizer.git
+    GIT_TAG "v1.2"
+)
+FetchContent_MakeAvailable(meshoptimizer)
+
+#### Assimp
+# Force Assimp to build static no matter what
+set(ASSIMP_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
+# print a message
+message(STATUS "Fetching assimp from GitHub")
+# use FetchContent to fetch SDL3 from github
+include(FetchContent)
+FetchContent_Declare(
+    assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp
+    GIT_TAG "v6.0.4"
+)
+FetchContent_MakeAvailable(assimp)
+    
+# If embree should be fetched, fetch it. Else, just re-use the installed version. 
+if(GLGE_FETCH_EMBREE)
+    # Embree is used for BVH construction and all CPU-Side rt functions
+    # print a message
+    message(STATUS "Fetching Embree from GitHub")
+    # use FetchContent to fetch Embree from github
+    include(FetchContent)
+    FetchContent_Declare(
+        embree
+        GIT_REPOSITORY https://github.com/RenderKit/embree.git
+        GIT_TAG v4.4.0
+    )
+    # setup the options for it
+    set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "" FORCE)
+    set(EMBREE_TUTORIALS OFF CACHE BOOL "" FORCE)
+    set(EMBREE_TESTING OFF CACHE BOOL "" FORCE)
+    set(EMBREE_BACKFACE_CULLING OFF CACHE BOOL "" FORCE)
+    set(EMBREE_MAX_ISA AVX2 CACHE STRING "" FORCE)
+    # add to the project
+    FetchContent_MakeAvailable(embree)
+else()
+    find_package(embree CONFIG REQUIRED)
+endif()
+
+#### Assimp
+# Force Assimp to build static no matter what
+set(ASSIMP_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
+# print a message
+message(STATUS "Fetching assimp from GitHub")
+# use FetchContent to fetch SDL3 from github
+include(FetchContent)
+FetchContent_Declare(
+    assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp
+    GIT_TAG "v6.0.4"
+)
+FetchContent_MakeAvailable(assimp)
+
+# only required for GLGE Graphic
+if (GLGE_INCLUDE_GRAPHICS)
+    #### SDL3
+    # print a message
+    message(STATUS "Fetching SDL3 from GitHub")
+    # use FetchContent to fetch SDL3 from github
+    include(FetchContent)
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG "release-3.4.0"
+    )
+    FetchContent_MakeAvailable(SDL3)
+
+    #### SPIRV-Reflect
+    # set the option for a static library
+    option(SPIRV_REFLECT_STATIC_LIB FORCE ON)
+    option(SPIRV_REFLECT_INSTALL FORCE OFF)
+    # print a message
+    message(STATUS "Fetching SPIRV-Reflect from GitHub")
+    # use FetchContent to fetch SDL3 from github
+    include(FetchContent)
+    FetchContent_Declare(
+        spirv-reflect
+        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Reflect
+        GIT_TAG "vulkan-sdk-1.4.350.0"
+    )
+    FetchContent_MakeAvailable(spirv-reflect)
+    
+    #### Vulkan
+    # only add vulkan if vulkan is requested
+    if (GLGE_GRAPHICS_INCLUDE_VULKAN)
+        # first, check if the OS has Vulkan installed
+        find_package(Vulkan QUIET)
+
+        # if vulkan was not found print a custom error message
+        if (NOT ${Vulkan_FOUND})
+            message(WARNING "Vulkan capabilities are requested, but Vulkan was not installed on the system. Disabling Vulkan. If you want to use Vulkan, please in stall the correct Vulkan SDK for your system. ")
+            set(GLGE_GRAPHICS_INCLUDE_VULKAN OFF)
+            message(STATUS "Deselected Vulkan. GLGE Graphics will not include the Vulkan backend. ")
+        endif()
+
+        #### VMA
+        message(STATUS "Fetching VMA from GitHub")
+        include(FetchContent)
+        FetchContent_Declare(
+            VMA
+            GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+            GIT_TAG v3.1.0
+        )
+        FetchContent_MakeAvailable(VMA)
+
+        # FetchContent exposes VMA source dir here
+        set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
+    endif()
+endif()
+
+if (GLGE_INCLUDE_PHYSICS)
+    ### Jolt
+    if(GLGE_PHYSICS_INCLUDE_JOLT)
+        # message
+        message(STATUS "Fetching Jolt Physics")
+        # get Jolt
+        FetchContent_Declare(
+            JoltPhysics
+            GIT_REPOSITORY https://github.com/jrouwe/JoltPhysics.git
+            GIT_TAG v5.3.0
+        )
+        # make it available if not automatically done
+        FetchContent_MakeAvailable(JoltPhysics)
+        FetchContent_GetProperties(JoltPhysics)
+        if(NOT JoltPhysics_POPULATED)
+            add_subdirectory(
+                ${joltphysics_SOURCE_DIR}/Build
+                ${joltphysics_BINARY_DIR}
+            )
+        endif()
+    endif()
+
+    ### PhysX
+    if (GLGE_PHYSICS_INCLUDE_PHYSX)
+        message(WARNING "Physics is currently NOT supported")
+    endif()
+
+    ### Bullet
+    if (GLGE_PHYSICS_INCLUDE_BULLET)
+        # get from github
+        FetchContent_Declare(
+            bullet
+            GIT_REPOSITORY https://github.com/bulletphysics/bullet3.git
+            GIT_TAG master # Note: Master is used since the newest release uses a very old CMake version that does no longer compile everywhere
+        )
+
+        # setup build
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+        set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+        set(BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
+        set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
+        set(BUILD_CPU_DEMOS OFF CACHE BOOL "" FORCE)
+        set(INSTALL_LIBS OFF CACHE BOOL "" FORCE)
+
+        # disable multi threading
+        set(BULLET2_MULTITHREADING OFF CACHE BOOL "" FORCE)
+
+        # build
+        FetchContent_MakeAvailable(bullet)
+    endif()
+endif()
+
+###### GLGE
+
+# create the main library
+add_library(${GLGE_LIB_NAME} INTERFACE)
+
+# add the include directory
+target_include_directories(${GLGE_LIB_NAME} INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_INCLUDE_DIR}
+)
+
+###### GLGE_CORE
+
+# add the source files to the core library
+add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
+    ${GLGE_SRC_DIR}/Core/Instance.cpp
+    ${GLGE_SRC_DIR}/Core/BaseClass.cpp
+    ${GLGE_SRC_DIR}/Core/Keyboard.cpp
+    ${GLGE_SRC_DIR}/Core/Mouse.cpp
+    ${GLGE_SRC_DIR}/Core/CompoundAsset.cpp
+    ${GLGE_SRC_DIR}/Core/utils/RecursiveThreadMutexShared.cpp
+    ${GLGE_SRC_DIR}/Core/WorldAsset.cpp
+    ${GLGE_SRC_DIR}/Core/Transform.cpp
+    ${GLGE_SRC_DIR}/Core/Mesh.cpp
+    ${GLGE_SRC_DIR}/Core/MeshAsset.cpp
+    ${GLGE_SRC_DIR}/Core/RayCasting.cpp
+    # External: Miniz
+    ${GLGE_SRC_DIR}/external/miniz/miniz.c
+)
+
+# add the internal include directories
+target_include_directories(${GLGE_CORE_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_INCLUDE_DIR}
+    ${GLGE_SRC_DIR}/external
+)
+
+# add a definition to the library if this is a debug build and debugging is allowed
+target_compile_definitions(${GLGE_CORE_NAME} PUBLIC
+    $<$<AND:$<CONFIG:Debug>,$<BOOL:${GLGE_ALLOW_DEBUG}>>:GLGE_DEBUG>
+)
+
+# specify that this is a C++23 library
+set_target_properties(${GLGE_CORE_NAME} PROPERTIES
     CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
 )
-
-# add all required include directories
-target_include_directories(MAIN PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Examples
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-# add all dynamic libraries
-if(CMAKE_DL_LIBS)
-    target_link_libraries(MAIN PRIVATE ${CMAKE_DL_LIBS})
+if(WIN32 AND GLGE_BUILD_SHARED_LIBS)
+    set_target_properties(${GLGE_CORE_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
-# add the test library
-target_link_libraries(MAIN PRIVATE TEST_LIB)
 
-# if example plugin targets exist, add them all and add them to compilation
-if(EXAMPLE_PLUGIN_TARGETS)
-    add_dependencies(MAIN ${EXAMPLE_PLUGIN_TARGETS})
-    add_custom_command(TARGET MAIN POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/plugins"
-        COMMENT "Ensure example plugin output directory exists"
+# check for tracy integration
+if (GLGE_ENABLE_TRACY )
+
+    # Compile TracyClient.cpp only in Debug
+    target_sources(GLGE_CORE PRIVATE
+        $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/TracyClient.cpp>
     )
+    # Define TRACY_ENABLE only in Debug
+    target_compile_definitions(GLGE_CORE PUBLIC
+        $<$<CONFIG:Debug>:TRACY_ENABLE GLGE_PROFILER_ENABLE=1>
+    )
+
+    # add the required libraries to the core
+    target_include_directories(${GLGE_CORE_NAME} PUBLIC
+        $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/tracy>
+    )
+
+    # add libraries for tracy if on windows
+    target_link_libraries(GLGE_CORE PUBLIC
+        $<$<AND:$<PLATFORM_ID:Windows>,$<CONFIG:Debug>>:
+            ws2_32
+            dbghelp
+            secur32
+        >
+    )
+
 endif()
 
-# if example plugin targets exist, add them all and add them to compilation
-if(UNIT_TEST_TARGETS)
-    add_dependencies(MAIN ${UNIT_TEST_TARGETS})
-    add_custom_command(TARGET MAIN POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/Tests"
-        COMMENT "Ensure unit test output directory exists"
-    )
+# add libs
+target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm tbb meshoptimizer embree assimp)
+
+# compiler-specific release flags
+if(MSVC)
+    # MSVC (Visual Studio Compiler) release flags
+    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:/O2 /GL /DNDEBUG>)
+    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF>)
+else()
+    # GCC / Clang Release flags
+    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:
+        -Ofast -march=native -flto -DNDEBUG
+        -ffunction-sections -fdata-sections
+    >)
+    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:
+        -flto -Wl,--gc-sections
+    >)
 endif()
+
+# add the library to the interface
+target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_CORE_NAME})
+
+# set whole archive flags
+if (MSVC)
+    # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_CORE_NAME}")
+else()
+    target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive" 
+                                                   "$<TARGET_FILE:${GLGE_CORE_NAME}>"
+                                                   "-Wl,--no-whole-archive"
+                                                   )
+endif()
+
+###### GLGE_GRAPHIC
+
+# check if graphics are wanted
+if (GLGE_INCLUDE_GRAPHICS)
+    # collect all the library source files
+    set(GLGE_GRAPHIC_SOURCE 
+        # Builtin::SDL
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Description.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Instance.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Window.cpp
+        # SDL Contracts
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.cpp
+
+        # Video backend
+        ${GLGE_SRC_DIR}/Graphic/Backend/Video/Window.cpp
+
+        # Graphic backend
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/CommandTable.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/CommandBuffer.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/Framebuffer.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/GeometryPool.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/MeshManager.cpp
+
+        # Frontend
+        ${GLGE_SRC_DIR}/Graphic/DisplaySetup.cpp
+        ${GLGE_SRC_DIR}/Graphic/Instance.cpp
+        ${GLGE_SRC_DIR}/Graphic/Window.cpp
+        ${GLGE_SRC_DIR}/Graphic/RenderPipeline.cpp
+        ${GLGE_SRC_DIR}/Graphic/ImageCPU.cpp
+        ${GLGE_SRC_DIR}/Graphic/TextureCPU.cpp
+        ${GLGE_SRC_DIR}/Graphic/Shader.cpp
+        ${GLGE_SRC_DIR}/Graphic/Command.cpp
+        ${GLGE_SRC_DIR}/Graphic/Resource.cpp
+        ${GLGE_SRC_DIR}/Graphic/Image.cpp
+        ${GLGE_SRC_DIR}/Graphic/Texture.cpp
+        ${GLGE_SRC_DIR}/Graphic/Sampler.cpp
+
+        # Assets
+        ${GLGE_SRC_DIR}/Graphic/Assets/ImageCPUAsset.cpp
+        ${GLGE_SRC_DIR}/Graphic/Assets/TextureCPUAsset.cpp
+        # External: Miniz
+        ${GLGE_SRC_DIR}/external/miniz/miniz.c
+    )
+
+    # optionally add OpenGL
+    if (GLGE_GRAPHICS_INCLUDE_OPENGL)
+        # add the source files for OpenGL
+        set(GLGE_GRAPHIC_SOURCE 
+            # add all the previous source files
+            ${GLGE_GRAPHIC_SOURCE}
+
+            # Builtin::OpenGL
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Description.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Instance.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Window.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Sampler.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Texture.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Image.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Shader.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/SampledTexture.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Material.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/CommandExecutor.cpp
+            # Builtin::OpenGL::GLAD
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/glad/src/glad.c
+            # Builtin::OpenGL::Translator
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/Translators.cpp
+
+            # Internal mapping
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/__Mapper.cpp
+        )
+    endif()
+
+    # optionally add Vulkan
+    if (GLGE_GRAPHICS_INCLUDE_VULKAN)
+        # add the source files for Vulkan
+        set(GLGE_GRAPHIC_SOURCE
+            # add all previous source files
+            ${GLGE_GRAPHIC_SOURCE}
+
+            # Builtin::Vulkan
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Description.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Window.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Image.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Translator.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Texture.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Shader.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Material.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.cpp
+            ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/Vulkan/CommandExecutor.cpp
+        )
+    endif()
+
+    # compile the library
+    add_library(${GLGE_GRAPHIC_NAME} ${GLGE_GRAPHIC_LIBRARY_TYPE} ${GLGE_GRAPHIC_SOURCE})
+
+    # add SDL3, assimp and spirv reflect
+    target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE SDL3::SDL3 spirv-reflect-static ${GLGE_CORE_NAME})
+
+    # if vulkan was requested link the vulkan SDK
+    if (GLGE_GRAPHICS_INCLUDE_VULKAN)
+        target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE Vulkan::Vulkan)
+        target_include_directories(${GLGE_GRAPHIC_NAME} PRIVATE ${VMA_INCLUDE_DIR})
+    endif()
+
+    # add the internal include directories
+    target_include_directories(${GLGE_GRAPHIC_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Graphics/OpenGL/glad/include
+        ${GLGE_SRC_DIR}/external
+    )
+
+    # add a definition to the library if this is a debug build and debugging is allowed
+    target_compile_definitions(${GLGE_GRAPHIC_NAME} PRIVATE
+        $<$<AND:$<CONFIG:Debug>,$<BOOL:${GLGE_ALLOW_DEBUG}>>:GLGE_DEBUG>
+    )
+    # if compilation with engine override was selected add the define for engine command overrides
+    if (GLGE_GRAPHIC_ALLOW_ENGINE_COMMAND_OVERRIDE)
+        target_compile_definitions(${GLGE_GRAPHIC_NAME} PRIVATE GLGE_GRAPHIC_ENGINE_COMMAND_OVERRIDE=1)
+    endif()
+
+    # specify that this is a C++23 library
+    set_target_properties(${GLGE_GRAPHIC_NAME} PROPERTIES
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON
+    )
+    if(WIN32 AND GLGE_BUILD_SHARED_LIBS)
+        set_target_properties(${GLGE_GRAPHIC_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    endif()
+
+    # link the library to the interface
+    target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_GRAPHIC_NAME})
+    
+endif()
+
+# check if physics is enabled
+if (GLGE_INCLUDE_PHYSICS)
+
+    # define all always-present physics sources
+    set(GLGE_PHYSICS_SOURCE 
+            ${GLGE_SRC_DIR}/Physics/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/SimulatedEntity.cpp
+    )
+
+    # if jolt is enabled, add jolt sources
+    if (GLGE_PHYSICS_INCLUDE_JOLT)
+        # append to the source
+        set (GLGE_PHYSICS_SOURCE
+            ${GLGE_PHYSICS_SOURCE}
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/Description.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/Collider.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/World.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Jolt/SimulatedEntity.cpp
+        )
+    endif()
+
+    # if bullet is enabled, add bullet sources
+    if (GLGE_PHYSICS_INCLUDE_BULLET)
+        # append to the source
+        set (GLGE_PHYSICS_SOURCE
+            ${GLGE_PHYSICS_SOURCE}
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/Description.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/Instance.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/World.cpp
+            ${GLGE_SRC_DIR}/Physics/Backend/Builtin/Bullet/SimulatedEntity.cpp
+        )
+    endif()
+
+    # compile the library
+    add_library(${GLGE_PHYSICS_NAME} ${GLGE_PHYSICS_LIBRARY_TYPE} ${GLGE_PHYSICS_SOURCE})
+
+    # if jolt is enabled, add jolt libs
+    if (GLGE_PHYSICS_INCLUDE_JOLT)
+    target_link_libraries(${GLGE_PHYSICS_NAME} PRIVATE Jolt)
+    target_include_directories(${GLGE_PHYSICS_NAME} PRIVATE ${joltphysics_SOURCE_DIR})
+    endif()
+
+    # if physx is enabled, add physx libs
+    if (GLGE_PHYSICS_INCLUDE_PHYSX)
+    endif()
+
+    # if bullet is enabled, add bullet libs
+    if (GLGE_PHYSICS_INCLUDE_BULLET)
+    target_link_libraries(${GLGE_PHYSICS_NAME} PRIVATE BulletDynamics BulletCollision LinearMath)
+    target_include_directories(${GLGE_PHYSICS_NAME} PRIVATE ${bullet_SOURCE_DIR}/src)
+    endif()
+
+    # add the internal include directories
+    target_include_directories(${GLGE_PHYSICS_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/${GLGE_INCLUDE_DIR}
+        ${GLGE_SRC_DIR}/external
+    )
+
+    # specify that this is a C++23 library
+    set_target_properties(${GLGE_PHYSICS_NAME} PROPERTIES
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON
+    )
+
+    # add the core
+    target_link_libraries(${GLGE_PHYSICS_NAME} PUBLIC ${GLGE_CORE_NAME})
+
+    # link the library to the interface
+    target_link_libraries(${GLGE_PHYSICS_NAME} PUBLIC ${GLGE_CORE_NAME})
+    target_link_libraries(${GLGE_LIB_NAME} INTERFACE ${GLGE_PHYSICS_NAME})
+    
+endif()
+
+# set the definitions
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_HAS_GRAPHICS=$<BOOL:${GLGE_INCLUDE_GRAPHICS}>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_HAS_PHYSICS=$<BOOL:${GLGE_INCLUDE_PHYSICS}>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_GRAPHICS_HAS_OPENGL=$<AND:$<BOOL:${GLGE_GRAPHICS_INCLUDE_OPENGL}>,$<BOOL:${GLGE_INCLUDE_GRAPHICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_GRAPHICS_HAS_VULKAN=$<AND:$<BOOL:${GLGE_GRAPHICS_INCLUDE_VULKAN}>,$<BOOL:${GLGE_INCLUDE_GRAPHICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_PHYSX=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_PHYSX}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_JOLT=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_JOLT}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
+target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_BULLET=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_BULLET}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
+
+# set whole archive flags
+# if (MSVC)
+#     # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
+# else()
+#     target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
+#                                                     "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
+#                                                     "-Wl,--no-whole-archive"
+#                                                     )
+# endif()
