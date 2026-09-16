@@ -9,9 +9,9 @@
  * 
  */
 //add textures
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
 //add vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 
 //include vulkan
 #include "vulkan/vulkan.h"

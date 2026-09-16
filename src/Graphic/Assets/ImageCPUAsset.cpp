@@ -9,7 +9,7 @@
  * 
  */
 //add CPU assets
-#include "Graphic/Assets/ImageCPUAsset.h"
+#include "GLGE/Graphic/Assets/ImageCPUAsset.h"
 
 //include stb stuff
 #define STB_IMAGE_IMPLEMENTATION

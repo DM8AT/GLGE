@@ -9,11 +9,11 @@
  * 
  */
 //add geometry pools
-#include "Graphic/Backend/Graphics/GeometryPool.h"
+#include "GLGE/Graphic/Backend/Graphics/GeometryPool.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 //add graphic instances
-#include "Graphic/Instance.h"
+#include "GLGE/Graphic/Instance.h"
 
 static constexpr GLGE::u64 alignUp(GLGE::u64 value, GLGE::u64 alignment) noexcept 
 {return (value + alignment - 1) & ~(alignment - 1);}

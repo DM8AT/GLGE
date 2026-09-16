@@ -9,7 +9,7 @@
  * 
  */
 //add sampled textures
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/SampledTexture.h"
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::SampledTexture::onBuildBinding(GLGE::Graphic::ResourceSet* set, u32 unit) {
     //parse the binding

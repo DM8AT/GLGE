@@ -9,15 +9,15 @@
  * 
  */
 //include the command buffer
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.h"
 //include the instance
-#include "Graphic/Instance.h"
+#include "GLGE/Graphic/Instance.h"
 //get the window
-#include "Graphic/Window.h"
+#include "GLGE/Graphic/Window.h"
 //add the OpenGL contract
-#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/OpenGL.h"
 //add video windows
-#include "Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
 
 GLGE::Graphic::Backend::Graphic::OpenGL::CommandBuffer::CommandBuffer(GLGE::Graphic::Instance* instance) 
  : GLGE::Graphic::Backend::Graphic::CommandBuffer(instance)

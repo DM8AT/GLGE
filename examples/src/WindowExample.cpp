@@ -1,5 +1,15 @@
+/**
+ * @file WindowExample.cpp
+ * @author DM8AT
+ * @brief a simple example to open and clear a window
+ * @version 0.1
+ * @date 2026-09-16
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #define GLGE_NO_THANKS_MSG
-#include "GLGE.h"
+#include "GLGE/GLGE.h"
 
 int main(void) {
     GLGE::Instance::init();

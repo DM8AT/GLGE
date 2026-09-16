@@ -9,41 +9,41 @@
  * 
  */
 //include the renderer override
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Renderer.h"
 //add components
-#include "Graphic/Components.h"
+#include "GLGE/Graphic/Components.h"
 
 //get the window and framebuffer frontends and backend implementations
-#include "Graphic/Window.h"
-#include "Graphic/Framebuffer.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
+#include "GLGE/Graphic/Window.h"
+#include "GLGE/Graphic/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
 
 //add vulkan command buffers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 
 //add Vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 
 //add Vulkan materials and meshes
-#include "Graphic/Material.h"
-#include "Graphic/Mesh.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
-#include "Graphic/Backend/Video/Window.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+#include "GLGE/Graphic/Material.h"
+#include "GLGE/Graphic/Mesh.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 
 //add Vulkan buffers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
 //add Vulkan resource sets
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
 
 //add the frontend buffer
-#include "Graphic/Buffer.h"
+#include "GLGE/Graphic/Buffer.h"
 
 //add the Vulkan contract
-#include "Graphic/Backend/Video/APIContracts/Vulkan.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/Vulkan.h"
 
 //add shared stuff
 #include "Shared.h"

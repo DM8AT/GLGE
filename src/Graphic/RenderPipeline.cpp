@@ -10,9 +10,9 @@
  */
 #if 0
  //include the render pipeline
-#include "Graphic/RenderPipeline.h"
+#include "GLGE/Graphic/RenderPipeline.h"
 //add profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //use the namespace
 using namespace GLGE::Graphic;

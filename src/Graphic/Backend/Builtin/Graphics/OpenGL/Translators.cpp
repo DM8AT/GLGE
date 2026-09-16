@@ -12,32 +12,32 @@
 #include "Translators.h"
 
 //include video backend windows
-#include "Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
 
 //add OpenGL
 #include "glad/glad.h"
 
 //include profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //add the OpenGL framebuffer implementation
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
 //add the OpenGL shader implementation
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
 
 //add the shader frontend
-#include "Graphic/Shader.h"
+#include "GLGE/Graphic/Shader.h"
 //add the material frontend
-#include "Graphic/Material.h"
+#include "GLGE/Graphic/Material.h"
 //add the mesh frontend
-#include "Graphic/Mesh.h"
+#include "GLGE/Graphic/Mesh.h"
 //add render targets
-#include "Graphic/RenderTarget.h"
+#include "GLGE/Graphic/RenderTarget.h"
 //add renderers
-#include "Graphic/Renderer.h"
+#include "GLGE/Graphic/Renderer.h"
 
 //add the OpenGL contract
-#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/OpenGL.h"
 
 //work in the implementation namespace
 

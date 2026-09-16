@@ -9,10 +9,10 @@
  * 
  */
 //add the OpenGL - SDL3 contract
-#include "Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.h"
 
 //add SDL windows
-#include "Graphic/Backend/Builtin/Video/SDL3/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Window.h"
 
 //add SDL3
 #include "SDL3/SDL.h"

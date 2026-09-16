@@ -15,15 +15,15 @@
 #define _GLGE_IMP_GRAPHIC_BACKEND_BUILTIN_OPENGL_MAPPER_
 
 //add samplers
-#include "Graphic/SamplerCPU.h"
+#include "GLGE/Graphic/SamplerCPU.h"
 //add OpenGL
 #include "glad/glad.h"
 //add color information
-#include "Graphic/ColorInfo.h"
+#include "GLGE/Graphic/ColorInfo.h"
 //add the shader frontend
-#include "Graphic/Shader.h"
+#include "GLGE/Graphic/Shader.h"
 //add the buffer backend
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
 
 
 ////////////////////////////

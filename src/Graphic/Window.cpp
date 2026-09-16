@@ -9,14 +9,14 @@
  * 
  */
 //include frontend windows
-#include "Graphic/Window.h"
+#include "GLGE/Graphic/Window.h"
 
 //include the window backend
-#include "Graphic/Backend/Graphics/Window.h"
-#include "Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Backend/Graphics/Window.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
 
 //add profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //use the library namespace
 using namespace GLGE::Graphic;

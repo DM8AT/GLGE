@@ -9,13 +9,13 @@
  * 
  */
 //add the buffer backend
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
 //add vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add vulkan resource sets
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
 //add the resource set frontend
-#include "Graphic/ResourceSet.h"
+#include "GLGE/Graphic/ResourceSet.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"
@@ -26,7 +26,7 @@
 #include "Shared.h"
 
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 #if GLGE_DEBUG
 #define CHECK_VULKAN(fun) {VkResult res = (fun); if (res != VK_SUCCESS) {std::stringstream stream; stream << #fun " : did not return VK_SUCCESS, result code: " << static_cast<i32>(res); throw GLGE::Exception(stream.str(), __ASSERT_FUNCTION);} }

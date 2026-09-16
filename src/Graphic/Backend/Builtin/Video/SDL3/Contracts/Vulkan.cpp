@@ -9,7 +9,7 @@
  * 
  */
 //add the vulkan sdl3 contract
-#include "Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.h"
 
 //add SDL3 vulkan
 #include "SDL3/SDL_vulkan.h"
@@ -18,7 +18,7 @@
 #include "vulkan/vulkan.h"
 
 //add SDL windows
-#include "Graphic/Backend/Builtin/Video/SDL3/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Window.h"
 
 void GLGE::Graphic::Backend::Video::SDL3::Contracts::Vulkan::getRequiredInstanceExtensions(std::vector<const char*>& extensions) {
     //get the required extensions

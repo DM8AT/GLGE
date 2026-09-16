@@ -9,17 +9,17 @@
  * 
  */
 //add the sampled texture backend
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/SampledTexture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/SampledTexture.h"
 
 //add OpenGL resources
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 //add resource sets
-#include "Graphic/ResourceSet.h"
+#include "GLGE/Graphic/ResourceSet.h"
 
 //add the sampler, texture and image backend
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Texture.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Sampler.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Texture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Sampler.h"
 
 //add OpenGL
 #include "glad/glad.h"

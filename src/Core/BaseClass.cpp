@@ -9,9 +9,9 @@
  * 
  */
 //add base classes
-#include "Core/BaseClass.h"
+#include "GLGE/Core/BaseClass.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 //use the library namespace
 using namespace GLGE;

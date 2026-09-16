@@ -11,7 +11,7 @@
 //add mappings
 #include "__Mapper.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 ////////////////////////////
 // SAMPLING

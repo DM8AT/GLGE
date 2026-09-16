@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2026
  * 
  */
-#include "Graphic/Backend/Graphics/MeshManager.h"
-#include "Graphic/Instance.h"
+#include "GLGE/Graphic/Backend/Graphics/MeshManager.h"
+#include "GLGE/Graphic/Instance.h"
 
 //for resizable arrays
 #include <vector>

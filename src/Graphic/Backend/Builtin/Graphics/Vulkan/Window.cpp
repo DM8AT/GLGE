@@ -9,18 +9,18 @@
  * 
  */
 //include the Vulkan window
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
 
 //include Vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add video windows
-#include "Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
 
 //get the vulkan contract
-#include "Graphic/Backend/Video/APIContracts/Vulkan.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/Vulkan.h"
 
 //include profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"

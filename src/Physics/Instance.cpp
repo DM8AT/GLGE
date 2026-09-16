@@ -9,7 +9,7 @@
  * 
  */
 //add the physics instance
-#include "Physics/Instance.h"
+#include "GLGE/Physics/Instance.h"
 
 GLGE::Physic::Instance::Instance(Backend::Description* description)
  : m_descr(description)

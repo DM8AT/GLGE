@@ -9,11 +9,11 @@
  * 
  */
 //add simulated entities
-#include "Physics/Backend/Builtin/Bullet/SimulatedEntity.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/SimulatedEntity.h"
 //add collider backends
-#include "Physics/Backend/Builtin/Bullet/Collider.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/Collider.h"
 //add the world backend
-#include "Physics/Backend/Builtin/Bullet/World.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/World.h"
 
 GLGE::Physic::Backend::Bullet::SimulatedEntity::SimulatedEntity(Backend::World* world, const Reference<Backend::Collider>& collider, BodyType type, float mass, float friction, float restitution, bool highQualityCollision)
  : Backend::SimulatedEntity(world, collider, type, mass, friction, restitution, highQualityCollision)

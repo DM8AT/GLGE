@@ -13,7 +13,7 @@
 #pragma once
 
 //include the GLGE graphic frontend
-#include "Graphic/Graphic.h"
+#include "GLGE/Graphic/Graphic.h"
 
 //use a namespace for implementations
 namespace OglImpl {

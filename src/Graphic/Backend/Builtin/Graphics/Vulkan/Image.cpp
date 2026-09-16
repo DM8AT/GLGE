@@ -9,18 +9,18 @@
  * 
  */
 //add vulkan images
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add vulkan resource sets
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
 //add vulkan samplers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
 //add the resource set frontend
-#include "Graphic/ResourceSet.h"
+#include "GLGE/Graphic/ResourceSet.h"
 
 //add texture samplers
-#include "Graphic/SampledTexture.h"
+#include "GLGE/Graphic/SampledTexture.h"
 
 //include vulkan
 #include "vulkan/vulkan.h"

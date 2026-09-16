@@ -9,7 +9,7 @@
  * 
  */
 //add instances
-#include "Core/Instance.h"
+#include "GLGE/Core/Instance.h"
 //add embree
 #include <embree4/rtcore.h>
 

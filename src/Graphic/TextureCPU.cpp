@@ -9,10 +9,10 @@
  * 
  */
 //add CPU textures
-#include "Graphic/TextureCPU.h"
+#include "GLGE/Graphic/TextureCPU.h"
 
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 //use the library namespace
 using namespace GLGE::Graphic;

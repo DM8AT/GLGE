@@ -9,12 +9,12 @@
  * 
  */
 //include the video backend description
-#include "Graphic/Backend/Builtin/Video/SDL3/Description.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Description.h"
 
 //add SDL3 instances
-#include "Graphic/Backend/Builtin/Video/SDL3/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Instance.h"
 //add SDL3 windows
-#include "Graphic/Backend/Builtin/Video/SDL3/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Window.h"
 
 //use the namespace
 using namespace GLGE::Graphic::Builtin::Video;

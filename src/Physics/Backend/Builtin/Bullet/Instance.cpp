@@ -9,7 +9,7 @@
  * 
  */
 //add the instance
-#include "Physics/Backend/Builtin/Bullet/Instance.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/Instance.h"
 
 
 GLGE::Physic::Backend::Bullet::Instance::Instance(GLGE::Physic::Instance* instance) 

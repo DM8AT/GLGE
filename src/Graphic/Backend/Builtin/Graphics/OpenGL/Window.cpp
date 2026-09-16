@@ -9,21 +9,21 @@
  * 
  */
 //include the OpenGL window
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Window.h"
 
 //add the OpenGL contract
-#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/OpenGL.h"
 
 //add OpenGL
 #include "glad/glad.h"
 
 //include OpenGL instances
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
 //add video windows
-#include "Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
 
 //include profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //use the namespace
 using namespace GLGE::Graphic::Backend::Graphic::OpenGL;

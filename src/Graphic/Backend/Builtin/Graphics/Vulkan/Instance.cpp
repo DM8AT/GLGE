@@ -9,15 +9,15 @@
  * 
  */
 //include the instance
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add graphic instances
-#include "Graphic/Instance.h"
+#include "GLGE/Graphic/Instance.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"
 
 //add the vulkan contract
-#include "Graphic/Backend/Video/APIContracts/Vulkan.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/Vulkan.h"
 
 //add device evaluation
 #include "DeviceEvaluation.h"

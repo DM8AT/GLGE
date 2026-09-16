@@ -9,12 +9,12 @@
  * 
  */
 //add the jolt description
-#include "Physics/Backend/Builtin/Jolt/Description.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/Description.h"
 
 //add all backend implementations
-#include "Physics/Backend/Builtin/Jolt/Collider.h"
-#include "Physics/Backend/Builtin/Jolt/Instance.h"
-#include "Physics/Backend/Builtin/Jolt/World.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/Collider.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/Instance.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/World.h"
 
 GLGE::Physic::Builtin::Jolt::Jolt() {
     //store the name

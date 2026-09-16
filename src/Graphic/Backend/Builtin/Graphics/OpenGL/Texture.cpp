@@ -9,15 +9,15 @@
  * 
  */
 //add the OpenGL texture backend
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Texture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Texture.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 //add mappings
 #include "__Mapper.h"
 
 //add the OpenGL resource set
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 
 GLGE::Graphic::Backend::Graphic::OpenGL::Texture::Texture(const uvec2& size, u16 mipCount, PixelFormat format, GLGE::Graphic::Backend::Graphic::Instance* instance) 
  : GLGE::Graphic::Backend::Graphic::Texture(size, mipCount, format, instance)

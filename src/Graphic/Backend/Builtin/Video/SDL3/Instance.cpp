@@ -11,21 +11,21 @@
 //access the backend
 #define __GLGE_DISPLAY_BACKEND
 //include the SDL video backend instance
-#include "Graphic/Backend/Builtin/Video/SDL3/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Instance.h"
 
 //include SDL windows
-#include "Graphic/Backend/Builtin/Video/SDL3/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Window.h"
 
 //add SDL3
 #include "SDL3/SDL.h"
 
 //add profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //add the OpenGL contract
-#include "Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.h"
 //add the Vulkan contract
-#include "Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.h"
 
 //use the normal GLGE namespace
 using namespace GLGE::Graphic;

@@ -9,15 +9,15 @@
  * 
  */
 //add vulkan materials
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Material.h"
 //add vulkan shaders
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
 //add vulkan framebuffers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
 //add images
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add shader frontends
-#include "Graphic/Shader.h"
+#include "GLGE/Graphic/Shader.h"
 
 //add shared stuff
 #include "Shared.h"

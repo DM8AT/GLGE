@@ -9,25 +9,25 @@
  * 
  */
 //add the Bullet world
-#include "Physics/Backend/Builtin/Bullet/World.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/World.h"
 //add simulated entities
-#include "Physics/Backend/Builtin/Bullet/SimulatedEntity.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/SimulatedEntity.h"
 //add collider backends
-#include "Physics/Backend/Builtin/Bullet/Collider.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/Collider.h"
 
 //required GLM utility
 #include <glm/gtx/matrix_decompose.hpp>
 
 //add instances
-#include "Physics/Instance.h"
+#include "GLGE/Physics/Instance.h"
 
 //add required components
-#include "Core/Transform.h"
-#include "Physics/RigidBody.h"
+#include "GLGE/Core/Transform.h"
+#include "GLGE/Physics/RigidBody.h"
 
 
 //get the simulated entity frontend
-#include "Physics/SimulatedEntity.h"
+#include "GLGE/Physics/SimulatedEntity.h"
 
 GLGE::Physic::Backend::Bullet::World::World(GLGE::Physic::Backend::Instance* instance, GLGE::World& world, const vec3& gravity, u64 maxBodies, u64 tempAllocatorSize) 
  : Backend::World(instance, world, gravity, maxBodies, tempAllocatorSize),

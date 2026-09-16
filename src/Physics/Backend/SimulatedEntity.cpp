@@ -9,7 +9,7 @@
  * 
  */
 //add simulated entities
-#include "Physics/Backend/SimulatedEntity.h"
+#include "GLGE/Physics/Backend/SimulatedEntity.h"
 
 void GLGE::Physic::Backend::SimulatedEntity::setCollider(const Reference<Collider>& collider) {
     //store the new collider

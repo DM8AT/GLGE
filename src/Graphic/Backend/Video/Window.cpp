@@ -9,13 +9,13 @@
  * 
  */
 //include the video backend window
-#include "Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
 
 //add backend instances
-#include "Graphic/Backend/Video/Instance.h"
+#include "GLGE/Graphic/Backend/Video/Instance.h"
 //add frontend classes
-#include "Graphic/Window.h"
-#include "Graphic/Instance.h"
+#include "GLGE/Graphic/Window.h"
+#include "GLGE/Graphic/Instance.h"
 
 //use the namespace
 using namespace GLGE::Graphic::Backend::Video;

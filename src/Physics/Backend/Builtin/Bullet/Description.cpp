@@ -9,11 +9,11 @@
  * 
  */
 //include the description
-#include "Physics/Backend/Builtin/Bullet/Description.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/Description.h"
 //include the backend implementations
-#include "Physics/Backend/Builtin/Bullet/Collider.h"
-#include "Physics/Backend/Builtin/Bullet/Instance.h"
-#include "Physics/Backend/Builtin/Bullet/World.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/Collider.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/Instance.h"
+#include "GLGE/Physics/Backend/Builtin/Bullet/World.h"
 
 GLGE::Physic::Builtin::Bullet::Bullet() {
     //store the name

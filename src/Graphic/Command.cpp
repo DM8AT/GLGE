@@ -9,7 +9,7 @@
  * 
  */
 //add commands
-#include "Graphic/Command.h"
+#include "GLGE/Graphic/Command.h"
 
 //implement outside of class
 GLGE::Graphic::Command::~Command() 

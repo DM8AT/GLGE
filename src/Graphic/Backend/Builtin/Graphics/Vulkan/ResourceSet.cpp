@@ -9,28 +9,28 @@
  * 
  */
 //add resource sets
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
 //add vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add vulkan command buffers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 //add the resource set frontend
-#include "Graphic/ResourceSet.h"
+#include "GLGE/Graphic/ResourceSet.h"
 
 //add frontend images
-#include "Graphic/Image.h"
+#include "GLGE/Graphic/Image.h"
 //add vulkan images
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add vulkan textures
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Texture.h"
 //add vulkan samplers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Sampler.h"
 //get frontend buffers
-#include "Graphic/Buffer.h"
+#include "GLGE/Graphic/Buffer.h"
 //add vulkan buffers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Buffer.h"
 //add sampled textures
-#include "Graphic/SampledTexture.h"
+#include "GLGE/Graphic/SampledTexture.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"

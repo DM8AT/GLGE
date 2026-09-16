@@ -9,9 +9,9 @@
  * 
  */
 //include the instance
-#include "Graphic/Instance.h"
+#include "GLGE/Graphic/Instance.h"
 //add windows
-#include "Graphic/Window.h"
+#include "GLGE/Graphic/Window.h"
 
 //use the libraries namespace
 using namespace GLGE::Graphic;

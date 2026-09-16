@@ -9,11 +9,11 @@
  * 
  */
 //add the header
-#include "Graphic/Image.h"
+#include "GLGE/Graphic/Image.h"
 //add sampled textures
-#include "Graphic/SampledTexture.h"
+#include "GLGE/Graphic/SampledTexture.h"
 //add resource sets
-#include "Graphic/ResourceSet.h"
+#include "GLGE/Graphic/ResourceSet.h"
 
 void GLGE::Graphic::Image::registerSampler(SampledTexture* st)
 {attachInvalidator(*static_cast<CommandInvalidator*>(st));}

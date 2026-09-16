@@ -9,27 +9,27 @@
  * 
  */
 //add the jolt world
-#include "Physics/Backend/Builtin/Jolt/World.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/World.h"
 //add simulated entities
-#include "Physics/Backend/Builtin/Jolt/SimulatedEntity.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/SimulatedEntity.h"
 //add collider backends
-#include "Physics/Backend/Builtin/Jolt/Collider.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/Collider.h"
 
 //required GLM utility
 #include <glm/gtx/matrix_decompose.hpp>
 
 //add instances
-#include "Physics/Instance.h"
+#include "GLGE/Physics/Instance.h"
 
 //add required components
-#include "Core/Transform.h"
-#include "Physics/RigidBody.h"
+#include "GLGE/Core/Transform.h"
+#include "GLGE/Physics/RigidBody.h"
 
 //jolt includes
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 
 //get the simulated entity frontend
-#include "Physics/SimulatedEntity.h"
+#include "GLGE/Physics/SimulatedEntity.h"
 
 static JPH::RefConst<JPH::Shape> getShape(const GLGE::Reference<GLGE::Physic::Backend::Collider>& collider) {
     switch (collider->getType()) {

@@ -9,7 +9,7 @@
  * 
  */
 //include the mouse header
-#include "Core/Mouse.h"
+#include "GLGE/Core/Mouse.h"
 
 void GLGE::Mouse::update() noexcept {
     //iterate over all buttons and update the state according to the pressed / released state

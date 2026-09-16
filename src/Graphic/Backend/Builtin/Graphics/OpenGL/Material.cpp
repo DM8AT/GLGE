@@ -9,14 +9,14 @@
  * 
  */
 //add materials
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
 //add OpenGL resource sets
-//#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+//#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 
 //add OpenGL implementations
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.h"
 
 //add OpenGL
 #include "__Mapper.h"

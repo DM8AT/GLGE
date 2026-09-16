@@ -9,9 +9,9 @@
  * 
  */
 //add the header
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/GeometryPoolStream.h"
 //add the vulkan instance authority header
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add vulkan
 #include <vulkan/vulkan.h>
 //for easy vulkan memory allocation

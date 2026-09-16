@@ -17,12 +17,12 @@
 #include "vk_mem_alloc.h"
 
 //add vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 
 //add pixel formats
-#include "Graphic/ColorInfo.h"
+#include "GLGE/Graphic/ColorInfo.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 #if GLGE_DEBUG && !defined(GLGE_NO_DB_LOG)
 #define DEBUG_LOG(msg) {std::stringstream __stream; __stream << msg << "\n"; std::cout << __stream.str();}

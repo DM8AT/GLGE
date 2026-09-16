@@ -9,11 +9,11 @@
  * 
  */
 //add the buffer backend
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
 //add the mappings
 #include "__Mapper.h"
 //add OpenGL resource sets
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 
 GLGE::Graphic::Backend::Graphic::OpenGL::Buffer::Buffer(Type type, const void* initial, size_t size, GLGE::Graphic::Backend::Graphic::Instance* instance, Usage usage) 
  : GLGE::Graphic::Backend::Graphic::Buffer(type, initial, size, instance, usage)

@@ -9,9 +9,9 @@
  * 
  */
 //include command tables
-#include "Graphic/Backend/Graphics/CommandTable.h"
+#include "GLGE/Graphic/Backend/Graphics/CommandTable.h"
 //add profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //use the backend namespace
 using namespace GLGE::Graphic::Backend::Graphic;

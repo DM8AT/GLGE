@@ -1,5 +1,15 @@
+/**
+ * @file Cube.cpp
+ * @author DM8AT
+ * @brief A simple example to show how a 3D cube is rendered
+ * @version 0.1
+ * @date 2026-09-16
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #define GLGE_NO_THANKS_MSG
-#include "GLGE.h"
+#include "GLGE/GLGE.h"
 
 int main(void) {
     GLGE::Instance::init();

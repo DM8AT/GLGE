@@ -9,15 +9,15 @@
  * 
  */
 //add the sampler
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Sampler.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Sampler.h"
 //add the instance
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
 
 //add the mapping
 #include "__Mapper.h"
 
 //add the OpenGL resource set
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 
 GLGE::Graphic::Backend::Graphic::OpenGL::Sampler::Sampler(const SamplerCPU& state, GLGE::Graphic::Backend::Graphic::Instance* instance) 
  : GLGE::Graphic::Backend::Graphic::Sampler(state, instance)

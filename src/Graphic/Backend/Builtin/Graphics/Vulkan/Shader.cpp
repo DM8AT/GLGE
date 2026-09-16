@@ -9,11 +9,11 @@
  * 
  */
 //add the vulkan shader backend
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
 //get the shader frontend
-#include "Graphic/Shader.h"
+#include "GLGE/Graphic/Shader.h"
 //add vulkan instances
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"

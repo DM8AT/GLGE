@@ -9,7 +9,7 @@
  * 
  */
 //include the keyboard
-#include "Core/Keyboard.h"
+#include "GLGE/Core/Keyboard.h"
 
 void GLGE::Keyboard::update() noexcept {
     //iterate over all keys and update the state according to the pressed / released state

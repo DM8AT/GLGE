@@ -9,7 +9,7 @@
  * 
  */
 //add jolt instances
-#include "Physics/Backend/Builtin/Jolt/Instance.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/Instance.h"
 
 //add Jolt
 #include <Jolt/Jolt.h>
@@ -17,7 +17,7 @@
 #include <Jolt/Core/Factory.h>
 
 //add world backends
-#include "Physics/Backend/Builtin/Jolt/World.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/World.h"
 
 GLGE::Physic::Backend::Jolt::Instance::Instance(Physic::Instance* instance)
  : Backend::Instance(instance)

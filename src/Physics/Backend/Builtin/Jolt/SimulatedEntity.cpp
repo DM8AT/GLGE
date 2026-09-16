@@ -9,11 +9,11 @@
  * 
  */
 //add simulated entities
-#include "Physics/Backend/Builtin/Jolt/SimulatedEntity.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/SimulatedEntity.h"
 //add collider backends
-#include "Physics/Backend/Builtin/Jolt/Collider.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/Collider.h"
 //add the world backend
-#include "Physics/Backend/Builtin/Jolt/World.h"
+#include "GLGE/Physics/Backend/Builtin/Jolt/World.h"
 
 //sanity check 64 bit OS
 static_assert(sizeof(void*) == 8, "The library only works on a 64 bit operating system");

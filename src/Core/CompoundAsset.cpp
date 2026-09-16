@@ -9,9 +9,9 @@
  * 
  */
 //add compound assets
-#include "Core/CompoundAsset.h"
+#include "GLGE/Core/CompoundAsset.h"
 //add asset managers
-#include "Core/AssetManager.h"
+#include "GLGE/Core/AssetManager.h"
 
 //for file reading / writing
 #include <fstream>

@@ -9,7 +9,7 @@
  * 
  */
 //add the resource set backend
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 
 GLGE::Graphic::Backend::Graphic::OpenGL::ResourceSet::ResourceSet(GLGE::Graphic::ResourceSet* set) 
  : GLGE::Graphic::Backend::Graphic::ResourceSet(set)

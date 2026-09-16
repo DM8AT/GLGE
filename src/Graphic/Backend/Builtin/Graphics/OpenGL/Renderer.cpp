@@ -9,35 +9,35 @@
  * 
  */
 //include the renderer override
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.h"
 //add mappings
 #include "__Mapper.h"
 //add components
-#include "Graphic/Components.h"
+#include "GLGE/Graphic/Components.h"
 
 //get the window and framebuffer frontends and backend implementations
-#include "Graphic/Window.h"
-#include "Graphic/Framebuffer.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Window.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
+#include "GLGE/Graphic/Window.h"
+#include "GLGE/Graphic/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
 
 //add OpenGL instances
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
 
 //add OpenGL materials and meshes
-#include "Graphic/Material.h"
-#include "Graphic/Mesh.h"
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
-#include "Graphic/Backend/Video/Window.h"
+#include "GLGE/Graphic/Material.h"
+#include "GLGE/Graphic/Mesh.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
+#include "GLGE/Graphic/Backend/Video/Window.h"
 
 //add OpenGL buffers
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
 
 //add the frontend buffer
-#include "Graphic/Buffer.h"
+#include "GLGE/Graphic/Buffer.h"
 
 //add the OpenGL contract
-#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/OpenGL.h"
 
 /**
  * @brief store the structure of an element indirect draw command

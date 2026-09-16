@@ -9,10 +9,10 @@
  * 
  */
 //add the CPU image
-#include "Graphic/ImageCPU.h"
+#include "GLGE/Graphic/ImageCPU.h"
 
 //include exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 //use the graphic namespace
 using namespace GLGE::Graphic;

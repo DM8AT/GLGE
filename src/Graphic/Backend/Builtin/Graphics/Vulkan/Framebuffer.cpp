@@ -9,13 +9,13 @@
  * 
  */
 //add the framebuffer Vulkan overload
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
 //get the vulkan instance
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 //add Vulkan images
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add frontend framebuffers
-#include "Graphic/Framebuffer.h"
+#include "GLGE/Graphic/Framebuffer.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"

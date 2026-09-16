@@ -9,9 +9,9 @@
  * 
  */
 //add backend instances
-#include "Physics/Backend/Instance.h"
+#include "GLGE/Physics/Backend/Instance.h"
 //add physic worlds
-#include "Physics/Backend/World.h"
+#include "GLGE/Physics/Backend/World.h"
 
 GLGE::Physic::Backend::Instance::Instance(Physic::Instance* instance) 
  : m_instance(instance)

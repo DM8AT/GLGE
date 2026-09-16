@@ -9,13 +9,13 @@
  * 
  */
 //add the header
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandExecutor.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/CommandExecutor.h"
 
-#include "Graphic/Window.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
-#include "Graphic/CommandStream.h"
+#include "GLGE/Graphic/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
+#include "GLGE/Graphic/CommandStream.h"
 
 //add vulkan
 #include <vulkan/vulkan.h>

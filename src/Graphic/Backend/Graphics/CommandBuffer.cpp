@@ -9,12 +9,12 @@
  * 
  */
 //include the command buffer
-#include "Graphic/Backend/Graphics/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Graphics/CommandBuffer.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 //add profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //use the library namespace
 using namespace GLGE::Graphic::Backend::Graphic;

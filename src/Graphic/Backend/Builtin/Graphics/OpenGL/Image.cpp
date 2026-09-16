@@ -9,9 +9,9 @@
  * 
  */
 //add images
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
 //add OpenGL resources
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 //add mappings
 #include "__Mapper.h"
 

@@ -9,9 +9,9 @@
  * 
  */
 //add the header
-#include "Core/utils/RecursiveThreadMutexShared.h"
+#include "GLGE/Core/utils/RecursiveThreadMutexShared.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 GLGE::RecursiveThreadMutexShared::~RecursiveThreadMutexShared() {
     //obtain a unique lock on the map

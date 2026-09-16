@@ -9,48 +9,48 @@
  * 
  */
 //add the OpenGL description
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Description.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Description.h"
 
 //add instances
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Instance.h"
 //add windows
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Window.h"
 
 //add normal command buffers (OpenGL just replays CPU commands)
-#include "Graphic/Backend/Graphics/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Graphics/CommandBuffer.h"
 
 //add command handles
-#include "Graphic/Backend/Graphics/CommandHandle.h"
+#include "GLGE/Graphic/Backend/Graphics/CommandHandle.h"
 
 //add the translation functions
 #include "Translators.h"
 
 //add the sampler
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Sampler.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Sampler.h"
 //add the texture
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Texture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Texture.h"
 //add images
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
 //add framebuffer
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
 //add resources
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/ResourceSet.h"
 //add shader
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
 //add buffers
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
 //add sampled textures
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/SampledTexture.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/SampledTexture.h"
 //add materials
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Material.h"
 //add renderers
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Renderer.h"
 //add command buffers
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/CommandBuffer.h"
 //add geometry streams
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.h"
 //add command executor
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/CommandExecutor.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/CommandExecutor.h"
 
 //add GLAD
 #include "glad/glad.h"

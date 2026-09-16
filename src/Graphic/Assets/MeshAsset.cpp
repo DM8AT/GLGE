@@ -35,7 +35,7 @@
  *  => Variable size (read size from LOD offset table)
  */
 //add the mesh asset
-#include "Graphic/Assets/MeshAsset.h"
+#include "GLGE/Graphic/Assets/MeshAsset.h"
 //add assimp
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

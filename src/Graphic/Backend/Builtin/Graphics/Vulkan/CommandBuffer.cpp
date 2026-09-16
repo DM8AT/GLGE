@@ -9,10 +9,10 @@
  *
  */
 //add the header
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 
-#include "Graphic/Instance.h"
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
+#include "GLGE/Graphic/Instance.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Instance.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"

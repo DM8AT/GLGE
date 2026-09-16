@@ -12,17 +12,17 @@
 #include "Translator.h"
 
 //add vulkan command buffers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/CommandBuffer.h"
 //add vulkan windows
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Window.h"
 //add vulkan shader
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Shader.h"
 //add vulkan resource sets
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/ResourceSet.h"
 //add vulkan images
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Image.h"
 //add vulkan framebuffers
-#include "Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/Framebuffer.h"
 
 //add vulkan
 #include "vulkan/vulkan.h"

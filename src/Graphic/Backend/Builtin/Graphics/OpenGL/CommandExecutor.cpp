@@ -9,15 +9,15 @@
  * 
  */
 //add the backend
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/CommandExecutor.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/CommandExecutor.h"
 
 //add command streams
-#include "Graphic/CommandStream.h"
+#include "GLGE/Graphic/CommandStream.h"
 
 //get the window frontend
-#include "Graphic/Window.h"
+#include "GLGE/Graphic/Window.h"
 //add the OpenGL contract
-#include "Graphic/Backend/Video/APIContracts/OpenGL.h"
+#include "GLGE/Graphic/Backend/Video/APIContracts/OpenGL.h"
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::CommandExecutor::dispatch(GLGE::Graphic::CommandStream* stream) {
     //iterate over all commands and dispatch them

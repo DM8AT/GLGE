@@ -9,7 +9,7 @@
  * 
  */
 //add the mesh asset
-#include "Core/MeshAsset.h"
+#include "GLGE/Core/MeshAsset.h"
 
 //add miniz
 #include "../external/miniz/miniz.h"

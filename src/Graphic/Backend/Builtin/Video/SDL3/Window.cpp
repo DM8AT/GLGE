@@ -9,15 +9,15 @@
  * 
  */
 //include the SDL3 backend
-#include "Graphic/Backend/Builtin/Video/SDL3/Window.h"
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Window.h"
 //include window frontends
-#include "Graphic/Window.h"
+#include "GLGE/Graphic/Window.h"
 
 //include graphic windows
-#include "Graphic/Backend/Graphics/Window.h"
+#include "GLGE/Graphic/Backend/Graphics/Window.h"
 
 //add profiling
-#include "Core/Profiler.h"
+#include "GLGE/Core/Profiler.h"
 
 //add SDL3
 #include <SDL3/SDL.h>

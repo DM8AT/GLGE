@@ -9,7 +9,7 @@
  * 
  */
 //include the world asset
-#include "Core/WorldAsset.h"
+#include "GLGE/Core/WorldAsset.h"
 
 //add file stuff
 #include <fstream>

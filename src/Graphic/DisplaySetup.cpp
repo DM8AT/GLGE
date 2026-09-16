@@ -11,7 +11,7 @@
 //access the backend
 #define __GLGE_DISPLAY_BACKEND
 //include the display setup class
-#include "Graphic/DisplaysSetup.h"
+#include "GLGE/Graphic/DisplaysSetup.h"
 
 //use the namespace
 using namespace GLGE::Graphic;

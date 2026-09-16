@@ -9,7 +9,7 @@
  * 
  */
 //add layer managers
-#include "Core/LayerManager.h"
+#include "GLGE/Core/LayerManager.h"
 
 void GLGE::LayerManager::activateLayer(UUID layer, bool unloadOld) {
     //if the layer does not exist, stop

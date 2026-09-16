@@ -9,9 +9,9 @@
  * 
  */
 //add the CPU texture asset
-#include "Graphic/Assets/TextureCPUAsset.h"
+#include "GLGE/Graphic/Assets/TextureCPUAsset.h"
 //add the CPU image asset (CPU textures use images internally)
-#include "Graphic/Assets/ImageCPUAsset.h"
+#include "GLGE/Graphic/Assets/ImageCPUAsset.h"
 
 //add zip stuff
 #include "miniz/miniz.h"

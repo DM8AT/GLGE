@@ -9,9 +9,9 @@
  * 
  */
 //add the header
-#include "Core/RayCasting.h"
+#include "GLGE/Core/RayCasting.h"
 //add transforms
-#include "Core/Transform.h"
+#include "GLGE/Core/Transform.h"
 
 //add embree
 #include <embree4/rtcore.h>

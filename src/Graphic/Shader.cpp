@@ -9,9 +9,9 @@
  * 
  */
 //include the shader frontend
-#include "Graphic/Shader.h"
+#include "GLGE/Graphic/Shader.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 //add SPIRV-Reflect
 #include <spirv_reflect.h>
@@ -21,9 +21,9 @@
 
 //for default resources
 //add images
-#include "Graphic/Image.h"
+#include "GLGE/Graphic/Image.h"
 //add raw buffers
-#include "Graphic/Buffer.h"
+#include "GLGE/Graphic/Buffer.h"
 
 /**
  * @brief a utility function to convert a reflected descriptor type to an resource type

@@ -9,11 +9,11 @@
  * 
  */
 //add OpenGL shader
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
 //add mappings
 #include "__Mapper.h"
 //add exceptions
-#include "Core/Exception.h"
+#include "GLGE/Core/Exception.h"
 
 GLGE::Graphic::Backend::Graphic::OpenGL::Shader::Shader(GLGE::Graphic::Shader* frontend) 
  : GLGE::Graphic::Backend::Graphic::Shader(frontend)

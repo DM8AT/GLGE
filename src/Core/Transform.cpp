@@ -9,7 +9,7 @@
  * 
  */
 //add transforms
-#include "Core/Transform.h"
+#include "GLGE/Core/Transform.h"
 
 void GLGE::Transform::load(const std::span<const u8>& buffer) {
     //copy the data

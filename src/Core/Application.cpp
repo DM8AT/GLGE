@@ -9,7 +9,7 @@
  * 
  */
 //add applications
-#include "Core/Application.h"
+#include "GLGE/Core/Application.h"
 
 void GLGE::Application::run() {
     //main thread check

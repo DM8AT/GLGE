@@ -9,7 +9,7 @@
  * 
  */
 //add geometry pool streams
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/GeometryPoolStream.h"
 //add GLAD
 #include "glad/glad.h"
 

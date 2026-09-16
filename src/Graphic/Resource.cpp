@@ -9,8 +9,8 @@
  * 
  */
 //add the headers
-#include "Graphic/Resource.h"
-#include "Graphic/ResourceSet.h"
+#include "GLGE/Graphic/Resource.h"
+#include "GLGE/Graphic/ResourceSet.h"
 
 void GLGE::Graphic::Resource::buildBinding(ResourceSet* set, u32 unit) {
     //add as a child

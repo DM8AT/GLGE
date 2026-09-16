@@ -9,9 +9,9 @@
  * 
  */
 //add the framebuffer OpenGL overload
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Framebuffer.h"
 //add OpenGL images
-#include "Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
 //add the mappings
 #include "__Mapper.h"
 

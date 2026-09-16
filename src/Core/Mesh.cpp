@@ -9,7 +9,7 @@
  * 
  */
 //add meshes
-#include "Core/Mesh.h"
+#include "GLGE/Core/Mesh.h"
 
 //add mesh optimizer
 #include <meshoptimizer.h>
