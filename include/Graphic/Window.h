@@ -233,6 +233,14 @@ namespace GLGE::Graphic {
         inline bool didResize() const noexcept
         {return m_gWin->didResize();}
 
+        /**
+         * @brief register a new invalidator to the window
+         * 
+         * @param ptr a pointer to the invalidator to register
+         */
+        inline void registerInvalidator(CommandInvalidator* ptr)
+        {attachInvalidator(*ptr);}
+
     private:
 
         /**

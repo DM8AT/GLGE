@@ -41,7 +41,15 @@ namespace GLGE::Graphic {
          */
         Renderer(World& world, Object* camera, RenderTarget target)
          : BaseClass(), m_renderer(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createRenderer(world.getInstance()->getExtension<GLGE::Graphic::Instance>(), world, camera, target))
-        {m_renderer->registerFrontend(*this);}
+        {
+            m_renderer->registerFrontend(*this);
+            
+            if (target.getType() == RenderTarget::WINDOW) {
+                static_cast<Graphic::Window*>(target.getTarget())->registerInvalidator(this);
+            } else if (target.getType() == RenderTarget::FRAMEBUFFER) {
+                static_cast<Graphic::Framebuffer*>(target.getTarget())->registerInvalidator(this);
+            }
+        }
 
         /**
          * @brief Destroy the Renderer

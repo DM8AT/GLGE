@@ -15,4 +15,5 @@ function(ADD_EXAMPLE ARG_NAME ARG_SRC)
     )
 endfunction()
 
-ADD_EXAMPLE(EXAMPLE_3D src/3DExample.cpp)
+ADD_EXAMPLE(Cube src/Cube.cpp)
+ADD_EXAMPLE(Window src/WindowExample.cpp)

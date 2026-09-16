@@ -80,7 +80,7 @@ namespace GLGE::Graphic {
          * @param size the size to change to
          */
         inline void resize(const uvec2& size) 
-        {m_fbuff->resize(size);}
+        {m_fbuff->resize(size); invalidate();}
 
         /**
          * @brief Get the Backend framebuffer
@@ -89,6 +89,14 @@ namespace GLGE::Graphic {
          */
         inline Reference<GLGE::Graphic::Backend::Graphic::Framebuffer> getBackend() noexcept
         {return m_fbuff.get();}
+
+        /**
+         * @brief register a new invalidator to the window
+         * 
+         * @param ptr a pointer to the invalidator to register
+         */
+        inline void registerInvalidator(CommandInvalidator* ptr)
+        {attachInvalidator(*ptr);}
 
     protected:
 
