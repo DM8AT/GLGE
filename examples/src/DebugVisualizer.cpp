@@ -122,9 +122,12 @@ int main(void) {
         GLGE::Transform({0,0,0}, GLGE::Quaternion(GLGE::vec3{glm::radians(-45.f),0,0}))
     );
 
+    GLGE::Graphic::DebugContext ctx;
+
     GLGE::Graphic::CommandStream stream {
         std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(fbuff, 0, GLGE::vec4{0.5,0.5,0.5,1})},
         std::pair{"Draw",  std::make_unique<GLGE::Graphic::Cmd::Render>(renderer)},
+        std::pair{"Debug", std::make_unique<GLGE::Graphic::Cmd::DrawDebug>(ctx)},
         std::pair{"Flip",  std::make_unique<GLGE::Graphic::Cmd::Copy>(fbuff, win, 0)}
     };
     GLGE::Graphic::CommandExecutor exec(&win);
@@ -139,6 +142,17 @@ int main(void) {
         }
 
         GLGE::System::BakeTransforms(world);
+
+        ctx.beginRecording();
+        ctx.setCamera(*world.get<GLGE::Graphic::Component::Camera>(camera), world.get<GLGE::WorldTransform>(camera)->pos);
+        ctx.setTarget(fbuffTarget);
+
+        GLGE::Graphic::DebugRenderer debugRen;
+        debugRen.drawBox(GLGE::Transform(GLGE::vec3{0,2,0}, GLGE::Quaternion{}, GLGE::vec3{1}), GLGE::vec3{1}, GLGE::Graphic::DebugRenderer::WIREFRAME);
+
+        ctx.draw(&debugRen);
+        ctx.endRecording();
+
         renderer.update();
         exec.dispatch(stream);
 

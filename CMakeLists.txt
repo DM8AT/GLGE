@@ -464,6 +464,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/Framebuffer.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/GeometryPool.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/MeshManager.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/DebugDrawer.cpp
 
         # Frontend
         ${GLGE_SRC_DIR}/Graphic/DisplaySetup.cpp
@@ -478,7 +479,8 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Image.cpp
         ${GLGE_SRC_DIR}/Graphic/Texture.cpp
         ${GLGE_SRC_DIR}/Graphic/Sampler.cpp
-        ${GLGE_SRC_DIR}/Graphic/DebugVisualizer.cpp
+        ${GLGE_SRC_DIR}/Graphic/DebugRenderer.cpp
+        ${GLGE_SRC_DIR}/Graphic/DebugContext.cpp
 
         # Assets
         ${GLGE_SRC_DIR}/Graphic/Assets/ImageCPUAsset.cpp

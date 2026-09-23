@@ -17,3 +17,4 @@ endfunction()
 
 ADD_EXAMPLE(Cube src/Cube.cpp)
 ADD_EXAMPLE(Window src/WindowExample.cpp)
+ADD_EXAMPLE(DebugVisualizer src/DebugVisualizer.cpp)

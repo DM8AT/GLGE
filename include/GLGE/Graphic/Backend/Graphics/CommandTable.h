@@ -74,6 +74,13 @@ namespace GLGE::Graphic::Backend::Graphic {
         COMMAND_DRAW_WORLD = 5,
 
         /**
+         * @brief a command used to draw simple data usually used for visual debugging aid
+         * 
+         * @param context a pointer to the debug context to draw
+         */
+        COMMAND_DRAW_DEBUG = 6,
+
+        /**
          * @brief a base value for custom commands. All custom commands must 
          */
         COMMAND_CUSTOM = 0xfff

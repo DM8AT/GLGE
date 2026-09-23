@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2026
  * 
  */
-//add the visualizer frontend
-#include "GLGE/Graphic/DebugVisualizer.h"
+//add the debug renderer
+#include "GLGE/Graphic/DebugRenderer.h"
 
 GLGE::u32 cast_u32_safe(size_t size) {
     //in debug add a sanity check

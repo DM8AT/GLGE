@@ -22,6 +22,7 @@
 #include "RenderTarget.h"
 #include "Shader.h"
 #include "Renderer.h"
+#include "DebugContext.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -575,12 +576,91 @@ namespace GLGE::Graphic {
                 return Backend::Graphic::CommandHandle::create<GLGE::Graphic::Renderer*>(&m_renderer);
             }
 
+            /**
+             * @brief Get the Renderer
+             * 
+             * @return `const GLGE::Graphic::Renderer&` the renderer used by the command
+             */
+            inline const GLGE::Graphic::Renderer& getRenderer() const noexcept
+            {return m_renderer;}
+
+            /**
+             * @brief Set the Renderer
+             * 
+             * @param renderer the new renderer for the command
+             */
+            inline void setRenderer(const GLGE::Graphic::Renderer& renderer) 
+            {m_renderer = renderer; onInvalidate();}
+
         protected:
 
             /**
              * @brief store the renderer to render
              */
             GLGE::Graphic::Renderer m_renderer;
+
+        };
+
+        /**
+         * @brief a command that is used to render graphic that is mostly used for debugging
+         */
+        class DrawDebug : public GLGE::Graphic::Command {
+        public:
+
+            /**
+             * @brief Construct a new Draw Debug command
+             * 
+             * @param ctx a reference to the debug context to draw
+             */
+            DrawDebug(DebugContext& ctx) : m_ctx(ctx) {}
+
+            /**
+             * @brief Destroy the Draw Debug command
+             */
+            virtual ~DrawDebug() = default;
+
+            /**
+             * @brief Get the command type
+             *
+             * @return `Backend::Graphic::CommandType`
+             */
+            [[nodiscard]]virtual Backend::Graphic::CommandType getType() const noexcept override
+            {return Backend::Graphic::COMMAND_DRAW_DEBUG;}
+
+            /**
+             * @brief Get a handle containing the copied command arguments
+             *
+             * Handles are owning, ensuring that all data remains valid while the command is being recorded
+             *
+             * @return `Backend::Graphic::CommandHandle`
+             */
+            [[nodiscard]] virtual Backend::Graphic::CommandHandle getHandle() noexcept {
+                //Create owning render targets from the stored frontend objects
+                return Backend::Graphic::CommandHandle::create<GLGE::Graphic::DebugContext*>(&m_ctx);
+            }
+
+            /**
+             * @brief Get the Context
+             * 
+             * @return `DebugContext&` a reference to the debug context rendered by the command
+             */
+            inline DebugContext& getContext() noexcept
+            {return m_ctx;}
+
+            /**
+             * @brief Get the Context
+             * 
+             * @return `const DebugContext&` a constant reference to the debug context rendered by the command
+             */
+            inline const DebugContext& getContext() const noexcept
+            {return m_ctx;}
+
+        protected:
+
+            /**
+             * @brief store a reference to the debug context
+             */
+            DebugContext& m_ctx;
 
         };
 

@@ -1,7 +1,7 @@
 /**
- * @file DebugVisualizer.h
+ * @file DebugDrawer.h
  * @author DM8AT
- * @brief define an abstract interface to interact with the debug context to submit debug draw data and record it into a backend command buffer
+ * @brief define the OpenGL debug drawer
  * @version 0.1
  * @date 2026-09-23
  * 
@@ -9,31 +9,19 @@
  * 
  */
 //header guard
-#ifndef _GLGE_GRAPHIC_BACKEND_GRAPHIC_DEBUG_VISUALIZER_
-#define _GLGE_GRAPHIC_BACKEND_GRAPHIC_DEBUG_VISUALIZER_
+#ifndef _GLGE_GRAPHIC_BACKEND_GRAPHIC_OGL_DEBUG_DRAWER_
+#define _GLGE_GRAPHIC_BACKEND_GRAPHIC_OGL_DEBUG_DRAWER_
 
-//add the command system
-#include "GLGE/Graphic/Command.h"
-//add components
-#include "GLGE/Graphic/Components.h"
-//add render targets
-#include "GLGE/Graphic/RenderTarget.h"
-
-//forward declaration
-namespace GLGE::Graphic {
-    class DebugContext;
-}
+//add the debug drawer
+#include "GLGE/Graphic/Backend/Graphics/DebugDrawer.h"
 
 //use the library namespace
-namespace GLGE::Graphic::Backend::Graphic {
-
-    //forward 
-    class Instance;
+namespace GLGE::Graphic::Backend::Graphic::OpenGL {
 
     /**
-     * @brief define a class to render from a debug context
+     * @brief the OpenGL debug drawer class
      */
-    class DebugDrawer : public CommandInvalidator {
+    class DebugDrawer : public GLGE::Graphic::Backend::Graphic::DebugDrawer {
     public:
 
         /**
@@ -41,9 +29,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param instance a pointer to the graphic instance backend the debug drawer belongs to
          */
-        DebugDrawer(GLGE::Graphic::Backend::Graphic::Instance* instance)
-         : CommandInvalidator(), m_inst(instance)
-        {assert(m_inst == nullptr);}
+        DebugDrawer(GLGE::Graphic::Backend::Graphic::Instance* instance);
 
         /**
          * @brief Destroy the Debug Drawer
@@ -58,7 +44,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @warning this call is only valid if the context is NOT in a recording state
          * @note this does not invalidate old recordings. The backend should create a new recording target while leaving a potential old one valid. 
          */
-        virtual void beginRecording();
+        virtual void beginRecording() = 0;
 
         /**
          * @brief Set the Camera
@@ -68,7 +54,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param camera the camera component to use
          */
-        virtual void setCamera(const Component::Camera& camera);
+        virtual void setCamera(const Component::Camera& camera) = 0;
 
         /**
          * @brief Set the Target
@@ -78,7 +64,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param target the target to render to
          */
-        void setTarget(const RenderTarget& target);
+        virtual void setTarget(const RenderTarget& target) = 0;
 
         /**
          * @brief submit a list of objects to render
@@ -87,7 +73,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * 
          * @param renderer the renderer to render from
          */
-        void submitRenderer(const DebugRenderer& renderer);
+        virtual void submitRenderer(const DebugRenderer& renderer) = 0;
 
         /**
          * @brief finish the recording
@@ -97,22 +83,11 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @warning this call is only valid if the context is in a recording state
          * @note this call invalidates the old recording. 
          */
-        void endRecording();
-
-        /**
-         * @brief register a frontent
-         * 
-         * @param frontent a reference to the invalidator frontent
-         */
-        void registerFrontend(CommandInvalidator& frontent)
-        {attachInvalidator(frontent);}
+        virtual void endRecording() = 0;
 
     protected:
 
-        /**
-         * @brief store a pointer to the backend graphic instance the debug renderer belongs to
-         */
-        GLGE::Graphic::Backend::Graphic::Instance* m_inst = nullptr;
+
 
     };
 

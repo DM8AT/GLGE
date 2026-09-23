@@ -64,6 +64,10 @@
 #include "Assets/ImageCPUAsset.h"
 #include "Assets/TextureCPUAsset.h"
 
+//add debugging
+#include "DebugContext.h"
+#include "DebugRenderer.h"
+
 //include the backend stuff
 #include "Backend/Graphics/BackendDescription.h"
 
