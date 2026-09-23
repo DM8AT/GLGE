@@ -478,6 +478,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Image.cpp
         ${GLGE_SRC_DIR}/Graphic/Texture.cpp
         ${GLGE_SRC_DIR}/Graphic/Sampler.cpp
+        ${GLGE_SRC_DIR}/Graphic/DebugVisualizer.cpp
 
         # Assets
         ${GLGE_SRC_DIR}/Graphic/Assets/ImageCPUAsset.cpp

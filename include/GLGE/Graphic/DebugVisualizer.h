@@ -231,7 +231,7 @@ namespace GLGE::Graphic {
              * The style is used to infer the amount of indirections used. 
              * - Solid -> Triangles (3 indices per element)
              * - Wireframe -> Lines (2 indices per element)
-             * - Vertices -> Points (this forces the index start to be UINT32_MAX and the index count to be 0, points are not indexed)
+             * - Vertices -> Points (this forces the index start to be UINT32_MAX as a deliberate poison and the index count to be 0 (which should be used as detection), points should not be indexed)
              */
             Style style;
             /**
@@ -248,6 +248,8 @@ namespace GLGE::Graphic {
             u32 indexStart;
             /**
              * @brief the amount of indices that belong to the command
+             * 
+             * @note these indices are stored in command-local space, meaning that index 0 references to the first point belonging to this command
              */
             u32 indexCount;
         };
@@ -273,9 +275,10 @@ namespace GLGE::Graphic {
          * @brief render an axis-aligned bounding box (AABB)
          * 
          * @param aabb the axis aligned bounding box to draw
+         * @param pos the position of the AABB in 3D space (it is assumed that the AABB is created in object-local space, if the AABB is allready in global space set this to (0,0,0))
          * @param style the style to draw it in
          */
-        void drawAABB(const AABB& aabb, const Style& style);
+        void drawAABB(const AABB& aabb, const vec3& pos, const Style& style);
 
         /**
          * @brief draw a box
