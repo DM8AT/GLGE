@@ -135,13 +135,17 @@ namespace GLGE::Graphic {
             /**
              * @brief the index of the camera matrix in the camera matrix buffer
              */
-            int32_t cameraIdx;
+            i32 cameraIdx;
+            /**
+             * @brief store the index of the target to render to
+             */
+            i32 targetIdx;
 
             /**
              * @brief unused padding, aligns for std430 layout
              */
-            uint32_t padding[2] = {};
-            
+            u32 padding;
+
             /**
              * @brief color in RGBA format
              */
@@ -159,13 +163,14 @@ namespace GLGE::Graphic {
            m_vbo(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
            m_ibo(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
            m_camBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
+           m_targetInfoBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
            m_perDrawBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD)
         {}
 
         /**
          * @brief Destroy the Debug Context
          */
-        ~DebugContext() = default;
+        ~DebugContext();
 
         //immovable, cannot be copied
         DebugContext(DebugContext&&) = delete;
@@ -324,6 +329,14 @@ namespace GLGE::Graphic {
         {return &m_perDrawBuff;}
 
         /**
+         * @brief get the target info buffer
+         * 
+         * @return `Buffer*` the target info buffer
+         */
+        inline Buffer* getTargetInfoBuffer() noexcept
+        {return &m_targetInfoBuff;}
+
+        /**
          * @brief Get the Backend Data
          * 
          * @warning The layout and contents are fully defined by the backend
@@ -366,9 +379,9 @@ namespace GLGE::Graphic {
          */
         std::vector<glm::mat4> m_camMatrices;
         /**
-         * @brief during recording keep track of the currently active target
+         * @brief store how many targets where set
          */
-        RenderTarget m_currentTarget = static_cast<GLGE::Graphic::Window*>(nullptr);
+        u32 m_targetCount = 0;
         /**
          * @brief store the current shader
          */
@@ -390,6 +403,14 @@ namespace GLGE::Graphic {
          */
         std::vector<GLGE::Graphic::Shader*> m_newReferencedShader;
         /**
+         * @brief keep track of all currently referenced targets
+         */
+        std::vector<RenderTarget> m_currentlyReferencedTargets;
+        /**
+         * @brief a list to keep track of which target was referenced in this recording cycle
+         */
+        std::vector<RenderTarget> m_newReferencedTargets;
+        /**
          * @brief store the amount of draw calls recorded
          * 
          * This does not mean the amount that a draw command was added, but the sum of all sub-draw commands. 
@@ -408,6 +429,10 @@ namespace GLGE::Graphic {
          * @brief store a buffer that contains an UBO for the camera data
          */
         Buffer m_camBuff;
+        /**
+         * @brief store information about the render targets
+         */
+        Buffer m_targetInfoBuff;
         /**
          * @brief store a buffer that contains per-draw data for the geometry
          */

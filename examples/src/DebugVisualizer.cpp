@@ -127,9 +127,10 @@ int main(void) {
         std::pair {"Fragment", "examples/assets/shader/debug_default.frag.spv"},
     };
     GLGE::Graphic::DebugContext ctx(&debugShader);
-    GLGE::Graphic::ResourceSet debugSet(debugShader.getSet(0), std::pair{"cameraBuff", ctx.getCameraBuffer()}, std::pair{"perDraw", ctx.getPerDrawbuffer()});
+    GLGE::Graphic::ResourceSet debugSet(debugShader.getSet(0), std::pair{"cameraBuff", ctx.getCameraBuffer()}, std::pair{"perDraw", ctx.getPerDrawbuffer()}, std::pair{"targetInfo", ctx.getTargetInfoBuffer()});
     debugShader.setResources(0, &debugSet);
 
+    GLGE::System::BakeTransforms(world);
     GLGE::Graphic::CommandStream stream {
         std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(fbuff, 0, GLGE::vec4{0.5,0.5,0.5,1})},
         std::pair{"Draw",  std::make_unique<GLGE::Graphic::Cmd::Render>(renderer)},
@@ -150,16 +151,17 @@ int main(void) {
         GLGE::System::BakeTransforms(world);
 
         ctx.beginRecording();
-        ctx.setTarget(fbuffTarget); //target must be set before binding camera
         ctx.setCamera(*world.get<GLGE::Graphic::Component::Camera>(camera), world.get<GLGE::WorldTransform>(camera)->pos);
+        ctx.setTarget(fbuffTarget);
 
         GLGE::Graphic::DebugRenderer debugRen;
-        auto style = GLGE::Graphic::DebugRenderer::SOLID;
-        style.depthTest = GLGE::Graphic::DebugRenderer::Style::DepthTest::DEPTH_COMPARE_LESS;
-        style.cullMode = GLGE::Graphic::DebugRenderer::Style::CullMode::FRONT;
-        style.depthWrite = false;
-        style.color = GLGE::vec4(1.0, 0.6, 0.1098,0.7);
-        debugRen.drawBox(GLGE::Transform(GLGE::vec3{0,0,0}, GLGE::Quaternion{GLGE::vec3{glm::radians(45.f), glm::radians(45.f),0.f}}, GLGE::vec3{2.05}), GLGE::vec3{1}, style);
+        debugRen.drawBox(GLGE::vec3{2}, world.get<GLGE::WorldTransform>(cube)->toTransform().rescale(GLGE::vec3{1.02}), GLGE::Graphic::DebugRenderer::OUTLINE);
+        debugRen.drawMesh(cubeMesh, 0, GLGE::Transform({1, 2, 1}), GLGE::Graphic::DebugRenderer::WIREFRAME);
+        auto dotStyle = GLGE::Graphic::DebugRenderer::VERTICES;
+        dotStyle.color = {1,0.3,0.3,1};
+        dotStyle.depthTest = GLGE::Graphic::DebugRenderer::Style::DepthTest::DEPTH_COMPARE_ALWAYS;
+        dotStyle.depthWrite = false;
+        debugRen.drawDot(GLGE::vec3(0,0,0), dotStyle);
 
         ctx.draw(&debugRen);
         ctx.endRecording();

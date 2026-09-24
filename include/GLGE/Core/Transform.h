@@ -77,6 +77,34 @@ namespace GLGE {
          */
         virtual void store(std::vector<u8>& buffer) override;
 
+        /**
+         * @brief scale this transform
+         * 
+         * This scales only the scale value, not the position
+         * 
+         * @param scale the vector to scale with
+         * @return `Transform` the scaled transform
+         */
+        inline Transform rescale(const vec3& scale) const noexcept
+        {return Transform(pos, rot, scale * scale);}
+
+        /**
+         * @brief rotate this transform
+         * 
+         * @param quaternion the quaternion to rotate by
+         * @return `Transform` the rotated transform
+         */
+        inline Transform rotate(const Quaternion& quaternion) const noexcept
+        {return Transform(pos, rot * quaternion, scale);}
+
+        /**
+         * @brief translate the transfrom by some amount
+         * 
+         * @param delta the amount to move it by
+         * @return `Transform` the moved transform
+         */
+        inline Transform translate(const vec3& delta) const noexcept
+        {return Transform(pos + delta, rot, scale);}
     };
 
     /**
@@ -156,12 +184,20 @@ namespace GLGE {
         vec3 scale;
 
         /**
+         * @brief get a world-space transform that represents this world transform
+         * 
+         * @return `Transform` the world-space transform
+         */
+        inline Transform toTransform() const noexcept
+        {return Transform(pos, rot, scale);}
+
+        /**
          * @brief cast the world transform to a normal transform
          * 
          * @return `Transform` the resulting transform
          */
         inline operator Transform() const noexcept
-        {return Transform(pos, rot, scale);}
+        {return toTransform();}
 
         /**
          * @brief a function to get the matrix representing this transformation

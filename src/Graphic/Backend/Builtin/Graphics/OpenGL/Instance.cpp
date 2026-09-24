@@ -122,7 +122,10 @@ void Instance::onRegisterWindow(GLGE::Graphic::Backend::Graphic::Window* window)
         //setup FBO 0
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDrawBuffer(GL_BACK);
-        glReadBuffer(GL_BACK);        
+        glReadBuffer(GL_BACK);     
+        
+        //setup dynamic point size
+        glEnable(GL_PROGRAM_POINT_SIZE);
 
         //get the GPU information
         m_instance->getGraphicDescription()->initialize();

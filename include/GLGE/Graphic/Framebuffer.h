@@ -91,7 +91,7 @@ namespace GLGE::Graphic {
         {return m_fbuff.get();}
 
         /**
-         * @brief register a new invalidator to the window
+         * @brief register a new invalidator to the framebuffer
          * 
          * @param ptr a pointer to the invalidator to register
          */

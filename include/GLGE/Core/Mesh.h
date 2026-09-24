@@ -1171,7 +1171,8 @@ namespace GLGE {
                 //it exists -> get the actual attribute
                 const auto& attr = m_layout->getAttribute(idx);
                 //if the usage is invalid, return nullptr
-                if (!VertexLayout::VertexAttribute::isValidType<T>(attr.type))
+                //Note: void is valid here
+                if (!VertexLayout::VertexAttribute::isValidType<T>(attr.type) && !std::is_same_v<void, T>)
                 {return nullptr;}
                 //extract the data pointer
                 return reinterpret_cast<T*>(reinterpret_cast<u8*>(m_dataPtr) + attr.offset);
@@ -1194,9 +1195,6 @@ namespace GLGE {
                 if (idx == UINT64_MAX) {return nullptr;}
                 //it exists -> get the actual attribute
                 const auto& attr = m_layout->getAttribute(idx);
-                //if the usage is invalid, return nullptr
-                if (!VertexLayout::VertexAttribute::isValidType<T>(attr.type))
-                {return nullptr;}
                 //extract the data pointer
                 return reinterpret_cast<T*>(reinterpret_cast<u8*>(m_dataPtr) + attr.offset);
             }

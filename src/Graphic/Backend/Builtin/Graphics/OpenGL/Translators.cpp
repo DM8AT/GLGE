@@ -291,13 +291,13 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
         //switch over the used render mode to select how to render the data
         switch (style.renderMode) {
             case GLGE::Graphic::DebugDrawDataProvider::Style::RenderMode::SOLID:
-                glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>(firstIndex), 1, firstVertex, drawIdx);
+                glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>(firstIndex*sizeof(GLGE::u32)), 1, firstVertex, drawIdx);
                 break;
             case GLGE::Graphic::DebugDrawDataProvider::Style::RenderMode::WIREFRAME:
-                glDrawElementsInstancedBaseVertexBaseInstance(GL_LINES, indexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>(firstIndex), 1, firstVertex, drawIdx);
+                glDrawElementsInstancedBaseVertexBaseInstance(GL_LINES, indexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>(firstIndex*sizeof(GLGE::u32)), 1, firstVertex, drawIdx);
                 break;
             case GLGE::Graphic::DebugDrawDataProvider::Style::RenderMode::VERTICES:
-                glDrawElementsInstancedBaseVertexBaseInstance(GL_POINTS, indexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>(firstIndex), 1, firstVertex, drawIdx);
+                glDrawArraysInstancedBaseInstance(GL_POINTS, firstVertex, vertexCount, 1, drawIdx);
                 break;
             default: std::unreachable();
         }
@@ -338,6 +338,10 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
     //record the init command
     cmdBuff.addCommand(initCmd, persistent->vao);
 
+    //keep track of the dimensions of all targets
+    std::vector<GLGE::uvec2> extents;
+    extents.reserve(context->getTargetInfoBuffer()->getSize() / sizeof(GLGE::uvec2));
+
     //iterate over all commands
     for (const auto& cmd : cmds) {
         //check which type of command this is
@@ -363,6 +367,17 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
             const auto& newTarget = std::get<GLGE::Graphic::DebugContext::Command::SetTarget>(cmd.command).target;
             //record the target update
             cmdBuff.addCommand(setTarget, GLGE::Graphic::RenderTarget(newTarget));
+            //store the extent of the target
+            GLGE::uvec2 extent;
+            if (newTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                extent = reinterpret_cast<GLGE::Graphic::Window*>(newTarget.getTarget())->getResolution();
+            } else if (newTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                extent = reinterpret_cast<GLGE::Graphic::Framebuffer*>(newTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize();
+            } else {
+                std::unreachable();
+            }
+            extents.push_back(extent);
+
         } else if (std::holds_alternative<GLGE::Graphic::DebugContext::Command::SetShader>(cmd.command)) {
             //get the shader
             GLGE::Graphic::Shader* shader = std::get<GLGE::Graphic::DebugContext::Command::SetShader>(cmd.command).shader;
@@ -377,6 +392,9 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
 
     //record clean up
     cmdBuff.addCommand(finishCmd);
+
+    //upload the extents
+    context->getTargetInfoBuffer()->write(extents.data(), extents.size() * sizeof(*extents.data()), 0);
 
     //success
     return true;

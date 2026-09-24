@@ -355,6 +355,22 @@ namespace GLGE::Graphic {
             m_invalidating = false;
         }
 
+        /**
+         * @brief add a new listener
+         * 
+         * @param listener a pointer to the command invalidator that listens to this
+         */
+        void attachListener(CommandInvalidator* listener)
+        {m_parents.push_back(listener);}
+
+        /**
+         * @brief remove a listener
+         * 
+         * @param listener a pointer to the listener to remove
+         */
+        void detachListener(CommandInvalidator* listener)
+        {removeParent(listener);}
+
     protected:
 
         /**

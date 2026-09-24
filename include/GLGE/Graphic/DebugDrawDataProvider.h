@@ -106,7 +106,9 @@ namespace GLGE::Graphic {
             /**
              * @brief define the size of points
              * 
-             * Only used when the render mode is set to vertex
+             * Only used when the render mode is set to vertex. 
+             * 
+             * Unit: World units
              */
             float pointSize = 1.f;
             /**
@@ -167,6 +169,21 @@ namespace GLGE::Graphic {
         };
 
         /**
+         * @brief define a constant preset for a solid colored outline
+         * 
+         * When the scale is set a bit higher (about 1.02), this will result in a thin bright orange, slightly transparent outline around something. 
+         */
+        inline static constexpr Style OUTLINE = Style {
+            .color = {1.0, 0.6, 0.1098, 1.f},
+            .pointSize = 0.f,
+            .renderMode = Style::RenderMode::SOLID,
+            .blendMode = Style::BlendMode::NORMAL,
+            .depthWrite = false,
+            .depthTest = Style::DepthTest::DEPTH_COMPARE_LESS_EQUALS,
+            .cullMode = Style::CullMode::FRONT
+        };
+
+        /**
          * @brief define a constant preset for a wireframe style
          * 
          * This results in an opaque, red wireframe of the object being rendered. 
@@ -194,7 +211,7 @@ namespace GLGE::Graphic {
          */
         inline static constexpr Style VERTICES = Style {
             .color = {1.f, 0.f, 0.f, 1.f},
-            .pointSize = 5.f,
+            .pointSize = .1f,
             .renderMode = Style::RenderMode::VERTICES,
             .blendMode = Style::BlendMode::NORMAL,
             .depthWrite = true,

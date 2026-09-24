@@ -13,6 +13,12 @@
 //add windows
 #include "GLGE/Graphic/Window.h"
 
+GLGE::Graphic::DebugContext::~DebugContext() {
+    //remove from all shaders
+    for (const auto& shader : m_currentlyReferencedShader) 
+    {shader->getResources(0)->removeFrom(*this);}
+}
+
 void GLGE::Graphic::DebugContext::beginRecording() {
     //in debug: sanity check
     #if GLGE_DEBUG
@@ -29,8 +35,9 @@ void GLGE::Graphic::DebugContext::beginRecording() {
     m_indices.clear();
     //reset tracking objects
     m_camMatrices.clear();
-    m_currentTarget = static_cast<GLGE::Graphic::Window*>(nullptr);
+    m_targetCount = 0;
     m_newReferencedShader.clear();
+    m_newReferencedTargets.clear();
     m_drawCallCount = 0;
 
     //if a default shader is set, apply it
@@ -44,10 +51,6 @@ void GLGE::Graphic::DebugContext::setCamera(const Component::Camera& camera, con
     if (m_state != State::RECORDING) {throw GLGE::Exception("Cannot record a set camera command on a debug context that is not currently in a recording state", "GLGE::Graphic::DebugContext::setCamera");}
     #endif
 
-    //state sanity check
-    if (m_currentTarget.getTarget() == nullptr)
-    {throw GLGE::Exception("Cannot set a camera without binding a render target", "GLGE::Graphic::DebugContext::setCamera");}
-
     //add a new camera set command
     Command cmd {
         .command = Command::SetCamera {
@@ -57,20 +60,8 @@ void GLGE::Graphic::DebugContext::setCamera(const Component::Camera& camera, con
     };
     m_cmds.push_back(cmd);
 
-    //compute the target aspect
-    float aspect = 1.f;
-    switch (m_currentTarget.getType()) {
-        case GLGE::Graphic::RenderTarget::WINDOW: 
-            aspect = reinterpret_cast<GLGE::Graphic::Window*>(m_currentTarget.getTarget())->getResolution().x / float(reinterpret_cast<GLGE::Graphic::Window*>(m_currentTarget.getTarget())->getResolution().y);
-            break;
-        case GLGE::Graphic::RenderTarget::FRAMEBUFFER: 
-            aspect = reinterpret_cast<GLGE::Graphic::Framebuffer*>(m_currentTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize().x / float(reinterpret_cast<GLGE::Graphic::Framebuffer*>(m_currentTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize().y);
-            break;
-        default: std::unreachable();
-    }
-
     //compute the projection matrix
-    glm::mat4 proj = glm::perspective(glm::radians(camera.FOV), aspect, camera.clip_near, camera.clip_far);
+    glm::mat4 proj = glm::perspective(glm::radians(camera.FOV), 1.f, camera.clip_near, camera.clip_far);
     //compute the transformation matrix
     glm::mat4 transf = glm::translate(glm::mat4(GLGE::Quaternion(camera.eulerAngles)), -pos);
     //combine into one matrix
@@ -99,9 +90,11 @@ void GLGE::Graphic::DebugContext::setTarget(const RenderTarget& target) {
         }
     };
     m_cmds.push_back(cmd);
+    //record the target binding
+    m_newReferencedTargets.push_back(target);
 
-    //store the current target
-    m_currentTarget = target;
+    //increase the amount of used targets
+    ++m_targetCount;
 }
 
 void GLGE::Graphic::DebugContext::setShader(GLGE::Graphic::Shader* shader) {
@@ -137,7 +130,7 @@ void GLGE::Graphic::DebugContext::draw(const DebugDrawDataProvider* drawData) {
     //state sanity check
     if (m_camMatrices.size() == 0)
     {throw GLGE::Exception("A camera must be bound before a draw command can be executed", "GLGE::Graphic::DebugContext::draw");}
-    if (m_currentTarget.getTarget() == nullptr)
+    if (m_targetCount == 0)
     {throw GLGE::Exception("A render target must be set before a draw command can be executed", "GLGE::Graphic::DebugContext::draw");}
     if (m_currentShader == nullptr)
     {throw GLGE::Exception("A shader must be set before a draw command can be executed", "GLGE::Graphic::DebugContext::draw");}
@@ -189,8 +182,9 @@ void GLGE::Graphic::DebugContext::endRecording() {
     m_camBuff.resize(m_camMatrices.size() * sizeof(*m_camMatrices.data()));
     m_camBuff.write(m_camMatrices.data(), m_camMatrices.size() * sizeof(*m_camMatrices.data()), 0);
 
-    //keep track of the active camera index
+    //keep track of the active camera index and current target
     u32 camera = 0;
+    u32 target = 0;
     //compute the per-draw data
     std::vector<PerDraw> drawData;
     drawData.reserve(m_drawCallCount);
@@ -203,12 +197,16 @@ void GLGE::Graphic::DebugContext::endRecording() {
                 const auto& style = m_drawCmdRecords[data.cmdStartIdx + i].style;
                 draw.color = style.color;
                 draw.cameraIdx = camera - 1; //index is camera discovered count minus 1
+                draw.targetIdx = target - 1; //index is target discoverd count minus 1
                 draw.pointSize = (style.renderMode == DebugDrawDataProvider::Style::RenderMode::VERTICES) ? style.pointSize : 0.f;
                 drawData.push_back(draw);
             }
         } else if (std::holds_alternative<Command::SetCamera>(cmd.command)) {
             //next camera
             ++camera;
+        } else if (std::holds_alternative<Command::SetTarget>(cmd.command)) {
+            //next target
+            ++target;
         }
     }
 
@@ -223,8 +221,33 @@ void GLGE::Graphic::DebugContext::endRecording() {
     for (const auto& shader : m_newReferencedShader)
     {shader->getResources(0)->attachTo(*this);}
 
-    //update the current list
+    //remove from all old targets
+    for (const auto& target : m_currentlyReferencedTargets) {
+        if (target.getType() == RenderTarget::WINDOW) {
+            reinterpret_cast<Window*>(target.getTarget())->detachListener(this);
+        } else if (target.getType() == RenderTarget::FRAMEBUFFER) {
+            reinterpret_cast<Framebuffer*>(target.getTarget())->detachListener(this);
+        } else {
+            std::unreachable();
+        }
+    }
+    //attach to all new targets
+    for (const auto& target : m_newReferencedTargets) {
+        if (target.getType() == RenderTarget::WINDOW) {
+            reinterpret_cast<Window*>(target.getTarget())->attachListener(this);
+        } else if (target.getType() == RenderTarget::FRAMEBUFFER) {
+            reinterpret_cast<Framebuffer*>(target.getTarget())->attachListener(this);
+        } else {
+            std::unreachable();
+        }
+    }
+
+    //update the current lists
     m_currentlyReferencedShader = m_newReferencedShader;
+    m_currentlyReferencedTargets = m_newReferencedTargets;
+
+    //pre-resize the target buffer
+    m_targetInfoBuff.resize(sizeof(uvec2) * m_targetCount);
 
     //invalidate self
     invalidate();
