@@ -612,7 +612,9 @@ namespace GLGE::Graphic {
              * 
              * @param ctx a reference to the debug context to draw
              */
-            DrawDebug(DebugContext& ctx) : m_ctx(ctx) {}
+            DrawDebug(DebugContext& ctx)
+             : Command(ctx), m_ctx(ctx) 
+            {m_allowMultithreading = false; /*OpenGL backend requires the main thread*/}
 
             /**
              * @brief Destroy the Draw Debug command

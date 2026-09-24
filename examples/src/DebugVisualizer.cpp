@@ -122,7 +122,13 @@ int main(void) {
         GLGE::Transform({0,0,0}, GLGE::Quaternion(GLGE::vec3{glm::radians(-45.f),0,0}))
     );
 
-    GLGE::Graphic::DebugContext ctx;
+    GLGE::Graphic::Shader debugShader {
+        std::pair {"Vertex",   "examples/assets/shader/debug_default.vert.spv"},
+        std::pair {"Fragment", "examples/assets/shader/debug_default.frag.spv"},
+    };
+    GLGE::Graphic::DebugContext ctx(&debugShader);
+    GLGE::Graphic::ResourceSet debugSet(debugShader.getSet(0), std::pair{"cameraBuff", ctx.getCameraBuffer()}, std::pair{"perDraw", ctx.getPerDrawbuffer()});
+    debugShader.setResources(0, &debugSet);
 
     GLGE::Graphic::CommandStream stream {
         std::pair{"Clear", std::make_unique<GLGE::Graphic::Cmd::Clear>(fbuff, 0, GLGE::vec4{0.5,0.5,0.5,1})},
@@ -144,11 +150,16 @@ int main(void) {
         GLGE::System::BakeTransforms(world);
 
         ctx.beginRecording();
+        ctx.setTarget(fbuffTarget); //target must be set before binding camera
         ctx.setCamera(*world.get<GLGE::Graphic::Component::Camera>(camera), world.get<GLGE::WorldTransform>(camera)->pos);
-        ctx.setTarget(fbuffTarget);
 
         GLGE::Graphic::DebugRenderer debugRen;
-        debugRen.drawBox(GLGE::Transform(GLGE::vec3{0,2,0}, GLGE::Quaternion{}, GLGE::vec3{1}), GLGE::vec3{1}, GLGE::Graphic::DebugRenderer::WIREFRAME);
+        auto style = GLGE::Graphic::DebugRenderer::SOLID;
+        style.depthTest = GLGE::Graphic::DebugRenderer::Style::DepthTest::DEPTH_COMPARE_LESS;
+        style.cullMode = GLGE::Graphic::DebugRenderer::Style::CullMode::FRONT;
+        style.depthWrite = false;
+        style.color = GLGE::vec4(1.0, 0.6, 0.1098,0.7);
+        debugRen.drawBox(GLGE::Transform(GLGE::vec3{0,0,0}, GLGE::Quaternion{GLGE::vec3{glm::radians(45.f), glm::radians(45.f),0.f}}, GLGE::vec3{2.05}), GLGE::vec3{1}, style);
 
         ctx.draw(&debugRen);
         ctx.endRecording();

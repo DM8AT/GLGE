@@ -1,7 +1,7 @@
 /**
  * @file DebugRenderer.h
  * @author DM8AT
- * @brief 
+ * @brief define a default implementation for a debug draw data provider
  * @version 0.1
  * @date 2026-09-23
  * 

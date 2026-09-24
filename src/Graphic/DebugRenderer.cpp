@@ -31,6 +31,10 @@ void GLGE::Graphic::DebugRenderer::drawAABB(const AABB& aabb, const vec3& pos, c
     //transform the AABB to world
     AABB worldAABB(aabb.getMin() + pos, aabb.getMax() + pos);
 
+    //create the command record
+    CommandRecord cm {};
+    cm.style = style;
+
     //depending on the render mode there are 3 totally different visualizations possible
     switch (style.renderMode)
     {
@@ -38,8 +42,7 @@ void GLGE::Graphic::DebugRenderer::drawAABB(const AABB& aabb, const vec3& pos, c
             //solid adds all 8 points and creates 12 triangles from them
             //this can be done with only 8 points since the points have no face-specific information
 
-            //create the command record
-            CommandRecord cm {};
+            //fill the command record
             cm.indexStart = cast_u32_safe(m_connections.size());
             cm.indexCount = (3 * 12);
             cm.pointStart = cast_u32_safe(m_points.size());
@@ -72,8 +75,7 @@ void GLGE::Graphic::DebugRenderer::drawAABB(const AABB& aabb, const vec3& pos, c
     case Style::RenderMode::WIREFRAME: {
             //add the 8 edge points and connect them with 12 lines to form a wireframe
 
-            //create the command record
-            CommandRecord cm {};
+            //fill the command record
             cm.indexStart = cast_u32_safe(m_connections.size());
             cm.indexCount = (2 * 12);
             cm.pointStart = cast_u32_safe(m_points.size());
@@ -101,8 +103,7 @@ void GLGE::Graphic::DebugRenderer::drawAABB(const AABB& aabb, const vec3& pos, c
     case Style::RenderMode::VERTICES: {
             //just add 8 points at the vertices of the AABB
 
-            //create the command record
-            CommandRecord cm {};
+            //fill the command record
             cm.indexStart = std::numeric_limits<u32>::max();
             cm.indexCount = 0;
             cm.pointStart = cast_u32_safe(m_points.size());
@@ -127,6 +128,9 @@ void GLGE::Graphic::DebugRenderer::drawAABB(const AABB& aabb, const vec3& pos, c
     m_points.push_back(vec3 {worldAABB.getMax().x, worldAABB.getMin().y, worldAABB.getMax().z});
     m_points.push_back(vec3 {worldAABB.getMax().x, worldAABB.getMax().y, worldAABB.getMin().z});
     m_points.push_back(vec3 {worldAABB.getMax().x, worldAABB.getMax().y, worldAABB.getMax().z});
+
+    //add the command record
+    m_records.push_back(cm);
 }
 
 void GLGE::Graphic::DebugRenderer::drawBox(const Transform& transform, const vec3& extent, const Style& style) {
@@ -145,7 +149,7 @@ void GLGE::Graphic::DebugRenderer::drawBox(const Transform& transform, const vec
     };
 
     //create the transformation matrix from the transform
-    glm::mat4 transf = glm::translate(glm::mat4(transform.rot) * glm::scale(glm::mat4 {}, transform.scale), transform.pos);
+    glm::mat4 transf = glm::translate(glm::scale(glm::mat4(transform.rot), transform.scale), transform.pos);
 
     //apply the transformation
     for (size_t i = 0; i < (sizeof(verts) / sizeof(*verts)); ++i) {
@@ -153,18 +157,83 @@ void GLGE::Graphic::DebugRenderer::drawBox(const Transform& transform, const vec
         verts[i] = vec3{inter.x, inter.y, inter.z};
     }
 
+    //create the command record
+    CommandRecord cm {};
+    cm.style = style;
+
     //now, depending on the render mode, different connections of the points are required
     switch (style.renderMode) {
     case Style::RenderMode::SOLID: {
+            //solid adds all 8 points and creates 12 triangles from them
+            //this can be done with only 8 points since the points have no face-specific information
 
+            //fill the command record
+            cm.indexStart = cast_u32_safe(m_connections.size());
+            cm.indexCount = (3 * 12);
+            cm.pointStart = cast_u32_safe(m_points.size());
+            cm.pointCount = 8;
+
+            //add the 12 triangles
+            m_connections.reserve(m_connections.size() + (3 * 12));
+            //Bottom
+            m_connections.push_back(0); m_connections.push_back(4); m_connections.push_back(5);
+            m_connections.push_back(0); m_connections.push_back(5); m_connections.push_back(1);
+            //Top
+            m_connections.push_back(2); m_connections.push_back(3); m_connections.push_back(7);
+            m_connections.push_back(2); m_connections.push_back(7); m_connections.push_back(6);
+
+            //Left
+            m_connections.push_back(0); m_connections.push_back(1); m_connections.push_back(3);
+            m_connections.push_back(0); m_connections.push_back(3); m_connections.push_back(2);
+            //Right
+            m_connections.push_back(4); m_connections.push_back(6); m_connections.push_back(7);
+            m_connections.push_back(4); m_connections.push_back(7); m_connections.push_back(5);
+
+            //Front
+            m_connections.push_back(0); m_connections.push_back(2); m_connections.push_back(6);
+            m_connections.push_back(0); m_connections.push_back(6); m_connections.push_back(4);
+            //Back
+            m_connections.push_back(1); m_connections.push_back(5); m_connections.push_back(7);
+            m_connections.push_back(1); m_connections.push_back(7); m_connections.push_back(3);
         }
         break;
     case Style::RenderMode::WIREFRAME: {
+            //add the 8 edge points and connect them with 12 lines to form a wireframe
 
+            //fill the command record
+            cm.indexStart = cast_u32_safe(m_connections.size());
+            cm.indexCount = (2 * 12);
+            cm.pointStart = cast_u32_safe(m_points.size());
+            cm.pointCount = 8;
+
+            //add the line connections
+            m_connections.reserve(m_connections.size() + (2 * 12));
+            //Bottom
+            m_connections.push_back(0); m_connections.push_back(4);
+            m_connections.push_back(4); m_connections.push_back(5);
+            m_connections.push_back(5); m_connections.push_back(1);
+            m_connections.push_back(1); m_connections.push_back(0);
+            //Top
+            m_connections.push_back(2); m_connections.push_back(6);
+            m_connections.push_back(6); m_connections.push_back(7);
+            m_connections.push_back(7); m_connections.push_back(3);
+            m_connections.push_back(3); m_connections.push_back(2);
+            //Vertical
+            m_connections.push_back(0); m_connections.push_back(2);
+            m_connections.push_back(4); m_connections.push_back(6);
+            m_connections.push_back(5); m_connections.push_back(7);
+            m_connections.push_back(1); m_connections.push_back(3);
         }
         break;
     case Style::RenderMode::VERTICES: {
+            //just add 8 points at the vertices of the box
 
+            //fill the command record
+            cm.indexStart = std::numeric_limits<u32>::max();
+            cm.indexCount = 0;
+            cm.pointStart = cast_u32_safe(m_points.size());
+            cm.pointCount = 8;
+            cm.style = style;
         }
         break;
     
@@ -175,7 +244,9 @@ void GLGE::Graphic::DebugRenderer::drawBox(const Transform& transform, const vec
     }
 
     //in any valid case add all 8 vertices
-    m_points.reserve(m_points.size() + 8);
+    m_points.insert(m_points.end(), verts, verts + (sizeof(verts)/sizeof(*verts)));
+    //add the command record
+    m_records.push_back(cm);
 }
 
 void GLGE::Graphic::DebugRenderer::drawDot(const vec3& position, const Style& style_in) {
@@ -193,6 +264,9 @@ void GLGE::Graphic::DebugRenderer::drawDot(const vec3& position, const Style& st
 
     //add the point
     m_points.push_back(position);
+
+    //add the command record
+    m_records.push_back(cm);
 }
 
 void GLGE::Graphic::DebugRenderer::drawSphere(const vec3& position, float radius, const Style& style) {
@@ -221,6 +295,9 @@ void GLGE::Graphic::DebugRenderer::drawLine(const vec3& a, const vec3& b, const 
     m_connections.reserve(m_connections.size() + 2);
     m_connections.push_back(0);
     m_connections.push_back(1);
+
+    //add the command record
+    m_records.push_back(cm);
 }
 
 void GLGE::Graphic::DebugRenderer::drawMesh(const GLGE::Mesh& mesh, u8 lod, const Transform& transform, const Style& style) {

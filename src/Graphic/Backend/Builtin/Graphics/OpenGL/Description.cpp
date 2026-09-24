@@ -22,6 +22,9 @@
 //add command handles
 #include "GLGE/Graphic/Backend/Graphics/CommandHandle.h"
 
+//add debug context
+#include "GLGE/Graphic/DebugContext.h"
+
 //add the translation functions
 #include "Translators.h"
 
@@ -63,7 +66,8 @@ OpenGL::OpenGL()
         std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(OglImpl::clear)},
         std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>(OglImpl::copy)},
         std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(OglImpl::dispatchCompute)},
-        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(OglImpl::drawWorld)}
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(OglImpl::drawWorld)},
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DRAW_DEBUG, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::DebugContext*>(OglImpl::drawDebug)}
     }))
 {}
 

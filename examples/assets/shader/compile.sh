@@ -8,5 +8,11 @@ ret=$(($ret + $?))
 glslc simple.frag -o simple.frag.spv
 ret=$(($ret + $?))
 
+# debug default shader
+glslc debug_default.vert -o debug_default.vert.spv
+ret=$(($ret + $?))
+glslc debug_default.frag -o debug_default.frag.spv
+ret=$(($ret + $?))
+
 # return the sum of failures
 exit $ret

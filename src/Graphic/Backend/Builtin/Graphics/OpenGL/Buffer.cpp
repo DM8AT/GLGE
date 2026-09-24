@@ -170,6 +170,8 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Buffer::read(void* data, size_t si
 }
 
 void GLGE::Graphic::Backend::Graphic::OpenGL::Buffer::resize(size_t size, bool preserve) {
+    //ignore zero-length requests (they are invalid in OpenGL)
+    if (size == 0) {return;}
     //sanity check if resize is required
     if (m_size == size) {return;}
 

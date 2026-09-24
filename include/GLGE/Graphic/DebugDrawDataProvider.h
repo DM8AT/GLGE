@@ -104,13 +104,11 @@ namespace GLGE::Graphic {
              */
             vec4 color = {1,0,0,1};
             /**
-             * @brief define the line width in pixels
+             * @brief define the size of points
              * 
-             * The exact usage is defined by the render mode. 
-             * 
-             * Default value: 1 pixel
+             * Only used when the render mode is set to vertex
              */
-            float lineWidth = 1.f;
+            float pointSize = 1.f;
             /**
              * @brief define how the object is rendered
              * 
@@ -160,7 +158,7 @@ namespace GLGE::Graphic {
          */
         inline static constexpr Style SOLID = Style {
             .color = {1.f, 0.f, 0.f, 1.f},
-            .lineWidth = 1.f,
+            .pointSize = 0.f,
             .renderMode = Style::RenderMode::SOLID,
             .blendMode = Style::BlendMode::NORMAL,
             .depthWrite = true,
@@ -178,7 +176,7 @@ namespace GLGE::Graphic {
          */
         inline static constexpr Style WIREFRAME = Style {
             .color = {1.f, 0.f, 0.f, 1.f},
-            .lineWidth = 5.f,
+            .pointSize = 0.f,
             .renderMode = Style::RenderMode::WIREFRAME,
             .blendMode = Style::BlendMode::NORMAL,
             .depthWrite = true,
@@ -196,7 +194,7 @@ namespace GLGE::Graphic {
          */
         inline static constexpr Style VERTICES = Style {
             .color = {1.f, 0.f, 0.f, 1.f},
-            .lineWidth = 5.f,
+            .pointSize = 5.f,
             .renderMode = Style::RenderMode::VERTICES,
             .blendMode = Style::BlendMode::NORMAL,
             .depthWrite = true,

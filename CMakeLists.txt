@@ -464,7 +464,6 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/Framebuffer.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/GeometryPool.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/MeshManager.cpp
-        ${GLGE_SRC_DIR}/Graphic/Backend/Graphics/DebugDrawer.cpp
 
         # Frontend
         ${GLGE_SRC_DIR}/Graphic/DisplaySetup.cpp

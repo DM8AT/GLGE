@@ -259,7 +259,12 @@ namespace GLGE::Graphic {
                     const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
 
                     //Skip on nullptr
-                    if (cmd == nullptr) {continue;}
+                    if (cmd == nullptr) {
+                        #if GLGE_DEBUG
+                        throw GLGE::Exception("Found unknown command type. This is considered an error in debug.", "GLGE::Graphic::CommandStream::compile");
+                        #endif
+                        continue;
+                    }
 
                     //Record
                     if (el.cmdBuff->isRecorded()) 
@@ -292,8 +297,12 @@ namespace GLGE::Graphic {
                     const auto* cmd = m_instance->getGraphicDescription()->getCommandTable()->getCommand(static_cast<u32>(el.cmd->getType()));
 
                     //Skip on nullptr
-                    if (cmd == nullptr) 
-                    {continue;}
+                    if (cmd == nullptr) {
+                        #if GLGE_DEBUG
+                        throw GLGE::Exception("Found unknown command type. This is considered an error in debug.", "GLGE::Graphic::CommandStream::compile");
+                        #endif
+                        continue;
+                    }
 
                     //Record
                     if (el.cmdBuff->isRecorded()) 

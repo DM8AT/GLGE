@@ -22,11 +22,13 @@
 //add the base class
 #include "GLGE/Core/BaseClass.h"
 
+//add GPU buffers
+#include "Buffer.h"
+//add shader
+#include "Shader.h"
+
 //add the debug draw data provider
 #include "DebugDrawDataProvider.h"
-
-//add the backend
-#include "Backend/Graphics/DebugDrawer.h"
 
 //add variants
 #include <variant>
@@ -89,6 +91,15 @@ namespace GLGE::Graphic {
                 RenderTarget target;
             };
             /**
+             * @brief Command sub-type to set the currently used shader
+             */
+            struct SetShader {
+                /**
+                 * @brief store a pointer to the new shader to use
+                 */
+                GLGE::Graphic::Shader* shader;
+            };
+            /**
              * @brief Command sub-type to draw something
              */
             struct Draw {
@@ -108,14 +119,48 @@ namespace GLGE::Graphic {
             std::variant<
                 SetCamera, 
                 SetTarget,
+                SetShader,
                 Draw
             > command;
         };
 
         /**
-         * @brief Construct a new Debug Context
+         * @brief define how the per-draw data for the geometry looks
          */
-        DebugContext() : BaseClass() {}
+        struct PerDraw {
+            /**
+             * @brief only used when rendering in vertex mode, set to 0 if not
+             */
+            float pointSize;
+            /**
+             * @brief the index of the camera matrix in the camera matrix buffer
+             */
+            int32_t cameraIdx;
+
+            /**
+             * @brief unused padding, aligns for std430 layout
+             */
+            uint32_t padding[2] = {};
+            
+            /**
+             * @brief color in RGBA format
+             */
+            GLGE::vec4 color;
+        };
+
+        /**
+         * @brief Construct a new Debug Context
+         * 
+         * @param defaultShader a pointer to the default shader to use. Nullptr is valid. 
+         */
+        explicit DebugContext(GLGE::Graphic::Shader* defaultShader = nullptr)
+         : BaseClass(), 
+           m_defaultShader(defaultShader),
+           m_vbo(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
+           m_ibo(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
+           m_camBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
+           m_perDrawBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD)
+        {}
 
         /**
          * @brief Destroy the Debug Context
@@ -127,6 +172,27 @@ namespace GLGE::Graphic {
         DebugContext(const DebugContext&) = delete;
         DebugContext& operator=(DebugContext&&) = delete;
         DebugContext& operator=(const DebugContext&) = delete;
+
+        /**
+         * @brief Set the Default Shader
+         * 
+         * The default shader is the shader that will be initially set on begin recording. Nullptr is valid and skips this setting. 
+         * 
+         * @warning the shader pointer must remain valid for the lifetime of the debug context or until it is updated again
+         * @note this does not invalidate the resource
+         * 
+         * @param shader a pointer to the new default shader
+         */
+        inline void setDefaultShader(GLGE::Graphic::Shader* shader)
+        {m_defaultShader = shader;}
+
+        /**
+         * @brief Get the Default Shader
+         * 
+         * @return `GLGE::Graphic::Shader*` a pointer to the default shader
+         */
+        inline GLGE::Graphic::Shader* getDefaultShader() const noexcept
+        {return m_defaultShader;}
 
         /**
          * @brief start the recording of the debug context
@@ -158,6 +224,13 @@ namespace GLGE::Graphic {
          * @param target the target to render to
          */
         void setTarget(const RenderTarget& target);
+
+        /**
+         * @brief Set the Shader to use
+         * 
+         * @param shader a pointer to the shader to use
+         */
+        void setShader(GLGE::Graphic::Shader* shader);
 
         /**
          * @brief draw something
@@ -218,6 +291,56 @@ namespace GLGE::Graphic {
         inline const std::vector<u32>& getIndexBuffer() const noexcept
         {return m_indices;}
 
+        /**
+         * @brief get the vertex buffer
+         * 
+         * @return `Buffer*` the vertex buffer
+         */
+        inline Buffer* getVBO() noexcept
+        {return &m_vbo;}
+
+        /**
+         * @brief get the index buffer
+         * 
+         * @return `Buffer*` the index buffer
+         */
+        inline Buffer* getIBO() noexcept
+        {return &m_ibo;}
+
+        /**
+         * @brief get the camera buffer
+         * 
+         * @return `Buffer*` the camera buffer
+         */
+        inline Buffer* getCameraBuffer() noexcept
+        {return &m_camBuff;}
+
+        /**
+         * @brief get the per draw buffer
+         * 
+         * @return `Buffer*` the per draw buffer
+         */
+        inline Buffer* getPerDrawbuffer() noexcept
+        {return &m_perDrawBuff;}
+
+        /**
+         * @brief Get the Backend Data
+         * 
+         * @warning The layout and contents are fully defined by the backend
+         * 
+         * @return `void*` a pointer to the backend data
+         */
+        inline void* getBackendData() const noexcept
+        {return m_backendData;}
+
+        /**
+         * @brief Set the Backend Data
+         * 
+         * @param newData a pointer to the new backend data
+         */
+        inline void setBackendData(void* newData) noexcept
+        {m_backendData = newData;}
+
     protected:
 
         /**
@@ -226,9 +349,9 @@ namespace GLGE::Graphic {
         State m_state = State::UNINITIALIZED;
 
         /**
-         * @brief store the backend
+         * @brief store the default shader
          */
-        GLGE::Reference<GLGE::Graphic::Backend::Graphic::DebugDrawer> m_backend;
+        GLGE::Graphic::Shader* m_defaultShader = nullptr;
 
         /**
          * @brief store all currently recorded commands
@@ -239,6 +362,18 @@ namespace GLGE::Graphic {
          */
         std::vector<DebugDrawDataProvider::CommandRecord> m_drawCmdRecords;
         /**
+         * @brief store all recorded camera matrices
+         */
+        std::vector<glm::mat4> m_camMatrices;
+        /**
+         * @brief during recording keep track of the currently active target
+         */
+        RenderTarget m_currentTarget = static_cast<GLGE::Graphic::Window*>(nullptr);
+        /**
+         * @brief store the current shader
+         */
+        GLGE::Graphic::Shader* m_currentShader = nullptr;
+        /**
          * @brief store a unified vertex buffer
          */
         std::vector<vec3> m_vertices;
@@ -246,6 +381,42 @@ namespace GLGE::Graphic {
          * @brief store a unified index buffer
          */
         std::vector<u32> m_indices;
+        /**
+         * @brief keep track of all currently referenced shaders
+         */
+        std::vector<GLGE::Graphic::Shader*> m_currentlyReferencedShader;
+        /**
+         * @brief a list to keep track of which shader were referenced in this recording cycle
+         */
+        std::vector<GLGE::Graphic::Shader*> m_newReferencedShader;
+        /**
+         * @brief store the amount of draw calls recorded
+         * 
+         * This does not mean the amount that a draw command was added, but the sum of all sub-draw commands. 
+         */
+        u32 m_drawCallCount = 0;
+
+        /**
+         * @brief store the VBO for the debug context
+         */
+        Buffer m_vbo;
+        /**
+         * @brief store the IBO for the debug context
+         */
+        Buffer m_ibo;
+        /**
+         * @brief store a buffer that contains an UBO for the camera data
+         */
+        Buffer m_camBuff;
+        /**
+         * @brief store a buffer that contains per-draw data for the geometry
+         */
+        Buffer m_perDrawBuff;
+
+        /**
+         * @brief store data for the backend
+         */
+        void* m_backendData = nullptr;
 
     };
 
