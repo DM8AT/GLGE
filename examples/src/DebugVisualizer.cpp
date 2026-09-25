@@ -14,7 +14,7 @@
 int main(void) {
     GLGE::Instance::init();
 
-    GLGE::Graphic::Instance gInst(new GLGE::Graphic::Builtin::Graphics::OpenGL(), new GLGE::Graphic::Builtin::Video::SDL3());
+    GLGE::Graphic::Instance gInst(new GLGE::Graphic::Builtin::Graphics::Vulkan(), new GLGE::Graphic::Builtin::Video::SDL3());
     GLGE::Instance inst("Instance", {0,1,0}, std::pair{"Graphic", &gInst});
 
     GLGE::Graphic::Window win {"Window", {600, 600}};

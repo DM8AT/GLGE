@@ -43,7 +43,6 @@ GeometryPoolStream::GeometryPoolStream(u64 size, bool isIbo, GLGE::Graphic::Back
             //create the synchronizing fence
             VkFenceCreateInfo fenceInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
             CHECK_VULKAN(vkCreateFence(device, &fenceInfo, nullptr, reinterpret_cast<VkFence*>(&m_fence)));
-            std::cout << "Created fence " << m_fence << " as a geometry pool stream fence\n";
         }
     }
 

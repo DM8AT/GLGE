@@ -77,6 +77,45 @@ namespace GLGE::Graphic {
         inline void* getTarget() const noexcept
         {return m_target;}
 
+        /**
+         * @brief a structure used to hash a render target
+         */
+        struct Hasher {
+            /**
+             * @brief functor to hash a render target
+             * 
+             * @param target the target to hash
+             * @return `std::size_t` the hash for the target
+             */
+            std::size_t operator()(const RenderTarget& target) {
+                //store the current hash
+                std::size_t seed = std::hash<void*>{}(target.m_target);
+
+                //similar to boost::hash_combine
+                auto hashCombine = [&seed](std::size_t value) 
+                                    {seed ^= value + static_cast<std::size_t>(0x9e3779b9) + (seed << 6) + (seed >> 2);};
+                //special function to hash enums
+                auto hashEnum = [&hashCombine](auto value) {
+                    using T = std::remove_cv_t<decltype(value)>;
+                    using U = std::underlying_type_t<T>;
+                    hashCombine(std::hash<U>{}(static_cast<U>(value)));
+                };
+
+                //add the type to the hash
+                hashEnum(target.m_type);
+
+                //return the final hash
+                return seed;
+            };
+        };
+
+        /**
+         * @brief check if two render targets are identical
+         * 
+         * @return `true` if they are identical, `false` when they are different
+         */
+        constexpr bool operator==(const RenderTarget&) const noexcept = default;
+
     protected:
 
         /**
@@ -92,5 +131,26 @@ namespace GLGE::Graphic {
     };
 
 }
+
+namespace std {
+    
+    /**
+     * @brief specialization of std::hash for a render target
+     * 
+     * @tparam  [UNUSED]
+     */
+    template <>
+    struct hash<GLGE::Graphic::RenderTarget> {
+        /**
+         * @brief functor operator for the hasher
+         * 
+         * @param target the target to hash
+         * @return `std::size_t` the corresponding hash
+         */
+        std::size_t operator()(const GLGE::Graphic::RenderTarget& target) const noexcept 
+        {return GLGE::Graphic::RenderTarget::Hasher{}(target);}
+    };
+
+};
 
 #endif

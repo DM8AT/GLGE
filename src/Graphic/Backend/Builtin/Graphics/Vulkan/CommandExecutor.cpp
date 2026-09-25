@@ -27,12 +27,6 @@
 #define CHECK_VULKAN(fun) (fun);
 #endif
 
-#if GLGE_DEBUG && (!GLGE_NO_DB_LOG)
-#define DEBUG_LOG(msg) {std::stringstream __stream; __stream << msg << "\n"; std::cout << __stream.str();}
-#else
-#define DEBUG_LOG(msg) 
-#endif
-
 GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor(GLGE::Graphic::Window* win, GLGE::Graphic::Backend::Graphic::Instance* instance)
  : Backend::Graphic::CommandExecutor(win, instance)
 {
@@ -47,8 +41,6 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor(GLGE::
     if (vkCreateCommandPool(device, &cmdPoolCreate, nullptr, reinterpret_cast<VkCommandPool*>(&m_cmdPool)) != VK_SUCCESS) 
     {throw Exception("Failed to create a command pool", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor");}
 
-    DEBUG_LOG("Created new command executor owning command pool " << m_cmdPool)
-
     //create the command buffers
     VkCommandBufferAllocateInfo allocInfo {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -61,9 +53,6 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor(GLGE::
         throw Exception("Failed to allocate primary command buffers", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor");
     }
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
-    {DEBUG_LOG("Created command buffer " << m_cmdBuffs[i] << " for a command executor using pool " << m_cmdBuffs << ", command buffer index: [" << i << "]")}
-
     VkFenceCreateInfo fenCreate {};
     fenCreate.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenCreate.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -74,11 +63,8 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor(GLGE::
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         if (vkCreateFence(device, &fenCreate, nullptr, reinterpret_cast<VkFence*>(&(m_fences[i]))))
         {throw GLGE::Exception("Failed to create primary syncing fence", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor");}
-        std::cout << "Created fence " << m_fences[i] << " as a frame in flight fence\n";
         if (vkCreateSemaphore(device, &semCreate, nullptr, reinterpret_cast<VkSemaphore*>(&m_imgAvailSems[i])))
         {throw GLGE::Exception("Failed to create the image available semaphore", "GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::CommandExecutor");}
-
-        DEBUG_LOG("Created frame in flight dependent fence " << m_fences[i] << " and semaphore " << m_imgAvailSems[i] << ", both belonging to frame in flight index [" << i << "]")
     }
 }
 
@@ -90,8 +76,6 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::~CommandExecutor() {
     awaitFinish();
     vkDeviceWaitIdle(device);
 
-    DEBUG_LOG("Destroying command executor owning pool " << m_cmdPool)
-    
     //clean the pool (this also deletes the command buffers)
     if (m_cmdPool) {
         vkDestroyCommandPool(device, reinterpret_cast<VkCommandPool>(m_cmdPool), nullptr);
@@ -108,8 +92,6 @@ GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::~CommandExecutor() {
 void GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::dispatch(GLGE::Graphic::CommandStream* stream) {
     auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_inst);
     VkDevice device = reinterpret_cast<VkDevice>(inst->getDevice());
-
-    DEBUG_LOG("Dispatching stream " << stream << " on command dispatcher using command executor " << m_cmdPool)
 
     //get a fence for the frame and conditionally await it
     VkFence currentFence = reinterpret_cast<VkFence>(m_fences[m_currentFrame]);
@@ -217,7 +199,6 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::dispatch(GLGE::Gr
 }
 
 void GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::awaitFinish() {
-    DEBUG_LOG("Awaiting finish of command executor using pool " << m_cmdPool)
     auto* inst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(m_inst);
     VkDevice device = reinterpret_cast<VkDevice>(inst->getDevice());
 

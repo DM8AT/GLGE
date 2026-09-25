@@ -148,6 +148,59 @@ namespace GLGE::Graphic {
              * Default value: Back
              */
             CullMode cullMode = CullMode::BACK;
+
+            /**
+             * @brief check if two styles are identical
+             * 
+             * @return `true` if they are, `false` if not
+             */
+            constexpr bool operator==(const Style&) const noexcept = default;
+
+            /**
+             * @brief a functor-structure used to hash a style
+             */
+            struct Hasher {
+                /**
+                 * @brief functor-operator to hash a style
+                 * 
+                 * @param toHash the style to hash
+                 * @return `std::size_t` the hash corresponding to the style
+                 */
+                std::size_t operator()(const Style& toHash) const noexcept {
+                    std::size_t seed = 0;
+
+                    //similar to boost::hash_combine
+                    auto hashCombine = [&seed](std::size_t value) 
+                                       {seed ^= value + static_cast<std::size_t>(0x9e3779b9) + (seed << 6) + (seed >> 2);};
+
+                    //special function to hash enums
+                    auto hashEnum = [&hashCombine](auto value) {
+                        using T = std::remove_cv_t<decltype(value)>;
+                        using U = std::underlying_type_t<T>;
+                        hashCombine(std::hash<U>{}(static_cast<U>(value)));
+                    };
+
+                    //hash-combine the color elements
+                    hashCombine(std::hash<float>{}(toHash.color.x));
+                    hashCombine(std::hash<float>{}(toHash.color.y));
+                    hashCombine(std::hash<float>{}(toHash.color.z));
+                    hashCombine(std::hash<float>{}(toHash.color.w));
+
+                    //add the point size only when render mode is vertices
+                    //because otherwise they do not matter
+                    hashCombine(std::hash<float>{}((toHash.renderMode == RenderMode::VERTICES) ? toHash.pointSize : 0.f));
+
+                    //add state settings
+                    hashEnum(toHash.renderMode);
+                    hashEnum(toHash.blendMode);
+                    hashCombine(std::hash<bool>{}(toHash.depthWrite));
+                    hashEnum(toHash.depthTest);
+                    hashEnum(toHash.cullMode);
+
+                    //return the combined hash
+                    return seed;
+                }
+            };
         };
 
         /**

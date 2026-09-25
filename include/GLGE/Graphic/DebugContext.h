@@ -153,6 +153,11 @@ namespace GLGE::Graphic {
         };
 
         /**
+         * @brief define the function layout for the backend cleanup function
+         */
+        using CleanupPfn = void (*)(DebugContext*);
+
+        /**
          * @brief Construct a new Debug Context
          * 
          * @param defaultShader a pointer to the default shader to use. Nullptr is valid. 
@@ -160,8 +165,8 @@ namespace GLGE::Graphic {
         explicit DebugContext(GLGE::Graphic::Shader* defaultShader = nullptr)
          : BaseClass(), 
            m_defaultShader(defaultShader),
-           m_vbo(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
-           m_ibo(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
+           m_vbo(Buffer::Type::STORAGE_VERTEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
+           m_ibo(Buffer::Type::STORAGE_INDEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
            m_camBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
            m_targetInfoBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
            m_perDrawBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD)
@@ -354,6 +359,16 @@ namespace GLGE::Graphic {
         inline void setBackendData(void* newData) noexcept
         {m_backendData = newData;}
 
+        /**
+         * @brief Set the Cleanup Fn
+         * 
+         * @warning NEVER USE THIS IN THE FRONTEND! IT MAY BREAK THE RENDERER!
+         * 
+         * @param fn the function used for clean up
+         */
+        inline void setCleanupFn(CleanupPfn fn) noexcept
+        {m_cleanupFn = fn;}
+
     protected:
 
         /**
@@ -375,9 +390,9 @@ namespace GLGE::Graphic {
          */
         std::vector<DebugDrawDataProvider::CommandRecord> m_drawCmdRecords;
         /**
-         * @brief store all recorded camera matrices
+         * @brief store the amount of camera matrices
          */
-        std::vector<glm::mat4> m_camMatrices;
+        u32 m_camMatCount = 0;
         /**
          * @brief store how many targets where set
          */
@@ -442,6 +457,10 @@ namespace GLGE::Graphic {
          * @brief store data for the backend
          */
         void* m_backendData = nullptr;
+        /**
+         * @brief store the function used to clean up
+         */
+        CleanupPfn m_cleanupFn = nullptr;
 
     };
 

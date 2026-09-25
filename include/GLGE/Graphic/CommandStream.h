@@ -309,8 +309,6 @@ namespace GLGE::Graphic {
                     {el.cmdBuff->clear();}
 
                     std::stringstream stream;
-                    stream << "Recording command " << getNameForCmd(j) << "\n";
-                    std::cout << stream.str();
                     el.cmdBuff->onBegin();
                     cmd->func(*el.cmdBuff, el.cmd->getHandle());
                     el.cmdBuff->finalize();

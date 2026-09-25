@@ -17,6 +17,9 @@ GLGE::Graphic::DebugContext::~DebugContext() {
     //remove from all shaders
     for (const auto& shader : m_currentlyReferencedShader) 
     {shader->getResources(0)->removeFrom(*this);}
+
+    //invoke the cleanup function
+    if (m_cleanupFn) {(*m_cleanupFn)(this);}
 }
 
 void GLGE::Graphic::DebugContext::beginRecording() {
@@ -34,7 +37,7 @@ void GLGE::Graphic::DebugContext::beginRecording() {
     m_vertices.clear();
     m_indices.clear();
     //reset tracking objects
-    m_camMatrices.clear();
+    m_camMatCount = 0;
     m_targetCount = 0;
     m_newReferencedShader.clear();
     m_newReferencedTargets.clear();
@@ -60,15 +63,8 @@ void GLGE::Graphic::DebugContext::setCamera(const Component::Camera& camera, con
     };
     m_cmds.push_back(cmd);
 
-    //compute the projection matrix
-    glm::mat4 proj = glm::perspective(glm::radians(camera.FOV), 1.f, camera.clip_near, camera.clip_far);
-    //compute the transformation matrix
-    glm::mat4 transf = glm::translate(glm::mat4(GLGE::Quaternion(camera.eulerAngles)), -pos);
-    //combine into one matrix
-    glm::mat4 camMatrix = proj * transf;
-
-    //store in the list
-    m_camMatrices.push_back(camMatrix);
+    //increase the camera matrix count
+    ++m_camMatCount;
 }
 
 void GLGE::Graphic::DebugContext::setTarget(const RenderTarget& target) {
@@ -128,7 +124,7 @@ void GLGE::Graphic::DebugContext::draw(const DebugDrawDataProvider* drawData) {
     #endif
 
     //state sanity check
-    if (m_camMatrices.size() == 0)
+    if (m_camMatCount == 0)
     {throw GLGE::Exception("A camera must be bound before a draw command can be executed", "GLGE::Graphic::DebugContext::draw");}
     if (m_targetCount == 0)
     {throw GLGE::Exception("A render target must be set before a draw command can be executed", "GLGE::Graphic::DebugContext::draw");}
@@ -172,15 +168,22 @@ void GLGE::Graphic::DebugContext::endRecording() {
     //update the state
     m_state = State::RECORDED;
 
-    //upload the vertex buffer
-    m_vbo.resize(m_vertices.size() * sizeof(*m_vertices.data()), false);
-    m_vbo.write(m_vertices.data(), m_vertices.size() * sizeof(*m_vertices.data()), 0);
-    //upload the index buffer
-    m_ibo.resize(m_indices.size() * sizeof(*m_indices.data()), false);
-    m_ibo.write(m_indices.data(), m_indices.size() * sizeof(*m_indices.data()), 0);
-    //upload the camera matrices
-    m_camBuff.resize(m_camMatrices.size() * sizeof(*m_camMatrices.data()));
-    m_camBuff.write(m_camMatrices.data(), m_camMatrices.size() * sizeof(*m_camMatrices.data()), 0);
+    //only upload vertex data if data exists
+    if (m_vertices.size() > 0) {
+        //upload the vertex buffer
+        m_vbo.resize(m_vertices.size() * sizeof(*m_vertices.data()), false);
+        m_vbo.write(m_vertices.data(), m_vertices.size() * sizeof(*m_vertices.data()), 0);
+    }
+    //only upload index data if data exists
+    if (m_indices.size() > 0) {
+        //upload the index buffer
+        m_ibo.resize(m_indices.size() * sizeof(*m_indices.data()), false);
+        m_ibo.write(m_indices.data(), m_indices.size() * sizeof(*m_indices.data()), 0);
+    }
+    //prepare the camera matrix storage if camera matrices exist
+    if (m_camMatCount > 0) {
+        m_camBuff.resize(m_camMatCount * sizeof(glm::mat4), false);
+    }
 
     //keep track of the active camera index and current target
     u32 camera = 0;
@@ -210,9 +213,11 @@ void GLGE::Graphic::DebugContext::endRecording() {
         }
     }
 
-    //upload the per draw data
-    m_perDrawBuff.resize(drawData.size() * sizeof(*drawData.data()));
-    m_perDrawBuff.write(drawData.data(), drawData.size() * sizeof(*drawData.data()), 0);
+    //upload the per draw data if it exists
+    if (drawData.size() > 0) {
+        m_perDrawBuff.resize(drawData.size() * sizeof(*drawData.data()));
+        m_perDrawBuff.write(drawData.data(), drawData.size() * sizeof(*drawData.data()), 0);
+    }
 
     //remove from all old shader
     for (const auto& shader : m_currentlyReferencedShader) 
@@ -246,8 +251,10 @@ void GLGE::Graphic::DebugContext::endRecording() {
     m_currentlyReferencedShader = m_newReferencedShader;
     m_currentlyReferencedTargets = m_newReferencedTargets;
 
-    //pre-resize the target buffer
-    m_targetInfoBuff.resize(sizeof(uvec2) * m_targetCount);
+    //pre-resize the target buffer if applicable
+    if (m_targetCount > 0) {
+        m_targetInfoBuff.resize(sizeof(uvec2) * m_targetCount);
+    }
 
     //invalidate self
     invalidate();

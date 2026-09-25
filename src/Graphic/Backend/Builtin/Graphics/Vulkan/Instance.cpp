@@ -230,7 +230,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
         VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
         VK_KHR_MAINTENANCE_2_EXTENSION_NAME,
         VK_KHR_MULTIVIEW_EXTENSION_NAME,
-        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+        VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
     };
     instance->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->getRequiredDeviceExtensions(devExt);
 
@@ -361,8 +362,11 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
         queueCreates.push_back(create);
     }
 
+    VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extDynStateFeatures {};
+    extDynStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
     VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeature {};
     dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+    dynamicRenderingFeature.pNext = &extDynStateFeatures;
     VkPhysicalDeviceDescriptorIndexingFeatures indexing = {};
     indexing.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
     indexing.pNext = &dynamicRenderingFeature;
@@ -393,6 +397,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     {throw Exception("The dynamic rendering feature is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     if (!features2.features.drawIndirectFirstInstance)
     {throw Exception("The feature \"draw indirect first instance\" is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!extDynStateFeatures.extendedDynamicState)
+    {throw Exception("The feature \"extended dynamic state\" is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     //store the supported depth averaging modes
     if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_AVERAGE_BIT) 
     {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_AVERAGE_BIT);}
@@ -500,9 +506,12 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     m_extensionInfo.anisotropic.maxAnisotropy = props.limits.maxSamplerAnisotropy;
 
     //load extension functions
-    m_vkCreateRenderPass2KHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCreateRenderPass2KHR"));
-    m_loadedCmds.pfn_vkCmdBeginRenderingKHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdBeginRenderingKHR"));
-    m_loadedCmds.pfn_vkCmdEndRenderingKHR   = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdEndRenderingKHR"));
+    m_vkCreateRenderPass2KHR                     = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCreateRenderPass2KHR"));
+    m_loadedCmds.pfn_vkCmdBeginRenderingKHR      = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdBeginRenderingKHR"));
+    m_loadedCmds.pfn_vkCmdEndRenderingKHR        = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdEndRenderingKHR"));
+    m_loadedCmds.pfn_vkCmdSetDepthWriteEnableEXT = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdSetDepthWriteEnableEXT"));
+    m_loadedCmds.pfn_vkCmdSetDepthCompareOpEXT   = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdSetDepthCompareOpEXT"));
+    m_loadedCmds.pfn_vkCmdSetCullModeEXT         = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdSetCullModeEXT"));
 }
 
 Instance::~Instance() {

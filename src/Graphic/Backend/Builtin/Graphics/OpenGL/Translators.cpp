@@ -341,6 +341,9 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
     //keep track of the dimensions of all targets
     std::vector<GLGE::uvec2> extents;
     extents.reserve(context->getTargetInfoBuffer()->getSize() / sizeof(GLGE::uvec2));
+    //keep track of the camera matrices
+    std::vector<glm::mat4> camMatrices;
+    camMatrices.reserve(context->getCameraBuffer()->getSize() / sizeof(glm::mat4));
 
     //iterate over all commands
     for (const auto& cmd : cmds) {
@@ -359,7 +362,18 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
                 ++currentDrawIdx;
             }
         } else if (std::holds_alternative<GLGE::Graphic::DebugContext::Command::SetCamera>(cmd.command)) {
-            //fully done by CPU side
+            //get the camera
+            const auto& camera = std::get<GLGE::Graphic::DebugContext::Command::SetCamera>(cmd.command).camera;
+            const auto& pos = std::get<GLGE::Graphic::DebugContext::Command::SetCamera>(cmd.command).pos;
+            //compute the projection matrix
+            glm::mat4 proj = glm::perspective(glm::radians(camera.FOV), 1.f, camera.clip_near, camera.clip_far);
+            //compute the transformation matrix
+            glm::mat4 transf = glm::translate(glm::mat4(GLGE::Quaternion(camera.eulerAngles)), -pos);
+            //combine into one matrix
+            glm::mat4 camMatrix = proj * transf;
+
+            //store in the list
+            camMatrices.push_back(camMatrix);
         } else if (std::holds_alternative<GLGE::Graphic::DebugContext::Command::SetTarget>(cmd.command)) {
             //no requirements
 
@@ -377,7 +391,6 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
                 std::unreachable();
             }
             extents.push_back(extent);
-
         } else if (std::holds_alternative<GLGE::Graphic::DebugContext::Command::SetShader>(cmd.command)) {
             //get the shader
             GLGE::Graphic::Shader* shader = std::get<GLGE::Graphic::DebugContext::Command::SetShader>(cmd.command).shader;
@@ -393,8 +406,9 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
     //record clean up
     cmdBuff.addCommand(finishCmd);
 
-    //upload the extents
+    //upload the recorded data
     context->getTargetInfoBuffer()->write(extents.data(), extents.size() * sizeof(*extents.data()), 0);
+    context->getCameraBuffer()->write(camMatrices.data(), camMatrices.size() * sizeof(*camMatrices.data()), 0);
 
     //success
     return true;

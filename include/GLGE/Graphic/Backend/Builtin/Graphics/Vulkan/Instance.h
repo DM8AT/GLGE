@@ -128,6 +128,19 @@ namespace Vulkan {
              * @brief a pointer to the command to end rendering
              */
             void* pfn_vkCmdEndRenderingKHR = nullptr;
+
+            /**
+             * @brief a pointer to the command to set the dynamic depth write state
+             */
+            void* pfn_vkCmdSetDepthWriteEnableEXT = nullptr;
+            /**
+             * @brief a pointer to the command to set the dynamic compare op state
+             */
+            void* pfn_vkCmdSetDepthCompareOpEXT = nullptr;
+            /**
+             * @brief a pointer to the command to set the dynamic cull mode state
+             */
+            void* pfn_vkCmdSetCullModeEXT = nullptr;
         };
 
         /**

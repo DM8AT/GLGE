@@ -44,6 +44,14 @@ namespace GLGE::Graphic::Backend::Graphic {
              */
             STORAGE = 0,
             /**
+             * @brief a special sub-type of the storage buffer type that allows for vertex-buffer usage
+             */
+            STORAGE_VERTEX,
+            /**
+             * @brief a special sub-type of the storage buffer type that allows for index-buffer usage
+             */
+            STORAGE_INDEX,
+            /**
              * @brief the shader is a uniform buffer
              */
             UNIFORM

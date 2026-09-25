@@ -21,15 +21,15 @@ struct TargetData {
     uvec2 extent;
 };
 
-layout (binding = 0, std430) buffer s_camBuff {
+layout (binding = 0, std430) readonly buffer s_camBuff {
     CameraData camData[];
 } cameraBuff;
 
-layout (binding = 1, std430) buffer s_perDraw {
+layout (binding = 1, std430) readonly buffer s_perDraw {
     PerDraw drawData[];
 } perDraw;
 
-layout (binding = 2, std430) buffer s_targetInfo {
+layout (binding = 2, std430) readonly buffer s_targetInfo {
     TargetData targetData[];
 } targetInfo;
 
@@ -45,7 +45,7 @@ void main() {
     v_color = data.color;
 
     if (data.pointSize != 0.f) {
-        float pixelSize = data.pointSize * cameraMatrix[1][1] * extent.y / (2.0 * clip.w);
+        float pixelSize = data.pointSize * abs(cameraMatrix[1][1]) * extent.y / (2.0 * clip.w);
         gl_PointSize = pixelSize;
     }
 }

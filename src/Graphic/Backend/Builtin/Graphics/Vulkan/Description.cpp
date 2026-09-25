@@ -42,6 +42,9 @@
 //add command executor
 #include "GLGE/Graphic/Backend/Builtin/Graphics/Vulkan/CommandExecutor.h"
 
+//add debug contexts
+#include "GLGE/Graphic/DebugContext.h"
+
 //add device evaluation
 #include "DeviceEvaluation.h"
 
@@ -59,7 +62,8 @@ Vulkan::Vulkan()
         std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_CLEAR, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::vec4, GLGE::f32, GLGE::u32>(VkImpl::clear)},
         std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_COPY, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::RenderTarget, GLGE::u8, GLGE::Graphic::RenderTarget, GLGE::u8, bool, bool>(VkImpl::copy)},
         std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DISPATCH_COMPUTE, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Shader*, GLGE::uvec3>(VkImpl::dispatchCompute)},
-        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(VkImpl::drawWorld)}
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DRAW_WORLD, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::Renderer*>(VkImpl::drawWorld)},
+        std::pair{GLGE::Graphic::Backend::Graphic::COMMAND_DRAW_DEBUG, GLGE::Graphic::Backend::Graphic::CommandTable::TableEntry::create<GLGE::Graphic::DebugContext*>(VkImpl::drawDebug)}
     }))
 {initialize();}
 

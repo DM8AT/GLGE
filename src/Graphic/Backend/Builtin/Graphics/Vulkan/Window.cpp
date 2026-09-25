@@ -116,8 +116,6 @@ void Window::recreateSwapchain() {
     //NOTE: This is more validation that should theoretically required. 
     CHECK_VULKAN(vkDeviceWaitIdle(reinterpret_cast<VkDevice>(inst->getDevice())));
 
-    std::cout << "Recreating Swap Chain\n";
-
     //if image views exist, destroy them
     for (auto* views : m_imgViews) 
     {vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(views), nullptr);}

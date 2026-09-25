@@ -59,7 +59,6 @@ namespace GLGE::Graphic {
                 m_executor->awaitFinish();
                 //make sure that all commands are up to date
                 stream.compile();
-                std::cout << std::flush;
             }
 
             //dispatch the stream with the backend
