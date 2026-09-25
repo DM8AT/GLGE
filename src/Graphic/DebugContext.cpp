@@ -13,10 +13,43 @@
 //add windows
 #include "GLGE/Graphic/Window.h"
 
+//add default default shader
+#include "GLGE/Graphic/DefaultShader/debug_default.vert.h"
+#include "GLGE/Graphic/DefaultShader/debug_default.frag.h"
+
+GLGE::Graphic::DebugContext::DebugContext(Shader* defaultShader)
+ : BaseClass(), 
+   m_defaultShader(defaultShader),
+   m_vbo(Buffer::Type::STORAGE_VERTEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
+   m_ibo(Buffer::Type::STORAGE_INDEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
+   m_camBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
+   m_targetInfoBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
+   m_perDrawBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD)
+{
+    //if the default shader input is 0, use the default shader
+    if (defaultShader == nullptr) {
+        //create the new shader
+        m_defaultShader = new Shader({
+            std::pair{"Vertex",   Shader::Source(DefaultShader::DEFAULT_DEBUG_VERT)},
+            std::pair{"Fragment", Shader::Source(DefaultShader::DEFAULT_DEBUG_FRAG)}
+        });
+        m_defaultSet = new ResourceSet(m_defaultShader->getSet(0), std::pair{"cameraBuff", getCameraBuffer()}, std::pair{"perDraw", getPerDrawbuffer()}, std::pair{"targetInfo", getTargetInfoBuffer()});
+        m_defaultShader->setResources(0, m_defaultSet);
+    }
+}
+
 GLGE::Graphic::DebugContext::~DebugContext() {
     //remove from all shaders
     for (const auto& shader : m_currentlyReferencedShader) 
     {shader->getResources(0)->removeFrom(*this);}
+
+    //if default data is used, clean it up
+    if (m_defaultSet != nullptr) {
+        delete m_defaultSet;
+        delete m_defaultShader;
+        m_defaultSet = nullptr;
+        m_defaultShader = nullptr;
+    }
 
     //invoke the cleanup function
     if (m_cleanupFn) {(*m_cleanupFn)(this);}

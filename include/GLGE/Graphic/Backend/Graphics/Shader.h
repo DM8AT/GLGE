@@ -51,7 +51,7 @@ namespace GLGE::Graphic::Backend::Graphic {
          * @param size the size of the binary blob in bytes
          * @param element store information about the element
          */
-        virtual void addShaderElement(void* data, u32 size, const void* element) = 0;
+        virtual void addShaderElement(const void* data, u32 size, const void* element) = 0;
 
         /**
          * @brief Get the frontend shader

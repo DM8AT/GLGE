@@ -103,8 +103,8 @@ int main(void) {
     GLGE::Graphic::Mesh cubeGMesh(cubeMesh, gLayout);
 
     GLGE::Graphic::Shader shader({
-        std::pair{"Vertex", "examples/assets/shader/simple.vert.spv"},
-        std::pair{"Fragment", "examples/assets/shader/simple.frag.spv"}
+        std::pair{"Vertex",   GLGE::Graphic::Shader::Source("examples/assets/shader/simple.vert.spv")},
+        std::pair{"Fragment", GLGE::Graphic::Shader::Source("examples/assets/shader/simple.frag.spv")}
     });
     GLGE::Graphic::ResourceSet resources(shader.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()}, 
         std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}
@@ -122,13 +122,7 @@ int main(void) {
         GLGE::Transform({0,0,0}, GLGE::Quaternion(GLGE::vec3{glm::radians(-45.f),0,0}))
     );
 
-    GLGE::Graphic::Shader debugShader {
-        std::pair {"Vertex",   "examples/assets/shader/debug_default.vert.spv"},
-        std::pair {"Fragment", "examples/assets/shader/debug_default.frag.spv"},
-    };
-    GLGE::Graphic::DebugContext ctx(&debugShader);
-    GLGE::Graphic::ResourceSet debugSet(debugShader.getSet(0), std::pair{"cameraBuff", ctx.getCameraBuffer()}, std::pair{"perDraw", ctx.getPerDrawbuffer()}, std::pair{"targetInfo", ctx.getTargetInfoBuffer()});
-    debugShader.setResources(0, &debugSet);
+    GLGE::Graphic::DebugContext ctx;
 
     GLGE::System::BakeTransforms(world);
     GLGE::Graphic::CommandStream stream {

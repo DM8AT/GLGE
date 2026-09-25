@@ -37,7 +37,7 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Shader::~Shader() {
     glDeleteProgram(m_program);
 }
 
-void GLGE::Graphic::Backend::Graphic::OpenGL::Shader::addShaderElement(void* data, u32 size, const void* _element) {
+void GLGE::Graphic::Backend::Graphic::OpenGL::Shader::addShaderElement(const void* data, u32 size, const void* _element) {
     //extract the element
     const GLGE::Graphic::Shader::ElementInfo& element = *reinterpret_cast<const GLGE::Graphic::Shader::ElementInfo*>(_element);
     //create a new shader element

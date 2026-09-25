@@ -160,17 +160,9 @@ namespace GLGE::Graphic {
         /**
          * @brief Construct a new Debug Context
          * 
-         * @param defaultShader a pointer to the default shader to use. Nullptr is valid. 
+         * @param defaultShader a pointer to the default shader to use. If `nullptr` is inputted, an internal default is used
          */
-        explicit DebugContext(GLGE::Graphic::Shader* defaultShader = nullptr)
-         : BaseClass(), 
-           m_defaultShader(defaultShader),
-           m_vbo(Buffer::Type::STORAGE_VERTEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
-           m_ibo(Buffer::Type::STORAGE_INDEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
-           m_camBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
-           m_targetInfoBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
-           m_perDrawBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD)
-        {}
+        explicit DebugContext(GLGE::Graphic::Shader* defaultShader = nullptr);
 
         /**
          * @brief Destroy the Debug Context
@@ -193,8 +185,17 @@ namespace GLGE::Graphic {
          * 
          * @param shader a pointer to the new default shader
          */
-        inline void setDefaultShader(GLGE::Graphic::Shader* shader)
-        {m_defaultShader = shader;}
+        inline void setDefaultShader(GLGE::Graphic::Shader* shader) {
+            m_defaultShader = shader;
+
+            //if default data is used, clean it up
+            if (m_defaultSet != nullptr) {
+                delete m_defaultSet;
+                delete m_defaultShader;
+                m_defaultSet = nullptr;
+                m_defaultShader = nullptr;
+            }
+        }
 
         /**
          * @brief Get the Default Shader
@@ -380,6 +381,12 @@ namespace GLGE::Graphic {
          * @brief store the default shader
          */
         GLGE::Graphic::Shader* m_defaultShader = nullptr;
+        /**
+         * @brief store a pointer to the resource set used by the default shader
+         * 
+         * If this is set, the default default shader is used. This means that it was created with new internally and must be deleted internally. 
+         */
+        GLGE::Graphic::ResourceSet* m_defaultSet = nullptr;
 
         /**
          * @brief store all currently recorded commands

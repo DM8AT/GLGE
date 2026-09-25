@@ -59,7 +59,7 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
          * @param size the size of the binary blob in bytes
          * @param element store information about the element
          */
-        virtual void addShaderElement(void* data, u32 size, const void* element) override;
+        virtual void addShaderElement(const void* data, u32 size, const void* element) override;
 
         /**
          * @brief finalize the shader

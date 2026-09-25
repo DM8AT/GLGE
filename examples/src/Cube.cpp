@@ -103,8 +103,8 @@ int main(void) {
     GLGE::Graphic::Mesh cubeGMesh(cubeMesh, gLayout);
 
     GLGE::Graphic::Shader shader({
-        std::pair{"Vertex", "examples/assets/shader/simple.vert.spv"},
-        std::pair{"Fragment", "examples/assets/shader/simple.frag.spv"}
+        std::pair{"Vertex",   GLGE::Graphic::Shader::Source("examples/assets/shader/simple.vert.spv")},
+        std::pair{"Fragment", GLGE::Graphic::Shader::Source("examples/assets/shader/simple.frag.spv")}
     });
     GLGE::Graphic::ResourceSet resources(shader.getSet(0), std::pair{"cam", renderer.getCameraBuffer()}, std::pair{"transforms", renderer.getTransformBuffer()}, 
         std::pair{"pointLights", renderer.getPointLightBuffer()}, std::pair{"spotLights", renderer.getSpotLightBuffer()}, std::pair{"directionalLights", renderer.getDirectionalLightBuffer()}

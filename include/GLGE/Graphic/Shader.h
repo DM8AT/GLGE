@@ -33,6 +33,9 @@
 //add commands
 #include "Command.h"
 
+//add file reading
+#include <fstream>
+
 //use the library namespace
 namespace GLGE::Graphic {
 
@@ -99,11 +102,104 @@ namespace GLGE::Graphic {
         };
 
         /**
+         * @brief a structure that is the source for shader data
+         */
+        class Source {
+        public:
+
+            /**
+             * @brief Construct a new Source
+             * 
+             * @param file the file to load the data from
+             */
+            Source(const std::filesystem::path& file) {
+                //check if the file is sane
+                if (!std::filesystem::is_regular_file(file))
+                {throw GLGE::Exception(std::string("Failed to load file ") + file.string() + " because it was not found", "GLGE::Graphic::Shader::Shader");}
+
+                //load the whole file
+                std::ifstream f(file, std::ifstream::binary | std::ifstream::ate);
+                size_t size = f.tellg();
+
+                //sanity check the size
+                if (size % sizeof(*m_data.data()) != 0)
+                {throw GLGE::Exception(std::string("Failed to load file ") + file.string() + ". The file length must be a multiple of 4, but it was not.", "GLGE::Graphic::Shader::Shader");}
+
+                f.seekg(std::ifstream::beg);
+                m_data.resize(size / sizeof(*m_data.data()), 0);
+                f.read(reinterpret_cast<char*>(m_data.data()), size);
+            }
+
+            /**
+             * @brief Construct a new Source
+             * 
+             * @param data the constant data to create the source from
+             */
+            Source(std::initializer_list<u32> data)
+             : m_data(data)
+            {}
+
+            /**
+             * @brief Construct a new Source
+             * 
+             * @param data the data to load to the source
+             */
+            Source(const std::vector<u32>& data)
+             : m_data(data)
+            {}
+
+            /**
+             * @brief Construct a new Source
+             * 
+             * @param data a pointer to the data
+             * @param length the length of the data
+             */
+            Source(const u32* data, size_t length)
+             : m_data(data, data + length)
+            {}
+
+            /**
+             * @brief Construct a new Source
+             * 
+             * @tparam N the amount of elements in the array
+             * @param data a data array containing the shader source data
+             */
+            template <size_t N>
+            Source(const u32 (&data)[N])
+             : Source(data, N)
+            {}
+
+            /**
+             * @brief get the data
+             * 
+             * @return `const u32*` a pointer to the data
+             */
+            inline const u32* data() const noexcept
+            {return m_data.data();}
+
+            /**
+             * @brief get the size
+             * 
+             * @return `size_t` the size of the data
+             */
+            inline size_t size() const noexcept
+            {return m_data.size();}
+
+        protected:
+
+            /**
+             * @brief store the data
+             */
+            std::vector<u32> m_data;
+
+        };
+
+        /**
          * @brief Construct a new Shader
          * 
-         * @param files the SPIR-V files to add to the shader
+         * @param sources the sources for all shaders
          */
-        Shader(std::initializer_list<std::pair<std::string, std::filesystem::path>> files);
+        Shader(std::initializer_list<std::pair<std::string, Source>> sources);
 
         /**
          * @brief Destroy the Shader

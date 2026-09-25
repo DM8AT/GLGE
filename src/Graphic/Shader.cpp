@@ -52,7 +52,7 @@ static GLGE::Graphic::ResourceType __mapSpirvDescriptorToInput(SpvReflectDescrip
     }
 }
 
-GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, std::filesystem::path>> files) 
+GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, Source>> sources) 
  : BaseClass(), m_customTypes(0), m_shader(getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicDescription()->createShader(this))
 {
     struct SetData {
@@ -77,24 +77,11 @@ GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, std::
     //per set store all the bindings
     std::unordered_map<u32, SetData> bindings;
     //iterate over all files
-    for (const auto& [name, file] : files) {
-        //check if the file is sane
-        if (!std::filesystem::is_regular_file(file))
-        {throw GLGE::Exception(std::string("Failed to load file ") + file.string() + " because it was not found", "GLGE::Graphic::Shader::Shader");}
-
-        //load the whole file
-        std::ifstream f(file, std::ifstream::binary | std::ifstream::ate);
-        size_t size = f.tellg();
-        f.seekg(std::ifstream::beg);
-        u32* data = new u32[size];
-        f.read(reinterpret_cast<char*>(data), size);
-
+    for (const auto& [name, source] : sources) {
         //load the shader module
         SpvReflectShaderModule ref_mod;
-        SpvReflectResult res = spvReflectCreateShaderModule(size, data, &ref_mod);
+        SpvReflectResult res = spvReflectCreateShaderModule(source.size() * sizeof(*source.data()), source.data(), &ref_mod);
         if (res != SPV_REFLECT_RESULT_SUCCESS) {
-            //make SURE to clean up
-            delete[] data;
             //then, throw
             throw GLGE::Exception("Errors while reflecting SPIR-V data", "GLGE::Graphic::Shader::Shader");
         }
@@ -180,11 +167,10 @@ GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, std::
         m_elements.push_back(element);
 
         //register the shader element
-        m_shader->addShaderElement(data, size, &m_elements.back());
+        m_shader->addShaderElement(source.data(), source.size()*sizeof(*source.data()), &m_elements.back());
 
         //make sure to clean up
         spvReflectDestroyShaderModule(&ref_mod);
-        delete[] data;
     }
 
     //now, create the layouts for all sets
