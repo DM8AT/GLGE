@@ -29,14 +29,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y doxygen graphviz
 
+      - name: Create Output Directory
+        run: mkdir build && mkdir build/doc
+
       - name: Generate documentation
         run: doxygen
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-
-      - name: Create Output Directory
-        run: mkdir build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
