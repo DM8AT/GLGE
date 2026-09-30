@@ -26,6 +26,8 @@
 #include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Shader.h"
 //add the OpenGL buffer implementation
 #include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Buffer.h"
+//add the OpenGL image implementation
+#include "GLGE/Graphic/Backend/Builtin/Graphics/OpenGL/Image.h"
 
 //add the shader frontend
 #include "GLGE/Graphic/Shader.h"
@@ -39,6 +41,8 @@
 #include "GLGE/Graphic/Renderer.h"
 //add debug context
 #include "GLGE/Graphic/DebugContext.h"
+//add gui context
+#include "GLGE/Graphic/GUIContext.h"
 
 //add the OpenGL contract
 #include "GLGE/Graphic/Backend/Video/APIContracts/OpenGL.h"
@@ -59,6 +63,18 @@ static GLenum __toGLDepthFunc(GLGE::Graphic::DebugDrawDataProvider::Style::Depth
     }
     //fallback
     return GL_LESS;
+}
+
+//helper to convert GUI blend factor to GL enum
+static GLenum __toGLBlendFac(GLGE::Graphic::GUIProvider::BlendFactor bf) {
+    switch (bf) {
+        case GLGE::Graphic::GUIProvider::BlendFactor::ZERO: return GL_ZERO;
+        case GLGE::Graphic::GUIProvider::BlendFactor::ONE: return GL_ONE;
+        case GLGE::Graphic::GUIProvider::BlendFactor::SRC_ALPHA: return GL_SRC_ALPHA;
+        case GLGE::Graphic::GUIProvider::BlendFactor::ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+        
+        default: std::unreachable();
+    }
 }
 
 namespace OglImpl {
@@ -409,6 +425,236 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
     //upload the recorded data
     context->getTargetInfoBuffer()->write(extents.data(), extents.size() * sizeof(*extents.data()), 0);
     context->getCameraBuffer()->write(camMatrices.data(), camMatrices.size() * sizeof(*camMatrices.data()), 0);
+
+    //success
+    return true;
+}
+
+bool drawGui(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI");
+
+    //structure used to store persistent data
+
+    struct Persistent {
+        //store the used VAO
+        GLuint vao;
+    };
+
+    //structure that represents GPU-Side per-draw data
+    //lambda functions that are actually called
+
+    //lambda called once for init
+    void (*initCmd)(GLuint, GLGE::u32) = [](GLuint vao, GLGE::u32 projMatBuff) {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::init");
+        //bind the VAO
+        glBindVertexArray(vao);
+        //bind the projection matrix buffer
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, projMatBuff);
+        //disable depth stuff
+        glDisable(GL_DEPTH_TEST);
+        //enable blending
+        glEnable(GL_BLEND);
+        //disable culling
+        glDisable(GL_CULL_FACE);
+        //enable scissoring
+        glEnable(GL_SCISSOR_TEST);
+        //make sure that the clip origin is lower left
+        glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
+    };
+
+    //lambda called at the end for clean up
+    void (*finishCmd)() = []() {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::setTarget");
+        //reset the depth test to true
+        glEnable(GL_DEPTH_TEST);
+        //enable culling
+        glEnable(GL_CULL_FACE);
+        //disable scissoring
+        glDisable(GL_SCISSOR_TEST);
+    };
+
+    //lambda to update the target
+    void (*setTarget)(GLGE::Graphic::RenderTarget) = [](GLGE::Graphic::RenderTarget target) {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::setTarget");
+        if (target.getType() == GLGE::Graphic::RenderTarget::WINDOW)
+        {glBindFramebuffer(GL_FRAMEBUFFER, 0);}
+        else if (target.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) 
+        {glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(target.getTarget())->getBackend().get())->getHandle());}
+    };
+
+    //lambda to set the shader
+    void (*setShader)(GLGE::Graphic::Shader*) = [](GLGE::Graphic::Shader* shader) {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::setShader");
+        //get the program
+        GLuint prog = static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Shader*>(shader->getBackend().get())->getProgram();
+        glUseProgram(prog);
+    };
+
+    //lambda to set a texture
+    void (*setTexture)(GLGE::u32, GLGE::u32) = [](GLGE::u32 tex, GLGE::u32 binding) {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::setTexture");
+        //just set it
+        glBindTextureUnit(binding, tex);
+    };
+
+    //lambda to set a blend mode
+    void (*setBlending)(GLenum, GLenum) = [](GLenum f1, GLenum f2) {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::setBlending");
+        //set the blending
+        glBlendFunc(f1, f2);
+    };
+
+    //lambda to draw something
+    void (*drawCmd)(GLGE::Graphic::GUIProvider::RenderMode, GLGE::u32, GLGE::u32, GLGE::u32, GLGE::u32, GLGE::u32) = [](GLGE::Graphic::GUIProvider::RenderMode mode, GLGE::u32 firstVertex, GLGE::u32 vertexCount, GLGE::u32 firstIndex, GLGE::u32 indexCount, GLGE::u32 projMatIdx) {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::draw");
+        //switch over the used render mode to select how to render the data
+        switch (mode) {
+            case GLGE::Graphic::GUIProvider::RenderMode::TRIANGLES:
+                glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>(firstIndex*sizeof(GLGE::u32)), 1, firstVertex, projMatIdx);
+                break;
+            case GLGE::Graphic::GUIProvider::RenderMode::LINES:
+                glDrawElementsInstancedBaseVertexBaseInstance(GL_LINES, indexCount, GL_UNSIGNED_INT, reinterpret_cast<const void*>(firstIndex*sizeof(GLGE::u32)), 1, firstVertex, projMatIdx);
+                break;
+            case GLGE::Graphic::GUIProvider::RenderMode::POINTS:
+                glDrawArraysInstancedBaseInstance(GL_POINTS, firstVertex, vertexCount, 1, projMatIdx);
+                break;
+            default: std::unreachable();
+        }
+    };
+
+    //lambda to set scissor
+    void (*setScissor)(GLGE::vec2, GLGE::vec2, GLGE::uvec2) = [](GLGE::vec2 from, GLGE::vec2 to, GLGE::uvec2 extent) {
+        GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::OpenGL::Translators::drawGUI::setScissor");
+        
+        //set state
+        glScissor(from.x, extent.y - to.y, to.x - from.x, to.y - from.y);
+    };
+
+    //extract all arguments
+    const auto& [context] = handle.getArguments<GLGE::Graphic::GUIContext*>();
+
+    //check if a VAO exists
+    if (context->getBackendData() != nullptr) {
+        //clean up the old data
+        Persistent* old = reinterpret_cast<Persistent*>(context->getBackendData());
+        glDeleteVertexArrays(1, &old->vao);
+        delete old;
+    }
+    //create the new VAO
+    GLuint vao = 0;
+    glCreateVertexArrays(1, &vao);
+    
+    glEnableVertexArrayAttrib(vao, 0);
+    glEnableVertexArrayAttrib(vao, 1);
+    glEnableVertexArrayAttrib(vao, 2);
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, 8);
+    glVertexArrayAttribFormat(vao, 2, 4, GL_UNSIGNED_BYTE, GL_TRUE, 16);
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribBinding(vao, 1, 0);
+    glVertexArrayAttribBinding(vao, 2, 0);
+    glVertexArrayVertexBuffer(vao, 0, static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Buffer*>(context->getVBO()->getBackendReference().get())->getHandle(), 0, 20);
+    glVertexArrayElementBuffer(vao, static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Buffer*>(context->getIBO()->getBackendReference().get())->getHandle());
+
+    //store the persistent data
+    context->setBackendData(new Persistent {
+        .vao = vao
+    });
+    Persistent* persistent = reinterpret_cast<Persistent*>(context->getBackendData());
+
+    //store the current projection matrix
+    //Use UINT32_MAX since it will work as a poison and automatically wrap-around to 0 once a set occurs
+    GLGE::u32 currProjMat = std::numeric_limits<GLGE::u32>::max();
+
+    //init
+    cmdBuff.addCommand(initCmd, persistent->vao, static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Buffer*>(context->getProjMatBuffer()->getBackendReference().get())->getHandle());
+
+    //store the current render target
+    GLGE::Graphic::RenderTarget currTarget = static_cast<GLGE::Graphic::Window*>(nullptr);
+    //store the extent of the current render target
+    GLGE::uvec2 extent = {0,0};
+    //store the base offsets
+    GLGE::u32 vtxBase = 0;
+    GLGE::u32 idxBase = 0;
+    //iterate over all commands
+    for (const auto& cmd : context->getCommands()) {
+        //check if the base is being set
+        if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::SetDrawSubsection>(cmd.command)) {
+            const auto& val = std::get<GLGE::Graphic::GUIContext::Command::SetDrawSubsection>(cmd.command);
+            vtxBase = val.baseVertexOffset;
+            idxBase = val.baseIndexOffset;
+        }
+        //check if this is a draw sub-command
+        else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd>(cmd.command)) {
+            const auto& subCmd = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd>(cmd.command).command;
+
+            //switch over the sub-command
+            if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTexture>(subCmd)) {
+                //get the set texture command
+                const auto& setTex = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTexture>(subCmd);
+                //record the texture set
+                GLGE::u32 handle = static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Image*>(setTex.image->getBackend().get())->getHandle();
+                //record the set command
+                cmdBuff.addCommand(setTexture, handle, GLGE::u32(setTex.slot));
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetShader>(subCmd)) {
+                //get the shader
+                const auto& setSdr = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetShader>(subCmd);
+                //record the set command
+                cmdBuff.addCommand(setShader, setSdr.shader);
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTarget>(subCmd)) {
+                //keep track
+                currTarget = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTarget>(subCmd).target;
+
+                //store the extent
+                if (currTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                    extent = reinterpret_cast<GLGE::Graphic::Window*>(currTarget.getTarget())->getResolution();
+                } else if (currTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                    extent = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize();
+                } else {
+                    std::unreachable();
+                }
+
+                //record the setting
+                cmdBuff.addCommand(setTarget, std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTarget>(subCmd).target);
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetProjection>(subCmd)) {
+                //step to the next one
+                ++currProjMat;
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::Draw>(subCmd)) {
+                //get the draw data
+                const auto& drawData = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::Draw>(subCmd);
+                //record the draw command
+                cmdBuff.addCommand(drawCmd, drawData.renderMode, GLGE::u32(drawData.firstVertex + vtxBase), drawData.drawElements, GLGE::u32(drawData.firstIndex + idxBase), drawData.drawElements, currProjMat);
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetRenderRegion>(subCmd)) {
+                //get the scissor extent
+                const auto& scissor = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetRenderRegion>(subCmd);
+                //record the command
+                cmdBuff.addCommand(setScissor, scissor.from, scissor.to, extent);
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetBlending>(subCmd)) {
+                //get the blending state
+                const auto& blending = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetBlending>(subCmd);
+                //map both to GL state and record
+                cmdBuff.addCommand(setBlending, __toGLBlendFac(blending.inFactor), __toGLBlendFac(blending.currFactor));
+            } else {
+                std::unreachable();
+            }
+        }
+    }
+
+    //clean up scissor state
+    if (currTarget.getTarget() != nullptr) {
+        GLGE::uvec2 extent;
+        if (currTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+            extent = reinterpret_cast<GLGE::Graphic::Window*>(currTarget.getTarget())->getResolution();
+        } else if (currTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+            extent = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize();
+        } else {
+            std::unreachable();
+        }
+        cmdBuff.addCommand(setScissor, GLGE::vec2{0,0}, GLGE::vec2(extent), extent);
+    }
+
+    //finish
+    cmdBuff.addCommand(finishCmd);
 
     //success
     return true;

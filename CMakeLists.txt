@@ -52,6 +52,11 @@ option(GLGE_GRAPHIC_ALLOW_ENGINE_COMMAND_OVERRIDE
     OFF
 )
 
+option(GLGE_GRAPHIC_INCLUDE_IMGUI
+    "Enable if ImGUI should be automatically downloaded and if ImGUI bindings to the GUI system should be included"
+    ON
+)
+
 # an option to disable GLGE Physics
 option(GLGE_INCLUDE_PHYSICS
     "Enable the GLGE Physics extension"
@@ -278,6 +283,22 @@ if (GLGE_INCLUDE_GRAPHICS)
         # FetchContent exposes VMA source dir here
         set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
     endif()
+
+    #### ImGUI
+    # only add if ImGUI is requested
+    if (GLGE_GRAPHIC_INCLUDE_IMGUI)
+        # ImGUI is a common GUI library
+        # print a message
+        message(STATUS "Fetching ImGUI from GitHub")
+        # use FetchContent to fetch ImGUI from github
+        include(FetchContent)
+        FetchContent_Declare(
+            imgui
+            GIT_REPOSITORY https://github.com/ocornut/imgui.git
+            GIT_TAG "v1.92.9b-docking"
+        )
+        FetchContent_MakeAvailable(imgui)
+    endif()
 endif()
 
 if (GLGE_INCLUDE_PHYSICS)
@@ -451,6 +472,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Description.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Instance.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Window.cpp
+        ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Cursor.cpp
         # SDL Contracts
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Contracts/OpenGL.cpp
         ${GLGE_SRC_DIR}/Graphic/Backend/Builtin/Video/SDL3/Contracts/Vulkan.cpp
@@ -480,6 +502,7 @@ if (GLGE_INCLUDE_GRAPHICS)
         ${GLGE_SRC_DIR}/Graphic/Sampler.cpp
         ${GLGE_SRC_DIR}/Graphic/DebugRenderer.cpp
         ${GLGE_SRC_DIR}/Graphic/DebugContext.cpp
+        ${GLGE_SRC_DIR}/Graphic/GUIContext.cpp
 
         # Assets
         ${GLGE_SRC_DIR}/Graphic/Assets/ImageCPUAsset.cpp
@@ -487,6 +510,25 @@ if (GLGE_INCLUDE_GRAPHICS)
         # External: Miniz
         ${GLGE_SRC_DIR}/external/miniz/miniz.c
     )
+
+    # optionally add ImGUI
+    if (GLGE_GRAPHIC_INCLUDE_IMGUI)
+        # add the ImGUI source files
+        set(GLGE_GRAPHIC_SOURCE
+            # add all the previous source files
+            ${GLGE_GRAPHIC_SOURCE}
+
+            # add the ImGUI provider
+            ${GLGE_SRC_DIR}/Graphic/DefaultGuiProviders/ImGUIProvider.cpp
+
+            # add ImGUI sources
+            ${imgui_SOURCE_DIR}/imgui.cpp
+            ${imgui_SOURCE_DIR}/imgui_draw.cpp
+            ${imgui_SOURCE_DIR}/imgui_tables.cpp
+            ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+            ${imgui_SOURCE_DIR}/imgui_demo.cpp
+        )
+    endif()
 
     # optionally add OpenGL
     if (GLGE_GRAPHICS_INCLUDE_OPENGL)
@@ -560,6 +602,11 @@ if (GLGE_INCLUDE_GRAPHICS)
     if (GLGE_GRAPHICS_INCLUDE_VULKAN)
         target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE Vulkan::Vulkan)
         target_include_directories(${GLGE_GRAPHIC_NAME} PRIVATE ${VMA_INCLUDE_DIR})
+    endif()
+    # if ImGUI was added, add ImGUI include directory
+    if (GLGE_GRAPHIC_INCLUDE_IMGUI)
+        target_include_directories(${GLGE_GRAPHIC_NAME} PUBLIC ${imgui_SOURCE_DIR})
+        target_compile_definitions(${GLGE_GRAPHIC_NAME} PUBLIC GLGE_HAS_IMGUI)
     endif()
 
     # add the internal include directories

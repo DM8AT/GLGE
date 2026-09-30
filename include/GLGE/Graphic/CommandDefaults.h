@@ -23,6 +23,7 @@
 #include "Shader.h"
 #include "Renderer.h"
 #include "DebugContext.h"
+#include "GUIContext.h"
 
 //use the library namespace
 namespace GLGE::Graphic {
@@ -663,6 +664,71 @@ namespace GLGE::Graphic {
              * @brief store a reference to the debug context
              */
             DebugContext& m_ctx;
+
+        };
+
+        /**
+         * @brief a command that is used to render graphical user interfaces
+         */
+        class DrawGUI : public GLGE::Graphic::Command {
+        public:
+
+            /**
+             * @brief Construct a new Draw GUI command
+             * 
+             * @param ctx a reference to the gui context to draw
+             */
+            DrawGUI(GUIContext& ctx)
+             : Command(ctx), m_ctx(ctx) 
+            {m_allowMultithreading = false; /*OpenGL backend requires the main thread*/}
+
+            /**
+             * @brief Destroy the Draw Debug command
+             */
+            virtual ~DrawGUI() = default;
+
+            /**
+             * @brief Get the command type
+             *
+             * @return `Backend::Graphic::CommandType`
+             */
+            [[nodiscard]]virtual Backend::Graphic::CommandType getType() const noexcept override
+            {return Backend::Graphic::COMMAND_DRAW_GUI;}
+
+            /**
+             * @brief Get a handle containing the copied command arguments
+             *
+             * Handles are owning, ensuring that all data remains valid while the command is being recorded
+             *
+             * @return `Backend::Graphic::CommandHandle`
+             */
+            [[nodiscard]] virtual Backend::Graphic::CommandHandle getHandle() noexcept {
+                //Create owning render targets from the stored frontend objects
+                return Backend::Graphic::CommandHandle::create<GLGE::Graphic::GUIContext*>(&m_ctx);
+            }
+
+            /**
+             * @brief Get the Context
+             * 
+             * @return `GUIContext&` a reference to the debug context rendered by the command
+             */
+            inline GUIContext& getContext() noexcept
+            {return m_ctx;}
+
+            /**
+             * @brief Get the Context
+             * 
+             * @return `const GUIContext&` a constant reference to the debug context rendered by the command
+             */
+            inline const GUIContext& getContext() const noexcept
+            {return m_ctx;}
+
+        protected:
+
+            /**
+             * @brief store a reference to the debug context
+             */
+            GUIContext& m_ctx;
 
         };
 

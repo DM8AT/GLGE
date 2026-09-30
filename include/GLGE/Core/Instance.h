@@ -729,6 +729,15 @@ namespace GLGE {
         {return m_mice[idx];}
 
         /**
+         * @brief Get a specific mouse
+         * 
+         * @param idx the index of the mouse to get
+         * @return `Mouse&` a reference to the selected mouse
+         */
+        inline Mouse& getMouse(u8 idx) noexcept
+        {return m_mice[idx];}
+
+        /**
          * @brief set the selected preferred mouse ID
          * 
          * @param id the ID of the preferred mouse

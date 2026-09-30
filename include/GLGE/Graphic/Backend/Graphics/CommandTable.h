@@ -81,6 +81,13 @@ namespace GLGE::Graphic::Backend::Graphic {
         COMMAND_DRAW_DEBUG = 6,
 
         /**
+         * @brief a command used to draw a graphical user interface
+         * 
+         * @param context a pointer to the gui context to draw
+         */
+        COMMAND_DRAW_GUI = 7,
+
+        /**
          * @brief a base value for custom commands. All custom commands must 
          */
         COMMAND_CUSTOM = 0xfff

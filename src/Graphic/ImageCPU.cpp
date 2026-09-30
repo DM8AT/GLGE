@@ -532,7 +532,7 @@ inline static GeneralColor convertPixelLayout(const GLGE::u8* pixel, const Pixel
     return out;
 }
 
-ImageCPU::ImageCPU(void* data, const PixelFormat& format, const uvec2& size) 
+ImageCPU::ImageCPU(const void* data, const PixelFormat& format, const uvec2& size) 
  : m_format(format), m_size(size)
 {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::ImageCPU::ImageCPU")
@@ -652,7 +652,7 @@ ImageCPU& ImageCPU::operator=(ImageCPU&& other) {
     return *this;
 }
 
-ImageCPU ImageCPU::toFormat(const PixelFormat& format) {
+ImageCPU ImageCPU::toFormat(const PixelFormat& format) const {
     GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::ImageCPU::toFormat")
 
     //in debug sanity check the format

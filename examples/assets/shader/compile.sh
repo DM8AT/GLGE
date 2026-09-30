@@ -8,5 +8,10 @@ ret=$(($ret + $?))
 glslc simple.frag -o simple.frag.spv
 ret=$(($ret + $?))
 
+glslc gui_imgui_default.vert -o gui_imgui_default.vert.spv
+ret=$(($ret + $?))
+glslc gui_imgui_default.frag -o gui_imgui_default.frag.spv
+ret=$(($ret + $?))
+
 # return the sum of failures
 exit $ret

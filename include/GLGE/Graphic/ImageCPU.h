@@ -40,8 +40,12 @@ namespace GLGE::Graphic {
 
         /**
          * @brief Construct a new CPU Image
+         * 
+         * @param data a pointer to the data to load into the image
+         * @param format the format of the pixels to store
+         * @param size the size of the image in pixels
          */
-        ImageCPU(void* data, const PixelFormat& format, const uvec2& size);
+        ImageCPU(const void* data, const PixelFormat& format, const uvec2& size);
 
         /**
          * @brief Construct a new CPU Image
@@ -84,7 +88,7 @@ namespace GLGE::Graphic {
          * @param format the format of the new image
          * @return `ImageCPU` the reformatted image
          */
-        ImageCPU toFormat(const PixelFormat& format);
+        ImageCPU toFormat(const PixelFormat& format) const;
 
         /**
          * @brief read a texel from the image
@@ -136,6 +140,14 @@ namespace GLGE::Graphic {
          * @return `vec4` the color in 32 bit float RGBA format of the color at that position
          */
         vec4 samplePerspective(vec2 uv, vec4 derivatives, const SamplerCPU& sampler) const;
+
+        /**
+         * @brief Get the raw data of the image
+         * 
+         * @return `void*` the raw image data
+         */
+        inline void* getRaw() noexcept
+        {return m_data;}
 
         /**
          * @brief Get the raw data of the image

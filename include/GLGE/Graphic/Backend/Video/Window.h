@@ -164,6 +164,30 @@ namespace GLGE::Graphic::Backend::Video {
         inline GLGE::Graphic::Backend::Video::Instance* getBackendInstance() const noexcept
         {return m_instance;}
 
+        /**
+         * @brief Get the Text Input
+         * 
+         * @return `const std::string&` the text inputted on the window
+         */
+        inline const std::string& getTextInput() const noexcept
+        {return m_textInput;}
+
+        /**
+         * @brief reset the text input
+         * 
+         * This sets the text input to an empty string
+         */
+        inline void resetTextInput() noexcept
+        {m_textInput.clear();}
+
+        /**
+         * @brief add to the text input
+         * 
+         * @param text the text to add
+         */
+        inline void recordTextInput(const std::string& text) noexcept
+        {m_textInput += text;}
+
     protected:
 
         /**
@@ -208,6 +232,11 @@ namespace GLGE::Graphic::Backend::Video {
          */
         GLGE::Graphic::WindowSettings& windowSettings()
         {return m_window->m_settings;}
+
+        /**
+         * @brief store a cumulative string to store the text inputted on the window
+         */
+        std::string m_textInput = "";
 
     private:
 

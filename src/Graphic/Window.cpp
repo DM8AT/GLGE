@@ -57,6 +57,8 @@ Window::~Window() {
 void Window::update() {
     //tick the graphic window
     m_gWin->onUpdate();
+    //reset the text input
+    m_vWin->resetTextInput();
 }
 
 void Window::notifyResolutionChange(const uvec2& newSize, const uvec2& newUsableSize, float pixelScale, const uvec2& resolution) {
@@ -90,3 +92,6 @@ void Window::setMinimumSize(const uvec2& size) noexcept
 
 void Window::setMaximumSize(const uvec2& size) noexcept
 {m_vWin->onSetMaximumSize(size);}
+
+const std::string& Window::getTextInput() const noexcept
+{return m_vWin->getTextInput();}

@@ -292,7 +292,7 @@ void Instance::update() {
         //update all registered mice
         for (auto& mouse : m_mice) {mouse.update();}
 
-        //just copy over the selected keyboard state or reset if the selected keyboard is invalid
+        //just copy over the selected mouse state or reset if the selected mouse is invalid
         if (m_preferredMouse < m_mice.size())
         {m_mainMouse = m_mice[m_preferredMouse];}
         else

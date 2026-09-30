@@ -413,12 +413,8 @@ GLGE::Graphic::Backend::Video::SDL3::Instance::Instance(GLGE::Graphic::Instance*
     //load all the mice
     int miceCount = 0;
     SDL_MouseID* mice = SDL_GetMice(&miceCount);
-    for (int i = 0; i < miceCount; ++i) {
-        //register the keyboard to the instance
-        getInstance()->getInstance()->registerMouse(GLGE::Mouse(SDL_GetMouseNameForID(mice[i])));
-        //register the mapping
-        m_miceMap.insert_or_assign(mice[i], getInstance()->getInstance()->getMice().size()-1);
-    }
+    for (int i = 0; i < miceCount; ++i) 
+    {registerMice(mice[i]);}
 
     //get writing access to the instance list
     std::unique_lock lock(msl_instanceLock);
@@ -762,6 +758,49 @@ void GLGE::Graphic::Backend::Video::SDL3::Instance::mainUpdate() {
                     for (auto& instance : msl_instances)
                     {reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Instance*>(instance->getVideoBackendInstance())->removeKeyboard(static_cast<u32>(e.kdevice.which));}
                 } break;
+
+            //MOUSE STUFF
+
+            //check for mouse addition
+            case SDL_EVENT_MOUSE_ADDED: {
+                    //iterate over all instances and notify them
+                    for (auto& instance : msl_instances)
+                    {reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Instance*>(instance->getVideoBackendInstance())->registerMice(static_cast<u32>(e.mdevice.which));}
+                } break;
+            case SDL_EVENT_MOUSE_REMOVED: {
+                    //iterate over all instances and notify them
+                    for (auto& instance : msl_instances)
+                    {reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Instance*>(instance->getVideoBackendInstance())->removeMice(static_cast<u32>(e.mdevice.which));}
+                } break;
+            //check for mouse motion
+            case SDL_EVENT_MOUSE_MOTION: {
+                    //iterate over all instances and notify them
+                    for (auto& instance : msl_instances)
+                    {reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Instance*>(instance->getVideoBackendInstance())->mousePositionUpdate({e.motion.x, e.motion.y}, static_cast<u32>(e.motion.which));}
+                } break;
+            //check for mouse button updates
+            case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                    //iterate over all instances and notify them
+                    for (auto& instance : msl_instances)
+                    {reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Instance*>(instance->getVideoBackendInstance())->mouseButtonUpdate(true, e.button.button, static_cast<u32>(e.motion.which));}
+                } break;
+            case SDL_EVENT_MOUSE_BUTTON_UP: {
+                    //iterate over all instances and notify them
+                    for (auto& instance : msl_instances)
+                    {reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Instance*>(instance->getVideoBackendInstance())->mouseButtonUpdate(false, e.button.button, static_cast<u32>(e.motion.which));}
+                } break;
+            case SDL_EVENT_MOUSE_WHEEL: {
+                    //iterate over all instances and notify them
+                    for (auto& instance : msl_instances)
+                    {reinterpret_cast<GLGE::Graphic::Backend::Video::SDL3::Instance*>(instance->getVideoBackendInstance())->mouseWheelUpdate({e.wheel.x, e.wheel.y}, e.wheel.which);}
+                } break;
+
+            case SDL_EVENT_TEXT_INPUT: {
+                    //get the window
+                    __getWindow
+                    //accumulate the text input
+                    pos->second->recordTextInput(e.text.text);
+                } break;
             
             default:
                 break;
@@ -802,6 +841,74 @@ void GLGE::Graphic::Backend::Video::SDL3::Instance::removeKeyboard(u32 keyboardI
     getInstance()->getInstance()->removeKeyboard(pos->second);
 }
 
+void GLGE::Graphic::Backend::Video::SDL3::Instance::mouseButtonUpdate(bool state, u8 buttonId, u32 mouseId) {
+    //map the SDL button ID to GLGE button ID
+    u8 bid = buttonId - 1;
+    //special case: ID 0 is global mouse
+    if (mouseId == 0) {
+        //update the key
+        if (state)
+        {getInstance()->getInstance()->getMouse(getInstance()->getInstance()->getPreferredMouseId()).press(static_cast<GLGE::MouseButton>(bid));}
+        else
+        {getInstance()->getInstance()->getMouse(getInstance()->getInstance()->getPreferredMouseId()).release(static_cast<GLGE::MouseButton>(bid));}
+    } else {
+        //get the mouse ID
+        auto mouse = m_miceMap.find(static_cast<SDL_MouseID>(mouseId));
+        if (mouse == m_miceMap.end()) {return;}
+        //update the key
+        if (state)
+        {getInstance()->getInstance()->getMouse(mouse->second).press(static_cast<GLGE::MouseButton>(bid));}
+        else
+        {getInstance()->getInstance()->getMouse(mouse->second).release(static_cast<GLGE::MouseButton>(bid));}
+    };
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::mousePositionUpdate(const vec2& pos, u32 mouseId) {
+    //special case: ID 0 is global mouse
+    if (mouseId == 0) {
+        getInstance()->getInstance()->getMouse(getInstance()->getInstance()->getPreferredMouseId()).move(pos, {0,0});
+    } else {
+        //get the mouse ID
+        auto mouse = m_miceMap.find(static_cast<SDL_MouseID>(mouseId));
+        if (mouse == m_miceMap.end()) {return;}
+        //update the position
+        getInstance()->getInstance()->getMouse(mouse->second).move(pos, {0,0});
+    }
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::registerMice(u32 miceId) {
+    //if the mice is known, stop
+    if (m_miceMap.contains(static_cast<SDL_MouseID>(miceId))) {return;}
+
+    //register the keyboard to the instance
+    getInstance()->getInstance()->registerMouse(GLGE::Mouse(SDL_GetMouseNameForID(static_cast<SDL_MouseID>(miceId))));
+    //register the mapping
+    m_miceMap.insert_or_assign(static_cast<SDL_MouseID>(miceId), getInstance()->getInstance()->getKeyboards().size()-1);
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::removeMice(u32 miceId) {
+    //get the mouse
+    auto pos = m_miceMap.find(static_cast<SDL_MouseID>(miceId));
+    //if the mouse is not known, stop
+    if (pos == m_miceMap.end()) {return;}
+
+    //remove the mouse from the instance
+    getInstance()->getInstance()->removeMouse(pos->second);
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::mouseWheelUpdate(const vec2& scroll, u32 mouseId) {
+    //special case: ID 0 is global mouse
+    if (mouseId == 0) {
+        getInstance()->getInstance()->getMouse(getInstance()->getInstance()->getPreferredMouseId()).scroll(scroll.y); //currently only supports vertical scrolling
+    } else {
+        //get the mouse ID
+        auto mouse = m_miceMap.find(static_cast<SDL_MouseID>(mouseId));
+        if (mouse == m_miceMap.end()) {return;}
+        //update the scolling
+        getInstance()->getInstance()->getMouse(mouse->second).scroll(scroll.y); //currently only vertical scrolling is supported
+    }
+}
+
 void GLGE::Graphic::Backend::Video::SDL3::Instance::onWindowRegister(GLGE::Graphic::Backend::Video::Window* window) {
     GLGE_PROFILER_SCOPE();
 
@@ -811,6 +918,8 @@ void GLGE::Graphic::Backend::Video::SDL3::Instance::onWindowRegister(GLGE::Graph
     //get the SDL window id
     //safe to cast to SDL window as this must be an SDL window, else something went terribly wrong
     SDL_Window* win = (SDL_Window*)((GLGE::Graphic::Backend::Video::SDL3::Window*)window)->getSDLWindow();
+    //enable text input
+    SDL_StartTextInput(win);
     //get the window ID
     u32 id = SDL_GetWindowID(win);
     //store the window entry
@@ -830,4 +939,95 @@ void GLGE::Graphic::Backend::Video::SDL3::Instance::onWindowRemove(GLGE::Graphic
     u32 id = SDL_GetWindowID(win);
     //remove the window entry
     msl_windows.erase(id);
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::openURL(const std::string& url) {
+    //just use SDL to open the URL
+    SDL_OpenURL(url.c_str());
+}
+
+std::vector<std::string> GLGE::Graphic::Backend::Video::SDL3::Instance::getClipboardTypes() {
+    //get the clipboard types
+    size_t numTypes = 0;
+    char** types = SDL_GetClipboardMimeTypes(&numTypes);
+
+    //store them in an STD vector
+    std::vector<std::string> typeRet;
+    typeRet.reserve(numTypes);
+    for (size_t i = 0; i < numTypes; ++i) 
+    {typeRet.push_back(types[i]);}
+
+    //return the types
+    return typeRet;
+}
+
+std::vector<u8> GLGE::Graphic::Backend::Video::SDL3::Instance::getClipboardData(const std::string& typeName) {
+    //if the type does not exist, return empty
+    if (!SDL_HasClipboardData(typeName.c_str())) {return {};}
+
+    //if the type exist, return the data
+    size_t size = 0;
+    const void* data = SDL_GetClipboardData(typeName.c_str(), &size);
+    //prepare the vector
+    std::vector<u8> retData(static_cast<const u8*>(data), static_cast<const u8*>(data) + size);
+    //return the vector
+    return retData;
+}
+
+//store all data used to set clipboard data
+struct ClipboardSetData {
+    const void* data;
+    std::string mimeType;
+    size_t size;
+};
+
+static const void* SDLCALL getClipboardDat(void* userData, const char* mime_type, size_t* size) {
+    //extract the data
+    ClipboardSetData* dat = reinterpret_cast<ClipboardSetData*>(userData);
+
+    //just ignore the mime type
+    (void)mime_type;
+
+    //set the size
+    *size = dat->size;
+
+    //return the data
+    return dat->data;
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::setClipboardData(const void* data, size_t size, const std::string& typeName) {
+    //write the set data meta-data
+    ClipboardSetData dat {
+        .data = data,
+        .mimeType = typeName,
+        .size = size
+    };
+    const char* mimeType = typeName.c_str();
+    //actually set the data
+    SDL_SetClipboardData(getClipboardDat, nullptr, &dat, &mimeType, 1);
+}
+
+std::string GLGE::Graphic::Backend::Video::SDL3::Instance::getClipboardText() {
+    //if no text exists, return 0
+    if (!SDL_HasClipboardText()) {return "";}
+    //just get the clipboard text
+    return SDL_GetClipboardText();
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::setClipboardText(const std::string& text) {
+    //just pass the text through
+    SDL_SetClipboardText(text.c_str());
+}
+
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::hideCursor() {
+    SDL_HideCursor();
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::showCursor() {
+    SDL_ShowCursor();
+}
+
+bool GLGE::Graphic::Backend::Video::SDL3::Instance::isCursorHidden() {
+    return SDL_CursorVisible();
 }

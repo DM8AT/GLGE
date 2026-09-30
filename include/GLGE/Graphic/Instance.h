@@ -228,6 +228,66 @@ namespace Graphic {
         inline const std::string& getGPUDriverVersion() const noexcept
         {return m_gDesc->getDriverVersion();}
 
+        /**
+         * @brief open a specific URL
+         * 
+         * @param url the URL to open
+         */
+        void openURL(const std::string& url);
+
+        /**
+         * @brief Get the Types currently present in the clipboard
+         * 
+         * @return `std::vector<std::string>` a list of all data types present in the clipboard
+         */
+        std::vector<std::string> getClipboardTypes();
+
+        /**
+         * @brief Get the specific clipboard Data
+         * 
+         * @param typeName the name of the data to get
+         * @return `std::vector<u8>` the data stored in the clipboard
+         */
+        std::vector<u8> getClipboardData(const std::string& typeName);
+
+        /**
+         * @brief Set the Clipboard Data
+         * 
+         * @param data the data to write to the clipboard
+         * @param size the length of the data to write
+         * @param typeName the type of the data to set
+         */
+        void setClipboardData(const void* data, size_t size, const std::string& typeName);
+
+        /**
+         * @brief Get the Clipboard Text
+         * 
+         * @return `std::string` the string stored in the clipboard
+         */
+        std::string getClipboardText();
+
+        /**
+         * @brief Set the Clipboard Text
+         * 
+         * @param text the new text for the clipboard
+         */
+        void setClipboardText(const std::string& text);
+
+        /**
+         * @brief hide the mouse cursor
+         */
+        void hideCursor();
+        /**
+         * @brief show the mouse cursor
+         */
+        void showCursor();
+        /**
+         * @brief check if the mouse cursor is hidden
+         * 
+         * @return `true` if the cursor is hidden, `false` if the cursor is visible
+         */
+        bool isCursorHidden();
+
     protected:
 
         //add the window as a friend class

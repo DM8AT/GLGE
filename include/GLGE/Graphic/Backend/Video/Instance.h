@@ -106,6 +106,66 @@ namespace Video {
         virtual void onWindowRemove(GLGE::Graphic::Backend::Video::Window* window) = 0;
 
         /**
+         * @brief open a specific URL
+         * 
+         * @param url the URL to open
+         */
+        virtual void openURL(const std::string& url) = 0;
+
+        /**
+         * @brief Get the Types currently present in the clipboard
+         * 
+         * @return `std::vector<std::string>` a list of all data types present in the clipboard
+         */
+        virtual std::vector<std::string> getClipboardTypes() = 0;
+
+        /**
+         * @brief Get the specific clipboard Data
+         * 
+         * @param typeName the name of the data to get
+         * @return `std::vector<u8>` the data stored in the clipboard
+         */
+        virtual std::vector<u8> getClipboardData(const std::string& typeName) = 0;
+
+        /**
+         * @brief Set the Clipboard Data
+         * 
+         * @param data the data to write to the clipboard
+         * @param size the length of the data to write
+         * @param typeName the type of the data to set
+         */
+        virtual void setClipboardData(const void* data, size_t size, const std::string& typeName) = 0;
+
+        /**
+         * @brief Get the Clipboard Text
+         * 
+         * @return `std::string` the string stored in the clipboard
+         */
+        virtual std::string getClipboardText() = 0;
+
+        /**
+         * @brief Set the Clipboard Text
+         * 
+         * @param text the new text for the clipboard
+         */
+        virtual void setClipboardText(const std::string& text) = 0;
+
+        /**
+         * @brief hide the mouse cursor
+         */
+        virtual void hideCursor() = 0;
+        /**
+         * @brief show the mouse cursor
+         */
+        virtual void showCursor() = 0;
+        /**
+         * @brief check if the mouse cursor is hidden
+         * 
+         * @return `true` if the cursor is hidden, `false` if the cursor is visible
+         */
+        virtual bool isCursorHidden() = 0;
+
+        /**
          * @brief Get the Contract
          * 
          * @tparam T the type of contract to quarry

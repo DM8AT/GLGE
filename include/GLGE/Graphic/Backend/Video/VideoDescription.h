@@ -15,6 +15,9 @@
 //include the graphic API
 #include "GLGE/Graphic/GraphicAPI.h"
 
+//add cursors
+#include "Cursor.h"
+
 //define some pointers to frontend classes
 namespace GLGE::Graphic {
     class Instance;
@@ -71,6 +74,23 @@ namespace GLGE::Graphic::Backend::Video {
          * @return `GLGE::Graphic::Backend::Video::Window*` a pointer to a new video backend window
          */
         virtual GLGE::Graphic::Backend::Video::Window* createWindow([[maybe_unused]]GLGE::Graphic::Window* window) = 0;
+
+        /**
+         * @brief Create a Cursor
+         * 
+         * @param style the default style for the cursor
+         * @return `Reference<GLGE::Graphic::Backend::Video::Cursor>` the created cursor
+         */
+        virtual Reference<GLGE::Graphic::Backend::Video::Cursor> createCursor([[maybe_unused]] GLGE::Graphic::Backend::Video::Cursor::Defaults style) = 0;
+
+        /**
+         * @brief Create a Cursor
+         * 
+         * @param image the CPU image to load into the cursor
+         * @param hot the position of the cursor hot spot (the spot for interaction)
+         * @return `Reference<GLGE::Graphic::Backend::Video::Cursor>` the created cursor
+         */
+        virtual Reference<GLGE::Graphic::Backend::Video::Cursor> createCursor([[maybe_unused]] const ImageCPU& image, [[maybe_unused]] const uvec2& hot) = 0;
 
         /**
          * @brief Get a list of the graphic APIs supported by the backend

@@ -28,11 +28,21 @@
 #include "CommandDefaults.h"
 //add command executor
 #include "CommandExecutor.h"
+//add gui stuff
+#include "GUIContext.h"
+#include "GUIProvider.h"
+//add optional GUI providers
+#ifdef GLGE_HAS_IMGUI
+#include "DefaultGuiProviders/ImGUIProvider.h"
+#endif
 
 //add CPU images
 #include "ImageCPU.h"
 //add CPU textures
 #include "TextureCPU.h"
+
+//add cursors
+#include "Cursor.h"
 
 //add samplers
 #include "Sampler.h"

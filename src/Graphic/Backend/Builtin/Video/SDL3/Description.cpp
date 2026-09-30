@@ -15,6 +15,8 @@
 #include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Instance.h"
 //add SDL3 windows
 #include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Window.h"
+//add SDL3 cursors
+#include "GLGE/Graphic/Backend/Builtin/Video/SDL3/Cursor.h"
 
 //use the namespace
 using namespace GLGE::Graphic::Builtin::Video;
@@ -39,6 +41,12 @@ GLGE::Graphic::Backend::Video::Instance* SDL3::createInstance(GLGE::Graphic::Ins
 
 GLGE::Graphic::Backend::Video::Window* SDL3::createWindow(GLGE::Graphic::Window* window)
 {return new GLGE::Graphic::Backend::Video::SDL3::Window(window);}
+
+GLGE::Reference<GLGE::Graphic::Backend::Video::Cursor> SDL3::createCursor([[maybe_unused]] GLGE::Graphic::Backend::Video::Cursor::Defaults style)
+{return Reference<Backend::Video::Cursor>(new Backend::Video::SDL3::Cursor(style));}
+
+GLGE::Reference<GLGE::Graphic::Backend::Video::Cursor> SDL3::createCursor([[maybe_unused]] const ImageCPU& image, [[maybe_unused]] const uvec2& hot)
+{return Reference<Backend::Video::Cursor>(new Backend::Video::SDL3::Cursor(image, hot));}
 
 const std::vector<GLGE::Graphic::GraphicAPI>& SDL3::getSupportedAPIs() 
 {return __SUPPORTED_APIS;}

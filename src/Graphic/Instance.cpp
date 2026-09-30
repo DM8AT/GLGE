@@ -69,3 +69,30 @@ void GLGE::Graphic::Instance::onGraphicBackendDestroy() {
     //delete the mesh manager
     m_meshManager.reset();
 }
+
+void GLGE::Graphic::Instance::openURL(const std::string& url)
+{m_vInst->openURL(url);}
+
+std::vector<std::string> GLGE::Graphic::Instance::getClipboardTypes()
+{return m_vInst->getClipboardTypes();}
+
+std::vector<GLGE::u8> GLGE::Graphic::Instance::getClipboardData(const std::string& typeName) 
+{return m_vInst->getClipboardData(typeName);}
+
+void GLGE::Graphic::Instance::setClipboardData(const void* data, size_t size, const std::string& typeName) 
+{m_vInst->setClipboardData(data, size, typeName);}
+
+std::string GLGE::Graphic::Instance::getClipboardText() 
+{return m_vInst->getClipboardText();}
+
+void GLGE::Graphic::Instance::setClipboardText(const std::string& text) 
+{m_vInst->setClipboardText(text);}
+
+void GLGE::Graphic::Instance::hideCursor() 
+{m_vInst->hideCursor();}
+
+void GLGE::Graphic::Instance::showCursor() 
+{m_vInst->showCursor();}
+
+bool GLGE::Graphic::Instance::isCursorHidden() 
+{return m_vInst->isCursorHidden();}

@@ -63,6 +63,23 @@ namespace Video {
         virtual GLGE::Graphic::Backend::Video::Window* createWindow(GLGE::Graphic::Window* window) override;
 
         /**
+         * @brief Create a Cursor
+         * 
+         * @param style the default style for the cursor
+         * @return `Reference<GLGE::Graphic::Backend::Video::Cursor>` the created cursor
+         */
+        virtual Reference<GLGE::Graphic::Backend::Video::Cursor> createCursor([[maybe_unused]] GLGE::Graphic::Backend::Video::Cursor::Defaults style) override;
+
+        /**
+         * @brief Create a Cursor
+         * 
+         * @param image the CPU image to load into the cursor
+         * @param hot the position of the cursor hot spot (the spot for interaction)
+         * @return `Reference<GLGE::Graphic::Backend::Video::Cursor>` the created cursor
+         */
+        virtual Reference<GLGE::Graphic::Backend::Video::Cursor> createCursor([[maybe_unused]] const ImageCPU& image, [[maybe_unused]] const uvec2& hot) override;
+
+        /**
          * @brief Get a list of the graphic APIs supported by the backend
          * 
          * @return `const std::vector<GLGE::Graphic::GraphicAPI>&` a constant reference to a vector containing all the supported APIs

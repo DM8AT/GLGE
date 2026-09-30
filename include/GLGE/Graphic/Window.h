@@ -241,6 +241,13 @@ namespace GLGE::Graphic {
         inline void registerInvalidator(CommandInvalidator* ptr)
         {attachInvalidator(*ptr);}
 
+        /**
+         * @brief Get the Text that was inputted since the last update
+         * 
+         * @return `const std::string&` the text inputted on the window
+         */
+        const std::string& getTextInput() const noexcept;
+
     private:
 
         /**

@@ -78,6 +78,66 @@ namespace SDL3 {
          */
         virtual void onWindowRemove(GLGE::Graphic::Backend::Video::Window* window) override;
 
+        /**
+         * @brief open a specific URL
+         * 
+         * @param url the URL to open
+         */
+        virtual void openURL(const std::string& url);
+
+        /**
+         * @brief Get the Types currently present in the clipboard
+         * 
+         * @return `std::vector<std::string>` a list of all data types present in the clipboard
+         */
+        virtual std::vector<std::string> getClipboardTypes() override;
+
+        /**
+         * @brief Get the specific clipboard Data
+         * 
+         * @param typeName the name of the data to get
+         * @return `std::vector<u8>` the data stored in the clipboard
+         */
+        virtual std::vector<u8> getClipboardData(const std::string& typeName) override;
+
+        /**
+         * @brief Set the Clipboard Data
+         * 
+         * @param data the data to write to the clipboard
+         * @param size the length of the data to write
+         * @param typeName the type of the data to set
+         */
+        virtual void setClipboardData(const void* data, size_t size, const std::string& typeName) override;
+
+        /**
+         * @brief Get the Clipboard Text
+         * 
+         * @return `std::string` the string stored in the clipboard
+         */
+        virtual std::string getClipboardText() override;
+
+        /**
+         * @brief Set the Clipboard Text
+         * 
+         * @param text the new text for the clipboard
+         */
+        virtual void setClipboardText(const std::string& text) override;
+
+        /**
+         * @brief hide the mouse cursor
+         */
+        virtual void hideCursor() override;
+        /**
+         * @brief show the mouse cursor
+         */
+        virtual void showCursor() override;
+        /**
+         * @brief check if the mouse cursor is hidden
+         * 
+         * @return `true` if the cursor is hidden, `false` if the cursor is visible
+         */
+        virtual bool isCursorHidden() override;
+
     protected:
 
         /**
@@ -144,6 +204,45 @@ namespace SDL3 {
          * @param keyboardId the ID of the keyboard to remove
          */
         void removeKeyboard(u32 keyboardId);
+
+        /**
+         * @brief register a mouse button update
+         * 
+         * @param state the new state for the button
+         * @param buttonId the ID of the button
+         * @param mouseId the ID of the mouse to update
+         */
+        void mouseButtonUpdate(bool state, u8 buttonId, u32 mouseId);
+
+        /**
+         * @brief register a mouse movement
+         * 
+         * @param pos the new position of the mouse
+         * @param mouseId the ID of the mouse
+         */
+        void mousePositionUpdate(const vec2& pos, u32 mouseId);
+
+        /**
+         * @brief register the scrolling of a mouse wheel
+         * 
+         * @param scroll how much the wheel was scrolled (yes, that can be 2D)
+         * @param mouseId the Id of the mouse that was scrolled
+         */
+        void mouseWheelUpdate(const vec2& scroll, u32 mouseId);
+
+        /**
+         * @brief register a new mice
+         * 
+         * @param miceId the ID of the mice to add
+         */
+        void registerMice(u32 miceId);
+
+        /**
+         * @brief remove a mice
+         * 
+         * @param miceId the ID of the mice to remove
+         */
+        void removeMice(u32 miceId);
 
     };
 
