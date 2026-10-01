@@ -149,6 +149,10 @@ Window::Window(GLGE::Graphic::Window* window)
 Window::~Window() {
     GLGE_PROFILER_SCOPE();
 
+    //if a surface exists, delete it
+    if (m_icon) 
+    {SDL_DestroySurface(reinterpret_cast<SDL_Surface*>(m_icon));}
+
     //destroy the window from the main thread
     GLGE::TaskHandle<void> handle;
     getWindow()->getInstance()->pushMainThreadTask(Task::create(&destroyWindow, &handle, this));
@@ -277,4 +281,18 @@ void Window::onSetMaximumSize(const uvec2& size) {
 
     //set the maximum size
     SDL_SetWindowMaximumSize(reinterpret_cast<SDL_Window*>(m_win), size.x, size.y);
+}
+
+void Window::setIcon(const ImageCPU& image) {
+    //if a surface exists, delete it
+    if (m_icon) 
+    {SDL_DestroySurface(reinterpret_cast<SDL_Surface*>(m_icon));}
+
+    //store the icon & correct image format
+    m_iconImg = image.toFormat(PIXEL_FORMAT_RGBA_8_UNORM);
+    //create the surface
+    m_icon = SDL_CreateSurfaceFrom(m_iconImg.getSize().x, m_iconImg.getSize().y, SDL_PIXELFORMAT_RGBA32, m_iconImg.getRaw(), m_iconImg.getSize().x * 4 /*4 bpp*/);
+
+    //update the window icon
+    SDL_SetWindowIcon(reinterpret_cast<SDL_Window*>(m_win), reinterpret_cast<SDL_Surface*>(m_icon));
 }

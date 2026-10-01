@@ -149,6 +149,13 @@ namespace GLGE::Graphic::Backend::Video {
         virtual void onSetMaximumSize(const uvec2& size) = 0;
 
         /**
+         * @brief Set the Icon for the window
+         * 
+         * @param image the new icon for the window
+         */
+        virtual void setIcon(const ImageCPU& image) = 0;
+
+        /**
          * @brief Get the frontend window the backend belongs to
          * 
          * @return `GLGE::Graphic::Window*` a pointer to the frontend window

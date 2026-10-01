@@ -45,7 +45,7 @@ GLGE::Graphic::Backend::Video::SDL3::Cursor::Cursor(const ImageCPU& image, const
     //make sure that the data is in RGBA_8888 format
     m_img = image.toFormat(PIXEL_FORMAT_RGBA_8_UNORM);
     //create the surface
-    m_surface = SDL_CreateSurfaceFrom(image.getSize().x, image.getSize().y, SDL_PIXELFORMAT_RGBA8888, m_img.getRaw(), m_img.getSize().x * 4 /*4 bytes per pixels*/);
+    m_surface = SDL_CreateSurfaceFrom(image.getSize().x, image.getSize().y, SDL_PIXELFORMAT_RGBA32, m_img.getRaw(), m_img.getSize().x * 4 /*4 bytes per pixels*/);
 
     //create the cursor from the surface
     m_cursor = SDL_CreateColorCursor(reinterpret_cast<SDL_Surface*>(m_surface), hot.x, hot.y);

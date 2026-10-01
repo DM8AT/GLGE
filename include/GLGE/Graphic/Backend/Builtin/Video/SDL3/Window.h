@@ -140,6 +140,13 @@ namespace GLGE::Graphic::Backend::Video::SDL3 {
         virtual void onSetMaximumSize(const uvec2& size) override;
 
         /**
+         * @brief Set the Icon for the window
+         * 
+         * @param image the new icon for the window
+         */
+        virtual void setIcon(const ImageCPU& image) override;
+
+        /**
          * @brief get the SDL window the window controls
          * 
          * @return `void*` a pointer to the SDL window
@@ -171,6 +178,15 @@ namespace GLGE::Graphic::Backend::Video::SDL3 {
          * @brief store the actual SDL window
          */
         void* m_win = nullptr;
+
+        /**
+         * @brief store the icon surface
+         */
+        void* m_icon = nullptr;
+        /**
+         * @brief store the CPU image for the icon surface
+         */
+        ImageCPU m_iconImg;
 
     };
 

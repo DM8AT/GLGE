@@ -18,6 +18,9 @@
 //add profiling
 #include "GLGE/Core/Profiler.h"
 
+//add the window icon
+#include "WindowIcon.h"
+
 //use the library namespace
 using namespace GLGE::Graphic;
 
@@ -38,6 +41,10 @@ Window::Window(const std::string& name, const uvec2& size, const WindowSettings&
     //register the window
     m_inst->getGraphicBackendInstance()->onRegisterWindow(m_gWin.get());
     m_inst->m_windows.push_back(this);
+
+    //load the default window icon
+    ImageCPU icon(gimp_image.pixel_data, PIXEL_FORMAT_RGBA_8_UNORM, {gimp_image.width, gimp_image.height});
+    setIcon(icon);
 }
 
 Window::~Window() {
@@ -95,3 +102,6 @@ void Window::setMaximumSize(const uvec2& size) noexcept
 
 const std::string& Window::getTextInput() const noexcept
 {return m_vWin->getTextInput();}
+
+void Window::setIcon(const ImageCPU& icon) 
+{m_vWin->setIcon(icon);}

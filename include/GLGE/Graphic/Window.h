@@ -248,6 +248,13 @@ namespace GLGE::Graphic {
          */
         const std::string& getTextInput() const noexcept;
 
+        /**
+         * @brief Set the Icon
+         * 
+         * @param icon the new window icon
+         */
+        void setIcon(const ImageCPU& icon);
+
     private:
 
         /**
