@@ -1528,7 +1528,7 @@ bool drawGui(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE
     }
     
     //check the descriptor sets and keep them up to date
-    constexpr uint64_t descrCacheTimeout = 120;
+    constexpr uint64_t descrCacheTimeout = 64;
     for (auto it = persistent->textureCache.begin(); it != persistent->textureCache.end(); /*NO STEP*/) {
         //check if the cache is outdated
         if ((currentGen - it->second.lastUsedGen) > descrCacheTimeout) {
