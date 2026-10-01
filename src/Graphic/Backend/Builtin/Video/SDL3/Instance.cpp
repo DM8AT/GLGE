@@ -1031,3 +1031,70 @@ void GLGE::Graphic::Backend::Video::SDL3::Instance::showCursor() {
 bool GLGE::Graphic::Backend::Video::SDL3::Instance::isCursorHidden() {
     return SDL_CursorVisible();
 }
+
+static void SDLCALL fileOpenCallback(void* userdata, const char* const* filelist, int /*filter*/) {
+    //error -> just stop
+    if (filelist == nullptr) {
+        std::stringstream stream;
+        stream << "Failed to open file dialog. SDL Error: " << SDL_GetError();
+        throw GLGE::Exception(stream.str(), "GLGE::Graphic::Backend::Video::SDL3::Instance::fileOpenCallback");
+        return;
+    }
+
+    //count for pre-allocation
+    size_t count = 0;
+    const char* const* filePtr = filelist;
+    while (*filePtr != nullptr) {++count; ++filePtr;}
+    //translate to std vector
+    std::vector<std::filesystem::path> files;
+    files.reserve(count);
+    filePtr = filelist;
+    while (*filePtr != nullptr) {files.push_back(*filePtr); ++filePtr;}
+    
+    //call the user callback
+    (*reinterpret_cast<GLGE::Graphic::Backend::Video::Instance::Pfn_SelectorCallback>(userdata))(files);
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::openFileSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::vector<std::pair<std::string, std::string>>& filter, const std::filesystem::path& defaultLocation, GLGE::Graphic::Window* parent) {
+    //translate the dialog filters
+    std::vector<SDL_DialogFileFilter> filters;
+    filters.reserve(filter.size());
+    for (const auto& fil : filter) {filters.push_back(SDL_DialogFileFilter {.name = fil.first.c_str(), .pattern = fil.second.c_str()});}
+    //show the file dialog
+    SDL_ShowOpenFileDialog(
+        fileOpenCallback, 
+        reinterpret_cast<void*>(callback), 
+        ((parent) ? reinterpret_cast<SDL_Window*>(static_cast<GLGE::Graphic::Backend::Video::SDL3::Window*>(parent->getVideoWindow())->getSDLWindow()) : static_cast<SDL_Window*>(nullptr)), 
+        filters.data(), 
+        filters.size(), 
+        defaultLocation.c_str(), 
+        allowMultiSelect
+    );
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::openSaveSelector(Pfn_SelectorCallback callback, const std::vector<std::pair<std::string, std::string>>& filter, const std::filesystem::path& defaultLocation, GLGE::Graphic::Window* parent) {
+    //translate the dialog filters
+    std::vector<SDL_DialogFileFilter> filters;
+    filters.reserve(filter.size());
+    for (const auto& fil : filter) {filters.push_back(SDL_DialogFileFilter {.name = fil.first.c_str(), .pattern = fil.second.c_str()});}
+    //show the file dialog
+    SDL_ShowSaveFileDialog(
+        fileOpenCallback, 
+        reinterpret_cast<void*>(callback), 
+        ((parent) ? reinterpret_cast<SDL_Window*>(static_cast<GLGE::Graphic::Backend::Video::SDL3::Window*>(parent->getVideoWindow())->getSDLWindow()) : static_cast<SDL_Window*>(nullptr)), 
+        filters.data(), 
+        filters.size(), 
+        defaultLocation.c_str()
+    );
+}
+
+void GLGE::Graphic::Backend::Video::SDL3::Instance::openFolderSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::filesystem::path& defaultLocation, GLGE::Graphic::Window* parent) {
+    //show the file dialog
+    SDL_ShowOpenFolderDialog(
+        fileOpenCallback, 
+        reinterpret_cast<void*>(callback), 
+        ((parent) ? reinterpret_cast<SDL_Window*>(static_cast<GLGE::Graphic::Backend::Video::SDL3::Window*>(parent->getVideoWindow())->getSDLWindow()) : static_cast<SDL_Window*>(nullptr)), 
+        defaultLocation.c_str(), 
+        allowMultiSelect
+    );
+}

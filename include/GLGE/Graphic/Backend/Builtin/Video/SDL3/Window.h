@@ -147,6 +147,44 @@ namespace GLGE::Graphic::Backend::Video::SDL3 {
         virtual void setIcon(const ImageCPU& image) override;
 
         /**
+         * @brief Set the Hit Test Callback
+         * 
+         * @note the callback is called whenever the OS feels like it. Do not assume any user interaction. The only prerequisite is that the window is hovered. 
+         * 
+         * @param callback the callback to call for hit tests. Calling nullptr disable the custom hit test. 
+         */
+        virtual void setHitTestCallback(GLGE::Graphic::Window::Pfn_HitTestCallback callback) override;
+
+        /**
+         * @brief maximize the window
+         */
+        virtual void maximize() override;
+
+        /**
+         * @brief minimize the window
+         */
+        virtual void minimize() override;
+
+        /**
+         * @brief restore the window
+         */
+        virtual void restore() override;
+
+        /**
+         * @brief Set the Borderless value for the window
+         * 
+         * @param borderless `true` for a borderless window, `false` for a window with borders
+         */
+        virtual void setBorderless(bool borderless) override;
+
+        /**
+         * @brief Set the Fullscreen mode
+         * 
+         * @param fullscreen `true` for fullscreen, `false` for windowed
+         */
+        virtual void setFullscreen(bool fullscreen) override;
+
+        /**
          * @brief get the SDL window the window controls
          * 
          * @return `void*` a pointer to the SDL window

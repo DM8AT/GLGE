@@ -101,8 +101,27 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::dispatch(GLGE::Gr
     //select the subbuffer to use. If a window exists, that defines the window index
     u32 buff = 0;
     if (m_window) {
-        VkSwapchainKHR swap = reinterpret_cast<VkSwapchainKHR>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(m_window->getGraphicWindow().get())->getSwapchain());
-        CHECK_VULKAN(vkAcquireNextImageKHR(device, swap, UINT64_MAX, reinterpret_cast<VkSemaphore>(m_imgAvailSems[m_currentFrame]), VK_NULL_HANDLE, &buff));
+        auto* vkWin = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(m_window->getGraphicWindow().get());
+        VkSwapchainKHR swap = reinterpret_cast<VkSwapchainKHR>(vkWin->getSwapchain());
+        VkResult res = vkAcquireNextImageKHR(device, swap, UINT64_MAX, reinterpret_cast<VkSemaphore>(m_imgAvailSems[m_currentFrame]), VK_NULL_HANDLE, &buff);
+        if (res == VK_ERROR_OUT_OF_DATE_KHR) {
+            //force swap chain re-creation
+            vkWin->markSwapchainOutdated();
+            vkWin->recreateSwapchain();
+            
+            //force stream re-recording
+            for (auto& entry : stream->getEntries())
+            {entry.cmd->markDirty();}
+            stream->compile();
+            //get the new image
+            swap = reinterpret_cast<VkSwapchainKHR>(vkWin->getSwapchain());
+            res = vkAcquireNextImageKHR(device, swap, UINT64_MAX, reinterpret_cast<VkSemaphore>(m_imgAvailSems[m_currentFrame]), VK_NULL_HANDLE, &buff);
+        }
+        if ((res != VK_SUCCESS) && (res != VK_SUBOPTIMAL_KHR)) {
+            std::stringstream stream;
+            stream << "Failed to acquire next image, res was neither out of date nor success. Result was: " << res;
+            throw GLGE::Exception(stream.str(), "GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::dispatch");
+        }
     }
 
     //select the correct command buffer and clean it
@@ -191,7 +210,12 @@ void GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::dispatch(GLGE::Gr
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &swap;
         presentInfo.pImageIndices = &buff;
-        CHECK_VULKAN(vkQueuePresentKHR(reinterpret_cast<VkQueue>(reinterpret_cast<VkQueue>(q.queue)), &presentInfo));
+        VkResult res = vkQueuePresentKHR(reinterpret_cast<VkQueue>(reinterpret_cast<VkQueue>(q.queue)), &presentInfo);
+        if ((res != VK_SUCCESS) && (res != VK_SUBOPTIMAL_KHR)) {
+            std::stringstream stream;
+            stream << "Failed to queue vulkan presentation. Vulkan result: " << static_cast<i32>(res);
+            throw GLGE::Exception(stream.str(), "GLGE::Graphic::Backend::Graphic::Vulkan::CommandExecutor::dispatch");
+        }
     }
 
     //update the current frame in flight

@@ -296,3 +296,68 @@ void Window::setIcon(const ImageCPU& image) {
     //update the window icon
     SDL_SetWindowIcon(reinterpret_cast<SDL_Window*>(m_win), reinterpret_cast<SDL_Surface*>(m_icon));
 }
+
+static SDL_HitTestResult __translateHitTestResult(GLGE::Graphic::Window::HitTest result) noexcept {
+    switch (result) {
+        case GLGE::Graphic::Window::HitTest::Normal:            return SDL_HITTEST_NORMAL;
+        case GLGE::Graphic::Window::HitTest::Dragging:          return SDL_HITTEST_DRAGGABLE;
+        case GLGE::Graphic::Window::HitTest::Resize_TopRight:   return SDL_HITTEST_RESIZE_TOPRIGHT;
+        case GLGE::Graphic::Window::HitTest::Resize_TopLeft:    return SDL_HITTEST_RESIZE_TOPLEFT;
+        case GLGE::Graphic::Window::HitTest::Resize_BottomRight:return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
+        case GLGE::Graphic::Window::HitTest::Resize_BottomLeft: return SDL_HITTEST_RESIZE_BOTTOMLEFT;
+        case GLGE::Graphic::Window::HitTest::Resize_Top:        return SDL_HITTEST_RESIZE_TOP;
+        case GLGE::Graphic::Window::HitTest::Resize_Left:       return SDL_HITTEST_RESIZE_LEFT;
+        case GLGE::Graphic::Window::HitTest::Resize_Right:      return SDL_HITTEST_RESIZE_RIGHT;
+        case GLGE::Graphic::Window::HitTest::Resize_Bottom:     return SDL_HITTEST_RESIZE_BOTTOM;
+        
+        default: std::unreachable();
+    }
+}
+
+static SDL_HitTestResult HitTestCallbackTranslator(SDL_Window*, const SDL_Point* area, void* window) {
+    //get the actual video window
+    auto* win = static_cast<GLGE::Graphic::Backend::Video::SDL3::Window*>(window);
+
+    //get the hit test and call it
+    if (win->getHitTestCallback()) 
+    {return __translateHitTestResult((*win->getHitTestCallback())(win->getWindow(), GLGE::uvec2{area->x, area->y}));}
+
+    //nope
+    std::unreachable();
+}
+
+void Window::setHitTestCallback(GLGE::Graphic::Window::Pfn_HitTestCallback callback) {
+    //store the new custom hit test
+    m_hitTestCallback = callback;
+    //if a callback is set, set the callback
+    if (callback) 
+    {SDL_SetWindowHitTest(reinterpret_cast<SDL_Window*>(m_win), HitTestCallbackTranslator, this);}
+    else //else, the callback is null, so disable it
+    {SDL_SetWindowHitTest(reinterpret_cast<SDL_Window*>(m_win), nullptr, nullptr);}
+}
+
+void Window::maximize() {
+    //maximize the window
+    SDL_MaximizeWindow(reinterpret_cast<SDL_Window*>(m_win));
+}
+
+void Window::minimize() {
+    //minimize the window
+    SDL_MinimizeWindow(reinterpret_cast<SDL_Window*>(m_win));
+}
+
+void Window::restore() {
+    //restore the window
+    SDL_RestoreWindow(reinterpret_cast<SDL_Window*>(m_win));
+}
+
+void Window::setBorderless(bool borderless) {
+    //set the borderless value
+    SDL_SetWindowBordered(reinterpret_cast<SDL_Window*>(m_win), borderless);
+}
+
+void Window::setFullscreen(bool fullscreen) {
+    //set the window fullscreen
+    SDL_SetWindowFullscreenMode(reinterpret_cast<SDL_Window*>(m_win), nullptr);
+    SDL_SetWindowFullscreen(reinterpret_cast<SDL_Window*>(m_win), fullscreen);
+}

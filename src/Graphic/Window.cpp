@@ -105,3 +105,21 @@ const std::string& Window::getTextInput() const noexcept
 
 void Window::setIcon(const ImageCPU& icon) 
 {m_vWin->setIcon(icon);}
+
+void Window::setHitTestCallback(Pfn_HitTestCallback callback)
+{m_vWin->setHitTestCallback(callback);}
+
+void Window::maximize() 
+{m_vWin->maximize();}
+
+void Window::minimize() 
+{m_vWin->minimize();}
+
+void Window::restore() 
+{m_vWin->restore();}
+
+void Window::setBorderless(bool borderless) 
+{m_vWin->setBorderless(borderless);}
+
+void Window::setFullscreen(bool fullscreen) 
+{m_vWin->setFullscreen(fullscreen);}

@@ -130,19 +130,24 @@ void Window::recreateSwapchain() {
     {vkDestroySemaphore(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkSemaphore>(sem), nullptr);}
     m_semaphores.clear();
 
-    // //destroy the window surface
-    // getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->destroyWindowSurface(
-    //     reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get())->getInstance(), 
-    //     m_surface,
-    //     getWindow()->getVideoWindow()
-    // );
-    
-    // //get the window surface
-    // getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->createWindowSurface(
-    //     inst->getInstance(), 
-    //     &m_surface,
-    //     getWindow()->getVideoWindow()
-    // );
+    if (m_swapChainOutdated) {
+        //destroy the window surface
+        getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->destroyWindowSurface(
+            reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get())->getInstance(), 
+            m_surface,
+            getWindow()->getVideoWindow()
+        );
+        
+        //get the window surface
+        getWindow()->getGraphicInstance()->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->createWindowSurface(
+            inst->getInstance(), 
+            &m_surface,
+            getWindow()->getVideoWindow()
+        );
+
+        //now up to date
+        m_swapChainOutdated = false;
+    }
 
     //get the properties of the surface
     VkSurfaceCapabilitiesKHR caps;

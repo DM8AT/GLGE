@@ -138,6 +138,43 @@ namespace SDL3 {
          */
         virtual bool isCursorHidden() override;
 
+        /**
+         * @brief open a file selector dialog
+         * 
+         * @warning The OS may ignore any of the options
+         * 
+         * @param callback a file selector callback (called whenever the selector is closed). If zero elements are parsed, the user canceled the selection. 
+         * @param allowMultiSelect `true` to allow for multiple files to be selected, `false` if not
+         * @param filter a list of filters. The first string is the human-readable name, the second one is the pattern of inclusion. 
+         * @param defaultLocation the location to open the selector at
+         * @param parent the parent window to attach to, nullptr means no window
+         */
+        virtual void openFileSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::vector<std::pair<std::string, std::string>>& filter = {}, const std::filesystem::path& defaultLocation = "", GLGE::Graphic::Window* parent = nullptr) override;
+
+        /**
+         * @brief open a file selector dialog
+         * 
+         * @warning The OS may ignore any of the options
+         * 
+         * @param callback a file selector callback (called whenever the selector is closed). If zero elements are parsed, the user canceled the selection. 
+         * @param filter a list of filters. The first string is the human-readable name, the second one is the pattern of inclusion. 
+         * @param defaultLocation the location to open the selector at
+         * @param parent the parent window to attach to, nullptr means no window
+         */
+        virtual void openSaveSelector(Pfn_SelectorCallback callback, const std::vector<std::pair<std::string, std::string>>& filter = {}, const std::filesystem::path& defaultLocation = "", GLGE::Graphic::Window* parent = nullptr) override;
+
+        /**
+         * @brief open a file selector dialog
+         * 
+         * @warning The OS may ignore any of the options
+         * 
+         * @param callback a folder selector callback (called whenever the selector is closed). If zero elements are parsed, the user canceled the selection. 
+         * @param allowMultiSelect `true` to allow for multiple files to be selected, `false` if not
+         * @param defaultLocation the location to open the selector at
+         * @param parent the parent window to attach to, nullptr means no window
+         */
+        virtual void openFolderSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::filesystem::path& defaultLocation = "", GLGE::Graphic::Window* parent = nullptr) override;
+
     protected:
 
         /**

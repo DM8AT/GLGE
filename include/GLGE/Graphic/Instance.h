@@ -43,6 +43,11 @@ namespace Graphic {
     public:
 
         /**
+         * @brief a pointer to a function that is called back when files where selected using a file selector
+         */
+        using Pfn_SelectorCallback = void (*)(const std::vector<std::filesystem::path>&);
+
+        /**
          * @brief Construct a new Instance
          * 
          * @param graphicDescription a pointer to an object that stores factories to the graphic backend classes
@@ -287,6 +292,43 @@ namespace Graphic {
          * @return `true` if the cursor is hidden, `false` if the cursor is visible
          */
         bool isCursorHidden();
+
+        /**
+         * @brief open a file selector dialog
+         * 
+         * @warning The OS may ignore any of the options
+         * 
+         * @param callback a file selector callback (called whenever the selector is closed). If zero elements are parsed, the user canceled the selection. 
+         * @param allowMultiSelect `true` to allow for multiple files to be selected, `false` if not
+         * @param filter a list of filters. The first string is the human-readable name, the second one is the pattern of inclusion. Note: The filter format is file extensions separated by semicolon or a single * for all
+         * @param defaultLocation the location to open the selector at
+         * @param parent the parent window to attach to, nullptr means no window
+         */
+        void openFileSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::vector<std::pair<std::string, std::string>>& filter = {}, const std::filesystem::path& defaultLocation = "", GLGE::Graphic::Window* parent = nullptr);
+
+        /**
+         * @brief open a file selector dialog
+         * 
+         * @warning The OS may ignore any of the options
+         * 
+         * @param callback a file selector callback (called whenever the selector is closed). If zero elements are parsed, the user canceled the selection. 
+         * @param filter a list of filters. The first string is the human-readable name, the second one is the pattern of inclusion. 
+         * @param defaultLocation the location to open the selector at
+         * @param parent the parent window to attach to, nullptr means no window
+         */
+        void openSaveSelector(Pfn_SelectorCallback callback, const std::vector<std::pair<std::string, std::string>>& filter = {}, const std::filesystem::path& defaultLocation = "", GLGE::Graphic::Window* parent = nullptr);
+
+        /**
+         * @brief open a file selector dialog
+         * 
+         * @warning The OS may ignore any of the options
+         * 
+         * @param callback a folder selector callback (called whenever the selector is closed). If zero elements are parsed, the user canceled the selection. 
+         * @param allowMultiSelect `true` to allow for multiple files to be selected, `false` if not
+         * @param defaultLocation the location to open the selector at
+         * @param parent the parent window to attach to, nullptr means no window
+         */
+        void openFolderSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::filesystem::path& defaultLocation = "", GLGE::Graphic::Window* parent = nullptr);
 
     protected:
 

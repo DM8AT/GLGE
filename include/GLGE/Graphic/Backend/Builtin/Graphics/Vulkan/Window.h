@@ -116,12 +116,25 @@ namespace GLGE::Graphic::Backend::Graphic::Vulkan {
         inline i32 getFormat() const noexcept
         {return m_format;}
 
-    protected:
+        /**
+         * @brief mark the swap chain as outdated
+         * 
+         * This will result in a full re-creation on the next resizing
+         */
+        inline void markSwapchainOutdated()
+        {m_swapChainOutdated = true;}
 
         /**
          * @brief re-create the vulkan swapchain
          */
         void recreateSwapchain();
+
+    protected:
+
+        /**
+         * @brief store if the swacphain was outdated
+         */
+        bool m_swapChainOutdated = false;
 
         /**
          * @brief store the vulkan surface

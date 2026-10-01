@@ -156,6 +156,52 @@ namespace GLGE::Graphic::Backend::Video {
         virtual void setIcon(const ImageCPU& image) = 0;
 
         /**
+         * @brief Set the Hit Test Callback
+         * 
+         * @note the callback is called whenever the OS feels like it. Do not assume any user interaction. The only prerequisite is that the window is hovered. 
+         * 
+         * @param callback the callback to call for hit tests. Calling nullptr disable the custom hit test. 
+         */
+        virtual void setHitTestCallback(GLGE::Graphic::Window::Pfn_HitTestCallback callback) = 0;
+
+        /**
+         * @brief Get the Hit Test Callback
+         * 
+         * @return `GLGE::Graphic::Window::Pfn_HitTestCallback` the hit test callback currently selected. `nullptr` means that hit tests are disabled. 
+         */
+        inline GLGE::Graphic::Window::Pfn_HitTestCallback getHitTestCallback() const noexcept
+        {return m_hitTestCallback;}
+
+        /**
+         * @brief maximize the window
+         */
+        virtual void maximize() = 0;
+
+        /**
+         * @brief minimize the window
+         */
+        virtual void minimize() = 0;
+
+        /**
+         * @brief restore the window
+         */
+        virtual void restore() = 0;
+
+        /**
+         * @brief Set the Borderless value for the window
+         * 
+         * @param borderless `true` for a borderless window, `false` for a window with borders
+         */
+        virtual void setBorderless(bool borderless) = 0;
+
+        /**
+         * @brief Set the Fullscreen mode
+         * 
+         * @param fullscreen `true` for fullscreen, `false` for windowed
+         */
+        virtual void setFullscreen(bool fullscreen) = 0;
+
+        /**
          * @brief Get the frontend window the backend belongs to
          * 
          * @return `GLGE::Graphic::Window*` a pointer to the frontend window
@@ -244,6 +290,11 @@ namespace GLGE::Graphic::Backend::Video {
          * @brief store a cumulative string to store the text inputted on the window
          */
         std::string m_textInput = "";
+
+        /**
+         * @brief store the window hit test callback
+         */
+        GLGE::Graphic::Window::Pfn_HitTestCallback m_hitTestCallback = nullptr;
 
     private:
 

@@ -44,6 +44,59 @@ namespace GLGE::Graphic {
     public:
 
         /**
+         * @brief define an enum type returned by the hit test function
+         * 
+         * This is used to define what a click on the window actually does
+         */
+        enum HitTest {
+            /**
+             * @brief No special OS interaction is triggered. The click will be passed into the event handling system
+             */
+            Normal,
+            /**
+             * @brief the OS will initiate the window dragging
+             */
+            Dragging,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the top left corner of the window
+             */
+            Resize_TopLeft,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the top right corner of the window
+             */
+            Resize_TopRight,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the bottom left corner of the window
+             */
+            Resize_BottomLeft,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the bottom right corner of the window
+             */
+            Resize_BottomRight,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the top corner of the window
+             */
+            Resize_Top,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the bottom corner of the window
+             */
+            Resize_Bottom,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the left corner of the window
+             */
+            Resize_Left,
+            /**
+             * @brief the OS will trigger OS-Level resizing in the right corner of the window
+             */
+            Resize_Right
+        };
+
+        /**
+         * @brief define a pointer function type used for hit test callbacks
+         */
+        using Pfn_HitTestCallback = HitTest (*)(GLGE::Graphic::Window*, uvec2);
+
+        /**
          * @brief Construct a new Window
          * 
          * @param name the name of the window to create
@@ -254,6 +307,44 @@ namespace GLGE::Graphic {
          * @param icon the new window icon
          */
         void setIcon(const ImageCPU& icon);
+
+        /**
+         * @brief Set the Hit Test Callback
+         * 
+         * @note the callback is called whenever the OS feels like it. Do not assume any user interaction. The only prerequisite is that the window is hovered. 
+         * 
+         * @param callback the callback to call for hit tests. Calling nullptr disable the custom hit test. 
+         */
+        void setHitTestCallback(Pfn_HitTestCallback callback);
+
+        /**
+         * @brief maximize the window
+         */
+        void maximize();
+
+        /**
+         * @brief minimize the window
+         */
+        void minimize();
+
+        /**
+         * @brief restore the window
+         */
+        void restore();
+
+        /**
+         * @brief Set the Borderless value for the window
+         * 
+         * @param borderless `true` for a borderless window, `false` for a window with borders
+         */
+        void setBorderless(bool borderless);
+
+        /**
+         * @brief Set the Fullscreen mode
+         * 
+         * @param fullscreen `true` for fullscreen, `false` for windowed
+         */
+        void setFullscreen(bool fullscreen);
 
     private:
 
