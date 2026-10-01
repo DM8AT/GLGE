@@ -29,7 +29,7 @@ namespace GLGE::Graphic {
     /**
      * @brief a class used to render a graphical user interface
      */
-    class GUIContext : public CommandInvalidator {
+    class GUIContext : public BaseClass, public CommandInvalidator {
     public:
 
         /**
@@ -91,6 +91,11 @@ namespace GLGE::Graphic {
          * @brief Construct a new GUI Context
          */
         GUIContext();
+
+        /**
+         * @brief Destroy the GUI Context
+         */
+        ~GUIContext();
 
         /**
          * @brief prepare the context for a new recording

@@ -50,6 +50,12 @@ GLGE::Graphic::Backend::Graphic::OpenGL::Image::Image(const uvec2& size, PixelFo
     {glTextureStorage2D(m_handle, 1, form.internalFormat, m_size.x, m_size.y);}
     else
     {glTextureStorage2DMultisample(m_handle, m_samples, form.internalFormat, m_size.x, m_size.y, GL_TRUE);}
+
+    //setup the sampler
+    glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTextureParameteri(m_handle, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 
 GLGE::Graphic::Backend::Graphic::OpenGL::Image::~Image() {
@@ -97,6 +103,12 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Image::upload(const ImageCPU& imag
         {glTextureStorage2D(m_handle, 1, form.internalFormat, m_size.x, m_size.y);}
         else
         {glTextureStorage2DMultisample(m_handle, m_samples, form.internalFormat, m_size.x, m_size.y, GL_TRUE);}
+
+        //setup the sampler
+        glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTextureParameteri(m_handle, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     }
 
     //finally upload the image
@@ -144,6 +156,12 @@ void GLGE::Graphic::Backend::Graphic::OpenGL::Image::resizeAndClear(const uvec2&
     {glTextureStorage2D(m_handle, 1, form.internalFormat, m_size.x, m_size.y);}
     else
     {glTextureStorage2DMultisample(m_handle, m_samples, form.internalFormat, m_size.x, m_size.y, GL_TRUE);}
+
+    //setup the sampler
+    glTextureParameteri(m_handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(m_handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(m_handle, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTextureParameteri(m_handle, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     //default clear value is all zero
     u8 empty[64]{};

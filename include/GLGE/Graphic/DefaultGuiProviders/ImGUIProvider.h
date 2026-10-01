@@ -48,6 +48,11 @@ namespace GLGE::Graphic {
         explicit ImGuiProvider(const RenderTarget& target, ImGuiContext* context = nullptr);
 
         /**
+         * @brief Destroy the ImGui Provider
+         */
+        ~ImGuiProvider();
+
+        /**
          * @brief start a new frame
          * 
          * Notify the backend that a new frame started. This prepares internal state. 
@@ -144,6 +149,11 @@ namespace GLGE::Graphic {
          * @brief store cursor defaults
          */
         GLGE::Graphic::Cursor m_cursors[ImGuiMouseCursor_COUNT] {};
+
+        /**
+         * @brief store all the images currently referenced
+         */
+        std::vector<GLGE::Graphic::Image*> m_images;
 
     };
 

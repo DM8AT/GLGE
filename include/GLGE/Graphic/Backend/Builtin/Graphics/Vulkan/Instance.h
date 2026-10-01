@@ -141,6 +141,10 @@ namespace Vulkan {
              * @brief a pointer to the command to set the dynamic cull mode state
              */
             void* pfn_vkCmdSetCullModeEXT = nullptr;
+            /**
+             * @brief a pointer to the command to push a descriptor set
+             */
+            void* pfn_vkCmdPushDescriptorSetKHR = nullptr;
         };
 
         /**

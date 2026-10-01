@@ -62,4 +62,13 @@ namespace VkImpl {
      */
     bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle);
 
+    /**
+     * @brief draw gui data
+     * 
+     * @param cmdBuff the command buffer to record the function into
+     * @param handle the handle that holds the required data for the function
+     * @return `true` if the draw was recorded successfully, `false` otherwise
+     */
+    bool drawGui(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle);
+
 }

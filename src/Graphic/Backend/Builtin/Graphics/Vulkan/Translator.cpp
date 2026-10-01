@@ -68,6 +68,39 @@ inline static VkCullModeFlags __toVkCullMode(GLGE::Graphic::Backend::Graphic::Ma
     }
 }
 
+/**
+ * @brief a helper function to translate a GUI blend factor
+ * 
+ * @param bf the blend factor to translate
+ * @return `VkBlendFactor` the translation result
+ */
+inline static VkBlendFactor __toVkBlendFactor(GLGE::Graphic::GUIProvider::BlendFactor bf) {
+    switch (bf) {
+        case GLGE::Graphic::GUIProvider::BlendFactor::ZERO: return VK_BLEND_FACTOR_ZERO;
+        case GLGE::Graphic::GUIProvider::BlendFactor::ONE: return VK_BLEND_FACTOR_ONE;
+        case GLGE::Graphic::GUIProvider::BlendFactor::SRC_ALPHA: return VK_BLEND_FACTOR_SRC_ALPHA;
+        case GLGE::Graphic::GUIProvider::BlendFactor::ONE_MINUS_SRC_ALPHA: return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        
+        default: return VK_BLEND_FACTOR_ZERO;
+    }
+}
+
+/**
+ * @brief a helper function to translate a GUI render mode
+ * 
+ * @param mode the render mode to translate
+ * @return `VkPrimitiveTopology` the translation result
+ */
+inline static VkPrimitiveTopology __toVkPrimitiveTopology(GLGE::Graphic::GUIProvider::RenderMode mode) {
+    switch (mode) {
+        case GLGE::Graphic::GUIProvider::RenderMode::TRIANGLES: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        case GLGE::Graphic::GUIProvider::RenderMode::LINES: return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        case GLGE::Graphic::GUIProvider::RenderMode::POINTS: return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        
+        default: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    }
+}
+
 namespace VkImpl {
 
 bool clear(GLGE::Graphic::Backend::Graphic::CommandBuffer& cBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
@@ -1024,6 +1057,715 @@ bool drawDebug(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GL
     }
 
     //success
+    return true;
+}
+
+bool drawGui(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE::Graphic::Backend::Graphic::CommandHandle& handle) {
+    GLGE_PROFILER_SCOPE_NAMED("GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawGui");
+
+    //extract all arguments
+    const auto& [context] = handle.getArguments<GLGE::Graphic::GUIContext*>();
+
+    //get the vulkan instance
+    const auto* vkInst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(context->getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get());
+    VkDevice device = reinterpret_cast<VkDevice>(vkInst->getDevice());
+
+    //store persistent data
+    struct Persistent {
+        struct PipelineKey {
+            GLGE::Graphic::Shader* shader;
+            GLGE::Graphic::RenderTarget target;
+            GLGE::Graphic::GUIProvider::BlendFactor inFactor;
+            GLGE::Graphic::GUIProvider::BlendFactor currFactor;
+            GLGE::Graphic::GUIProvider::RenderMode renderMode;
+
+            constexpr bool operator==(const PipelineKey&) const noexcept = default;
+
+            struct Hasher {
+                std::size_t operator()(const PipelineKey& toHash) const noexcept {
+                    std::size_t seed = std::hash<GLGE::Graphic::Shader*>{}(toHash.shader);
+                    auto hashCombine = [&seed](std::size_t value) {
+                        seed ^= value + static_cast<std::size_t>(0x9e3779b9) + (seed << 6) + (seed >> 2);
+                    };
+                    auto hashEnum = [&hashCombine](auto value) {
+                        using T = std::remove_cv_t<decltype(value)>;
+                        using U = std::underlying_type_t<T>;
+                        hashCombine(std::hash<U>{}(static_cast<U>(value)));
+                    };
+                    hashEnum(toHash.inFactor);
+                    hashEnum(toHash.currFactor);
+                    hashEnum(toHash.renderMode);
+                    hashCombine(std::hash<GLGE::Graphic::RenderTarget>{}(toHash.target));
+                    return seed;
+                }
+            };
+        };
+
+        struct DescriptorEntry {
+            VkDescriptorPool pool = VK_NULL_HANDLE;
+            VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+            uint64_t lastUsedGen = 0;
+        };
+
+        struct PipelineStorage {
+            VkPipeline pipeline;
+            VkPipelineLayout layout;
+            GLGE::u8 generation;
+
+            constexpr bool operator==(const PipelineStorage&) const noexcept = default;
+        };
+
+        VkDescriptorSetLayout guiSetLayout = VK_NULL_HANDLE;
+        std::unordered_map<GLGE::Graphic::Image*, DescriptorEntry> textureCache;
+
+        /**
+         * @brief store the sampler for all images
+         * 
+         * This must be a linear, mipmap ignoring sampler (images have no mip map)
+         */
+        VkSampler sampler = VK_NULL_HANDLE;
+
+        GLGE::u8 generation = 0;
+        std::unordered_map<PipelineKey, PipelineStorage, PipelineKey::Hasher> pipelines;
+    };
+
+    //clean up the old persistent data if it exists
+    if (context->getBackendData() == nullptr) {
+        context->setBackendData(new Persistent {});
+        context->setCleanupFn([](GLGE::Graphic::GUIContext* context) -> void {
+            const auto* vkInst = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(context->getInstance()->getExtension<GLGE::Graphic::Instance>()->getGraphicBackendInstance().get());
+            VkDevice device = reinterpret_cast<VkDevice>(vkInst->getDevice());
+
+            Persistent* data = reinterpret_cast<Persistent*>(context->getBackendData());
+            for (const auto& [_, pipeline] : data->pipelines) {
+                vkDestroyPipelineLayout(device, pipeline.layout, nullptr);
+                vkDestroyPipeline(device, pipeline.pipeline, nullptr);
+            }
+            data->pipelines.clear();
+
+            for (const auto& [_, desc] : data->textureCache) {
+                vkDestroyDescriptorPool(device, desc.pool, nullptr);
+            }
+            if (data->guiSetLayout != VK_NULL_HANDLE) {
+                vkDestroyDescriptorSetLayout(device, data->guiSetLayout, nullptr);
+                data->guiSetLayout = VK_NULL_HANDLE;
+            }
+            if (data->sampler != VK_NULL_HANDLE) {
+                vkDestroySampler(device, data->sampler, nullptr);
+                data->sampler = VK_NULL_HANDLE;
+            }
+        });
+    }
+    
+    Persistent* persistent = reinterpret_cast<Persistent*>(context->getBackendData());
+    GLGE::u8 currentGen = persistent->generation + 1;
+
+    //Create the sampler
+    if (persistent->sampler == VK_NULL_HANDLE) {
+        VkSamplerCreateInfo samplerCreate {};
+        samplerCreate.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCreate.anisotropyEnable = VK_FALSE;
+        samplerCreate.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        samplerCreate.minFilter = VK_FILTER_LINEAR;
+        samplerCreate.magFilter = VK_FILTER_LINEAR;
+        samplerCreate.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        samplerCreate.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        samplerCreate.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        samplerCreate.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+        samplerCreate.compareEnable = VK_FALSE;
+        samplerCreate.maxLod = 0.f;
+        samplerCreate.minLod = 0.f;
+        samplerCreate.unnormalizedCoordinates = VK_FALSE;
+        if (vkCreateSampler(device, &samplerCreate, nullptr, &persistent->sampler) != VK_SUCCESS) {
+            throw GLGE::Exception("Failed to create GUI image sampler", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawGui");
+        }
+    }
+
+    //create the descriptor set layout
+    if (persistent->guiSetLayout == VK_NULL_HANDLE) {
+        VkDescriptorSetLayoutBinding bindings[2] {};
+
+        //Binding 0: Projection Matrix Buffer
+        bindings[0].binding = 0;
+        bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        bindings[0].descriptorCount = 1;
+        bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        //Binding 1: Current Texture
+        bindings[1].binding = 1;
+        bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bindings[1].descriptorCount = 1;
+        bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        //Allow both bindings to be updated after binding
+        VkDescriptorBindingFlags bindingFlags[2] = {
+            VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT,
+            VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT
+        };
+
+        VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo {};
+        bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+        bindingFlagsInfo.bindingCount = 2;
+        bindingFlagsInfo.pBindingFlags = bindingFlags;
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo {};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.pNext = &bindingFlagsInfo;
+        layoutInfo.bindingCount = 2;
+        layoutInfo.pBindings = bindings;
+        layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+
+        if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &persistent->guiSetLayout) != VK_SUCCESS) {
+            throw GLGE::Exception("Failed to create GUI descriptor set layout", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawGui");
+        }
+    }
+
+    //pre-scan to create all pipelines
+    GLGE::Graphic::Shader* currentShader = nullptr;
+    GLGE::Graphic::RenderTarget currentTarget = static_cast<GLGE::Graphic::Window*>(nullptr);
+    GLGE::Graphic::GUIProvider::BlendFactor currInFactor = GLGE::Graphic::GUIProvider::BlendFactor::ONE;
+    GLGE::Graphic::GUIProvider::BlendFactor currCurrFactor = GLGE::Graphic::GUIProvider::BlendFactor::ZERO;
+    GLGE::u8 commandBufferCount = 1;
+    
+    for (const auto& cmd : context->getCommands()) {
+        if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::SetDrawSubsection>(cmd.command)) {
+            continue;
+        } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd>(cmd.command)) {
+            const auto& subCmd = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd>(cmd.command).command;
+
+            if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetShader>(subCmd)) {
+                currentShader = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetShader>(subCmd).shader;
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTarget>(subCmd)) {
+                currentTarget = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTarget>(subCmd).target;
+                if (currentTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) 
+                {commandBufferCount = glm::max<GLGE::u8>(commandBufferCount, static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(currentTarget.getTarget())->getGraphicWindow().get())->getImages().size());}
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetBlending>(subCmd)) {
+                const auto& blending = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetBlending>(subCmd);
+                currInFactor = blending.inFactor;
+                currCurrFactor = blending.currFactor;
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTexture>(subCmd)) {
+                //get the texture
+                GLGE::Graphic::Image* img = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTexture>(subCmd).image;
+                //check if the texture exists
+                auto it = persistent->textureCache.find(img);
+                if (it != persistent->textureCache.end())
+                {it->second.lastUsedGen = currentGen; continue;}
+
+                //store the element to add
+                Persistent::DescriptorEntry descEntry {};
+
+                //Create Descriptor Pool for GUI Set 0
+                VkDescriptorPoolSize poolSizes[2] {};
+                poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                poolSizes[0].descriptorCount = 1;
+                poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                poolSizes[1].descriptorCount = 1;
+
+                VkDescriptorPoolCreateInfo poolInfo {};
+                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+                poolInfo.maxSets = 1;
+                poolInfo.poolSizeCount = 2;
+                poolInfo.pPoolSizes = poolSizes;
+
+                if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descEntry.pool) != VK_SUCCESS) {
+                    throw GLGE::Exception("Failed to create GUI descriptor pool", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawGui");
+                }
+
+                VkDescriptorSetAllocateInfo allocInfo {};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.descriptorPool = descEntry.pool;
+                allocInfo.descriptorSetCount = 1;
+                allocInfo.pSetLayouts = &persistent->guiSetLayout;
+
+                if (vkAllocateDescriptorSets(device, &allocInfo, &descEntry.descriptorSet) != VK_SUCCESS) {
+                    throw GLGE::Exception("Failed to allocate GUI descriptor set", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawGui");
+                }
+
+                //store the set
+                persistent->textureCache.try_emplace(img, descEntry);
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::Draw>(subCmd)) {
+                const auto& drawData = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::Draw>(subCmd);
+
+                Persistent::PipelineKey key {
+                    .shader = currentShader,
+                    .target = currentTarget,
+                    .inFactor = currInFactor,
+                    .currFactor = currCurrFactor,
+                    .renderMode = drawData.renderMode
+                };
+
+                auto it = persistent->pipelines.find(key);
+                if (it != persistent->pipelines.end()) {
+                    it->second.generation = currentGen;
+                    continue;
+                }
+
+                // Create pipeline layout explicitly using the GUI Descriptor Set 0 layout
+                auto* vkShader = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Shader*>(currentShader->getBackend().get());
+                
+                VkPipelineLayoutCreateInfo pipeLayoutCreate {};
+                pipeLayoutCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+                pipeLayoutCreate.setLayoutCount = 1;
+                pipeLayoutCreate.pSetLayouts = &persistent->guiSetLayout;
+
+                VkPipelineLayout vkLayout;
+                if (vkCreatePipelineLayout(device, &pipeLayoutCreate, nullptr, &vkLayout) != VK_SUCCESS)
+                {throw GLGE::Exception("Failed to create a pipeline layout", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawGui");}
+
+                const VkDynamicState dynamicStates[] = {
+                    VK_DYNAMIC_STATE_VIEWPORT,
+                    VK_DYNAMIC_STATE_SCISSOR
+                };
+
+                //GUI vertex input configuration
+                VkVertexInputBindingDescription inputDescr {};
+                inputDescr.binding = 0;
+                inputDescr.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+                inputDescr.stride = 20;
+
+                VkVertexInputAttributeDescription attrDescr[3] {};
+                attrDescr[0].binding = 0;
+                attrDescr[0].format = VK_FORMAT_R32G32_SFLOAT;
+                attrDescr[0].location = 0;
+                attrDescr[0].offset = 0;
+
+                attrDescr[1].binding = 0;
+                attrDescr[1].format = VK_FORMAT_R32G32_SFLOAT;
+                attrDescr[1].location = 1;
+                attrDescr[1].offset = 8;
+
+                attrDescr[2].binding = 0;
+                attrDescr[2].format = VK_FORMAT_R8G8B8A8_UNORM;
+                attrDescr[2].location = 2;
+                attrDescr[2].offset = 16;
+
+                VkPipelineVertexInputStateCreateInfo vertInputCreate {};
+                vertInputCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+                vertInputCreate.vertexBindingDescriptionCount = 1;
+                vertInputCreate.pVertexBindingDescriptions = &inputDescr;
+                vertInputCreate.vertexAttributeDescriptionCount = 3;
+                vertInputCreate.pVertexAttributeDescriptions = attrDescr;
+
+                VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreat {};
+                inputAssemblyCreat.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+                inputAssemblyCreat.topology = __toVkPrimitiveTopology(drawData.renderMode);
+                inputAssemblyCreat.primitiveRestartEnable = VK_FALSE;
+
+                VkPipelineDynamicStateCreateInfo dynamicStateCreate{};
+                dynamicStateCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+                dynamicStateCreate.dynamicStateCount = sizeof(dynamicStates)/sizeof(*dynamicStates);
+                dynamicStateCreate.pDynamicStates = dynamicStates;
+
+                GLGE::uvec2 extent;
+                if (currentTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                    extent = reinterpret_cast<GLGE::Graphic::Window*>(currentTarget.getTarget())->getResolution();
+                } else if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                    extent = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize();
+                } else 
+                {std::unreachable();}
+
+                VkViewport viewport{};
+                viewport.x = 0.0f;
+                viewport.y = 0.0f;
+                viewport.width = (float)extent.x;
+                viewport.height = (float)extent.y;
+                viewport.minDepth = 0.0f;
+                viewport.maxDepth = 1.0f;
+                VkRect2D scissor{};
+                scissor.offset = {0, 0};
+                scissor.extent = {extent.x, extent.y};
+                VkPipelineViewportStateCreateInfo viewportStateCreate {};
+                viewportStateCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+                viewportStateCreate.viewportCount = 1;
+                viewportStateCreate.scissorCount = 1;
+                viewportStateCreate.pScissors = &scissor;
+                viewportStateCreate.pViewports = &viewport;
+
+                VkPipelineRasterizationStateCreateInfo rasterStateCreate {};
+                rasterStateCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+                rasterStateCreate.depthClampEnable = VK_FALSE;
+                rasterStateCreate.rasterizerDiscardEnable = VK_FALSE;
+                rasterStateCreate.polygonMode = VK_POLYGON_MODE_FILL;
+                rasterStateCreate.lineWidth = 1.f;
+                rasterStateCreate.cullMode = VK_CULL_MODE_NONE;
+                rasterStateCreate.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+                rasterStateCreate.depthBiasEnable = VK_FALSE;
+
+                VkPipelineDepthStencilStateCreateInfo depthStencilCreate {};
+                depthStencilCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+                depthStencilCreate.depthTestEnable = VK_FALSE;
+                depthStencilCreate.depthWriteEnable = VK_FALSE;
+                depthStencilCreate.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                depthStencilCreate.depthBoundsTestEnable = VK_FALSE;
+                depthStencilCreate.stencilTestEnable = VK_FALSE;
+                depthStencilCreate.minDepthBounds = 0.0f;
+                depthStencilCreate.maxDepthBounds = 1.0f;
+
+                GLGE::i32 sampleCount = 1;
+                if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                    sampleCount = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachment(0)->getSamplesPerPixel();
+                }
+                VkPipelineMultisampleStateCreateInfo multiSampleStateCreate {};
+                multiSampleStateCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+                multiSampleStateCreate.sampleShadingEnable = (sampleCount > 1) ? VK_TRUE : VK_FALSE;
+                multiSampleStateCreate.rasterizationSamples = static_cast<VkSampleCountFlagBits>(sampleCount);
+
+                //Color blending according to GUI properties
+                VkPipelineColorBlendAttachmentState colorBlendAttachment {};
+                colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+                colorBlendAttachment.blendEnable = VK_TRUE;
+                colorBlendAttachment.srcColorBlendFactor = __toVkBlendFactor(currInFactor);
+                colorBlendAttachment.dstColorBlendFactor = __toVkBlendFactor(currCurrFactor);
+                colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+                colorBlendAttachment.srcAlphaBlendFactor = __toVkBlendFactor(currInFactor);
+                colorBlendAttachment.dstAlphaBlendFactor = __toVkBlendFactor(currCurrFactor);
+                colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+
+                VkPipelineColorBlendStateCreateInfo colorBlendingStateCreate {};
+                colorBlendingStateCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+                colorBlendingStateCreate.logicOpEnable = VK_FALSE;
+                colorBlendingStateCreate.attachmentCount = 1;
+                colorBlendingStateCreate.pAttachments = &colorBlendAttachment;
+
+                std::vector<VkFormat> colorAttachmentFormats;
+                GLGE::u32 colAttCount = 1;
+                if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) 
+                {colAttCount = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachmentCount();}
+                colorAttachmentFormats.reserve(colAttCount);
+                for (size_t i = 0; i < colAttCount; ++i) {
+                    if (currentTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                        colorAttachmentFormats.push_back(static_cast<VkFormat>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(currentTarget.getTarget())->getGraphicWindow().get())->getFormat()));
+                    } else if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                        colorAttachmentFormats.push_back(static_cast<VkFormat>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachment(i))->getVkFormat()));
+                    } else 
+                    {std::unreachable();}
+                }
+                
+                VkPipelineRenderingCreateInfoKHR pipeRenderingCreate {};
+                pipeRenderingCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+                pipeRenderingCreate.colorAttachmentCount = colAttCount;
+                pipeRenderingCreate.pColorAttachmentFormats = colorAttachmentFormats.data();
+                if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                    const auto& fbuff = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend();
+                    pipeRenderingCreate.depthAttachmentFormat = fbuff->getDepthAttachmentCount() ? static_cast<VkFormat>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(fbuff->getDepthAttachment(0))->getVkFormat()) : VK_FORMAT_UNDEFINED;
+                    pipeRenderingCreate.stencilAttachmentFormat = fbuff->getStencilAttachmentCount() ? static_cast<VkFormat>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(fbuff->getStencilAttachment(0))->getVkFormat()) : VK_FORMAT_UNDEFINED;
+                }
+
+                std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+                shaderStages.reserve(4);
+                for (size_t i = 0; i < vkShader->getModules().size(); ++i) {
+                    const auto& mod = vkShader->getModules()[i];
+                    const auto& state = vkShader->getFrontend()->getElements()[i];
+                    VkShaderStageFlagBits stage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+                    switch (static_cast<GLGE::Graphic::Shader::Type>(mod.tag)) {
+                        case GLGE::Graphic::Shader::VERTEX: stage = VK_SHADER_STAGE_VERTEX_BIT; break;
+                        case GLGE::Graphic::Shader::TESSELATION_CONTROL: stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT; break;
+                        case GLGE::Graphic::Shader::TESSELATION_EVALUATION: stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT; break;
+                        case GLGE::Graphic::Shader::GEOMETRY: stage = VK_SHADER_STAGE_GEOMETRY_BIT; break;
+                        case GLGE::Graphic::Shader::FRAGMENT: stage = VK_SHADER_STAGE_FRAGMENT_BIT; break;
+                        default: break;
+                    }
+                    if (stage == VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM)
+                    {continue;}
+
+                    VkPipelineShaderStageCreateInfo shaderStageCreate {};
+                    shaderStageCreate.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    shaderStageCreate.module = reinterpret_cast<VkShaderModule>(mod.shaderModule);
+                    shaderStageCreate.stage = stage;
+                    shaderStageCreate.pName = state.entryPoint.c_str();
+                    shaderStages.push_back(shaderStageCreate);
+                }
+
+                VkGraphicsPipelineCreateInfo graphicsPipeCreate {};
+                graphicsPipeCreate.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+                graphicsPipeCreate.pNext = &pipeRenderingCreate;
+                graphicsPipeCreate.stageCount = shaderStages.size();
+                graphicsPipeCreate.pStages = shaderStages.data();
+                graphicsPipeCreate.pVertexInputState = &vertInputCreate;
+                graphicsPipeCreate.pInputAssemblyState = &inputAssemblyCreat;
+                graphicsPipeCreate.pViewportState = &viewportStateCreate;
+                graphicsPipeCreate.pDynamicState = &dynamicStateCreate;
+                graphicsPipeCreate.pRasterizationState = &rasterStateCreate;
+                graphicsPipeCreate.pMultisampleState = &multiSampleStateCreate;
+                graphicsPipeCreate.pColorBlendState = &colorBlendingStateCreate;
+                graphicsPipeCreate.pDepthStencilState = (pipeRenderingCreate.depthAttachmentFormat != VK_FORMAT_UNDEFINED) ? &depthStencilCreate : nullptr;
+                graphicsPipeCreate.layout = vkLayout;
+                graphicsPipeCreate.renderPass = VK_NULL_HANDLE;
+                graphicsPipeCreate.subpass = 0;
+                graphicsPipeCreate.basePipelineHandle = VK_NULL_HANDLE;
+                
+                VkPipeline pipe;
+                if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipeCreate, nullptr, &pipe) != VK_SUCCESS)
+                {throw GLGE::Exception("Failed to create a graphics pipeline", "GLGE::Graphic::Backend::Graphic::Vulkan::Translators::drawGui");}
+
+                persistent->pipelines[key] = Persistent::PipelineStorage {
+                    .pipeline = pipe,
+                    .layout = vkLayout,
+                    .generation = currentGen
+                };
+            }
+        }
+    }
+
+    constexpr GLGE::u8 pipelineTimeout = 16;
+    for (auto it = persistent->pipelines.begin(); it != persistent->pipelines.end(); ) {
+        GLGE::u8 delta = currentGen - it->second.generation;
+        if (delta >= pipelineTimeout) {
+            vkDestroyPipelineLayout(device, it->second.layout, nullptr);
+            vkDestroyPipeline(device, it->second.pipeline, nullptr);
+            it = persistent->pipelines.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    persistent->generation = currentGen;
+
+    auto* vkCmdBuff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::CommandBuffer*>(&cmdBuff);
+
+    //if the command buffer count is incorrect, correct it (duh)
+    if (vkCmdBuff->getBufferCount() != commandBufferCount) {
+        vkCmdBuff->setCommandBufferCount(commandBufferCount);
+        cmdBuff.onBegin();
+    }
+    
+    //check the descriptor sets and keep them up to date
+    constexpr uint64_t descrCacheTimeout = 120;
+    for (auto it = persistent->textureCache.begin(); it != persistent->textureCache.end(); /*NO STEP*/) {
+        //check if the cache is outdated
+        if ((currentGen - it->second.lastUsedGen) > descrCacheTimeout) {
+            vkDestroyDescriptorPool(device, it->second.pool, nullptr);
+            it = persistent->textureCache.erase(it);
+            continue;
+        }
+
+        //Update Binding 0: Projection Matrix Buffer
+        auto* projBuffer = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(context->getProjMatBuffer()->getBackendReference().get());
+        
+        VkDescriptorBufferInfo projBufferInfo {};
+        projBufferInfo.buffer = reinterpret_cast<VkBuffer>(projBuffer->getBuffer());
+        projBufferInfo.offset = 0;
+        projBufferInfo.range = VK_WHOLE_SIZE;
+
+        auto* vkImg = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(it->first->getBackend().get());
+        //sanity check (yes, this may be nullptr)
+        if (vkImg == nullptr) {
+            //clean up
+            vkDestroyDescriptorPool(device, it->second.pool, nullptr);
+            it = persistent->textureCache.erase(it);
+            //step forward
+            continue;
+        }
+        
+        VkDescriptorImageInfo imgInfo{};
+        imgInfo.imageView = reinterpret_cast<VkImageView>(vkImg->getView());
+        imgInfo.sampler = persistent->sampler;
+        imgInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+        VkWriteDescriptorSet projWrite[2] {};
+        projWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        projWrite[0].dstSet = it->second.descriptorSet;
+        projWrite[0].dstBinding = 0;
+        projWrite[0].dstArrayElement = 0;
+        projWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        projWrite[0].descriptorCount = 1;
+        projWrite[0].pBufferInfo = &projBufferInfo;
+
+        projWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        projWrite[1].dstSet = it->second.descriptorSet;
+        projWrite[1].dstBinding = 1;
+        projWrite[1].dstArrayElement = 0;
+        projWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        projWrite[1].descriptorCount = 1;
+        projWrite[1].pImageInfo = &imgInfo;
+
+        vkUpdateDescriptorSets(device, sizeof(projWrite)/sizeof(*projWrite), projWrite, 0, nullptr);
+
+        //step forward here
+        ++it;
+    }
+
+    for (size_t i = 0; i < vkCmdBuff->getBufferCount(); ++i) {
+        VkCommandBuffer cb = reinterpret_cast<VkCommandBuffer>(vkCmdBuff->getBuffer(i));
+
+        VkBuffer ibo = reinterpret_cast<VkBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(context->getIBO()->getBackendReference().get())->getBuffer());
+        vkCmdBindIndexBuffer(cb, ibo, 0, VK_INDEX_TYPE_UINT32);
+        VkBuffer vbo = reinterpret_cast<VkBuffer>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Buffer*>(context->getVBO()->getBackendReference().get())->getBuffer());
+        VkDeviceSize offs = 0;
+        vkCmdBindVertexBuffers(cb, 0, 1, &vbo, &offs);
+
+        currentShader = nullptr;
+        currentTarget = static_cast<GLGE::Graphic::Window*>(nullptr);
+        GLGE::Graphic::RenderTarget currentActiveTarget = static_cast<GLGE::Graphic::Window*>(nullptr);
+        Persistent::PipelineStorage currentPipe;
+        GLGE::u32 vtxBase = 0;
+        GLGE::u32 idxBase = 0;
+        GLGE::u32 currProjMat = std::numeric_limits<GLGE::u32>::max();
+        GLGE::Graphic::Image* currentTex = nullptr;
+
+        //store scissor state
+        GLGE::uvec2 lower = {0,0};
+        GLGE::uvec2 upper = {0,0};
+
+        for (const auto& cmd : context->getCommands()) {
+            if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::SetDrawSubsection>(cmd.command)) {
+                const auto& val = std::get<GLGE::Graphic::GUIContext::Command::SetDrawSubsection>(cmd.command);
+                vtxBase = val.baseVertexOffset;
+                idxBase = val.baseIndexOffset;
+            } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd>(cmd.command)) {
+                const auto& subCmd = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd>(cmd.command).command;
+
+                if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTexture>(subCmd)) {
+                    const auto& setTex = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTexture>(subCmd);
+                    currentTex = setTex.image;
+                } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetShader>(subCmd)) {
+                    currentShader = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetShader>(subCmd).shader;
+                } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTarget>(subCmd)) {
+                    currentTarget = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetTarget>(subCmd).target;
+                } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetProjection>(subCmd)) {
+                    ++currProjMat;
+                } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetBlending>(subCmd)) {
+                    const auto& blending = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetBlending>(subCmd);
+                    currInFactor = blending.inFactor;
+                    currCurrFactor = blending.currFactor;
+                } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetRenderRegion>(subCmd)) {
+                    const auto& scissorData = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::SetRenderRegion>(subCmd);
+                    //store the scissor data
+                    lower = scissorData.from;
+                    upper = scissorData.to;
+                } else if (std::holds_alternative<GLGE::Graphic::GUIContext::Command::DrawSubcmd::Draw>(subCmd)) {
+                    const auto& drawData = std::get<GLGE::Graphic::GUIContext::Command::DrawSubcmd::Draw>(subCmd);
+
+                    Persistent::PipelineKey key {
+                        .shader = currentShader,
+                        .target = currentTarget,
+                        .inFactor = currInFactor,
+                        .currFactor = currCurrFactor,
+                        .renderMode = drawData.renderMode
+                    };
+
+                    const auto& pipe = persistent->pipelines.at(key);
+
+                    if (currentActiveTarget.getTarget()) 
+                    {reinterpret_cast<PFN_vkCmdEndRenderingKHR>(vkInst->getCommands().pfn_vkCmdEndRenderingKHR)(cb);}
+
+                    std::vector<VkRenderingAttachmentInfoKHR> colorAttachments;
+                    GLGE::u32 colAttCount = 1;
+                    if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) 
+                    {colAttCount = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachmentCount();}
+                    colorAttachments.reserve(colAttCount);
+                    
+                    for (size_t k = 0; k < colAttCount; ++k) {
+                        VkRenderingAttachmentInfoKHR colorAttach {};
+                        colorAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+                        colorAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                        if (currentTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                            colorAttach.imageView = static_cast<VkImageView>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Window*>(reinterpret_cast<GLGE::Graphic::Window*>(currentTarget.getTarget())->getGraphicWindow().get())->getImageViews()[i]);
+                        } else if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                            colorAttach.imageView = static_cast<VkImageView>(static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachment(k))->getView());
+                        } else 
+                        {std::unreachable();}
+                        colorAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                        colorAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                        colorAttachments.push_back(colorAttach);
+                    }
+                    
+                    VkRenderingAttachmentInfoKHR depthAttach {};
+                    if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                        auto* vkFbuff = static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Framebuffer*>(reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend().get());
+                        auto* depthAtt = vkFbuff->getDepthAttachmentCount() ? static_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Image*>(vkFbuff->getDepthAttachment(0)) : nullptr;
+                        if (depthAtt) {
+                            depthAttach.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+                            depthAttach.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                            depthAttach.imageView = static_cast<VkImageView>(depthAtt->getView());
+                            depthAttach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                            depthAttach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                        }
+                    }
+
+                    VkMemoryBarrier barrierInit {};
+                    barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
+
+                    GLGE::uvec2 extent;
+                    if (currentTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                        extent = reinterpret_cast<GLGE::Graphic::Window*>(currentTarget.getTarget())->getResolution();
+                    } else if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                        extent = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize();
+                    }
+
+                    VkRenderingInfoKHR renInfo {};
+                    renInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+                    renInfo.colorAttachmentCount = colorAttachments.size();
+                    renInfo.pColorAttachments = colorAttachments.data();
+                    renInfo.pDepthAttachment = (depthAttach.sType == VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR) ? &depthAttach : nullptr;
+                    renInfo.renderArea.offset = {0,0};
+                    renInfo.renderArea.extent = {extent.x, extent.y};
+                    renInfo.layerCount = 1;
+                    renInfo.viewMask = 0;
+                    (*reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(vkInst->getCommands().pfn_vkCmdBeginRenderingKHR))(cb, &renInfo);
+
+                    currentActiveTarget = currentTarget;
+
+                    //get the descriptor set
+                    auto it = persistent->textureCache.find(currentTex);
+                    //if not found: just skip it
+                    if (it == persistent->textureCache.end()) {continue;}
+
+                    //bind the internally managed Set 0
+                    vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.layout, 0, 1, &it->second.descriptorSet, 0, nullptr);
+                    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline);
+
+                    if (currentTarget.getType() == GLGE::Graphic::RenderTarget::WINDOW) {
+                        extent = reinterpret_cast<GLGE::Graphic::Window*>(currentTarget.getTarget())->getResolution();
+                    } else if (currentTarget.getType() == GLGE::Graphic::RenderTarget::FRAMEBUFFER) {
+                        extent = reinterpret_cast<GLGE::Graphic::Framebuffer*>(currentTarget.getTarget())->getBackend()->getColorAttachment(0)->getSize();
+                    }
+
+                    //vulkan's viewport is flipped vertically compared to expected
+                    VkViewport viewport {};
+                    viewport.x = 0;
+                    viewport.y = extent.y;
+                    viewport.minDepth = 0.f;
+                    viewport.maxDepth = 1.f;
+                    viewport.width = extent.x;
+                    viewport.height = -float(extent.y); //note: first convert to float, since otherwise uint underflow occurs
+                    vkCmdSetViewport(cb, 0, 1, &viewport);
+                    
+                    VkRect2D scissor {};
+                    scissor.offset = {int(lower.x), int(lower.y)};
+                    scissor.extent = {upper.x - lower.x, upper.y - lower.y};
+                    vkCmdSetScissor(cb, 0, 1, &scissor);
+
+                    currentPipe = pipe;
+
+                    switch (drawData.renderMode) {
+                        case GLGE::Graphic::GUIProvider::RenderMode::TRIANGLES:
+                            vkCmdDrawIndexed(cb, drawData.drawElements, 1, drawData.firstIndex + idxBase, drawData.firstVertex + vtxBase, currProjMat);
+                            break;
+                        case GLGE::Graphic::GUIProvider::RenderMode::LINES:
+                            vkCmdDrawIndexed(cb, drawData.drawElements, 1, drawData.firstIndex + idxBase, drawData.firstVertex + vtxBase, currProjMat);
+                            break;
+                        case GLGE::Graphic::GUIProvider::RenderMode::POINTS:
+                            vkCmdDraw(cb, drawData.drawElements, 1, drawData.firstVertex + vtxBase, currProjMat);
+                            break;
+                        default: std::unreachable();
+                    }
+                }
+            }
+        }
+
+        if (currentActiveTarget.getTarget()) {
+            reinterpret_cast<PFN_vkCmdEndRenderingKHR>(vkInst->getCommands().pfn_vkCmdEndRenderingKHR)(cb);
+
+            VkMemoryBarrier barrierInit {};
+            barrierInit.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            barrierInit.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            barrierInit.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 1, &barrierInit, 0, nullptr, 0, nullptr);
+        }
+    }
+
     return true;
 }
 

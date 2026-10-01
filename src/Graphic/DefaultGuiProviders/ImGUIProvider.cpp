@@ -281,6 +281,13 @@ GLGE::Graphic::ImGuiProvider::ImGuiProvider(const RenderTarget& target, ImGuiCon
     ImGui::SetCurrentContext(curr);
 }
 
+GLGE::Graphic::ImGuiProvider::~ImGuiProvider() {
+    //clean the image memory
+    for (const auto& ptr : m_images)
+    {delete ptr;}
+    m_images.clear();
+}
+
 void GLGE::Graphic::ImGuiProvider::newFrame() {
     //just drop the current state
     m_cmds.clear();
@@ -479,6 +486,8 @@ void GLGE::Graphic::ImGuiProvider::render(ImDrawData* drawData) {
                 //set the texture ID (since the type is defined to be void*, just use the pointer)
                 tex->SetTexID(reinterpret_cast<ImTextureID>(img));
                 tex->SetStatus(ImTextureStatus_OK);
+                //keep track of the image
+                m_images.push_back(img);
             } else if (tex->Status == ImTextureStatus_WantUpdates) {
                 //write sub-regions into the image
 
@@ -499,8 +508,17 @@ void GLGE::Graphic::ImGuiProvider::render(ImDrawData* drawData) {
                 //now ok
                 tex->SetStatus(ImTextureStatus_OK);
             } else if ((tex->Status == ImTextureStatus_WantDestroy) && (tex->UnusedFrames > 0)) {
-                //first, get the image and destroy it
+                //first, get the image
                 Image* img = reinterpret_cast<Image*>(tex->GetTexID());
+                //remove from the memory
+                for (size_t k = 0; k < m_images.size();) {
+                    if (m_images[k] == img) {
+                        m_images.erase(m_images.begin() + k);
+                    } else {
+                        ++k;
+                    }
+                }
+                //then destroy it
                 delete img;
 
                 //then, invalidate the texture

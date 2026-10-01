@@ -231,7 +231,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
         VK_KHR_MAINTENANCE_2_EXTENSION_NAME,
         VK_KHR_MULTIVIEW_EXTENSION_NAME,
         VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-        VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
+        VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME,
+        VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
     };
     instance->getVideoBackendInstance()->getContract<GLGE::Graphic::Backend::Video::Contracts::Vulkan>()->getRequiredDeviceExtensions(devExt);
 
@@ -375,8 +376,11 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     features2.pNext = &indexing;
     vkGetPhysicalDeviceFeatures2(reinterpret_cast<VkPhysicalDevice>(m_physicalDevice), &features2);
 
+    VkPhysicalDevicePushDescriptorPropertiesKHR pushDescrProps {};
+    pushDescrProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR;
     VkPhysicalDeviceDepthStencilResolveProperties resolveProps {};
     resolveProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES;
+    resolveProps.pNext = &pushDescrProps;
     VkPhysicalDeviceProperties2 properties2 {};
     properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
     properties2.pNext = &resolveProps;
@@ -399,6 +403,8 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     {throw Exception("The feature \"draw indirect first instance\" is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     if (!extDynStateFeatures.extendedDynamicState)
     {throw Exception("The feature \"extended dynamic state\" is required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
+    if (!pushDescrProps.maxPushDescriptors >= 32) /*used 32 since gpuinfo.org listed this as the value supported by almost all devices: https://vulkan.gpuinfo.org/displaycoreproperty.php?core=1.4&name=maxPushDescriptors&platform=all*/
+    {throw Exception("At least 32 push descriptors are required", "GLGE::Graphic::Backend::Graphic::Vulkan::Instance");}
     //store the supported depth averaging modes
     if (resolveProps.supportedDepthResolveModes & VK_RESOLVE_MODE_AVERAGE_BIT) 
     {m_validDepthAveraging = static_cast<i32>(VK_RESOLVE_MODE_AVERAGE_BIT);}
@@ -512,6 +518,7 @@ Instance::Instance(GLGE::Graphic::Instance* instance)
     m_loadedCmds.pfn_vkCmdSetDepthWriteEnableEXT = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdSetDepthWriteEnableEXT"));
     m_loadedCmds.pfn_vkCmdSetDepthCompareOpEXT   = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdSetDepthCompareOpEXT"));
     m_loadedCmds.pfn_vkCmdSetCullModeEXT         = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdSetCullModeEXT"));
+    m_loadedCmds.pfn_vkCmdSetCullModeEXT         = reinterpret_cast<void*>(vkGetDeviceProcAddr(reinterpret_cast<VkDevice>(m_device), "vkCmdPushDescriptorSetKHR"));
 }
 
 Instance::~Instance() {

@@ -38,7 +38,7 @@ void DrawMainDockspace() {
 int main(void) {
     GLGE::Instance::init();
 
-    GLGE::Graphic::Instance gInst(new GLGE::Graphic::Builtin::Graphics::OpenGL(), new GLGE::Graphic::Builtin::Video::SDL3());
+    GLGE::Graphic::Instance gInst(new GLGE::Graphic::Builtin::Graphics::Vulkan(), new GLGE::Graphic::Builtin::Video::SDL3());
     GLGE::Instance inst("Instance", {0,1,0}, std::pair{"Graphic", &gInst});
 
     GLGE::Graphic::Window win {"Window", {600, 600}};
@@ -50,6 +50,13 @@ int main(void) {
         std::pair{"GUI",   std::make_unique<GLGE::Graphic::Cmd::DrawGUI>(ctx)}
     };
     GLGE::Graphic::CommandExecutor exec(&win);
+
+    GLGE::u8 imgData[] = {
+        0xff,0x00,0x00,0xff, 0x00,0xff,0x00,0xff,
+        0x00,0x00,0xff,0xff, 0xff,0xff,0x00,0xff
+    };
+    GLGE::Graphic::ImageCPU imgCPU(imgData, GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM, {2,2});
+    GLGE::Graphic::Image img(imgCPU);
 
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -70,6 +77,8 @@ int main(void) {
 
         ImGui::Begin("Test Window");
         ImGui::Text("Hello World!");
+
+        ImGui::Image(reinterpret_cast<ImTextureID>(&img), ImGui::GetWindowSize());
         ImGui::End();
 
         ImGui::ShowDemoWindow();

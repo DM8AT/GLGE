@@ -16,10 +16,16 @@
 #include "GLGE/Graphic/Framebuffer.h"
 
 GLGE::Graphic::GUIContext::GUIContext() 
- : m_vbo(Buffer::Type::STORAGE_VERTEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
+ : BaseClass(),
+   m_vbo(Buffer::Type::STORAGE_VERTEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD), 
    m_ibo(Buffer::Type::STORAGE_INDEX, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD),
    m_projMatBuff(Buffer::Type::STORAGE, nullptr, 64, Buffer::Usage::STREAMING_UPLOAD)
 {}
+
+GLGE::Graphic::GUIContext::~GUIContext() {
+    if (m_cleanupFn)
+    {(*m_cleanupFn)(this);}
+}
 
 void GLGE::Graphic::GUIContext::beginRecording() {
     //in debug: sanity check
