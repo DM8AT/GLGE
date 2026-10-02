@@ -286,10 +286,28 @@ GLGE::Graphic::ImGuiProvider::ImGuiProvider(const RenderTarget& target, ImGuiCon
 }
 
 GLGE::Graphic::ImGuiProvider::~ImGuiProvider() {
+    //if no context exists, stop
+    if (!m_ctx) {return;}
+
+    //cache the current context
+    auto* currCtx = ImGui::GetCurrentContext();
+    ImGui::SetCurrentContext(m_ctx);
+
     //clean the image memory
     for (const auto& ptr : m_images)
     {delete ptr;}
     m_images.clear();
+
+    //clean the backend
+    ImGuiIO& io = ImGui::GetIO();
+    io.BackendPlatformUserData = nullptr;
+    io.BackendRendererUserData = nullptr;
+
+    //restore the context
+    ImGui::SetCurrentContext(currCtx);
+
+    //rest the context
+    m_ctx = nullptr;
 }
 
 void GLGE::Graphic::ImGuiProvider::newFrame() {

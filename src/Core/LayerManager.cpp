@@ -39,3 +39,9 @@ void GLGE::LayerManager::update() {
     if (m_hasActiveLayer)
     {m_layers[m_activeLayer]->onUpdate();}
 }
+
+
+
+
+GLGE::LayerManager* GLGE::Layer::getManager() const noexcept 
+{return m_manager.get();}

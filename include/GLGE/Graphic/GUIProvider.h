@@ -229,6 +229,14 @@ namespace GLGE::Graphic {
             > command;
         };
 
+        GUIProvider() = default;
+
+        //no move op
+        GUIProvider(const GUIProvider&) = delete;
+        GUIProvider(GUIProvider&&) = delete;
+        GUIProvider& operator=(const GUIProvider&) = delete;
+        GUIProvider& operator=(GUIProvider&&) = delete;
+
         /**
          * @brief Get the recorded indices
          * 

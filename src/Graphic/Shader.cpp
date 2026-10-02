@@ -180,7 +180,7 @@ GLGE::Graphic::Shader::Shader(std::initializer_list<std::pair<std::string, Sourc
         {m_structures.resize(set+1);}
 
         //create the structure
-        m_structures[set].set(binding.presets);
+        m_structures[set].emplace(binding.presets);
     }
     //prepare for all sets
     m_sets.clear();
@@ -200,7 +200,7 @@ void GLGE::Graphic::Shader::setResources(u32 set, ResourceSet* resources) {
     {m_sets[set] = resources; return;}
 
     //check if the structure matches
-    const ResourceTemplate& temp = m_structures[set].get();
+    const ResourceTemplate& temp = m_structures[set].value();
     if (!resources->matches(temp))
     {throw GLGE::Exception("Tried to bind a resource set with incompatible structure to a set of a shader", "GLGE::Graphic::Shader::setResources");}
 

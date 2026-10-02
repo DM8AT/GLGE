@@ -74,6 +74,13 @@ namespace GLGE {
          * @brief a function that is run if the layer is detached
          */
         virtual void onDetach() = 0;
+
+        /**
+         * @brief Get the Manager
+         * 
+         * @return `LayerManager*` a pointer to the layer manager that owns the layer
+         */
+        LayerManager* getManager() const noexcept;
         
     private:
 

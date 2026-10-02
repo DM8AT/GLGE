@@ -54,6 +54,9 @@ Window::~Window() {
     //get the instance
     auto* inst = reinterpret_cast<GLGE::Graphic::Backend::Graphic::Vulkan::Instance*>(getWindow()->getGraphicInstance()->getGraphicBackendInstance().get());
 
+    //make sure that the window is no longer in use
+    vkDeviceWaitIdle(reinterpret_cast<VkDevice>(inst->getDevice()));
+
     //if image views exist, destroy them
     for (auto* views : m_imgViews) 
     {vkDestroyImageView(reinterpret_cast<VkDevice>(inst->getDevice()), reinterpret_cast<VkImageView>(views), nullptr);}

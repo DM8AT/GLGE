@@ -43,12 +43,12 @@ namespace GLGE {
          */
         template <typename... Args>
         Application(const std::string_view& name, GLGE::Version version, std::pair<const char*, Args*> ...extensions)
-         : m_instance(name, version, std::forward<std::pair<const char*, Args*>>(extensions)...)
+         : m_instance(std::make_optional<GLGE::Instance>(name, version, std::forward<std::pair<const char*, Args*>>(extensions)...))
         {
             //main thread check
             if (!GLGE::Instance::isMainThread()) {throw GLGE::Exception("An application can only be created on the main thread. If this is the main thread, please call \'GLGE::Instance::staticInit()\' before creating an application.", "GLGE::Application");}
             //init the instance
-            m_instance.init();
+            m_instance->init();
         }
 
         /**
@@ -75,7 +75,7 @@ namespace GLGE {
          * @return `GLGE::f64` the delta time in seconds
          */
         inline f64 getDeltaTime() const noexcept
-        {return m_instance.mainLimiter().getCurrentDeltaTime();}
+        {return m_instance->mainLimiter().getCurrentDeltaTime();}
 
         /**
          * @brief Access the instance of the application
@@ -83,7 +83,7 @@ namespace GLGE {
          * @return `GLGE::Instance&` the embedded instance
          */
         inline GLGE::Instance& getInstance() noexcept
-        {return m_instance;}
+        {return *m_instance;}
 
         /**
          * @brief check if the application is active
@@ -114,6 +114,20 @@ namespace GLGE {
          */
         virtual void onUpdate() = 0;
 
+        /**
+         * @brief clean up the instance
+         * 
+         * @warning This invalidates the instance and forces active to false
+         */
+        void cleanup() {
+            //clean the layer manager
+            m_manager.clear();
+            //drop the instance
+            m_instance.reset();
+            //force active to false
+            m_active = false;
+        }
+
     private:
 
         /**
@@ -124,7 +138,7 @@ namespace GLGE {
         /**
          * @brief store the main instance
          */
-        GLGE::Instance m_instance;
+        std::optional<GLGE::Instance> m_instance;
         /**
          * @brief store the layer manager
          */

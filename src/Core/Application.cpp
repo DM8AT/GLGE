@@ -16,18 +16,21 @@ void GLGE::Application::run() {
     if (!GLGE::Instance::isMainThread()) {throw GLGE::Exception("An application can only be run from the main thread. If this is the main thread, please call \'GLGE::Instance::staticInit()\' before creating an application.", "GLGE::Application");}
 
     //start the instance
-    m_instance.start();
+    m_instance->start();
 
     //loop while the application is active
     while (isActive()) {
-        m_instance.startMainTick();
+        m_instance->startMainTick();
+
+        //run the layer system
+        m_manager.update();
 
         //update
         onUpdate();
 
-        m_instance.endMainTick();
+        m_instance->endMainTick();
     }
 
     //stop the instance
-    m_instance.shutdown();
+    m_instance->shutdown();
 }

@@ -213,7 +213,7 @@ namespace GLGE::Graphic {
          * @return `true` if the set exists, `false` if it does not
          */
         bool hasSet(u32 set) const noexcept
-        {if (set >= m_structures.size()) {return false;} else {return m_structures[set].hasValue();}}
+        {if (set >= m_structures.size()) {return false;} else {return m_structures[set].has_value();}}
 
         /**
          * @brief Get the structure of a specific set
@@ -222,7 +222,7 @@ namespace GLGE::Graphic {
          * @return `const ResourceTemplate&` a constant reference to a template for the set
          */
         inline const ResourceTemplate& getSet(u32 set) const noexcept
-        {return m_structures[set].get();}
+        {return m_structures[set].value();}
 
         /**
          * @brief Get the amount of sets
@@ -320,7 +320,7 @@ namespace GLGE::Graphic {
         /**
          * @brief store templates for all the sets
          */
-        std::vector<Optional<ResourceTemplate>> m_structures;
+        std::vector<std::optional<ResourceTemplate>> m_structures;
         /**
          * @brief store all the sets
          */

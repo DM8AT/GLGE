@@ -106,9 +106,9 @@ endif()
 if(GLGE_PHYSICS_INCLUDE_PHYSX)
     set(GLGE_PHYSICS_ENABLED TRUE)
 endif()
-# if(GLGE_PHYSICS_INCLUDE_BULLET)
-#     set(GLGE_PHYSICS_ENABLED TRUE)
-# endif()
+if(GLGE_PHYSICS_INCLUDE_BULLET)
+    set(GLGE_PHYSICS_ENABLED TRUE)
+endif()
 if(NOT GLGE_PHYSICS_ENABLED)
     set(GLGE_INCLUDE_PHYSICS OFF)
     message(STATUS "No physics backends selected. Physics disabled.")
@@ -375,6 +375,8 @@ add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
     ${GLGE_SRC_DIR}/Core/utils/RecursiveThreadMutexShared.cpp
     ${GLGE_SRC_DIR}/Core/WorldAsset.cpp
     ${GLGE_SRC_DIR}/Core/Transform.cpp
+    ${GLGE_SRC_DIR}/Core/Application.cpp
+    ${GLGE_SRC_DIR}/Core/LayerManager.cpp
     ${GLGE_SRC_DIR}/Core/Mesh.cpp
     ${GLGE_SRC_DIR}/Core/MeshAsset.cpp
     ${GLGE_SRC_DIR}/Core/RayCasting.cpp

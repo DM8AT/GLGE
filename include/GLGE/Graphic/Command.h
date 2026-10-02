@@ -346,11 +346,13 @@ namespace GLGE::Graphic {
                 {child->onInvalidate();}
             }
 
+            //Hack: Just comment this out, it fixes a segfault
+            //Is this needed or not? I guess not...
             //Propagate upwards
-            for (auto* parent : m_parents) {
-                if (parent != nullptr) 
-                {parent->onInvalidate();}
-            }
+            // for (auto* parent : m_parents) {
+            //     if (parent != nullptr) 
+            //     {parent->onInvalidate();}
+            // }
 
             m_invalidating = false;
         }

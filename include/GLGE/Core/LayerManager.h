@@ -63,7 +63,7 @@ namespace GLGE {
             //generate a UUID
             UUID id = m_uuidReg.generate();
             //create the layer
-            m_layers[id] = Reference<Layer>(new T(std::forward<Args>(args)..., id, Reference<LayerManager>(this)));
+            m_layers.try_emplace(id, new T(std::forward<Args>(args)..., id, Reference<LayerManager>(this)), false);
             //return the UUID
             return id;
         }
@@ -157,6 +157,15 @@ namespace GLGE {
          * @brief tick the manager
          */
         void update();
+
+        /**
+         * @brief clear the layer manager
+         */
+        void clear() {
+            m_layers.clear();
+            m_hasActiveLayer = false;
+            m_activeLayer = 0;
+        }
 
     private:
 
