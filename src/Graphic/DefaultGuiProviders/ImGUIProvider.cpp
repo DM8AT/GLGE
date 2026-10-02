@@ -16,6 +16,10 @@
 #include "GLGE/Graphic/Window.h"
 #include "GLGE/Graphic/Framebuffer.h"
 
+//add the default shaders
+#include "GLGE/Graphic/DefaultShader/gui_imgui_default.vert.h"
+#include "GLGE/Graphic/DefaultShader/gui_imgui_default.frag.h"
+
 //translate GLGE Key to ImGui Key (created by copying from SDL3 default key implementation)
 static ImGuiKey __translateGLGEKey(GLGE::Key key) {
     switch (key) {
@@ -214,8 +218,8 @@ static void setClipboardText(ImGuiContext* ctx, const char* text) {
 
 GLGE::Graphic::ImGuiProvider::ImGuiProvider(const RenderTarget& target, ImGuiContext* context) 
  : BaseClass(), m_target(target), m_shader({ //for now just load the shader from disk
-        std::pair{"Vertex",  Shader::Source("examples/assets/shader/gui_imgui_default.vert.spv")},
-        std::pair{"Fragment",Shader::Source("examples/assets/shader/gui_imgui_default.frag.spv")}
+        std::pair{"Vertex",  Shader::Source(DefaultShader::DEFAULT_ImGUI_VERT)},
+        std::pair{"Fragment",Shader::Source(DefaultShader::DEFAULT_ImGUI_FRAG)}
     }),
     m_gInst(getInstance()->getExtension<Graphic::Instance>())
 {

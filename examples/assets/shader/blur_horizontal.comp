@@ -1,0 +1,61 @@
+#version 460 core
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+//define the radius to blur
+const int RADIUS = 50;
+
+layout(binding = 0) uniform sampler2D inputImage;
+
+layout(rgba16f, binding = 1) writeonly uniform image2D outputImage;
+
+//compute a gaussian weight
+float gaussianWeight(int x) {
+    float sigma = float(RADIUS) / 3.0;
+
+    return exp(-float(x * x) / (2.0 * sigma * sigma));
+}
+
+void main() {
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 size = textureSize(inputImage, 0);
+
+    if (p.x >= size.x || p.y >= size.y)
+    {return;}
+
+    vec2 texel = 1.0 / vec2(size);
+
+    //Pixel center
+    vec2 uv = (vec2(p) + 0.5) * texel;
+
+    //compute normalization
+    float sum = gaussianWeight(0);
+    for (int i = 1; i <= RADIUS; ++i)
+    {sum += 2.0 * gaussianWeight(i);}
+    float invSum = 1.0 / sum;
+
+    //take central tap
+    vec4 color = textureLod(inputImage, uv, 0.0) * gaussianWeight(0) * invSum;
+
+    //samples are done between texels for lerp using GPU hardware
+    for (int i = 1; i <= RADIUS; i += 2) {
+        float w0 = gaussianWeight(i);
+        float w1 = 0.0;
+
+        if (i + 1 <= RADIUS)
+        {w1 = gaussianWeight(i + 1);}
+        float pairWeight = w0 + w1;
+        float t = 0.0;
+
+        if (pairWeight > 0.0)
+        {t = w1 / pairWeight;}
+        float offset = float(i) + t;
+        vec2 offsetUV = vec2(offset * texel.x, 0.0);
+
+        vec4 positive = textureLod(inputImage, uv + offsetUV, 0.0);
+        vec4 negative = textureLod(inputImage, uv - offsetUV, 0.0);
+        color += (positive + negative) * (pairWeight * invSum);
+    }
+
+    imageStore(outputImage, p, color);
+}
