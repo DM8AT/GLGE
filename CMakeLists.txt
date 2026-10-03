@@ -186,6 +186,11 @@ FetchContent_Declare(
     GIT_TAG "v6.0.4"
 )
 FetchContent_MakeAvailable(assimp)
+if (TARGET assimp)
+    target_compile_options(assimp PRIVATE
+        -Wno-error=maybe-uninitialized
+    )
+endif()
     
 # If embree should be fetched, fetch it. Else, just re-use the installed version. 
 if(GLGE_FETCH_EMBREE)
@@ -210,23 +215,6 @@ if(GLGE_FETCH_EMBREE)
 else()
     find_package(embree CONFIG REQUIRED)
 endif()
-
-#### Assimp
-# Force Assimp to build static no matter what
-set(ASSIMP_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
-# print a message
-message(STATUS "Fetching assimp from GitHub")
-# use FetchContent to fetch SDL3 from github
-include(FetchContent)
-FetchContent_Declare(
-    assimp
-    GIT_REPOSITORY https://github.com/assimp/assimp
-    GIT_TAG "v6.0.4"
-)
-FetchContent_MakeAvailable(assimp)
 
 # only required for GLGE Graphic
 if (GLGE_INCLUDE_GRAPHICS)
