@@ -145,6 +145,13 @@ FetchContent_MakeAvailable(tracy)
 # oneTBB is used for advanced thread primitives
 # print a message
 message(STATUS "Fetching oneTBB from GitHub")
+# configure for static build
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(TBB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(TBB_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(TBBMALLOC_BUILD OFF CACHE BOOL "" FORCE)
+set(TBBMALLOC_PROXY_BUILD OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 # use FetchContent to fetch oneTBB from github
 include(FetchContent)
 FetchContent_Declare(
