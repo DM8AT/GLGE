@@ -125,6 +125,22 @@ namespace GLGE::Graphic {
          */
         virtual u64 getTypeHash() const noexcept = 0;
         
+        /**
+         * @brief attach an invalidator to the resource set
+         * 
+         * @param invalidator a reference to the command invalidator to attach
+         */
+        inline void attachTo(CommandInvalidator& invalidator)
+        {attachInvalidator(invalidator);}
+
+        /**
+         * @brief remove an invalidator from the resource set
+         * 
+         * @param invalidator the invalidator to remove
+         */
+        inline void removeFrom(CommandInvalidator& invalidator)
+        {detachInvalidator(invalidator);}
+
     };
 
 }

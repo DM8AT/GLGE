@@ -437,18 +437,13 @@ target_link_libraries(${GLGE_CORE_NAME} PUBLIC glm::glm tbb meshoptimizer embree
 
 # compiler-specific release flags
 if(MSVC)
-    # MSVC (Visual Studio Compiler) release flags
-    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:/O2 /GL /DNDEBUG>)
-    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF>)
+    # MSVC / Visual Studio
+    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: /O2 /GL /Gw /Gy /DNDEBUG>)
+    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: /LTCG /OPT:REF /OPT:ICF>)
 else()
-    # GCC / Clang Release flags
-    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:
-        -Ofast -march=native -flto -DNDEBUG
-        -ffunction-sections -fdata-sections
-    >)
-    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>:
-        -flto -Wl,--gc-sections
-    >)
+    # GCC / Clang
+    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: -O3,-flto,-DNDEBUG,-ffunction-sections,-fdata-sections>)
+    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: -flto,-Wl,--gc-sections,-Wl,--as-needed>)
 endif()
 
 # add the library to the interface

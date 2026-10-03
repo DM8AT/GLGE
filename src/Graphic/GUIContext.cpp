@@ -25,6 +25,18 @@ GLGE::Graphic::GUIContext::GUIContext()
 GLGE::Graphic::GUIContext::~GUIContext() {
     if (m_cleanupFn)
     {(*m_cleanupFn)(this);}
+    //drop references to everything
+    for (const auto& img : m_currentlyReferencedImages)
+    {img->detachListener(this);}
+    for (const auto& target : m_currentlyReferencedTargets) {
+        if (target.getType() == RenderTarget::WINDOW) {
+            reinterpret_cast<Window*>(target.getTarget())->attachListener(this);
+        } else if (target.getType() == RenderTarget::FRAMEBUFFER) {
+            reinterpret_cast<Framebuffer*>(target.getTarget())->attachListener(this);
+        } else {
+            std::unreachable();
+        }
+    }
 }
 
 void GLGE::Graphic::GUIContext::beginRecording() {
@@ -131,34 +143,60 @@ void GLGE::Graphic::GUIContext::endRecording() {
     m_projMatBuff.resize(projMats.size() * sizeof(glm::mat4), false);
     m_projMatBuff.write(projMats.data(), sizeof(glm::mat4)*projMats.size(), 0);
 
-    //remove from all old images
-    for (const auto& img : m_currentlyReferencedImages) 
-    {img->removeFrom(*this);}
-    //attach to all new referenced images
-    for (const auto& img : m_newReferencedImages)
-    {img->attachTo(*this);}
-
-    //remove from all old targets
-    for (const auto& target : m_currentlyReferencedTargets) {
-        if (target.getType() == RenderTarget::WINDOW) {
-            reinterpret_cast<Window*>(target.getTarget())->detachListener(this);
-        } else if (target.getType() == RenderTarget::FRAMEBUFFER) {
-            reinterpret_cast<Framebuffer*>(target.getTarget())->detachListener(this);
-        } else {
-            std::unreachable();
+    //Images: pointer identity, so use an unordered_set for de-duplication
+    {
+        //first pass: Fill new unordered set
+        std::unordered_set<const Image*> newImages;
+        newImages.reserve(m_newReferencedImages.size());
+        for (const auto& img : m_newReferencedImages)
+        {newImages.insert(img);}
+        //for all images that are NOT in the new set, remove them
+        for (const auto& img : m_currentlyReferencedImages) {
+            if (!newImages.contains(img))
+            {img->removeFrom(*this);}
         }
-    }
-    //attach to all new targets
-    for (const auto& target : m_newReferencedTargets) {
-        if (target.getType() == RenderTarget::WINDOW) {
-            reinterpret_cast<Window*>(target.getTarget())->attachListener(this);
-        } else if (target.getType() == RenderTarget::FRAMEBUFFER) {
-            reinterpret_cast<Framebuffer*>(target.getTarget())->attachListener(this);
-        } else {
-            std::unreachable();
+        //second pass: Fill old unordered set
+        std::unordered_set<const Image*> oldImages;
+        oldImages.reserve(m_currentlyReferencedImages.size());
+        for (const auto& img : m_currentlyReferencedImages)
+        {oldImages.insert(img);}
+        //then, attach all elements that do not occur in the old set
+        for (const auto& img : m_newReferencedImages) {
+            if (!oldImages.contains(img))
+            {img->attachTo(*this);}
         }
     }
 
+
+    //Targets: compare the RenderTarget objects directly.
+    //No hashing required; std::find gives O(n*m), but avoids requiring
+    //operator<, hashing, or changing RenderTarget.
+    {
+        //just iterate and try to look up in new list
+        for (const auto& oldTarget : m_currentlyReferencedTargets) {
+            if (std::find(m_newReferencedTargets.begin(), m_newReferencedTargets.end(), oldTarget) == m_newReferencedTargets.end()) {
+                if (oldTarget.getType() == RenderTarget::WINDOW) {
+                    reinterpret_cast<Window*>(oldTarget.getTarget())->detachListener(this);
+                } else if (oldTarget.getType() == RenderTarget::FRAMEBUFFER) {
+                    reinterpret_cast<Framebuffer*>(oldTarget.getTarget())->detachListener(this);
+                } else {
+                    std::unreachable();
+                }
+            }
+        }
+        //just iterate and try to look up in old list
+        for (const auto& newTarget : m_newReferencedTargets) {
+            if (std::find(m_currentlyReferencedTargets.begin(), m_currentlyReferencedTargets.end(), newTarget) == m_currentlyReferencedTargets.end()) {
+                if (newTarget.getType() == RenderTarget::WINDOW) {
+                    reinterpret_cast<Window*>(newTarget.getTarget())->attachListener(this);
+                } else if (newTarget.getType() == RenderTarget::FRAMEBUFFER) {
+                    reinterpret_cast<Framebuffer*>(newTarget.getTarget())->attachListener(this);
+                } else {
+                    std::unreachable();
+                }
+            }
+        }
+    }
     //update the current lists
     m_currentlyReferencedTargets = m_newReferencedTargets;
     m_currentlyReferencedImages = m_newReferencedImages;

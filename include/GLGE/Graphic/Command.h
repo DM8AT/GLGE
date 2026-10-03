@@ -346,13 +346,11 @@ namespace GLGE::Graphic {
                 {child->onInvalidate();}
             }
 
-            //Hack: Just comment this out, it fixes a segfault
-            //Is this needed or not? I guess not...
             //Propagate upwards
-            // for (auto* parent : m_parents) {
-            //     if (parent != nullptr) 
-            //     {parent->onInvalidate();}
-            // }
+            for (auto* parent : m_parents) {
+                if (parent != nullptr) 
+                {parent->onInvalidate();}
+            }
 
             m_invalidating = false;
         }
@@ -363,7 +361,7 @@ namespace GLGE::Graphic {
          * @param listener a pointer to the command invalidator that listens to this
          */
         void attachListener(CommandInvalidator* listener)
-        {m_parents.push_back(listener);}
+        {attachInvalidator(*listener);}
 
         /**
          * @brief remove a listener
@@ -371,7 +369,7 @@ namespace GLGE::Graphic {
          * @param listener a pointer to the listener to remove
          */
         void detachListener(CommandInvalidator* listener)
-        {removeParent(listener);}
+        {detachInvalidator(*listener);}
 
     protected:
 
@@ -450,11 +448,11 @@ namespace GLGE::Graphic {
          * @param parent a pointer to the parent invalidator to remove
          */
         void removeParent(CommandInvalidator* parent) {
-            for (size_t i = 0; i < m_parents.size();) {
-                if (m_parents[i] == parent) {
-                    m_parents.erase(m_parents.begin() + i);
+            for (auto it = m_parents.begin(); it != m_parents.end();) {
+                if (*it == parent) {
+                    it = m_parents.erase(it);
                 } else {
-                    ++i;
+                    ++it;
                 }
             }
         }
