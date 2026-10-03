@@ -442,8 +442,8 @@ if(MSVC)
     target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: /LTCG /OPT:REF /OPT:ICF>)
 else()
     # GCC / Clang
-    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: -O3,-flto,-DNDEBUG,-ffunction-sections,-fdata-sections>)
-    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: -flto,-Wl,--gc-sections,-Wl,--as-needed>)
+    target_compile_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: -O3 -flto -DNDEBUG -ffunction-sections -fdata-sections>)
+    target_link_options(${GLGE_LIB_NAME} INTERFACE $<$<CONFIG:Release>: -flto -Wl,--gc-sections -Wl,--as-needed>)
 endif()
 
 # add the library to the interface
