@@ -155,6 +155,7 @@ FetchContent_Declare(
 # Disable unnecessary components
 set(TBB_TEST OFF CACHE BOOL "" FORCE)
 set(TBB_STRICT OFF CACHE BOOL "" FORCE)
+set(TBB_DIR "${tbb_BINARY_DIR}" CACHE PATH "" FORCE) # enforce that Embree finds this tbb target
 FetchContent_MakeAvailable(oneTBB)
 
 # Mesh optimizer is used to optimize meshes
