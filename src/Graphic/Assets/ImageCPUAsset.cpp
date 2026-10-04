@@ -115,6 +115,11 @@ void GLGE::Graphic::Asset::ImageCPU::import_from(AssetManager*, const std::files
         ivec2 size;
         int channels;
         float* data = stbi_loadf(reinterpret_cast<const char*>(file.u8string().c_str()), &size.x, &size.y, &channels, 0);
+        if (data == nullptr) {
+            std::stringstream stream;
+            stream << "Failed to load image asset from " << file;
+            throw GLGE::Exception(stream.str(), "GLGE::Graphic::Asset::ImageCPU::import_from");
+        }
 
         //construct the image format
         GLGE::Graphic::PixelFormat form = (channels == 1) ? GLGE::Graphic::PIXEL_FORMAT_R_32_FLOAT : 
@@ -130,6 +135,11 @@ void GLGE::Graphic::Asset::ImageCPU::import_from(AssetManager*, const std::files
         ivec2 size;
         int channels;
         void* data = stbi_load(reinterpret_cast<const char*>(file.u8string().c_str()), &size.x, &size.y, &channels, 4);
+        if (data == nullptr) {
+            std::stringstream stream;
+            stream << "Failed to load image asset from " << file;
+            throw GLGE::Exception(stream.str(), "GLGE::Graphic::Asset::ImageCPU::import_from");
+        }
         //format fixed as RGBA8_UNORM
         //load the data to the local image
         m_img = GLGE::Graphic::ImageCPU(data, GLGE::Graphic::PIXEL_FORMAT_RGBA_8_UNORM, uvec2{size.x, size.y});
