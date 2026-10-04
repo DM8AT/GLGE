@@ -100,10 +100,6 @@
  * @brief define the patch used
  */
 #define GLGE_VERSION_PATCH 0u
-/**
- * @brief define the library version string
- */
-#define GLGE_VERSION_STR #GLGE_VERSION_MAJOR "." #GLGE_VERSION_MINOR "." #GLGE_VERSION_PATCH
 
 /**
  * @brief define the current GLGE core version

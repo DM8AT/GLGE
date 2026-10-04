@@ -243,6 +243,11 @@ namespace GLGE {
             return os << v.getMajor() << "." << v.getMinor() << "." << v.getPatch();
         }
 
+        /**
+         * @brief define the version of the engine
+         */
+        static const Version ENGINE;
+
     protected:
 
         /**
