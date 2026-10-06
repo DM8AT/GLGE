@@ -206,7 +206,7 @@ namespace GLGE {
          */
         inline constexpr void setMajor(const Version_t& major) noexcept{
             //simply store the new value
-            m_value = (m_value & (GLGE_VERSION_MAJOR_MASK << GLGE_VERSION_MAJOR_OFFSET)) 
+            m_value = (m_value & ~(GLGE_VERSION_MAJOR_MASK << GLGE_VERSION_MAJOR_OFFSET)) 
                     | ((major & GLGE_VERSION_MAJOR_MASK) << GLGE_VERSION_MAJOR_OFFSET);
         }
 
@@ -217,7 +217,7 @@ namespace GLGE {
          */
         inline constexpr void setMinor(const Version_t& minor) noexcept{
             //simply store the new value
-            m_value = (m_value & (GLGE_VERSION_MINOR_MASK << GLGE_VERSION_MINOR_OFFSET)) 
+            m_value = (m_value & ~(GLGE_VERSION_MINOR_MASK << GLGE_VERSION_MINOR_OFFSET)) 
                     | ((minor & GLGE_VERSION_MINOR_MASK) << GLGE_VERSION_MINOR_OFFSET);
         }
 
@@ -228,7 +228,7 @@ namespace GLGE {
          */
         inline constexpr void setPatch(const Version_t& patch) noexcept{
             //simply store the new value
-            m_value = (m_value & (GLGE_VERSION_PATCH_MASK << GLGE_VERSION_PATCH_OFFSET)) 
+            m_value = (m_value & ~(GLGE_VERSION_PATCH_MASK << GLGE_VERSION_PATCH_OFFSET)) 
                     | ((patch & GLGE_VERSION_PATCH_MASK) << GLGE_VERSION_PATCH_OFFSET);
         }
 
@@ -242,6 +242,11 @@ namespace GLGE {
         inline friend std::ostream& operator<<(std::ostream& os, const Version& v) noexcept {
             return os << v.getMajor() << "." << v.getMinor() << "." << v.getPatch();
         }
+
+        /**
+         * @brief define the version of the engine
+         */
+        static const Version ENGINE;
 
     protected:
 

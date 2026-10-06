@@ -363,6 +363,7 @@ target_include_directories(${GLGE_LIB_NAME} INTERFACE
 
 # add the source files to the core library
 add_library(${GLGE_CORE_NAME} ${GLGE_CORE_LIBRARY_TYPE}
+    ${GLGE_SRC_DIR}/Core/Common.cpp
     ${GLGE_SRC_DIR}/Core/Instance.cpp
     ${GLGE_SRC_DIR}/Core/BaseClass.cpp
     ${GLGE_SRC_DIR}/Core/Keyboard.cpp
