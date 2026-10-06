@@ -99,3 +99,9 @@ bool GLGE::Graphic::Instance::isCursorHidden()
 
 void GLGE::Graphic::Instance::openFileSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::vector<std::pair<std::string, std::string>>& filter, const std::filesystem::path& defaultLocation, GLGE::Graphic::Window* parent)
 {m_vInst->openFileSelector(callback, allowMultiSelect, filter, defaultLocation, parent);}
+
+void GLGE::Graphic::Instance::openSaveSelector(Pfn_SelectorCallback callback, const std::vector<std::pair<std::string, std::string>>& filter, const std::filesystem::path& defaultLocation, GLGE::Graphic::Window* parent)
+{m_vInst->openSaveSelector(callback, filter, defaultLocation, parent);}
+
+void GLGE::Graphic::Instance::openFolderSelector(Pfn_SelectorCallback callback, bool allowMultiSelect, const std::filesystem::path& defaultLocation, GLGE::Graphic::Window* parent)
+{m_vInst->openFolderSelector(callback, allowMultiSelect, defaultLocation, parent);}
