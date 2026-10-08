@@ -353,7 +353,7 @@ void Window::restore() {
 
 void Window::setBorderless(bool borderless) {
     //set the borderless value
-    SDL_SetWindowBordered(reinterpret_cast<SDL_Window*>(m_win), borderless);
+    SDL_SetWindowBordered(reinterpret_cast<SDL_Window*>(m_win), !borderless);
 }
 
 void Window::setFullscreen(bool fullscreen) {
