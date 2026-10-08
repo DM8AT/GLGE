@@ -43,10 +43,10 @@ GLGE::Graphic::Backend::Video::Window* SDL3::createWindow(GLGE::Graphic::Window*
 {return new GLGE::Graphic::Backend::Video::SDL3::Window(window);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Video::Cursor> SDL3::createCursor([[maybe_unused]] GLGE::Graphic::Backend::Video::Cursor::Defaults style)
-{return Reference<Backend::Video::Cursor>(new Backend::Video::SDL3::Cursor(style));}
+{return Reference<Backend::Video::Cursor>(new Backend::Video::SDL3::Cursor(style), false);}
 
 GLGE::Reference<GLGE::Graphic::Backend::Video::Cursor> SDL3::createCursor([[maybe_unused]] const ImageCPU& image, [[maybe_unused]] const uvec2& hot)
-{return Reference<Backend::Video::Cursor>(new Backend::Video::SDL3::Cursor(image, hot));}
+{return Reference<Backend::Video::Cursor>(new Backend::Video::SDL3::Cursor(image, hot), false);}
 
 const std::vector<GLGE::Graphic::GraphicAPI>& SDL3::getSupportedAPIs() 
 {return __SUPPORTED_APIS;}

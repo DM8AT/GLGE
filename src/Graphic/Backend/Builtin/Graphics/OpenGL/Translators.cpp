@@ -538,7 +538,6 @@ bool drawGui(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE
         //clean up the old data
         Persistent* old = reinterpret_cast<Persistent*>(context->getBackendData());
         glDeleteVertexArrays(1, &old->vao);
-        delete old;
     }
     //create the new VAO
     GLuint vao = 0;
@@ -557,10 +556,15 @@ bool drawGui(GLGE::Graphic::Backend::Graphic::CommandBuffer& cmdBuff, const GLGE
     glVertexArrayElementBuffer(vao, static_cast<GLGE::Graphic::Backend::Graphic::OpenGL::Buffer*>(context->getIBO()->getBackendReference().get())->getHandle());
 
     //store the persistent data
-    context->setBackendData(new Persistent {
-        .vao = vao
-    });
+    if (context->getBackendData() == nullptr) {
+        context->setBackendData(new Persistent {
+            .vao = vao
+        });
+        context->setCleanupFn([](GLGE::Graphic::GUIContext* ctx) -> void {delete reinterpret_cast<Persistent*>(ctx->getBackendData());});
+    }
     Persistent* persistent = reinterpret_cast<Persistent*>(context->getBackendData());
+    //update the VAO
+    persistent->vao = vao;
 
     //store the current projection matrix
     //Use UINT32_MAX since it will work as a poison and automatically wrap-around to 0 once a set occurs

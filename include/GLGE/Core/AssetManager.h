@@ -46,6 +46,15 @@ namespace GLGE {
         AssetManager() = default;
 
         /**
+         * @brief Destroy the Asset Manager
+         */
+        ~AssetManager() {
+            //clean up all asset storages
+            for (const auto& [typeHash, func] : m_typeStorageCleanup) 
+            {(*func)(m_typeStorage[typeHash]);}
+        }
+
+        /**
          * @brief load a new asset
          * 
          * @tparam `T` the type of the asset to load
@@ -67,6 +76,7 @@ namespace GLGE {
                 it = m_typeStorage.find(type_hash);
                 if (it == m_typeStorage.end()) {
                     m_typeStorage.insert_or_assign(type_hash, static_cast<void*>(new TypeStorage<T>{}));
+                    m_typeStorageCleanup.emplace_back(type_hash, [](void* ptr) -> void {delete reinterpret_cast<TypeStorage<T>*>(ptr);});
                     it = m_typeStorage.find(type_hash);
                 }
             }
@@ -113,6 +123,7 @@ namespace GLGE {
                 it = m_typeStorage.find(type_hash);
                 if (it == m_typeStorage.end()) {
                     m_typeStorage.insert_or_assign(type_hash, static_cast<void*>(new TypeStorage<T>{}));
+                    m_typeStorageCleanup.emplace_back(type_hash, [](void* ptr) -> void {delete reinterpret_cast<TypeStorage<T>*>(ptr);});
                     it = m_typeStorage.find(type_hash);
                 }
             }
@@ -205,6 +216,10 @@ namespace GLGE {
          * @brief store typed asset storages
          */
         std::unordered_map<u64, void*> m_typeStorage;
+        /**
+         * @brief store the cleanup functions for the typed storages
+         */
+        std::vector<std::pair<u64, void (*)(void*)>> m_typeStorageCleanup;
 
     };
 

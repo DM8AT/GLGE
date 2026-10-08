@@ -26,8 +26,7 @@ GLGE::Graphic::GUIContext::~GUIContext() {
     if (m_cleanupFn)
     {(*m_cleanupFn)(this);}
     //drop references to everything
-    for (const auto& img : m_currentlyReferencedImages)
-    {img->detachListener(this);}
+    //assume that the images where destroyed
     for (const auto& target : m_currentlyReferencedTargets) {
         if (target.getType() == RenderTarget::WINDOW) {
             reinterpret_cast<Window*>(target.getTarget())->attachListener(this);
@@ -145,16 +144,7 @@ void GLGE::Graphic::GUIContext::endRecording() {
 
     //Images: pointer identity, so use an unordered_set for de-duplication
     {
-        //first pass: Fill new unordered set
-        std::unordered_set<const Image*> newImages;
-        newImages.reserve(m_newReferencedImages.size());
-        for (const auto& img : m_newReferencedImages)
-        {newImages.insert(img);}
-        //for all images that are NOT in the new set, remove them
-        for (const auto& img : m_currentlyReferencedImages) {
-            if (!newImages.contains(img))
-            {img->removeFrom(*this);}
-        }
+        //No longer used: Just assume that it was deleted
         //second pass: Fill old unordered set
         std::unordered_set<const Image*> oldImages;
         oldImages.reserve(m_currentlyReferencedImages.size());
@@ -166,7 +156,6 @@ void GLGE::Graphic::GUIContext::endRecording() {
             {img->attachTo(*this);}
         }
     }
-
 
     //Targets: compare the RenderTarget objects directly.
     //No hashing required; std::find gives O(n*m), but avoids requiring
