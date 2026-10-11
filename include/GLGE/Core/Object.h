@@ -316,9 +316,65 @@ namespace GLGE {
         void destroy(Object& obj) {
             //check if the entity had a parent
             Component::HierarchyNode* node = m_reg.get<Component::HierarchyNode>(obj.m_ent);
-            //remove the entity from the linked list
-            m_reg.get<Component::HierarchyNode>(node->prevSibling)->nextSibling = node->nextSibling;
-            m_reg.get<Component::HierarchyNode>(node->nextSibling)->prevSibling = node->prevSibling;
+
+            //if children exist: promote children
+            if (node->firstChild != Tiny::ECS::Entity::getInvalid()) {
+                //get the parent node
+                Component::HierarchyNode* parNode = nullptr;
+                //special case: root
+                if (node->parent == Tiny::ECS::Entity::getInvalid()) {
+                    parNode = &m_root;
+                } else {
+                    //add to child list
+                    parNode = m_reg.get<Component::HierarchyNode>(node->parent);
+                }
+
+                //register in place of father
+                if (node->prevSibling == Tiny::ECS::Entity::getInvalid()) {
+                    //special case: first child
+                    parNode->firstChild = node->firstChild;
+                } else 
+                {m_reg.get<Component::HierarchyNode>(node->prevSibling)->nextSibling = node->firstChild;}
+
+                Tiny::ECS::Entity old = node->nextSibling;
+                //traverse this child list and add the cached old to the end
+                Tiny::ECS::Entity child = node->firstChild;
+                Component::HierarchyNode* childHierarchy = m_reg.get<Component::HierarchyNode>(child);
+                childHierarchy->parent = node->parent;
+                childHierarchy->prevSibling = node->prevSibling;
+                while (childHierarchy->nextSibling != Tiny::ECS::Entity::getInvalid()) {
+                    child = childHierarchy->nextSibling;
+                    childHierarchy = m_reg.get<Component::HierarchyNode>(child);
+                    childHierarchy->parent = node->parent;
+                }
+                //found last sibling, append old list
+                childHierarchy->nextSibling = old;
+
+                if (old != Tiny::ECS::Entity::getInvalid())
+                {m_reg.get<Component::HierarchyNode>(old)->prevSibling = child;}
+            } else {
+                //No children: Squash gap
+
+                //remove the entity from the linked list
+                if (node->prevSibling != Tiny::ECS::Entity::getInvalid())
+                {m_reg.get<Component::HierarchyNode>(node->prevSibling)->nextSibling = node->nextSibling;}
+                if (node->nextSibling != Tiny::ECS::Entity::getInvalid())
+                {m_reg.get<Component::HierarchyNode>(node->nextSibling)->prevSibling = node->prevSibling;}
+                //check if this was the first from parent
+                
+                //get the parent node
+                Component::HierarchyNode* parNode = nullptr;
+                //special case: root
+                if (node->parent == Tiny::ECS::Entity::getInvalid()) {
+                    parNode = &m_root;
+                } else {
+                    //add to child list
+                    parNode = m_reg.get<Component::HierarchyNode>(node->parent);
+                }
+                if (parNode->firstChild == static_cast<Tiny::ECS::Entity>(obj)) 
+                {parNode->firstChild = node->nextSibling;}
+            }
+
             //destroy the entity
             m_reg.remove(obj.m_ent);
             //invalidate the object
