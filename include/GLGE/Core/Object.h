@@ -176,6 +176,22 @@ namespace GLGE {
         inline operator Tiny::ECS::Entity() const noexcept
         {return m_ent;}
 
+        /**
+         * @brief compare operator
+         * 
+         * @param other the object to compare with
+         * @return `true` if they are the same, `false` if not
+         */
+        inline bool operator==(const Object& other) const noexcept = default;
+
+        /**
+         * @brief convert to u32
+         * 
+         * @return `u32` the blob-representation of the entity
+         */
+        inline operator u32() const noexcept
+        {return m_ent.getBlob();}
+
     private:
 
         //worlds are friends
@@ -810,47 +826,59 @@ namespace GLGE {
          * 
          * @param subject the subject to set the parent for
          * @param parent the new parent for the subject
-         * @param exists `true` if the object exists allready, `false` if it is brand new
+         * @param exists `true` if the object already exists, `false` if it is brand new
          */
         void __setParent(Object subject, Object parent, bool exists) {
             //get the nodes
-            Component::HierarchyNode* parentNode = m_reg.get<Component::HierarchyNode>(parent.m_ent);
+            Component::HierarchyNode* parentNode = nullptr;
             Component::HierarchyNode* childNode = m_reg.get<Component::HierarchyNode>(subject.m_ent);
+
             //if the parent is invalid (root), handle that
             if (!parent.valid())
             {parentNode = &m_root;}
+            else
+            {parentNode = m_reg.get<Component::HierarchyNode>(parent.m_ent);}
 
-            //skip this is the element is new
+            //skip this if the element is new
             if (exists) {
                 //lookup the element in the old child list and remove it
-                if (childNode->prevSibling != Tiny::ECS::Entity::getInvalid()) 
-                {m_reg.get<Component::HierarchyNode>(childNode->prevSibling)->nextSibling = childNode->nextSibling;}
-                else {
+                if (childNode->prevSibling != Tiny::ECS::Entity::getInvalid()) {
+                    m_reg.get<Component::HierarchyNode>(childNode->prevSibling)->nextSibling = childNode->nextSibling;
+                } else {
                     //if there is no element further in front, don't forget to change the first entry of the parent to the next child
                     Component::HierarchyNode* node = nullptr;
                     if (childNode->parent == Tiny::ECS::Entity::getInvalid())
                     {node = &m_root;}
                     else
                     {node = m_reg.get<Component::HierarchyNode>(childNode->parent);}
+
                     node->firstChild = childNode->nextSibling;
                 }
-                if (childNode->nextSibling != Tiny::ECS::Entity::getInvalid()) {m_reg.get<Component::HierarchyNode>(childNode->nextSibling)->prevSibling = childNode->prevSibling;}
+
+                if (childNode->nextSibling != Tiny::ECS::Entity::getInvalid()) {
+                    m_reg.get<Component::HierarchyNode>(childNode->nextSibling)->prevSibling = childNode->prevSibling;
+                }
+
                 //clean the entry
                 childNode->prevSibling = Tiny::ECS::Entity::getInvalid();
                 childNode->nextSibling = Tiny::ECS::Entity::getInvalid();
             }
 
-            //walk the parent liked child list until the end
+            //walk the parent linked child list until the end
             Tiny::ECS::Entity next = parentNode->firstChild;
             Component::HierarchyNode* currNode = parentNode;
             bool hasSiblings = false;
-            //skip if no childs exist
-            if (!(next == Tiny::ECS::Entity::getInvalid())) {
+
+            //skip if no children exist
+            if (next != Tiny::ECS::Entity::getInvalid()) {
                 hasSiblings = true;
+
                 while (true) {
                     currNode = m_reg.get<Component::HierarchyNode>(next);
+
                     if (currNode->nextSibling == Tiny::ECS::Entity::getInvalid())
                     {break;}
+
                     next = currNode->nextSibling;
                 }
             }
@@ -861,9 +889,10 @@ namespace GLGE {
                 currNode->nextSibling = subject.m_ent;
                 childNode->prevSibling = next;
             } else {
-                //if no siblings where found, write this as the first child
+                //if no siblings were found, write this as the first child
                 parentNode->firstChild = subject.m_ent;
             }
+
             //store the parent
             childNode->parent = parent.m_ent;
         }
