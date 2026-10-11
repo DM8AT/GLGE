@@ -309,6 +309,18 @@ namespace GLGE {
         }
 
         /**
+         * @brief rename an object
+         * 
+         * @param obj the object to rename
+         * @param name the new name for the object
+         */
+        void rename(Object obj, const std::string& name) {
+            //if the object is valid, update the name
+            if (obj)
+            {m_reg.get<Component::Name>(obj)->name = getNameIndex(name);}
+        }
+
+        /**
          * @brief destroy an object
          * 
          * @param obj a reference to the object to destroy
