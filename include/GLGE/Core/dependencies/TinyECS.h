@@ -1152,11 +1152,11 @@ public:
     const std::vector<uint64_t>& getTypes(EntityT entity) {
         //reject invalid entity IDs
         if (entity.getIndex() >= m_entities.size())
-        {return {};}
+        {return m_emptyHashList;}
 
         //reject a stale reference
         if (entity.getVersion() != m_entities[entity.getIndex()].version)
-        {return {};}
+        {return m_emptyHashList;}
 
         //get the archetype
         auto& arch = m_arches[m_entities[entity.getIndex()].archtypeId];
@@ -3113,6 +3113,13 @@ protected:
         std::equal_to<std::vector<i_col_t, Allocator<i_col_t>>>, 
         Allocator<std::pair<const std::vector<i_col_t, Allocator<i_col_t>>, i_arch_t>>
     > m_archtypeMap;
+
+    /**
+     * @brief a fallback hash list that is returned if an object is invalid
+     * 
+     * Hack: just make the world store it
+     */
+    std::vector<uint64_t> m_emptyHashList;
 
 };
 
