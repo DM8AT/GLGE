@@ -668,6 +668,15 @@ namespace GLGE {
             return objs;
         }
 
+        /**
+         * @brief Get the components attached to the object
+         * 
+         * @param obj the object to query the components for
+         * @return `const std::vector<u64>&` the component hashes attached to the object
+         */
+        const std::vector<u64>& getComponents(Object obj)
+        {return m_reg.getTypes(Tiny::ECS::Entity(obj));}
+
     protected:
 
         /**

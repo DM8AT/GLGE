@@ -1144,6 +1144,27 @@ public:
     }
 
     /**
+     * @brief Get the type hashes of all used components
+     * 
+     * @param entity the entity to get the types for
+     * @return `const std::vector<uint64_t>&` a list of all component type hashes the entity uses
+     */
+    const std::vector<uint64_t>& getTypes(EntityT entity) {
+        //reject invalid entity IDs
+        if (entity.getIndex() >= m_entities.size())
+        {return {};}
+
+        //reject a stale reference
+        if (entity.getVersion() != m_entities[entity.getIndex()].version)
+        {return {};}
+
+        //get the archetype
+        auto& arch = m_arches[m_entities[entity.getIndex()].archtypeId];
+        //query the type hashes
+        return arch.getTypes();
+    } 
+
+    /**
      * @brief a function that runs for all entities that exactly match the specified components
      * 
      * @tparam Components the exact component mask the entities must match
@@ -2661,6 +2682,16 @@ protected:
             if (m_world->typeId<Component>() >= m_world->m_columns.size()) {return nullptr;}
             return reinterpret_cast<Component*>(m_world->m_columns[m_world->typeId<Component>()].get(m_id, localId));
         }
+
+        /**
+         * @brief Get the type hashes
+         * 
+         * @return `const std::vector<uint64_t>&` the hashed types
+         */
+        const std::vector<uint64_t>& getTypes() {
+            //just return the cache
+            return m_hashes;
+        }
     
     protected:
 
@@ -2692,6 +2723,10 @@ protected:
          : m_columns(begin, end), m_id(id), m_world(world)
         {}
 
+        /**
+         * @brief store hashes of all stored types
+         */
+        std::vector<uint64_t> m_hashes;
         /**
          * @brief store the columns used by the archtype
          */
@@ -2732,6 +2767,9 @@ protected:
             size_t i = 0;
             b.m_columns.reserve(sizeof...(Components));
             (__initialize<Components>(b, world), ...);
+            //fill in the hashes
+            b.m_hashes.reserve(sizeof...(Components));
+            (b.m_hashes.push_back(util::type_hash<Components>()), ...);
             //return the new archtype
             return b;
         }
