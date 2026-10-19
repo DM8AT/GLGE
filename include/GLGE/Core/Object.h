@@ -406,7 +406,7 @@ namespace GLGE {
             //destroy the entity
             m_reg.remove(obj.m_ent);
             //invalidate the object
-            memset(&obj.m_ent, 0, sizeof(Tiny::ECS::Entity));
+            obj.m_ent = Tiny::ECS::Entity::getInvalid();
         }
 
         /**
