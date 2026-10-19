@@ -614,6 +614,16 @@ namespace GLGE {
         {m_reg.add<T, Args...>(obj.m_ent, std::forward<Args>(args)...);}
 
         /**
+         * @brief remove a component from an object
+         * 
+         * @tparam T the type of the component to remove
+         * @param obj the object to remove the component from
+         */
+        template <typename T>
+        void remove(Object obj)
+        {m_reg.remove<T>(obj);}
+
+        /**
          * @brief Get the all objects that have a specific name
          * 
          * It is valid to parse in an unknown name. If no object contains the name, the list will be empty. 
