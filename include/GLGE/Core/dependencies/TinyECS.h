@@ -1009,6 +1009,7 @@ public:
         }
         if (m_columns[newCol].m_world == nullptr) {
             m_columns[newCol] = ColumnView<Component>::createColumn(this);
+            m_columns[newCol].m_hash = util::type_hash<Component>();
         }
 
         //get the new archtype ID
@@ -1027,8 +1028,11 @@ public:
            m_arches.resize(archt + 1);
         }
         ArchtypeBase& arch = m_arches[archt];
-        if (arch.m_world == nullptr) 
-        {arch = ArchtypeBase(archt, tids.begin(), tids.end(), this);}
+        if (arch.m_world == nullptr) {
+            arch = ArchtypeBase(archt, tids.begin(), tids.end(), this);
+            arch.m_hashes.reserve(tids.size());
+            for (const auto& hash : tids) {arch.m_hashes.push_back(m_columns[hash].getHash());}
+        }
 
         //create the new entity in the archtype
         i_base_t newLocal = arch.m_localToGlobal.size();
@@ -1098,8 +1102,11 @@ public:
            m_arches.resize(archt + 1);
         }
         ArchtypeBase& arch = m_arches[archt];
-        if (arch.m_world == nullptr) 
-        {arch = ArchtypeBase(archt, tids.begin(), tids.end(), this);}
+        if (arch.m_world == nullptr) {
+            arch = ArchtypeBase(archt, tids.begin(), tids.end(), this);
+            arch.m_hashes.reserve(tids.size());
+            for (const auto& hash : tids) {arch.m_hashes.push_back(m_columns[hash].getHash());}
+        }
 
         //create the new entity in the archtype
         i_base_t newLocal = arch.m_localToGlobal.size();
@@ -2196,6 +2203,14 @@ protected:
         inline void move(i_arch_t old, i_base_t oldLocal, i_arch_t target) noexcept(true)
         {m_mover(old, oldLocal, target, this);}
 
+        /**
+         * @brief Get the hash of the stored type
+         * 
+         * @return `uint64_t` the hash of the stored type
+         */
+        inline uint64_t getHash() const noexcept(true)
+        {return m_hash;}
+
     protected:
         
         //views are friends
@@ -2213,8 +2228,8 @@ protected:
          * @param mover the function to move a specific element from one archtype to another
          * @param world a pointer to the world that owns the column
          */
-        ColumnBase(void (*destructor)(ColumnBase*), void (*removeElement)(i_arch_t, i_base_t, ColumnBase*), void* (*getter)(i_arch_t, i_base_t, ColumnBase*), void (*mover)(i_arch_t, i_base_t, i_arch_t, ColumnBase*), World_t* world)
-         : m_destructor(destructor), m_removeElement(removeElement), m_getter(getter), m_mover(mover), m_world(world)
+        ColumnBase(void (*destructor)(ColumnBase*), void (*removeElement)(i_arch_t, i_base_t, ColumnBase*), void* (*getter)(i_arch_t, i_base_t, ColumnBase*), void (*mover)(i_arch_t, i_base_t, i_arch_t, ColumnBase*), World_t* world, uint64_t hash)
+         : m_destructor(destructor), m_removeElement(removeElement), m_getter(getter), m_mover(mover), m_world(world), m_hash(hash)
         {}
     
         /**
@@ -2262,6 +2277,11 @@ protected:
          * @brief store the current incremental version
          */
         uint16_t m_version = 0;
+
+        /**
+         * @brief store the hash of the column
+         */
+        uint64_t m_hash = 0;
 
         /**
          * @brief a mutex-free lock for thread safety
@@ -2354,7 +2374,7 @@ protected:
                 view.addElement(target, std::move(temp));
                 //remove the old element
                 column->removeElement(old, oldLocal);
-            }, world);
+            }, world, util::type_hash<T>());
         }
 
         /**
@@ -2930,6 +2950,7 @@ protected:
             }
             if (world->m_columns[tid].m_world == nullptr) {
                 world->m_columns[tid] = ColumnView<Component>::createColumn(world);
+                world->m_columns[tid].m_hash = util::type_hash<Component>();
             }
             //add the new column
             base.m_columns.emplace_back(tid);
