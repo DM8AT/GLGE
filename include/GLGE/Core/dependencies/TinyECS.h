@@ -2108,8 +2108,10 @@ protected:
             m_mover = other.m_mover;
             m_world = other.m_world;
             m_version = other.m_version;
+            m_hash         = other.m_hash;
 
             //invalidate the other
+            other.m_hash = 0;
             other.m_storage = nullptr;
             other.m_totalChunks = 0;
         }
@@ -2140,8 +2142,10 @@ protected:
                 m_mover        = other.m_mover;
                 m_world        = other.m_world;
                 m_version      = other.m_version;
+                m_hash         = other.m_hash;
 
                 //invalidate other
+                other.m_hash = 0;
                 other.m_storage = nullptr;
                 other.m_totalChunks = 0;
             }
@@ -2786,10 +2790,8 @@ protected:
             //fill in the columns
             size_t i = 0;
             b.m_columns.reserve(sizeof...(Components));
-            (__initialize<Components>(b, world), ...);
-            //fill in the hashes
             b.m_hashes.reserve(sizeof...(Components));
-            (b.m_hashes.push_back(util::type_hash<Components>()), ...);
+            (__initialize<Components>(b, world), ...);
             //return the new archtype
             return b;
         }
@@ -2954,6 +2956,7 @@ protected:
             }
             //add the new column
             base.m_columns.emplace_back(tid);
+            base.m_hashes.push_back(world->m_columns[tid].getHash());
         }
 
         /**
