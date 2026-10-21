@@ -197,7 +197,7 @@ namespace GLGE {
          * @return `Reference<World>&` a modifiable reference to the asset
          */
         inline Reference<World>& world() noexcept
-        {return *m_world;}
+        {return m_world;}
 
     protected:
 
