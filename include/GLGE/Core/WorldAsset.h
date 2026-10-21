@@ -146,9 +146,7 @@ namespace GLGE {
         /**
          * @brief Construct a new World Asset
          */
-        WorldAsset()
-         : m_world("World")
-        {}
+        WorldAsset() {}
 
         /**
          * @brief load the asset from raw safe data
@@ -196,10 +194,10 @@ namespace GLGE {
         /**
          * @brief access the world wrapped by the asset
          * 
-         * @return `World&` a modifiable reference to the asset
+         * @return `Reference<World>&` a modifiable reference to the asset
          */
-        inline World& world() noexcept
-        {return m_world;}
+        inline Reference<World>& world() noexcept
+        {return *m_world;}
 
     protected:
 
@@ -229,7 +227,7 @@ namespace GLGE {
         /**
          * @brief store the own world
          */
-        World m_world;
+        Reference<World> m_world;
 
     };
 

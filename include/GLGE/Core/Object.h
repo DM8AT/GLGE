@@ -21,6 +21,9 @@
 #define TINY_JOBS_NO_LOCKFREE
 #include "dependencies/TinyECS.h"
 
+//add ref counting
+#include "Reference.h"
+
 //use the library namespace
 namespace GLGE {
 
@@ -207,7 +210,7 @@ namespace GLGE {
     /**
      * @brief a world is a collection of objects
      */
-    class World : public BaseClass {
+    class World : public BaseClass, public Referable {
     public:
 
         /**

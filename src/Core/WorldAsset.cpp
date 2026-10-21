@@ -86,6 +86,7 @@ GLGE::u64 GLGE::WorldAsset::load(AssetManager*, const std::vector<u8>& data) {
     u32 version = readFromBytes<u32>(data, offs);
     if (version > CURRENT_VERSION) 
     {throw GLGE::Exception("Failed to load the world asset: too new version", "GLGE::WorldAsset::load");}
+
     //get the object count
     u64 objs = readFromBytes<u64>(data, offs);
 
@@ -104,8 +105,8 @@ GLGE::u64 GLGE::WorldAsset::load(AssetManager*, const std::vector<u8>& data) {
     name.reserve(nameLen);
     for (size_t i = 0; i < nameLen; ++i)
     {name += readFromBytes<char>(data, offs);}
-    //set the name
-    m_world.setName(name);
+    //crete the world
+    m_world = new GLGE::World(name);
 
     //iterate over all objects and create them
     for (size_t objId = 0; objId < objs; ++objId) {
@@ -128,7 +129,7 @@ GLGE::u64 GLGE::WorldAsset::load(AssetManager*, const std::vector<u8>& data) {
         u32 parent = readFromBytes<u32>(data, offs);
 
         //create the actual entity and store it
-        Object obj = m_world.create(name);
+        Object obj = m_world->create(name);
         created.emplace_back(obj, parent);
         //deserialize all stored components
         u32 compCount = readFromBytes<u32>(data, offs);
@@ -148,7 +149,7 @@ GLGE::u64 GLGE::WorldAsset::load(AssetManager*, const std::vector<u8>& data) {
             }
             //make the span so that out of bounds reads are discovered
             std::span<const u8> subVec(data.begin() + offs, data.begin() + (offs + compSize));
-            entry->second.loadFn(obj, subVec, &m_world);
+            entry->second.loadFn(obj, subVec, m_world.get());
             //step the offset
             offs += compSize;
         }
@@ -165,7 +166,7 @@ GLGE::u64 GLGE::WorldAsset::load(AssetManager*, const std::vector<u8>& data) {
         if (parent == Tiny::ECS::Entity::getInvalid().getBlob())
         {continue;}
         //set the parent entity
-        m_world.setParent(obj, entityMap.at(parent));
+        m_world->setParent(obj, entityMap.at(parent));
     }
 
     //store how much was read
@@ -176,7 +177,7 @@ void GLGE::WorldAsset::store(std::vector<u8>& data) {
     //first step: Discover all objects in the world
     //also store the name and the position in the world structure
     std::unordered_map<u32, ObjSerializationData> objs;
-    m_world.each<Component::Name, Component::HierarchyNode>([&objs](const Tiny::ECS::Entity& ent, const Component::Name& name, const Component::HierarchyNode& node) {
+    m_world->each<Component::Name, Component::HierarchyNode>([&objs](const Tiny::ECS::Entity& ent, const Component::Name& name, const Component::HierarchyNode& node) {
         ObjSerializationData& entry = objs[ent.getBlob()];
         entry.name = name;
         entry.node = node;
@@ -185,7 +186,7 @@ void GLGE::WorldAsset::store(std::vector<u8>& data) {
     for (const auto& [typeHash, funcs] : ms_compReg.m_typeEntries) {
         //gather all objects with this component
         std::vector<Object> objList;
-        funcs.gatherFn(&m_world, &objList);
+        funcs.gatherFn(m_world.get(), &objList);
         //then, add the serialization function
         for (const Object& obj : objList)
         {objs[static_cast<Tiny::ECS::Entity>(obj).getBlob()].compSerializers.emplace_back(typeHash, funcs.storeFn);}
@@ -199,7 +200,7 @@ void GLGE::WorldAsset::store(std::vector<u8>& data) {
     appendToVector<u32>(serialized, u32(CURRENT_VERSION));
     appendToVector<u64>(serialized, u64(objs.size()));
     //add the name
-    const std::string& name = m_world.getName();
+    const std::string& name = m_world->getName();
     appendToVector<u32>(serialized, u32(name.size()));
     for (const auto& c : name) {appendToVector<char>(serialized, c);}
     //iterate over all objects and serialize them
@@ -209,7 +210,7 @@ void GLGE::WorldAsset::store(std::vector<u8>& data) {
         //add the entity ID
         appendToVector<u32>(serializedObj, obj);
         //store the name
-        const std::string& name = m_world.getObjectName(Object(GLGE::Tiny::ECS::Entity(obj)));
+        const std::string& name = m_world->getObjectName(Object(GLGE::Tiny::ECS::Entity(obj)));
         appendToVector<u32>(serializedObj, u32(name.size()));
         for (const auto& c : name)
         {appendToVector<char>(serializedObj, static_cast<char>(c));}
@@ -222,7 +223,7 @@ void GLGE::WorldAsset::store(std::vector<u8>& data) {
             appendToVector<u64>(serializedObj, comp.first);
             //then serialize
             std::vector<u8> serializedComp;
-            (*comp.second)(Tiny::ECS::Entity(obj), serializedComp, &m_world);
+            (*comp.second)(Tiny::ECS::Entity(obj), serializedComp, m_world.get());
             //after serialization, store the size and data
             appendToVector<u32>(serializedObj, serializedComp.size());
             serializedObj.insert(serializedObj.end(), serializedComp.begin(), serializedComp.end());
