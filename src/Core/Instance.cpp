@@ -9,9 +9,13 @@
  * 
  */
 //add instances
+#define TINY_ECS_IMPL
 #include "GLGE/Core/Instance.h"
 //add embree
 #include <embree4/rtcore.h>
+
+//compile Tiny ECS
+#include "GLGE/Core/dependencies/TinyECS.h"
 
 //use the libraries namespace
 using namespace GLGE;

@@ -7,6 +7,7 @@
  * 
  * @copyright Copyright (c) 2026
  * 
+ * To implement, define `TINY_ECS_IMPL` in exactly one source file
  */
 //header guard
 #ifndef _DM8AT_TINY_ECS_
@@ -70,6 +71,13 @@ namespace GLGE {
      * @brief added the multithreading features
      */
     #define TINY_ECS_FEATURE_MULTITHREADED 1
+#endif
+
+//define the decorator for the counter
+#if defined(__GNUC__)
+    #define _TINY_ECS_COUNTER_DECORATOR_ __attribute__((visibility("default")))
+#else
+    #define _TINY_ECS_COUNTER_DECORATOR_
 #endif
 
 /**
@@ -589,6 +597,29 @@ public:
  */
 template <typename T, typename Param>
 static constexpr bool wants_write_v = std::is_lvalue_reference_v<Param> && !std::is_const_v<std::remove_reference_t<Param>>;
+
+/**
+ * @brief a class for counting
+ */
+class _TINY_ECS_COUNTER_DECORATOR_ StaticCounter {
+public:
+
+    /**
+     * @brief function to get the next number
+     * 
+     * @return `uint64_t`the next number
+     */
+    static uint64_t next();
+
+};
+
+//check for implementation
+#if defined(TINY_ECS_IMPL)
+uint64_t StaticCounter::next() {
+    static std::atomic<std::uint64_t> counter{0};
+    return counter.fetch_add(1, std::memory_order_relaxed); 
+}
+#endif
 
 }
 
@@ -3023,7 +3054,7 @@ protected:
     template<typename T>
     static i_col_t typeId() noexcept {
         //increment the type ID and store it in static storage
-        static const i_col_t id = typeCounter()++;
+        static const i_col_t id = util::StaticCounter::next();
         //return the now cached type ID
         return id;
     }
