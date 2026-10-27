@@ -75,8 +75,14 @@ namespace GLGE {
 
 //define the decorator for the counter
 #if defined(__GNUC__)
+    /**
+     * @brief decorator for the external counter
+     */
     #define _TINY_ECS_COUNTER_DECORATOR_ __attribute__((visibility("default")))
 #else
+    /**
+     * @brief decorator for the external counter
+     */
     #define _TINY_ECS_COUNTER_DECORATOR_
 #endif
 
@@ -2262,6 +2268,7 @@ protected:
          * @param getter the function to get a specific element
          * @param mover the function to move a specific element from one archtype to another
          * @param world a pointer to the world that owns the column
+         * @param hash the hash of the stored type
          */
         ColumnBase(void (*destructor)(ColumnBase*), void (*removeElement)(i_arch_t, i_base_t, ColumnBase*), void* (*getter)(i_arch_t, i_base_t, ColumnBase*), void (*mover)(i_arch_t, i_base_t, i_arch_t, ColumnBase*), World_t* world, uint64_t hash)
          : m_destructor(destructor), m_removeElement(removeElement), m_getter(getter), m_mover(mover), m_world(world), m_hash(hash)
