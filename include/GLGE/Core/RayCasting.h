@@ -23,11 +23,30 @@ namespace GLGE {
     /**
      * @brief a component to attach meshes to objects
      */
-    struct MeshComponent {
+    struct MeshComponent : public GLGE::SerializableComponent {
+        //sanity check
+        static_assert(mayBeFromAsset<GLGE::Mesh>, "The mesh class must be loadable from an asset for the MeshComponent to work.");
+
         /**
          * @brief store a pointer to the mesh that belongs to the object
          */
-        GLGE::Mesh* mesh = nullptr;
+        std::shared_ptr<GLGE::Mesh> mesh;
+
+        /**
+         * @brief load the serializable component
+         * 
+         * Span is used to not copy the data
+         * 
+         * @param buffer the buffer to load from
+         */
+        virtual void load(const std::span<const u8>& buffer) override;
+
+        /**
+         * @brief store the serializable asset
+         * 
+         * @param buffer the buffer to write the serializable data to
+         */
+        virtual void store(std::vector<u8>& buffer) override;
     };
 
     /**

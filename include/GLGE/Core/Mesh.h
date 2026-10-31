@@ -28,6 +28,9 @@
 //add type info for type information
 #include <typeinfo>
 
+//add the asset data tagging system
+#include "Asset.h"
+
 //use the library namespace
 namespace GLGE {
 
@@ -363,7 +366,7 @@ namespace GLGE {
     /**
      * @brief a class that stores geometric information
      */
-    class Mesh : public BaseClass {
+    class Mesh : public BaseClass, public MayBeFromAsset {
     public:
 
         /**

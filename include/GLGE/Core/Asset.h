@@ -492,7 +492,7 @@ namespace GLGE {
             __createLambdas<T>();
 
             //use the copy lambda
-            (*m_copy)(&m_data, &other.m_data);
+            (*m_copy)(this, &m_data, &other.m_data);
         }
 
         /**
@@ -524,13 +524,13 @@ namespace GLGE {
         UntypedAssetHandle& operator=(const AssetHandle<T>& other) {
             //clean up the old handle
             if (m_destroy)
-            {(*m_destroy)(&m_data);}
+            {(*m_destroy)(this, &m_data);}
 
             //then, create the new lambdas
             __createLambdas<T>();
 
             //just use the copy function
-            (*m_copy)(&m_data, &other.m_data);
+            (*m_copy)(this, &m_data, &other.m_data);
 
             //return a reference to this
             return *this;
@@ -547,7 +547,7 @@ namespace GLGE {
         UntypedAssetHandle& operator=(AssetHandle<T>&& other) {
             //clean up the old handle
             if (m_destroy)
-            {(*m_destroy)(&m_data);}
+            {(*m_destroy)(this, &m_data);}
 
             //then, create the new lambdas
             __createLambdas<T>();
@@ -574,7 +574,7 @@ namespace GLGE {
 
             //then, use the copy call
             if (m_copy)
-            {(*m_copy)(&m_data, &other.m_data);}
+            {(*m_copy)(this, &m_data, &other.m_data);}
         }
 
         /**
@@ -607,7 +607,7 @@ namespace GLGE {
 
             //clean up the old handle
             if (m_destroy)
-            {(*m_destroy)(&m_data);}
+            {(*m_destroy)(this, &m_data);}
 
             //copy the lambdas from the other handle
             m_move = other.m_move;
@@ -617,7 +617,7 @@ namespace GLGE {
 
             //then, use the copy call
             if (m_copy)
-            {(*m_copy)(&m_data, &other.m_data);}
+            {(*m_copy)(this, &m_data, &other.m_data);}
 
             //return a reference to this
             return *this;
@@ -635,7 +635,7 @@ namespace GLGE {
 
             //clean up the old handle
             if (m_destroy)
-            {(*m_destroy)(&m_data);}
+            {(*m_destroy)(this, &m_data);}
 
             //copy the lambdas from the other handle
             m_move = other.m_move;
@@ -657,7 +657,7 @@ namespace GLGE {
         ~UntypedAssetHandle() {
             //if a destructor exists, delete it
             if (m_destroy)
-            {(*m_destroy)(&m_data);}
+            {(*m_destroy)(this, &m_data);}
         }
 
         /**
@@ -701,14 +701,6 @@ namespace GLGE {
          */
         inline operator bool() const noexcept
         {return isValid();}
-
-        /**
-         * @brief check whether reference counting is enabled
-         *
-         * @return `true` if reference counting is enabled, `false` otherwise
-         */
-        inline bool usesReferenceCounting() const noexcept
-        {return m_referenceCount;}
 
         /**
          * @brief Enable or disable reference counting
@@ -780,11 +772,11 @@ namespace GLGE {
 
                 //=> +/- 0
             };
-            m_copy = [this](AssetHandleData* destination, const AssetHandleData* source) {
+            m_copy = [](UntypedAssetHandle* self, AssetHandleData* destination, const AssetHandleData* source) {
                 //create the handle without changing the reference count
                 AssetHandle<T> src(*source, typename AssetHandle<T>::NoRefCountTag{});
 
-                if (m_referenceCount) {
+                if (self->m_referenceCount) {
                     //create a new reference
                     AssetHandle<T> dst(src);
 
@@ -807,12 +799,12 @@ namespace GLGE {
                     //=> Total +0
                 }
             };
-            m_destroy = [this](AssetHandleData* data) {
+            m_destroy = [](UntypedAssetHandle* self, AssetHandleData* data) {
                 //stop if the data is invalid
                 if (!data->manager)
                 {return;}
 
-                if (m_referenceCount) {
+                if (self->m_referenceCount) {
                     //create the handle
                     AssetHandle<T> handle(*data, typename AssetHandle<T>::NoRefCountTag{});
 
@@ -866,12 +858,12 @@ namespace GLGE {
         /**
          * @brief a function to copy the asset handle
          */
-        void (*m_copy)(AssetHandleData*, const AssetHandleData*) = nullptr;
+        void (*m_copy)(UntypedAssetHandle*, AssetHandleData*, const AssetHandleData*) = nullptr;
 
         /**
          * @brief a function to destroy the asset handle
          */
-        void (*m_destroy)(AssetHandleData*) = nullptr;
+        void (*m_destroy)(UntypedAssetHandle*, AssetHandleData*) = nullptr;
 
         /**
          * @brief a function to increment the reference count
@@ -935,51 +927,20 @@ namespace GLGE {
         {return m_src;}
 
         /**
-         * @brief check if a handle exists
-         *
-         * @return `true` if the handle exists, `false` if not
+         * @brief Set the Source Path
+         * 
+         * @param path the source path
          */
-        inline bool hasHandle() const noexcept
-        {return (m_src == Source::Asset) && m_handle.isValid();}
+        inline void setSourcePath(const std::filesystem::path& path) noexcept
+        {m_sourcePath = path;}
 
         /**
-         * @brief Get the Handle
-         *
-         * The returned handle does not contribute to the asset's reference count.
-         *
-         * @return `const UntypedAssetHandle&` the untyped asset handle
+         * @brief Get the source path
+         * 
+         * @return `const std::filesystem::path&` the source path from where the asset came
          */
-        inline const UntypedAssetHandle& getHandle() const noexcept
-        {return m_handle;}
-
-        /**
-         * @brief Set the asset handle
-         *
-         * The stored handle does not contribute to the asset's reference count.
-         *
-         * @tparam T the asset type
-         * @param handle the asset handle to store
-         */
-        template <typename T>
-        inline void setHandle(const AssetHandle<T>& handle) {
-            //store the handle without affecting the reference count
-            m_handle = handle;
-            m_handle.setReferenceCounting(false);
-
-            //update the source
-            m_src = Source::Asset;
-        }
-
-        /**
-         * @brief Clear the asset handle
-         */
-        inline void clearHandle() {
-            //clear the handle
-            m_handle = UntypedAssetHandle(false);
-
-            //reset the source
-            m_src = Source::Unknown;
-        }
+        inline const std::filesystem::path& getSourcePath() const noexcept
+        {return m_sourcePath;}
 
     private:
 
@@ -987,13 +948,21 @@ namespace GLGE {
          * @brief store the source of the asset
          */
         Source m_src = Source::Unknown;
-
+        
         /**
-         * @brief if the data comes from an asset, this stores a non-owning handle to the asset
+         * @brief store a path to where the asset lives
          */
-        UntypedAssetHandle m_handle = UntypedAssetHandle(false);
+        std::filesystem::path m_sourcePath = "";
 
     };
+
+    /**
+     * @brief a statement to check if a specific class may be from an asset
+     * 
+     * @tparam T the data class to check
+     */
+    template <typename T>
+    constexpr bool mayBeFromAsset = std::is_base_of_v<MayBeFromAsset, T>;
 
 }
 

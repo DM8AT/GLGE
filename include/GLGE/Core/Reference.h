@@ -36,16 +36,12 @@ namespace GLGE {
         inline u32 getReferenceCount() const noexcept
         {return m_referenceCount.load(std::memory_order_relaxed);}
 
-    protected:
+        Referable(Referable&&) = delete;
+        Referable(const Referable&) = delete;
+        Referable& operator=(Referable&&) = delete;
+        Referable& operator=(const Referable&) = delete;
 
-        /**
-         * @brief Construct a new Referable
-         * 
-         * @param other the referable to move from
-         */
-        Referable(Referable&& other)
-         : m_referenceCount(other.m_referenceCount.load(std::memory_order_acquire))
-        {other.m_referenceCount.store(0, std::memory_order_acquire);}
+    protected:
 
         /**
          * @brief Construct a new Referable

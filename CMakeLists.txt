@@ -22,12 +22,6 @@ option(GLGE_ALLOW_DEBUG
     ON
 )
 
-# an option that makes GLGE fetch Embree from github
-option(GLGE_FETCH_EMBREE 
-    "Fetch Embree automatically" 
-    ON
-)
-
 # an option to disable GLGE Graphic
 option(GLGE_INCLUDE_GRAPHICS
     "Enable the GLGE Graphic extension"
@@ -73,11 +67,83 @@ option(GLGE_PHYSICS_INCLUDE_PHYSX
     "Enable PhysX backend"
     OFF
 )
-# 
+# an option to disable the bullet implementation
 option(GLGE_PHYSICS_INCLUDE_BULLET
     "Enable Bullet backend"
     ON
 )
+
+# detect total system RAM in bytes
+# there were issues with the host information query, so OS-Specific alternatives exist. 
+if(WIN32)
+    execute_process(
+        COMMAND powershell -NoProfile -Command
+            "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory"
+        OUTPUT_VARIABLE TOTAL_RAM_MIB
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE RAM_RESULT
+    )
+elseif(APPLE)
+    execute_process(
+        COMMAND sysctl -n hw.memsize
+        OUTPUT_VARIABLE TOTAL_RAM_MIB
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE RAM_RESULT
+    )
+
+elseif(UNIX)
+    execute_process(
+        COMMAND sh -c "awk '/MemTotal/ {print $2 * 1024}' /proc/meminfo"
+        OUTPUT_VARIABLE TOTAL_RAM_MIB
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE RAM_RESULT
+    )
+else()
+    cmake_host_system_information(RESULT TOTAL_RAM_MIB QUERY TOTAL_PHYSICAL_MEMORY)
+    if (NOT TOTAL_RAM_MIB)
+        message(WARNING "Failed to query memory. Assuming 1 GB.")
+        set(TOTAL_RAM_MIB 1024)
+    endif()
+endif()
+
+# Validate detection
+if(NOT TOTAL_RAM_MIB MATCHES "^[0-9]+$" OR TOTAL_RAM_MIB EQUAL 0)
+    message(FATAL_ERROR "Could not detect total system RAM.")
+endif()
+# convert to GB
+math(EXPR TOTAL_RAM_GB "${TOTAL_RAM_MIB} / 1024 / 1024 / 1024")
+# calculate heavy compile task limit
+math(EXPR DEFAULT_HEAVY_COMPILE_LIMIT "${TOTAL_RAM_GB} / 7")
+# ensure at least one task
+if(DEFAULT_HEAVY_COMPILE_LIMIT LESS 1)
+    set(DEFAULT_HEAVY_COMPILE_LIMIT 1)
+endif()
+
+# define how many heavy compile tasks GLGE will allow to run in parallel
+set(GLGE_HEAVY_COMPILE_TASK_LIMIT
+    ${DEFAULT_HEAVY_COMPILE_LIMIT}
+    CACHE STRING
+    "The maximum amount of heavy compile tasks to run concurrently"
+)
+# sanity check
+if(NOT GLGE_HEAVY_COMPILE_TASK_LIMIT MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR
+        "GLGE_HEAVY_COMPILE_TASK_LIMIT must be a positive integer. "
+        "Got: '${GLGE_HEAVY_COMPILE_TASK_LIMIT}'"
+    )
+endif()
+
+# some debug info
+message(STATUS "Detected RAM: ${TOTAL_RAM_GB} GB (${TOTAL_RAM_MIB} MiB)")
+message(STATUS "Heavy compile task limit: ${GLGE_HEAVY_COMPILE_TASK_LIMIT}")
+
+# set GNU compiler flags
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU")) 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-cast-user-defined -Wno-ignored-attributes")
+endif()
+
+# configure job pools
+set_property(GLOBAL PROPERTY JOB_POOLS heavy_compile=${GLGE_HEAVY_COMPILE_TASK_LIMIT})
 
 # Tracy profiling option
 option(GLGE_ENABLE_TRACY "Enable Tracy profiler integration" ON)
@@ -116,35 +182,101 @@ endif()
 
 ###### DEPENDENCIES
 
+# Persistent cache shared across build directories.
+set(DEPENDENCY_CACHE_DIR "${CMAKE_BINARY_DIR}/../.cache" CACHE PATH "Persistent dependency cache")
+include(FetchContent)
+
+# a function to load a dependency and cache it
+function(fetch_dependency NAME GIT_REPOSITORY GIT_TAG SHALLOW)
+    string(TOUPPER "${NAME}" NAME_UPPER)
+    set(ENTRY_SOURCE_DIR "${DEPENDENCY_CACHE_DIR}/${NAME}/src")
+
+    # check if the source is cached
+    if(EXISTS "${ENTRY_SOURCE_DIR}/CMakeLists.txt")
+        # cached: fetch from cache
+        message(STATUS "Using cached ${NAME}: ${ENTRY_SOURCE_DIR}")
+        FetchContent_Declare(
+            ${NAME} 
+            SOURCE_DIR "${ENTRY_SOURCE_DIR}"
+        )
+        FetchContent_MakeAvailable(${NAME})
+
+        # export the paths
+        set(${NAME}_SOURCE_DIR "${${NAME}_SOURCE_DIR}" PARENT_SCOPE)
+        set(${NAME}_BINARY_DIR "${${NAME}_BINARY_DIR}" PARENT_SCOPE)
+        set(${NAME}_POPULATED "${${NAME}_POPULATED}" PARENT_SCOPE)
+
+        # print where the source and binaries will be / are
+        message(STATUS "Source for ${NAME}: ${${NAME}_SOURCE_DIR}")
+        message(STATUS "Binary for ${NAME}: ${${NAME}_BINARY_DIR}")
+        return()
+    endif()
+
+    # No cache -> check internet connection
+    message(STATUS "No cache for ${NAME}. Checking internet connectivity...")
+    # github connection check
+    set(CONNECTIVITY_PATH "${CMAKE_BINARY_DIR}/${NAME}_connectivity_check.html")
+    # fetch file
+    file(
+        DOWNLOAD
+        "https://github.com"
+        ${CONNECTIVITY_PATH}
+        STATUS CONNECTION_STATUS
+        TIMEOUT 5
+        INACTIVITY_TIMEOUT 5
+        TLS_VERIFY ON
+    )
+    list(GET CONNECTION_STATUS 0 CONNECTION_CODE)
+    # clean up the file
+    file(REMOVE ${CONNECTIVITY_PATH})
+
+    # Success -> fetch from github
+    if(CONNECTION_CODE EQUAL 0)
+        message(STATUS "Internet available. Fetching ${NAME} into ${ENTRY_SOURCE_DIR}...")
+        FetchContent_Declare(
+            ${NAME}
+            GIT_REPOSITORY "${GIT_REPOSITORY}"
+            GIT_TAG        "${GIT_TAG}"
+            GIT_SHALLOW    "${SHALLOW}"
+            SOURCE_DIR     "${ENTRY_SOURCE_DIR}"
+        )
+        FetchContent_MakeAvailable(${NAME})
+    else()
+        # Failed to get dependency
+        message(FATAL_ERROR
+            "Cannot fetch dependency '${NAME}'.\n"
+            "Internet is unavailable and no cached source was found.\n"
+            "Expected cache directory: ${ENTRY_SOURCE_DIR}"
+        )
+    endif()
+
+    # export the variables
+    set(${NAME}_SOURCE_DIR "${${NAME}_SOURCE_DIR}" PARENT_SCOPE)
+    set(${NAME}_BINARY_DIR "${${NAME}_BINARY_DIR}" PARENT_SCOPE)
+    set(${NAME}_POPULATED "${${NAME}_POPULATED}" PARENT_SCOPE)
+
+    # print where the source is / the binaries are
+    message(STATUS "Source for ${NAME}: ${${NAME}_SOURCE_DIR}")
+    message(STATUS "Binary for ${NAME}: ${${NAME}_BINARY_DIR}")
+endfunction()
+
 # GLM is required for the core
-# print a message
-message(STATUS "Fetching GLM from GitHub")
-# use FetchContent to fetch GLM from github
-include(FetchContent)
-FetchContent_Declare(
+fetch_dependency(
     GLM
-    GIT_REPOSITORY https://github.com/g-truc/glm.git
-    GIT_TAG "1.0.3"
+    "https://github.com/g-truc/glm.git"
+    "1.0.3"
+    ON
 )
-FetchContent_MakeAvailable(GLM)
 
-# only download tracy in debug if tracy is enabled
-
-# Tracy is required for the core
-# print a message
-message(STATUS "Fetching Tracy from GitHub")
-# use FetchContent to fetch Tracy from github
-include(FetchContent)
-FetchContent_Declare(
-    tracy
-    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-    GIT_TAG "v0.13.1"
+# only download tracy in debug if tracy is enabled (maybe mood?)
+fetch_dependency(
+    "tracy"
+    "https://github.com/wolfpld/tracy.git"
+    "v0.13.1"
+    ON
 )
-FetchContent_MakeAvailable(tracy)
 
 # oneTBB is used for advanced thread primitives
-# print a message
-message(STATUS "Fetching oneTBB from GitHub")
 # configure for static build
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(TBB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
@@ -152,30 +284,24 @@ set(TBB_BUILD_STATIC ON CACHE BOOL "" FORCE)
 set(TBBMALLOC_BUILD OFF CACHE BOOL "" FORCE)
 set(TBBMALLOC_PROXY_BUILD OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-# use FetchContent to fetch oneTBB from github
-include(FetchContent)
-FetchContent_Declare(
-    oneTBB
-    GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git 
-    GIT_TAG "v2022.2.0"
-)
-# Disable unnecessary components
+# disable whatever is not needed
 set(TBB_TEST OFF CACHE BOOL "" FORCE)
 set(TBB_STRICT OFF CACHE BOOL "" FORCE)
 set(TBB_DIR "${tbb_BINARY_DIR}" CACHE PATH "" FORCE) # enforce that Embree finds this tbb target
-FetchContent_MakeAvailable(oneTBB)
+fetch_dependency(
+    oneTBB
+    "https://github.com/oneapi-src/oneTBB.git"
+    "v2022.2.0"
+    ON
+)
 
 # Mesh optimizer is used to optimize meshes
-# print a message
-message(STATUS "Fetching MeshOptimizer from GitHub")
-# use FetchContent to fetch meshoptimizer from github
-include(FetchContent)
-FetchContent_Declare(
+fetch_dependency(
     meshoptimizer
-    GIT_REPOSITORY https://github.com/zeux/meshoptimizer.git
-    GIT_TAG "v1.2"
+    "https://github.com/zeux/meshoptimizer.git"
+    "v1.2"
+    ON
 )
-FetchContent_MakeAvailable(meshoptimizer)
 
 #### Assimp
 # Force Assimp to build static no matter what
@@ -184,74 +310,93 @@ set(ASSIMP_BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-# print a message
-message(STATUS "Fetching assimp from GitHub")
-# use FetchContent to fetch SDL3 from github
-include(FetchContent)
-FetchContent_Declare(
+fetch_dependency(
     assimp
-    GIT_REPOSITORY https://github.com/assimp/assimp
-    GIT_TAG "v6.0.4"
+    "https://github.com/assimp/assimp"
+    "v6.0.4"
+    ON
 )
-FetchContent_MakeAvailable(assimp)
-if (TARGET assimp)
+# do some sanity checks
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(assimp PRIVATE
         -Wno-error=maybe-uninitialized
     )
 endif()
-    
-# If embree should be fetched, fetch it. Else, just re-use the installed version. 
-if(GLGE_FETCH_EMBREE)
-    # Embree is used for BVH construction and all CPU-Side rt functions
-    # print a message
-    message(STATUS "Fetching Embree from GitHub")
-    # use FetchContent to fetch Embree from github
-    include(FetchContent)
-    FetchContent_Declare(
-        embree
-        GIT_REPOSITORY https://github.com/RenderKit/embree.git
-        GIT_TAG v4.4.0
+
+# setup embree options
+set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "" FORCE)
+set(EMBREE_TUTORIALS OFF CACHE BOOL "" FORCE)
+set(EMBREE_TESTING OFF CACHE BOOL "" FORCE)
+set(EMBREE_BACKFACE_CULLING OFF CACHE BOOL "" FORCE)
+set(EMBREE_MAX_ISA AVX2 CACHE STRING "" FORCE)
+fetch_dependency(
+    embree
+    "https://github.com/RenderKit/embree.git"
+    "v4.4.0"
+    ON
+)
+# helper function to configure all embree targets
+function(configure_embree_targets DIR)
+    get_property(TARGETS
+        DIRECTORY "${DIR}"
+        PROPERTY BUILDSYSTEM_TARGETS
     )
-    # setup the options for it
-    set(EMBREE_ISPC_SUPPORT OFF CACHE BOOL "" FORCE)
-    set(EMBREE_TUTORIALS OFF CACHE BOOL "" FORCE)
-    set(EMBREE_TESTING OFF CACHE BOOL "" FORCE)
-    set(EMBREE_BACKFACE_CULLING OFF CACHE BOOL "" FORCE)
-    set(EMBREE_MAX_ISA AVX2 CACHE STRING "" FORCE)
-    # add to the project
-    FetchContent_MakeAvailable(embree)
-else()
-    find_package(embree CONFIG REQUIRED)
-endif()
+
+    foreach(TARGET IN LISTS TARGETS)
+        get_target_property(TARGET_TYPE ${TARGET} TYPE)
+
+        # Only configure targets that actually compile code
+        if(   TARGET_TYPE STREQUAL "STATIC_LIBRARY" 
+           OR TARGET_TYPE STREQUAL "SHARED_LIBRARY" 
+           OR TARGET_TYPE STREQUAL "MODULE_LIBRARY" 
+           OR TARGET_TYPE STREQUAL "OBJECT_LIBRARY" 
+           OR TARGET_TYPE STREQUAL "EXECUTABLE"
+           )
+            message(STATUS "Configuring Embree target: ${TARGET}")
+
+            set_target_properties(${TARGET} PROPERTIES JOB_POOL_COMPILE heavy_compile)
+
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                target_compile_options(${TARGET} PRIVATE -Wno-cast-user-defined)
+            endif()
+        endif()
+    endforeach()
+
+    # Process subdirectories recursively
+    get_property(SUBDIRS
+        DIRECTORY "${DIR}"
+        PROPERTY SUBDIRECTORIES
+    )
+
+    # recursion!
+    foreach(SUBDIR IN LISTS SUBDIRS)
+        configure_embree_targets("${SUBDIR}")
+    endforeach()
+endfunction()
+
+# configure embree
+configure_embree_targets("${embree_SOURCE_DIR}")
 
 # only required for GLGE Graphic
 if (GLGE_INCLUDE_GRAPHICS)
     #### SDL3
-    # print a message
-    message(STATUS "Fetching SDL3 from GitHub")
-    # use FetchContent to fetch SDL3 from github
-    include(FetchContent)
-    FetchContent_Declare(
+    fetch_dependency(
         SDL3
-        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG "release-3.4.0"
+        "https://github.com/libsdl-org/SDL.git"
+        "release-3.4.0"
+        ON
     )
-    FetchContent_MakeAvailable(SDL3)
 
     #### SPIRV-Reflect
     # set the option for a static library
     option(SPIRV_REFLECT_STATIC_LIB FORCE ON)
     option(SPIRV_REFLECT_INSTALL FORCE OFF)
-    # print a message
-    message(STATUS "Fetching SPIRV-Reflect from GitHub")
-    # use FetchContent to fetch SDL3 from github
-    include(FetchContent)
-    FetchContent_Declare(
+    fetch_dependency(
         spirv-reflect
-        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Reflect
-        GIT_TAG "vulkan-sdk-1.4.350.0"
+        "https://github.com/KhronosGroup/SPIRV-Reflect"
+        "vulkan-sdk-1.4.350.0"
+        ON
     )
-    FetchContent_MakeAvailable(spirv-reflect)
     
     #### Vulkan
     # only add vulkan if vulkan is requested
@@ -267,49 +412,38 @@ if (GLGE_INCLUDE_GRAPHICS)
         endif()
 
         #### VMA
-        message(STATUS "Fetching VMA from GitHub")
-        include(FetchContent)
-        FetchContent_Declare(
+        fetch_dependency(
             VMA
-            GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-            GIT_TAG v3.1.0
+            "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git"
+            "v3.1.0"
+            ON
         )
-        FetchContent_MakeAvailable(VMA)
-
         # FetchContent exposes VMA source dir here
-        set(VMA_INCLUDE_DIR ${vma_SOURCE_DIR}/include)
+        set(VMA_INCLUDE_DIR ${VMA_SOURCE_DIR}/include)
     endif()
 
     #### ImGUI
     # only add if ImGUI is requested
     if (GLGE_GRAPHIC_INCLUDE_IMGUI)
         # ImGUI is a common GUI library
-        # print a message
-        message(STATUS "Fetching ImGUI from GitHub")
-        # use FetchContent to fetch ImGUI from github
-        include(FetchContent)
-        FetchContent_Declare(
-            imgui
-            GIT_REPOSITORY https://github.com/ocornut/imgui.git
-            GIT_TAG "v1.92.9b-docking"
+        fetch_dependency(
+            "imgui"
+            "https://github.com/ocornut/imgui.git"
+            "v1.92.9b-docking"
+            ON
         )
-        FetchContent_MakeAvailable(imgui)
     endif()
 endif()
 
 if (GLGE_INCLUDE_PHYSICS)
     ### Jolt
     if(GLGE_PHYSICS_INCLUDE_JOLT)
-        # message
-        message(STATUS "Fetching Jolt Physics")
-        # get Jolt
-        FetchContent_Declare(
+        fetch_dependency(
             JoltPhysics
-            GIT_REPOSITORY https://github.com/jrouwe/JoltPhysics.git
-            GIT_TAG v5.3.0
+            "https://github.com/jrouwe/JoltPhysics.git"
+            "v5.3.0"
+            OFF
         )
-        # make it available if not automatically done
-        FetchContent_MakeAvailable(JoltPhysics)
         FetchContent_GetProperties(JoltPhysics)
         if(NOT JoltPhysics_POPULATED)
             add_subdirectory(
@@ -326,13 +460,6 @@ if (GLGE_INCLUDE_PHYSICS)
 
     ### Bullet
     if (GLGE_PHYSICS_INCLUDE_BULLET)
-        # get from github
-        FetchContent_Declare(
-            bullet
-            GIT_REPOSITORY https://github.com/bulletphysics/bullet3.git
-            GIT_TAG master # Note: Master is used since the newest release uses a very old CMake version that does no longer compile everywhere
-        )
-
         # setup build
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
         set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
@@ -344,8 +471,16 @@ if (GLGE_INCLUDE_PHYSICS)
         # disable multi threading
         set(BULLET2_MULTITHREADING OFF CACHE BOOL "" FORCE)
 
-        # build
-        FetchContent_MakeAvailable(bullet)
+        # get from github
+        fetch_dependency(
+            bullet
+            "https://github.com/bulletphysics/bullet3.git"
+            "master" # Note: Master is used since the newest release uses a very old CMake version that does no longer compile everywhere
+            OFF
+        )
+        if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU")) 
+            target_compile_options(BulletDynamics PRIVATE -Wno-ignored-attributes)
+        endif()
     endif()
 endif()
 
@@ -402,8 +537,7 @@ if(WIN32 AND GLGE_BUILD_SHARED_LIBS)
 endif()
 
 # check for tracy integration
-if (GLGE_ENABLE_TRACY )
-
+if (GLGE_ENABLE_TRACY)
     # Compile TracyClient.cpp only in Debug
     target_sources(GLGE_CORE PRIVATE
         $<$<CONFIG:Debug>:${tracy_SOURCE_DIR}/public/TracyClient.cpp>
@@ -595,6 +729,7 @@ if (GLGE_INCLUDE_GRAPHICS)
     # if vulkan was requested link the vulkan SDK
     if (GLGE_GRAPHICS_INCLUDE_VULKAN)
         target_link_libraries(${GLGE_GRAPHIC_NAME} PRIVATE Vulkan::Vulkan)
+        message(STATUS "VMA include dir ${VMA_INCLUDE_DIR}")
         target_include_directories(${GLGE_GRAPHIC_NAME} PRIVATE ${VMA_INCLUDE_DIR})
     endif()
     # if ImGUI was added, add ImGUI include directory
@@ -716,13 +851,3 @@ target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_GRAPHICS_HAS_VULKAN=$
 target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_PHYSX=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_PHYSX}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
 target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_JOLT=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_JOLT}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
 target_compile_definitions(${GLGE_LIB_NAME} INTERFACE GLGE_PHYSICS_HAS_BULLET=$<AND:$<BOOL:${GLGE_PHYSICS_INCLUDE_BULLET}>,$<BOOL:${GLGE_INCLUDE_PHYSICS}>>)
-
-# set whole archive flags
-# if (MSVC)
-#     # target_link_options(${GLGE_LIB_NAME} INTERFACE "/WHOLEARCHIVE:${GLGE_GRAPHIC_NAME}")
-# else()
-#     target_link_options(${GLGE_LIB_NAME} INTERFACE "-Wl,--whole-archive"
-#                                                     "$<TARGET_FILE:${GLGE_GRAPHIC_NAME}>"
-#                                                     "-Wl,--no-whole-archive"
-#                                                     )
-# endif()
