@@ -279,8 +279,8 @@ fetch_dependency(
 # oneTBB is used for advanced thread primitives
 # configure for static build
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-set(TBB_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-set(TBB_BUILD_STATIC ON CACHE BOOL "" FORCE)
+set(TBB_BUILD_SHARED ON CACHE BOOL "" FORCE)
+set(TBB_BUILD_STATIC OFF CACHE BOOL "" FORCE)
 set(TBBMALLOC_BUILD OFF CACHE BOOL "" FORCE)
 set(TBBMALLOC_PROXY_BUILD OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
@@ -379,6 +379,13 @@ configure_embree_targets("${embree_SOURCE_DIR}")
 
 # only required for GLGE Graphic
 if (GLGE_INCLUDE_GRAPHICS)
+    # setup save OpenGL loading
+    # this does not load OpenGL, it only makes the newer OpenGL loading the preferred
+    if(POLICY CMP0072)
+        cmake_policy(SET CMP0072 NEW)
+    endif()
+    set(OpenGL_GL_PREFERENCE GLVND)
+
     #### SDL3
     fetch_dependency(
         SDL3

@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# start the timer
+START_TIME=$SECONDS
+
 # configure build files
 if [ ! -d "build" ]; then
     mkdir build
@@ -23,3 +26,11 @@ echo "Using ${THREADS} build threads"
 
 # actual building
 cmake --build build --parallel $THREADS -- -d stats
+
+# calculate elapsed time
+ELAPSED_TIME=$((SECONDS - START_TIME))
+
+# print elapsed time
+echo "-----------------------------------"
+echo "Build completed in ${ELAPSED_TIME} seconds."
+echo "-----------------------------------"
